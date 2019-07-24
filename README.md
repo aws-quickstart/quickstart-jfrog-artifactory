@@ -20,4 +20,4 @@ In order to deploy a test deployment:
 3. create a hidden folder: .ignore/
 4. Inside the .ignore/ create a `params` file that is plain Text ParameterKey=DatabasePassword,ParameterValue=Password ParameterKey=KeyPairName,ParameterValue=My-SSH
 5. Configure your `~/.aws/credentials` for use with the awscli
-6. Execute the cloudformation template from inside the repo: `aws cloudformation create-stack --stack-name test --template-body file://$(pwd)/templates/jfrog-atifactory-ec2-new-vpc.template --parameters $(cat .ignore/params)`
+6. Execute the cloudformation template from inside the repo: `aws cloudformation create-stack --stack-name test --template-body file://$(pwd)/templates/jfrogartifactory-ec2-new-vpc.template --parameters $(cat .ignore/params) --capabilities CAPABILITY_IAM`
