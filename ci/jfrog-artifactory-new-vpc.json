@@ -1,0 +1,22 @@
+[
+    {
+        "ParameterKey": "KeyPairName",
+        "ParameterValue": "override"
+    },
+    {
+        "ParameterKey": "RemoteAccessCIDR",
+        "ParameterValue": "10.0.0.0/16"
+    },
+    {
+        "ParameterKey": "AvailabilityZones",
+        "ParameterValue": "$[taskcat_genaz_2]"
+    },
+    {
+        "ParameterKey": "DatabasePassword",
+        "ParameterValue": "[taskcat_genpass_8A]"
+    },
+    {
+        "ParameterKey": "QSS3BucketName",
+        "ParameterValue": "$[taskcat_autobucket]"
+    }
+]

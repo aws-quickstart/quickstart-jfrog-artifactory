@@ -19,9 +19,8 @@ global:
   reporting: true
  
 tests:
-  quickstart-jfrog-artifactoryt1:
-    parameter_input: quickstart-jfrog-artifactory-example-params1.json
-    template_file: quickstart-jfrog-artifactory-example1.template
-  quickstart-jfrog-artifactoryt2:
-    parameter_input: quickstart-jfrog-artifactory-example-params2.json
-    template_file: quickstart-jfrog-artifactory-example2.template
+  jfrog-artifactory-ec2:
+    parameter_input: jfrog-artifactory-new-vpc.json
+    template_file: jfrog-artifactory-ec2-master.template
+    regions:
+      - us-east-1
