@@ -23,4 +23,4 @@ tests:
     parameter_input: jfrog-artifactory-new-vpc.json
     template_file: jfrog-artifactory-ec2-master.template
     regions:
-      - us-east-1
+      - us-west-2

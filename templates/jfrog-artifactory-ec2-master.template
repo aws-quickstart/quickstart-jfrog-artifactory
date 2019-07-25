@@ -120,13 +120,13 @@ Parameters:
   AmiId:
     Description: Ami being utilized to install the infrastructure. 
     Type: String
-    Default: Amazon-Linux-HVM
+    Default: AMZNLINUXHVM
   AvailabilityZones:
     Description: List of Availability Zones to use for the subnets in the VPC. Two
       Availability Zones are used for this deployment, and the logical order of your
       selections is preserved.
     Type: List<AWS::EC2::AvailabilityZone::Name>
-    Default: us-east-1a, us-east-1b
+    Default: us-west-2a, us-west-1b
   KeyPairName:
     Description: The name of an existing public/private key pair, which allows you
       to securely connect to your instance after it launches
@@ -172,7 +172,7 @@ Parameters:
     AllowedPattern: ^[0-9a-zA-Z-/]*$
     ConstraintDescription: Quick Start key prefix can include numbers, lowercase letters,
       uppercase letters, hyphens (-), and forward slash (/).
-    Default: quickstart-artifactory-ha/
+    Default: quickstart-jfrog-artifactory/
     Description: S3 key prefix for the Quick Start assets. Quick Start key prefix
       can include numbers, lowercase letters, uppercase letters, hyphens (-), and
       forward slash (/).
@@ -188,7 +188,7 @@ Parameters:
     AllowedValues: [ "Enabled", "Disabled" ]
     Default: "Enabled"
   BastionBootstrapScript:
-    Default: ""
+    Default: "https://${QSS3BucketName}.s3.amazonaws.com/${QSS3KeyPrefix}scripts/bastion_bootstrap.sh"
     Type: String
   BastionInstanceType:
     Default: "t2.micro"
@@ -365,7 +365,7 @@ Parameters:
     - True
     - False
     Type: String
-    Default: False
+    Default: False 
 Mappings:
   AWSAMIRegionMap:
     AMI:
@@ -387,6 +387,9 @@ Conditions:
   EnableBastion: !Equals [!Ref 'ProvisionBastionHost', 'Enabled']
   CustomBastionRole: !Not [!Equals [!Ref 'BastionIAMRoleName', '']]
   AdditionalVars: !Not [!Equals [!Ref 'BastionVariables', '']]
+  GovCloudCondition: !Equals 
+    - !Ref 'AWS::Region'
+    - us-gov-west-1
 Resources:
   VPCStack:
     Type: AWS::CloudFormation::Stack
@@ -426,10 +429,10 @@ Resources:
         RemoteAccessCIDR: !Ref RemoteAccessCIDR
         BastionInstanceType: !Ref BastionInstanceType
         RootVolumeSize: !Ref BastionRootVolumeSize
-        AlternativeInitializationScript: !If
-          - DefaultBastionBootstrap
-          - !Sub 'https://${QSS3BucketName}.s3.amazonaws.com/${QSS3KeyPrefix}scripts/bastion_bootstrap.sh'
-          - !Ref BastionBootstrapScript
+        #AlternativeInitializationScript: !If
+        #  - DefaultBastionBootstrap
+        #  - !Sub 'https://${QSS3BucketName}.s3.amazonaws.com/${QSS3KeyPrefix}scripts/bastion_bootstrap.sh'
+        #  - !Ref BastionBootstrapScript
         #AlternativeIAMRole: !If [CustomBastionRole, !Ref BastionIAMRoleName, !GetAtt IamStack.Outputs.BastionRole]
         BastionAMIOS: !Ref BastionOS
         EnableTCPForwarding: !Ref BastionEnableTCPForwarding
@@ -526,46 +529,41 @@ Resources:
             buckets:
               - !Ref QSS3BucketName
         'AWS::CloudFormation::Init':
-          config:
-            files:
-              /tmp/bastion_bootstrap.sh:
-                source: 
-                  - 'https://${QSS3BucketName}.s3.amazonaws.com/${QSS3KeyPrefix}scripts/bastion_bootstrap.sh'
-                    #- https://${QSS3BucketName}.${QSS3Region}.amazonaws.com/${QSS3KeyPrefix}scripts/bastion_bootstrap.sh
-                    #- QSS3Region: !If 
-                    #    - GovCloudCondition
-                    #    - s3-us-gov-west-1
-                    #    - s3
-                mode: '000550'
-                owner: root
-                group: root
-                authentication: S3AccessCreds
-            commands:
-              b-bootstrap:
-                command: !Join 
-                  - ''
-                  - - ./tmp/bastion_bootstrap.sh
-                    #- ' --banner '
-                    #- !Ref BastionBanner
-                    #- ' --enable '
-                    #- !Ref EnableBanner
-                    #- ' --tcp-forwarding '
-                    #- !Ref EnableTCPForwarding
-                    #- ' --x11-forwarding '
-                    #- !Ref EnableX11Forwarding
+          configSets:
+            artifactory_install:
+              - config-artifactory-master
+              - run_service-artifactory
+            config-artifactory-master:
+              packages:
+                yum:
+                  wget: []
+                  curl: []
+                  nginx: []
+              files:
+                /etc/nginx/nginx.conf:
+                  source:
+                    - https://${QSS3BucketName}.${QSS3Region}.amazonaws.com/${QSS3KeyPrefix}scripts/nginx.conf
+                    - QSS3Region: !If 
+                        - GovCloudCondition
+                        - s3-us-gov-west-1
+                        - s3
+                  mode: '000755'
+                  owner: root
+                  group: root                          
+                  authentication: S3AccessCreds
+            run_service-artifactory:
+              commands:
+                start_nginx:
+                  command: echo "hello" > /tmp/hello.txt
       Properties:
         AssociatePublicIpAddress: false
         #PlacementTenancy: !Ref BastionTenancy
         KeyName: !Ref KeyPairName
         IamInstanceProfile: !Ref ArtifactoryHostProfile
-        ImageId: #ami-0080e4c5bc078760e
-          - !FindInMap 
-            - AWSAMIRegionMap
-            - !Ref 'AWS::Region'
-            - !FindInMap 
-              - LinuxAMINameMap
-              - Amazon-Linux-HVM #!Ref AmiId
-              - Code
+        ImageId: !FindInMap 
+          - AWSAMIRegionMap
+          - !Ref 'AWS::Region'
+          - !Ref AmiId
         SecurityGroups:
           - !Ref EC2InstancesSG
         InstanceType: !Ref InstanceType
@@ -576,38 +574,64 @@ Resources:
               VolumeType: gp2
               DeleteOnTermination: true
         UserData: !Base64 
-          'Fn::Join':
-            - ''
-            - - |
-                #!/bin/bash
-              - |
-                set -x
-              - |
-                which pip &> /dev/null
-              - |
-                if [ $? -ne 0 ] ; then
-              - |2
-                    echo "PIP NOT INSTALLED"
-              - |2
-                    [ `which yum` ] && $(yum install -y epel-release; yum install -y python-pip) && echo "PIP INSTALLED"
-              - |2
-                    [ `which apt-get` ] && apt-get -y update && apt-get -y install python-pip && echo "PIP INSTALLED"
-              - |2
-                    [ `which zypper` ] && zypper refresh && zypper install -y python-pip && update-alternatives --set easy_install /usr/bin/easy_install-2.7 && echo "PIP INSTALLED"
-              - |
-                fi
-              - |
-              - 'cfn-init -v --stack '
-              - !Ref 'AWS::StackName'
-              - ' --resource ArtifactoryMasterLaunchConfiguration --region '
-              - !Ref 'AWS::Region'
-              - |+
+          'Fn::Sub':
+            - >
+              #!/bin/bash -x
 
-              - 'cfn-signal -e $? --stack '
-              - !Ref 'AWS::StackName'
-              - ' --resource ArtifactoryMasterLaunchConfiguration --region '
-              - !Ref 'AWS::Region'
-              - |+
+              #CFN Functions
+
+              function cfn_fail
+
+              {
+
+              cfn-signal -e 1 --stack ${AWS::StackName} --region ${AWS::Region}
+              --resource ArtifactoryMaster
+
+              exit 1
+
+              }
+
+              function cfn_success
+
+              {
+
+              cfn-signal -e 0 --stack ${AWS::StackName} --region ${AWS::Region}
+              --resource ArtifactoryMaster
+
+              exit 0
+
+              }
+
+              S3URI=https://${QSS3BucketName}.${S3Region}.amazonaws.com/${QSS3KeyPrefix}
+
+              echo \'[Cloning: Load QuickStart Common Utils]\'
+
+              git clone
+              https://github.com/aws-quickstart/quickstart-linux-utilities.git
+
+              source /quickstart-linux-utilities/quickstart-cfn-tools.source
+
+              echo \'[Loaded: Load QuickStart Common Utils]\'
+
+              echo \'[Update Operating System]\'
+
+              qs_update-os || qs_err
+
+              qs_bootstrap_pip || qs_err
+
+              qs_aws-cfn-bootstrap || qs_err
+
+              cfn-init -v --stack ${AWS::StackName} --resource
+              ArtifactoryMasterLaunchConfiguration --configsets artifactory_install
+              --region ${AWS::Region} || cfn_fail
+
+              # Signal cfn-init (final check)
+
+              [ $(qs_status) == 0 ] && cfn_success || cfn_fail
+            - S3Region: !If 
+              - GovCloudCondition
+              - s3-us-gov-west-1
+              - s3
 Outputs:
   URL:
     Description: URL of the ELB to access Artifactory
