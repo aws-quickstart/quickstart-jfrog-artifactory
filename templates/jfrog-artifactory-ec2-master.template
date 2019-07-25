@@ -530,7 +530,7 @@ Resources:
             files:
               /tmp/bastion_bootstrap.sh:
                 source: 
-                  - 'https://${QSS3BucketName}.s3.amazonaws.com/${QSS3KeyPrefix}scripts/bastion_bootstrap.sh'
+                  - Fn::Sub: 'https://${QSS3BucketName}.s3.amazonaws.com/${QSS3KeyPrefix}scripts/bastion_bootstrap.sh'
                     #- https://${QSS3BucketName}.${QSS3Region}.amazonaws.com/${QSS3KeyPrefix}scripts/bastion_bootstrap.sh
                     #- QSS3Region: !If 
                     #    - GovCloudCondition
