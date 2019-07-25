@@ -529,6 +529,7 @@ Resources:
             buckets:
               - !Ref QSS3BucketName
         'AWS::CloudFormation::Init':
+<<<<<<< HEAD
           configSets:
             artifactory_install:
               - config-artifactory-master
@@ -555,6 +556,35 @@ Resources:
               commands:
                 start_nginx:
                   command: echo "hello" > /tmp/hello.txt
+=======
+          config:
+            files:
+              /tmp/bastion_bootstrap.sh:
+                source: 
+                  - Fn::Sub: 'https://${QSS3BucketName}.s3.amazonaws.com/${QSS3KeyPrefix}scripts/bastion_bootstrap.sh'
+                    #- https://${QSS3BucketName}.${QSS3Region}.amazonaws.com/${QSS3KeyPrefix}scripts/bastion_bootstrap.sh
+                    #- QSS3Region: !If 
+                    #    - GovCloudCondition
+                    #    - s3-us-gov-west-1
+                    #    - s3
+                mode: '000550'
+                owner: root
+                group: root
+                authentication: S3AccessCreds
+            commands:
+              b-bootstrap:
+                command: !Join 
+                  - ''
+                  - - ./tmp/bastion_bootstrap.sh
+                    #- ' --banner '
+                    #- !Ref BastionBanner
+                    #- ' --enable '
+                    #- !Ref EnableBanner
+                    #- ' --tcp-forwarding '
+                    #- !Ref EnableTCPForwarding
+                    #- ' --x11-forwarding '
+                    #- !Ref EnableX11Forwarding
+>>>>>>> e1e168f3b1fe45d764aceb1d5eb9497f2289873f
       Properties:
         AssociatePublicIpAddress: false
         #PlacementTenancy: !Ref BastionTenancy
