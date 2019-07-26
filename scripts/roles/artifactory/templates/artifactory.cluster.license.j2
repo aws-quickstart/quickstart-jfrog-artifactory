@@ -1,3 +1,5 @@
-{% for license in artifactory_licenses %}
+{% for license in artifactory_licenses.split(',') %}
 {{ license }}
+
+
 {% endfor %}

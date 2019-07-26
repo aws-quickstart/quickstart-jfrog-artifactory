@@ -5,7 +5,7 @@
     },
     {
         "ParameterKey": "RemoteAccessCIDR",
-        "ParameterValue": "10.0.0.0/16"
+        "ParameterValue": "107.145.55.108/32"
     },
     {
         "ParameterKey": "AvailabilityZones",
@@ -22,5 +22,17 @@
     {
         "ParameterKey": "QSS3KeyPrefix",
         "ParameterValue": "quickstart-jfrog-artifactory/"
+    },
+    {
+        "ParameterKey": "ArtifactoryLicense1",
+        "ParameterValue": "override"
+    },
+    {
+        "ParameterKey": "ArtifactoryLicense2",
+        "ParameterValue": "override"
+    },
+    {
+        "ParameterKey": "ArtifactoryServerName",
+        "ParameterValue": "taskcat"
     }
 ]

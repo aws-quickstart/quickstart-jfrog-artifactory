@@ -1,7 +1,7 @@
 ---
 
 # Tasks for configuring NGINX for Artifactory
-- name: Install LB-tier Packages
+- name: Ensure latest nginx is installed
   package:
     name: nginx
     state: latest

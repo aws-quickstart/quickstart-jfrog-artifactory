@@ -27,6 +27,11 @@
     group: artifactory
     mode: '0755'
 
+- name: Ensure the Security folder exists
+  file:
+    path: /var/opt/jfrog/artifactory/etc/security/
+    state: directory
+
 - name: Master Key for the primary Artifactory
   template:
     src: master.key.j2
@@ -38,7 +43,7 @@
 - name: Configure the Certificate
   template:
     src: certificate.pem.j2
-    dest: /etc/pki/tls/certs/result.pem
+    dest: /etc/pki/tls/certs/cert.pem
     owner: artifactory
     group: artifactory
     mode: '0755'
@@ -46,10 +51,15 @@
 - name: Configure the Certificate Key
   template:
     src: certificate.key.j2
-    dest: /etc/pki/tls/certs/result.key
+    dest: /etc/pki/tls/private/cert.key
     owner: artifactory
     group: artifactory
     mode: '0755'
+
+- name: Create plugins Folder
+  file:
+    path: /var/opt/jfrog/artifactory/etc/plugins
+    state: directory
 
 - name: Configure groovy script for removing nodes
   copy:
@@ -67,6 +77,11 @@
     group: artifactory
     mode: '0755'
 
+- name: Create info Directory for installer-info
+  file:
+    path: /var/opt/jfrog/artifactory/etc/info
+    state: directory
+
 - name: Configure installer-info
   copy:
     src: installer-info.json
@@ -74,5 +89,3 @@
     owner: artifactory
     group: artifactory
     mode: '0755'
-
-    
