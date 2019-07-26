@@ -32,6 +32,10 @@
         "ParameterValue": "override"
     },
     {
+        "ParameterKey": "DatabaseInstance",
+        "ParameterValue": "db.m3.medium"
+    },
+    {
         "ParameterKey": "ArtifactoryServerName",
         "ParameterValue": "taskcat"
     }
