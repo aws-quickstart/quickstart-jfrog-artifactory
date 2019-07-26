@@ -529,62 +529,22 @@ Resources:
             buckets:
               - !Ref QSS3BucketName
         'AWS::CloudFormation::Init':
-<<<<<<< HEAD
           configSets:
             artifactory_install:
-              - config-artifactory-master
-              - run_service-artifactory
-            config-artifactory-master:
-              packages:
-                yum:
-                  wget: []
-                  curl: []
-                  nginx: []
-              files:
-                /etc/nginx/nginx.conf:
-                  source:
-                    - https://${QSS3BucketName}.${QSS3Region}.amazonaws.com/${QSS3KeyPrefix}scripts/nginx.conf
-                    - QSS3Region: !If 
-                        - GovCloudCondition
-                        - s3-us-gov-west-1
-                        - s3
-                  mode: '000755'
-                  owner: root
-                  group: root                          
-                  authentication: S3AccessCreds
-            run_service-artifactory:
-              commands:
-                start_nginx:
-                  command: echo "hello" > /tmp/hello.txt
-=======
-          config:
-            files:
-              /tmp/bastion_bootstrap.sh:
-                source: 
-                  - Fn::Sub: 'https://${QSS3BucketName}.s3.amazonaws.com/${QSS3KeyPrefix}scripts/bastion_bootstrap.sh'
-                    #- https://${QSS3BucketName}.${QSS3Region}.amazonaws.com/${QSS3KeyPrefix}scripts/bastion_bootstrap.sh
-                    #- QSS3Region: !If 
-                    #    - GovCloudCondition
-                    #    - s3-us-gov-west-1
-                    #    - s3
-                mode: '000550'
-                owner: root
-                group: root
-                authentication: S3AccessCreds
+              - "config-artifactory-master"
+              - "run_service-artifactory"
+          config-artifactory-master:
+            packages:
+              yum:
+                wget: []
+                curl: []
+                nginx: []
+          run_service-artifactory:
             commands:
-              b-bootstrap:
-                command: !Join 
-                  - ''
-                  - - ./tmp/bastion_bootstrap.sh
-                    #- ' --banner '
-                    #- !Ref BastionBanner
-                    #- ' --enable '
-                    #- !Ref EnableBanner
-                    #- ' --tcp-forwarding '
-                    #- !Ref EnableTCPForwarding
-                    #- ' --x11-forwarding '
-                    #- !Ref EnableX11Forwarding
->>>>>>> e1e168f3b1fe45d764aceb1d5eb9497f2289873f
+              start_nginx:
+                command: echo "hello" > /tmp/hello.txt
+              install_ansible:
+                command: pip install ansible
       Properties:
         AssociatePublicIpAddress: false
         #PlacementTenancy: !Ref BastionTenancy
@@ -634,6 +594,13 @@ Resources:
 
               S3URI=https://${QSS3BucketName}.${S3Region}.amazonaws.com/${QSS3KeyPrefix}
 
+              yum install -y git
+
+              echo $PATH
+
+              PATH=/opt/aws/bin:$PATH
+
+              echo $PATH
               echo \'[Cloning: Load QuickStart Common Utils]\'
 
               git clone
