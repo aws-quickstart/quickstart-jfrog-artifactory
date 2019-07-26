@@ -328,13 +328,12 @@ Parameters:
     Description: Type a name for your DB instance. The name must be unique cross all DB instances 
       owned by your AWS account in the current AWS Region. The DB instance identifier is case-insensitive, 
       but is stored as all lowercase (as in "mydbinstance")
-    ConstraintDescription: 1 to 60 alphanumeric characters or hyphens. 
-      First character must be a letter. Can't contain two consecutive hyphens. Can't end with a hyphen.
+    ConstraintDescription: 1 to 60 alphanumeric characters First character must be a letter.
     Type: String
     MinLength: '1'
     MaxLength: '60'
-    AllowedPattern: ^[a-zA-Z](?!.*--)([a-zA-Z-0-9])+[a-zA-Z0-9]$
-    Default: artdb-1
+    AllowedPattern: ^[a-zA-Z]([a-zA-Z0-9])+$
+    Default: artdb
   DatabaseEngine:
     Description: Database Engine you wish to run, currently locked to mysql
     AllowedValues:
