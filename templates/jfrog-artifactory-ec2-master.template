@@ -483,30 +483,32 @@ Resources:
     
   ArtifactoryS3Bucket:
     Type: AWS::S3::Bucket
-      Properties:
-        AccessControl: Private
+    Properties:
+      AccessControl: Private
 
   ArtifactoryS3IAMPolicy: 
-      Type": AWS::IAM::Policy
-      Properties: 
-        PolicyName: S3BucketPermissions
-        PolicyDocument: 
-          Version: 2012-10-17
-          Statement: 
-            - Sid: S3BucketPermissions
-              Effect: Allow
-              Action: 
-                - s3:*
-              Resource:
-                - Fn::Join:
-                  - "arn:aws:s3:::"
+    Type: AWS::IAM::Policy
+    Properties: 
+      PolicyName: S3BucketPermissions
+      PolicyDocument: 
+        Version: 2012-10-17
+        Statement: 
+          - Sid: S3BucketPermissions
+            Effect: Allow
+            Action: 
+              - s3:*
+            Resource:
+              - Fn::Join:
+                - ''
+                - - "arn:aws:s3:::"
                   - !Ref ArtifactoryS3Bucket
-                - Fn::Join:
-                  - "arn:aws:s3:::"
+              - Fn::Join:
+                - ''
+                - - "arn:aws:s3:::"
                   - !Ref ArtifactoryS3Bucket
                   - "/*"
-        Users:
-          - !Ref ArtifactoryS3IAMUser  
+      Users:
+        - !Ref ArtifactoryS3IAMUser  
   ArtifactoryELB:
     Type: AWS::ElasticLoadBalancing::LoadBalancer
     Properties:
