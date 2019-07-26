@@ -1,0 +1,17 @@
+---
+# defaults file for quickstart-jfrog-artifactory/scripts/roles/artifactory
+
+db_type: mysql
+db_driver: com.mysql.jdbc.Driver
+db_ipaddr: 127.0.0.1
+db_name: artifactory
+db_user: artuser
+db_password: badpassword
+
+s3_endpoint: needs_to_be_passed
+s3_access_key: needs_to_be_passed
+s3_access_secret_key: needs_to_be_passed
+s3_bucket: needs_to_be_passed
+
+art_id: art1
+art_primary: true

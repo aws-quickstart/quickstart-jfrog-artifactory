@@ -1,0 +1,7 @@
+---
+# handlers file for quickstart-jfrog-artifactory/scripts/roles/artifactory
+
+- name: restart nginx
+  service:
+    name: nginx
+    state: restarted
