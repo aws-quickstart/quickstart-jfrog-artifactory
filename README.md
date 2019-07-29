@@ -36,8 +36,10 @@ To install [taskcat](#https://aws-quickstart.github.io/install-taskcat.html)
     pip install awscli taskcat
 
 #### Docker
-
-@chris to fill out :)
+Use the following Curl|Bash script (Feel free to look inside first) to "install" taskcat via Docker. I then moved taskcat.docker to /usr/local/bin/taskcat
+    bash
+    curl -s https://raw.githubusercontent.com/aws-quickstart/taskcat/master/installer/docker-installer.sh | sh
+    mv taskcat.docker /usr/local/bin
 
 ### Testing
 
