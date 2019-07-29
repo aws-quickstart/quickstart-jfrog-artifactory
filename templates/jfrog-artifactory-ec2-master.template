@@ -527,7 +527,7 @@ Resources:
           InstanceProtocol: TCP
           Protocol: TCP
       HealthCheck:
-        Target: HTTP:80/artifactory/webapp/#/login
+        Target: HTTP:80/artifactory/webapp/
         HealthyThreshold: '3'
         UnhealthyThreshold: '3'
         Interval: '30'
