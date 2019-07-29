@@ -1,6 +1,6 @@
 # quickstart-jfrog-artifactory
 
-This is a Quick Start to get Enterprise Production ready Artifactory deployed into your AWS environment. 
+This is a Quick Start to get Enterprise Production ready Artifactory deployed into your AWS environment.
 
 ## Deployments
 
@@ -36,7 +36,9 @@ To install [taskcat](#https://aws-quickstart.github.io/install-taskcat.html)
     pip install awscli taskcat
 
 #### Docker
-Use the following Curl|Bash script (Feel free to look inside first) to "install" taskcat via Docker. I then moved taskcat.docker to /usr/local/bin/taskcat
+
+Use the following Curl|Bash script (Feel free to look inside first) to "install" taskcat via Docker. I then moved `taskcat.docker` to `/usr/local/bin/taskcat`
+
     bash
     curl -s https://raw.githubusercontent.com/aws-quickstart/taskcat/master/installer/docker-installer.sh | sh
     mv taskcat.docker /usr/local/bin
