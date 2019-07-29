@@ -227,7 +227,7 @@ Parameters:
     Description: Whether to enable TCPForwarding via the bootstraping of the Bastion vm
       or not.
     Type: String
-    Default: "false"
+    Default: "true"
     AllowedValues: [ "true", "false" ]
   BastionEnableX11Forwarding:
     Description: Whether to enable X11 via the bootstraping of the Bastion vm
@@ -262,12 +262,12 @@ Parameters:
     Description: Max number of secondary Artifactory servers
     Type: Number
     Default: 1
-  ExtraJavaOptions:
-    Description: Setting Java Memory Parameters for Artifactory. 
-      Learn about system requirements for Artifactory 
-      https://www.jfrog.com/confluence/display/RTF/System+Requirements#SystemRequirements-RecommendedHardware.
-    Type: String
-    Default: -server -Xms2g -Xmx14g -Xss256k -XX:+UseG1GC -XX:OnOutOfMemoryError=\\\\\\\"kill -9 %p\\\\\\\
+  #ExtraJavaOptions:
+  #  Description: Setting Java Memory Parameters for Artifactory. 
+  #    Learn about system requirements for Artifactory 
+  #    https://www.jfrog.com/confluence/display/RTF/System+Requirements#SystemRequirements-RecommendedHardware.
+  #  Type: String
+  #  Default: -server -Xms2g -Xmx14g -Xss256k -XX:+UseG1GC -XX:OnOutOfMemoryError=\\\\\\\"kill -9 %p\\\\\\\
   ArtifactoryVersion:
     Description: Version of Artifactory you wish to deploy into the Quick Start
     ConstraintDescription: A version that matches X.X.X per Artifactory releases
@@ -479,12 +479,10 @@ Resources:
     Type: AWS::IAM::AccessKey
     Properties: 
       UserName: !Ref ArtifactoryS3IAMUser 
-    
   ArtifactoryS3Bucket:
     Type: AWS::S3::Bucket
     Properties:
       AccessControl: Private
-
   ArtifactoryS3IAMPolicy: 
     Type: AWS::IAM::Policy
     Properties: 
@@ -668,6 +666,7 @@ Resources:
         Timeout: PT30M
   ArtifactoryMasterLaunchConfiguration:
       Type: 'AWS::AutoScaling::LaunchConfiguration'
+      DependsOn: ArtifactoryDB
       Metadata:
         'AWS::CloudFormation::Authentication':
           S3AccessCreds:
@@ -688,15 +687,40 @@ Resources:
                 curl: []
                 nginx: []
           run_service-artifactory:
-            commands:
-              start_nginx:
-                command: echo "hello" > /tmp/hello.txt
-              install_ansible:
-                command: pip install ansible
-              download_role:
-                command: !Sub 'wget -r https://${QSS3BucketName}.s3.amazonaws.com/${QSS3KeyPrefix}scripts/* .'
-              test_ansible_playbook:
-                command: !Sub 'echo ansible-playbook  site-artifactory.yml -e "artifactory_licenses=${ArtifactoryLicense1},${ArtifactoryLicense2} artifactory_server_name=${ArtifactoryServerName} art_primary=true certificate=${Certificate} certificate_key${CertificateKey} =master_key=${MasterKey}" > test_ansible.txt '
+            files:
+              /root/artifactory.yml:
+                content: !Sub |
+                  # Base install for taneleer
+                  - import_playbook: site-artifactory.yml
+                    vars:
+                      artifactory_licenses: ${ArtifactoryLicense1}
+                      artifactory_server_name: ${ArtifactoryServerName}
+                      cetificate_domain: ${CertificateDomain}
+                      s3_endpoint: s3.dualstack.${AWS::Region}.amazonaws.com
+                      s3_access_key: ${ArtifactoryIAMAcessKey}
+                      s3_access_secret_key: ${ArtifactoryIAMAcessKey.SecretAccessKey}
+                      s3_bucket: ${ArtifactoryS3Bucket}
+                      certificate_key: ${CertificateKey}
+                      certificate: ${Certificate}
+                      db_type: mysql
+                      db_ipaddr: ${ArtifactoryDB.Endpoint.Address}
+                      db_name: ${DatabaseName}
+                      db_user: ${DatabaseUser}
+                      db_password: ${DatabasePassword}
+                      art_id: art1
+                      art_primary: true 
+                      master_key: ${MasterKey}
+                      artifactory_version: ${ArtifactoryVersion}
+            #commands:
+              #start_nginx:
+              #  command: echo "hello" > /tmp/hello.txt
+              #install_ansible:
+              #  command: pip install ansible awscli
+              #download_role:
+              #  command: !Sub |
+              #    aws s3 sync s3://${QSS3BucketName}/${QSS3KeyPrefix}scripts/ .
+              #ansible_playbook:
+              #  command: /usr/local/bin/ansible-playbook artifactory.yml
       Properties:
         AssociatePublicIpAddress: false
         #PlacementTenancy: !Ref BastionTenancy
@@ -774,6 +798,11 @@ Resources:
               ArtifactoryMasterLaunchConfiguration --configsets artifactory_install
               --region ${AWS::Region} || cfn_fail
 
+              pip install ansible awscli
+
+              aws s3 sync s3://${QSS3BucketName}/${QSS3KeyPrefix}scripts/ ~/
+
+              /usr/local/bin/ansible-playbook ~/artifactory.yml
               # Signal cfn-init (final check)
 
               [ $(qs_status) == 0 ] && cfn_success || cfn_fail
