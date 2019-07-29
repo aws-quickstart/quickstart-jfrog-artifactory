@@ -5,7 +5,7 @@
     },
     {
         "ParameterKey": "RemoteAccessCIDR",
-        "ParameterValue": "107.145.55.108/32"
+        "ParameterValue": "override"
     },
     {
         "ParameterKey": "AvailabilityZones",
@@ -34,6 +34,10 @@
     {
         "ParameterKey": "DatabaseInstance",
         "ParameterValue": "db.m3.medium"
+    },
+    {
+        "ParameterKey": "ArtifactoryVersion",
+        "ParameterValue": "6.11.1"
     },
     {
         "ParameterKey": "ArtifactoryServerName",

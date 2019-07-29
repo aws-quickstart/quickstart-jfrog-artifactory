@@ -27,6 +27,11 @@ In order to deploy a test deployment:
 ### Pre-Reqs
 
 To install [taskcat](#https://aws-quickstart.github.io/install-taskcat.html)
+Download the submodules:
+
+    bash
+    git submodule init
+    git submodule update
 
 #### venv
 

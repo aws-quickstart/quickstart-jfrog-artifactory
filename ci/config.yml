@@ -24,3 +24,4 @@ tests:
     template_file: jfrog-artifactory-ec2-master.template
     regions:
       - us-west-2
+      
