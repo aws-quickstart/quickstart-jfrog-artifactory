@@ -587,6 +587,14 @@ Resources:
           FromPort: 443
           ToPort: 443
           CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 3306
+          ToPort: 3306
+          CidrIp: !Ref PrivateSubnet1CIDR
+        - IpProtocol: tcp
+          FromPort: 3306
+          ToPort: 3306
+          CidrIp: !Ref PrivateSubnet2CIDR          
   EC2InstancesSG:
     #Condition: EnableBastion
     DependsOn: BastionStack
@@ -690,7 +698,7 @@ Resources:
             files:
               /root/artifactory.yml:
                 content: !Sub |
-                  # Base install for taneleer
+                  # Base install for Artifactory
                   - import_playbook: site-artifactory.yml
                     vars:
                       artifactory_licenses: ${ArtifactoryLicense1}
@@ -711,6 +719,7 @@ Resources:
                       art_primary: true 
                       master_key: ${MasterKey}
                       artifactory_version: ${ArtifactoryVersion}
+                mode: "0400"
             #commands:
               #start_nginx:
               #  command: echo "hello" > /tmp/hello.txt
@@ -800,10 +809,14 @@ Resources:
 
               pip install ansible awscli
 
-              aws s3 sync s3://${QSS3BucketName}/${QSS3KeyPrefix}scripts/ ~/
+              mkdir ~/.artifactory_ansible
 
-              /usr/local/bin/ansible-playbook ~/artifactory.yml
+              aws s3 sync s3://${QSS3BucketName}/${QSS3KeyPrefix}scripts/ ~/.artifactory_ansible/
+
+              /usr/local/bin/ansible-playbook ~/.artifactory_ansible/artifactory.yml
               # Signal cfn-init (final check)
+
+              #rm -rf /root/artifactory.yml
 
               [ $(qs_status) == 0 ] && cfn_success || cfn_fail
             - S3Region: !If 

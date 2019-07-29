@@ -58,3 +58,6 @@ Then you need to be above the repository directory and execute: `taskcat -c thef
 ### Clean up
 
 To Delete the stack: `aws cloudformation delete-stack --stack-name test`
+
+To delete taskcat S3 buckets:
+`aws s3 ls | grep taskcat | cut -d ' ' -f 3 | xargs -I {} aws s3 rb s3://{} --force`
