@@ -13,6 +13,5 @@ s3_access_key: needs_to_be_passed
 s3_access_secret_key: needs_to_be_passed
 s3_bucket: needs_to_be_passed
 
-art_id: art1
 art_primary: true
 java_version: java-1.8.0
