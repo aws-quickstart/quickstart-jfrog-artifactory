@@ -13,6 +13,8 @@ Parameters:
     Type: String
   HostRole:
     Type: String
+  ImageId:
+    Type: String
   QSS3BucketName:
     Type: String
   QSS3KeyPrefix:
@@ -51,11 +53,13 @@ Parameters:
     Type: String
   ArtifactoryVersion:
     Type: String
+  KeyPairName:
+    Type: String
 Resources:
-  ArtifactoryMaster:
+  ArtifactoryScalingGroup:
     Type: 'AWS::AutoScaling::AutoScalingGroup'
     Properties:
-      LaunchConfigurationName: !Ref ArtifactoryMasterLaunchConfiguration
+      LaunchConfigurationName: !Ref ArtifactoryLaunchConfiguration
       VPCZoneIdentifier:
         - !Ref PublicSubnet1ID #!GetAtt VPCStack.Outputs.PrivateSubnet1AID #
         - !Ref PublicSubnet1ID #!GetAtt VPCStack.Outputs.PrivateSubnet2AID #
@@ -71,7 +75,7 @@ Resources:
       ResourceSignal:
         Count: 1
         Timeout: PT30M
-  ArtifactoryMasterLaunchConfiguration:
+  ArtifactoryLaunchConfiguration:
       Type: 'AWS::AutoScaling::LaunchConfiguration'
       Metadata:
         'AWS::CloudFormation::Authentication':
@@ -118,25 +122,12 @@ Resources:
                       master_key: ${MasterKey}
                       artifactory_version: ${ArtifactoryVersion}
                 mode: "0400"
-            #commands:
-              #start_nginx:
-              #  command: echo "hello" > /tmp/hello.txt
-              #install_ansible:
-              #  command: pip install ansible awscli
-              #download_role:
-              #  command: !Sub |
-              #    aws s3 sync s3://${QSS3BucketName}/${QSS3KeyPrefix}scripts/ .
-              #ansible_playbook:
-              #  command: /usr/local/bin/ansible-playbook artifactory.yml
       Properties:
         AssociatePublicIpAddress: false
         #PlacementTenancy: !Ref BastionTenancy
         KeyName: !Ref KeyPairName
         IamInstanceProfile: !Ref ArtifactoryHostProfile
-        ImageId: !FindInMap 
-          - AWSAMIRegionMap
-          - !Ref 'AWS::Region'
-          - !Ref AmiId
+        ImageId: !Ref ImageId
         SecurityGroups:
           - !Ref EC2InstancesSG
         InstanceType: !Ref InstanceType
@@ -202,7 +193,7 @@ Resources:
               qs_aws-cfn-bootstrap || qs_err
 
               cfn-init -v --stack ${AWS::StackName} --resource
-              ArtifactoryMasterLaunchConfiguration --configsets artifactory_install
+              ArtifactoryLaunchConfiguration --configsets artifactory_install
               --region ${AWS::Region} || cfn_fail
 
               pip install ansible awscli

@@ -586,15 +586,7 @@ Resources:
         - IpProtocol: tcp
           FromPort: 443
           ToPort: 443
-          CidrIp: 0.0.0.0/0
-        - IpProtocol: tcp
-          FromPort: 3306
-          ToPort: 3306
-          CidrIp: !Ref PrivateSubnet1CIDR
-        - IpProtocol: tcp
-          FromPort: 3306
-          ToPort: 3306
-          CidrIp: !Ref PrivateSubnet2CIDR          
+          CidrIp: 0.0.0.0/0         
   EC2InstancesSG:
     #Condition: EnableBastion
     DependsOn: BastionStack
@@ -631,6 +623,14 @@ Resources:
           FromPort: 443
           ToPort: 443
           CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 3306
+          ToPort: 3306
+          CidrIp: !Ref PrivateSubnet1CIDR
+        - IpProtocol: tcp
+          FromPort: 3306
+          ToPort: 3306
+          CidrIp: !Ref PrivateSubnet2CIDR           
   ArtifactoryHostRole:
     #Condition: CreateIAMRole
     Type: 'AWS::IAM::Role'
@@ -696,7 +696,7 @@ Resources:
                 nginx: []
           run_service-artifactory:
             files:
-              /root/artifactory.yml:
+              /root/.artifactory_ansible/artifactory.yml:
                 content: !Sub |
                   # Base install for Artifactory
                   - import_playbook: site-artifactory.yml
@@ -807,9 +807,7 @@ Resources:
               ArtifactoryMasterLaunchConfiguration --configsets artifactory_install
               --region ${AWS::Region} || cfn_fail
 
-              pip install ansible awscli
-
-              mkdir ~/.artifactory_ansible
+              pip install ansible awscli              
 
               aws s3 sync s3://${QSS3BucketName}/${QSS3KeyPrefix}scripts/ ~/.artifactory_ansible/
 
@@ -823,6 +821,44 @@ Resources:
               - GovCloudCondition
               - s3-us-gov-west-1
               - s3
+  ArtifactorySecondary:
+    Condition: EnableBastion
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub 'https://${QSS3BucketName}.s3.amazonaws.com/${QSS3KeyPrefix}templates/jfrog-artifactory-ec2-instance.template'
+      Parameters:
+        PublicSubnet1ID: !GetAtt VPCStack.Outputs.PrivateSubnet1AID
+        PublicSubnet2ID: !GetAtt VPCStack.Outputs.PrivateSubnet2AID
+        MinScalingNodes: 1
+        MaxScalingNodes: 1
+        DeploymentTag: ArtifactorySecondary
+        HostRole: !Ref ArtifactoryHostRole
+        QSS3BucketName: !Ref QSS3BucketName
+        QSS3KeyPrefix: !Ref QSS3KeyPrefix
+        ImageId: !FindInMap 
+          - AWSAMIRegionMap
+          - !Ref 'AWS::Region'
+          - !Ref AmiId
+        ArtifactoryLicense1: !Ref ArtifactoryLicense1
+        ArtifactoryServerName: !Ref ArtifactoryServerName
+        CertificateDomain: !Ref CertificateDomain
+        ArtifactoryIAMAcessKey: !Ref ArtifactoryIAMAcessKey
+        SecretAccessKey: !Ref ArtifactoryIAMAcessKey.SecretAccessKey
+        ArtifactoryS3Bucket: !Ref ArtifactoryS3Bucket 
+        CertificateKey: !Ref CertificateKey
+        Certificate: !Ref Certificate
+        DBType: mysql
+        ArtifactoryDBEndpointAddress: !Ref ArtifactoryDB.Endpoint.Address
+        DatabaseName: !Ref DatabaseName
+        DatabaseUser: !Ref DatabaseUser
+        DatabasePassword: !Ref DatabasePassword
+        art_id: secondary
+        art_primary: false
+        MasterKey: !Ref MasterKey
+        ArtifactoryVersion: !Ref ArtifactoryVersion
+        KeyPairName: !Ref KeyPairName
+
+
 Outputs:
   URL:
     Description: URL of the ELB to access Artifactory
