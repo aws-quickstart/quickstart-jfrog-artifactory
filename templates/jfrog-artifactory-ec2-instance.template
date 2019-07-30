@@ -1,0 +1,214 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "Deploys the EC2 Autoscaling, LaunchConfig and Instance for Artifactory"
+Parameters:
+  PublicSubnet1ID:
+    Type: String
+  PublicSubnet2ID:
+    Type: String
+  MinScalingNodes:
+    Type: Number
+  MaxScalingNodes:
+    Type: Number
+  DeploymentTag:
+    Type: String
+  HostRole:
+    Type: String
+  ImageId:
+    Type: String
+  QSS3BucketName:
+    Type: String
+  QSS3KeyPrefix:
+    Type: String
+  ArtifactoryLicense1:
+    Type: String
+  ArtifactoryServerName:
+    Type: String
+  CertificateDomain:
+    Type: String
+  ArtifactoryIAMAcessKey:
+    Type: String
+  SecretAccessKey:
+    Type: String
+  ArtifactoryS3Bucket:
+    Type: String
+  CertificateKey:
+    Type: String
+  Certificate:
+    Type: String
+  DBType:
+    Type: String
+  ArtifactoryDBEndpointAddress:
+    Type: String
+  DatabaseName:
+    Type: String
+  DatabaseUser:
+    Type: String
+  DatabasePassword:
+    Type: String
+  art_id:
+    Type: String
+  art_primary:
+    Type: String
+  MasterKey:
+    Type: String
+  ArtifactoryVersion:
+    Type: String
+  KeyPairName:
+    Type: String
+Resources:
+  ArtifactoryScalingGroup:
+    Type: 'AWS::AutoScaling::AutoScalingGroup'
+    Properties:
+      LaunchConfigurationName: !Ref ArtifactoryLaunchConfiguration
+      VPCZoneIdentifier:
+        - !Ref PublicSubnet1ID #!GetAtt VPCStack.Outputs.PrivateSubnet1AID #
+        - !Ref PublicSubnet1ID #!GetAtt VPCStack.Outputs.PrivateSubnet2AID #
+      MinSize: !Ref MinScalingNodes
+      MaxSize: !Ref MaxScalingNodes
+      Cooldown: '300'
+      DesiredCapacity: "1"
+      Tags:
+        - Key: Name
+          Value: !Ref DeploymentTag
+          PropagateAtLaunch: true
+    CreationPolicy:
+      ResourceSignal:
+        Count: 1
+        Timeout: PT30M
+  ArtifactoryLaunchConfiguration:
+      Type: 'AWS::AutoScaling::LaunchConfiguration'
+      Metadata:
+        'AWS::CloudFormation::Authentication':
+          S3AccessCreds:
+            type: S3
+            roleName: 
+              - !Ref HostRole #!Ref ArtifactoryHostRole
+            buckets:
+              - !Ref QSS3BucketName
+        'AWS::CloudFormation::Init':
+          configSets:
+            artifactory_install:
+              - "config-artifactory-master"
+              - "run_service-artifactory"
+          config-artifactory-master:
+            packages:
+              yum:
+                wget: []
+                curl: []
+                nginx: []
+          run_service-artifactory:
+            files:
+              /root/artifactory.yml:
+                content: !Sub |
+                  # Base install for Artifactory
+                  - import_playbook: site-artifactory.yml
+                    vars:
+                      artifactory_licenses: ${ArtifactoryLicense1}
+                      artifactory_server_name: ${ArtifactoryServerName}
+                      cetificate_domain: ${CertificateDomain}
+                      s3_endpoint: s3.${AWS::Region}.amazonaws.com
+                      s3_access_key: ${ArtifactoryIAMAcessKey}
+                      s3_access_secret_key: ${ArtifactoryIAMAcessKey.SecretAccessKey}
+                      s3_bucket: ${ArtifactoryS3Bucket}
+                      certificate_key: ${CertificateKey}
+                      certificate: ${Certificate}
+                      db_type: mysql
+                      db_ipaddr: ${ArtifactoryDB.Endpoint.Address}
+                      db_name: ${DatabaseName}
+                      db_user: ${DatabaseUser}
+                      db_password: ${DatabasePassword}
+                      art_id: art1
+                      art_primary: true 
+                      master_key: ${MasterKey}
+                      artifactory_version: ${ArtifactoryVersion}
+                mode: "0400"
+      Properties:
+        AssociatePublicIpAddress: false
+        #PlacementTenancy: !Ref BastionTenancy
+        KeyName: !Ref KeyPairName
+        IamInstanceProfile: !Ref ArtifactoryHostProfile
+        ImageId: !Ref ImageId
+        SecurityGroups:
+          - !Ref EC2InstancesSG
+        InstanceType: !Ref InstanceType
+        BlockDeviceMappings:
+          - DeviceName: /dev/xvda
+            Ebs:
+              VolumeSize: !Ref VolumeSize
+              VolumeType: gp2
+              DeleteOnTermination: true
+        UserData: !Base64 
+          'Fn::Sub':
+            - >
+              #!/bin/bash -x
+
+              #CFN Functions
+
+              function cfn_fail
+
+              {
+
+              cfn-signal -e 1 --stack ${AWS::StackName} --region ${AWS::Region}
+              --resource ArtifactoryMaster
+
+              exit 1
+
+              }
+
+              function cfn_success
+
+              {
+
+              cfn-signal -e 0 --stack ${AWS::StackName} --region ${AWS::Region}
+              --resource ArtifactoryMaster
+
+              exit 0
+
+              }
+
+              S3URI=https://${QSS3BucketName}.${S3Region}.amazonaws.com/${QSS3KeyPrefix}
+
+              yum install -y git
+
+              echo $PATH
+
+              PATH=/opt/aws/bin:$PATH
+
+              echo $PATH
+              echo \'[Cloning: Load QuickStart Common Utils]\'
+
+              git clone
+              https://github.com/aws-quickstart/quickstart-linux-utilities.git
+
+              source /quickstart-linux-utilities/quickstart-cfn-tools.source
+
+              echo \'[Loaded: Load QuickStart Common Utils]\'
+
+              echo \'[Update Operating System]\'
+
+              qs_update-os || qs_err
+
+              qs_bootstrap_pip || qs_err
+
+              qs_aws-cfn-bootstrap || qs_err
+
+              cfn-init -v --stack ${AWS::StackName} --resource
+              ArtifactoryLaunchConfiguration --configsets artifactory_install
+              --region ${AWS::Region} || cfn_fail
+
+              pip install ansible awscli
+
+              mkdir ~/.artifactory_ansible
+
+              aws s3 sync s3://${QSS3BucketName}/${QSS3KeyPrefix}scripts/ ~/.artifactory_ansible/
+
+              /usr/local/bin/ansible-playbook ~/.artifactory_ansible/artifactory.yml
+              # Signal cfn-init (final check)
+
+              #rm -rf /root/artifactory.yml
+
+              [ $(qs_status) == 0 ] && cfn_success || cfn_fail
+            - S3Region: !If 
+              - GovCloudCondition
+              - s3-us-gov-west-1
+              - s3

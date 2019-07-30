@@ -1,0 +1,121 @@
+---
+
+- name: Update Java
+  package:
+   name: "{{ java_version }}"
+   state: present
+
+- name: Configure Java
+  alternatives:
+    name: java
+    path: /usr/lib/jvm/jre-1.8.0-openjdk.x86_64/bin/java 
+
+- name: Download mysql Driver
+  get_url:
+    url: https://bintray.com/artifact/download/bintray/jcenter/mysql/mysql-connector-java/5.1.38/mysql-connector-java-5.1.38.jar
+    dest: /opt/jfrog/artifactory/tomcat/lib/mysql-connector-java-5.1.38.jar
+    owner: artifactory
+    group: artifactory
+
+
+- name: Configure Ping
+  lineinfile:
+    path: /var/opt/jfrog/artifactory/etc/artifactory.system.properties
+    line: artifactory.ping.allowUnauthenticated=true
+    create: yes
+    
+# The following could be a template loop, but then that is often harder to manage
+# Especially those newer to ansible and setting the src/dest as key value pairs in an array.
+# Could look at a simple refactor to reduce code though..
+- name: Template of the db.properties as requires for Artifactory
+  template:
+    src: db.properties.j2
+    dest: /var/opt/jfrog/artifactory/etc/db.properties
+    owner: artifactory
+    group: artifactory
+    mode: '0755'
+
+- name: Template of the binarystore as requires for Artifactory
+  template:
+    src: binarystore.xml.j2
+    dest: /var/opt/jfrog/artifactory/etc/binarystore.xml
+    owner: artifactory
+    group: artifactory
+    mode: '0755'
+
+- name: Template of the ha-node.properties as requires for Artifactory
+  template:
+    src: ha-node.properties.j2
+    dest: /var/opt/jfrog/artifactory/etc/ha-node.properties
+    owner: artifactory
+    group: artifactory
+    mode: '0755'
+
+- name: Ensure the Security folder exists
+  file:
+    path: /var/opt/jfrog/artifactory/etc/security/
+    state: directory
+    owner: artifactory
+    group: artifactory
+
+- name: Master Key for the primary Artifactory
+  template:
+    src: master.key.j2
+    dest: /var/opt/jfrog/artifactory/etc/security/master.key
+    owner: artifactory
+    group: artifactory
+    mode: '0755'
+    
+- name: Configure the Certificate
+  template:
+    src: certificate.pem.j2
+    dest: /etc/pki/tls/certs/cert.pem
+    owner: artifactory
+    group: artifactory
+    mode: '0755'
+
+- name: Configure the Certificate Key
+  template:
+    src: certificate.key.j2
+    dest: /etc/pki/tls/private/cert.key
+    owner: artifactory
+    group: artifactory
+    mode: '0755'
+
+- name: Create plugins Folder
+  file:
+    path: /var/opt/jfrog/artifactory/etc/plugins
+    state: directory
+    owner: artifactory
+    group: artifactory
+
+- name: Configure groovy script for removing nodes
+  copy:
+    src: inactiveServerCleaner.groovy
+    dest: /var/opt/jfrog/artifactory/etc/plugins/inactiveServerCleaner.groovy
+    owner: artifactory
+    group: artifactory
+    mode: '0755'
+
+- name: Configure the License Keys
+  template:
+    src: artifactory.cluster.license.j2
+    dest: /var/opt/jfrog/artifactory/etc/artifactory.cluster.license
+    owner: artifactory
+    group: artifactory
+    mode: '0755'
+
+- name: Create info Directory for installer-info
+  file:
+    path: /var/opt/jfrog/artifactory/etc/info
+    state: directory
+    owner: artifactory
+    group: artifactory
+
+- name: Configure installer-info
+  copy:
+    src: installer-info.json
+    dest: /var/opt/jfrog/artifactory/etc/info/installer-info.json
+    owner: artifactory
+    group: artifactory
+    mode: '0755'

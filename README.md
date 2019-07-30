@@ -1,6 +1,6 @@
 # quickstart-jfrog-artifactory
 
-This is a Quick Start to get Enterprise Production ready Artifactory deployed into your AWS environment. 
+This is a Quick Start to get Enterprise Production ready Artifactory deployed into your AWS environment.
 
 ## Deployments
 
@@ -11,7 +11,7 @@ The goal of this project is to have several deployment options depending on a cu
     - New VPC deploying EKS, with Artifactory deployed onto the K8s cluster
     - Existing VPC deploying EKS, with Artifactory deployed onto the K8s cluster
 
-## Development
+## Deployment from Command line
 
 In order to deploy a test deployment:
 
@@ -20,4 +20,53 @@ In order to deploy a test deployment:
 3. create a hidden folder: .ignore/
 4. Inside the .ignore/ create a `params` file that is plain Text ParameterKey=DatabasePassword,ParameterValue=Password ParameterKey=KeyPairName,ParameterValue=My-SSH,ParameterKey=AvailabilityZones,ParameterValue="us-west-2a,us-west-2b"
 5. Configure your `~/.aws/credentials` for use with the awscli
-6. Execute the cloudformation template from inside the repo: `aws cloudformation create-stack --stack-name test --template-body file://$(pwd)/templates/jfrog-artifactory-ec2-new-vpc.template --parameters $(cat .ignore/params) --capabilities CAPABILITY_IAM`
+6. Execute the cloudformation template from inside the repo: `aws cloudformation create-stack --stack-name test --template-body file://$(pwd)/templates/jfrog-artifactory-ec2-master.template --parameters $(cat .ignore/params) --capabilities CAPABILITY_NAMED_IAM`
+
+## Testing with TaskCat
+
+### Pre-Reqs
+
+To install [taskcat](#https://aws-quickstart.github.io/install-taskcat.html)
+Download the submodules:
+
+    bash
+    git submodule init
+    git submodule update
+
+#### venv
+
+    bash
+    python3 -m venv ~/theflashvenv
+    source ~/theflashvenv/bin/activate
+    pip install awscli taskcat
+
+#### Docker
+
+Use the following Curl|Bash script (Feel free to look inside first) to "install" taskcat via Docker. I then moved `taskcat.docker` to `/usr/local/bin/taskcat`
+
+    bash
+    curl -s https://raw.githubusercontent.com/aws-quickstart/taskcat/master/installer/docker-installer.sh | sh
+    mv taskcat.docker /usr/local/bin
+
+### Testing
+
+In order to test from taskcat you need an override file in your home .aws directory: `~/.aws/taskcat_global_override.json`
+
+    bash
+    [  
+        {
+            "ParameterKey": "KeyPairName",
+            "ParameterValue": "<REPLACE_ME>"
+        }
+    ]
+
+Please also verify the `ci/config.yml` is updated with the region you wish to deploy to. The rest of the parameters should be answered in the `ci/<test>.json`
+
+Then you need to be above the repository directory and execute: `taskcat -c theflash/ci/config.yml`.
+
+### Clean up
+
+To Delete the stack: `aws cloudformation delete-stack --stack-name test`
+
+To delete taskcat S3 buckets:
+`aws s3 ls | grep taskcat | cut -d ' ' -f 3 | xargs -I {} aws s3 rb s3://{} --force`

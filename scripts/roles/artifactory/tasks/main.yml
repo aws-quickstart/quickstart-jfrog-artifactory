@@ -1,0 +1,9 @@
+---
+# tasks file for quickstart-jfrog-artifactory/scripts/roles/artifactory
+
+
+- include: install.yml
+- include: configure.yml
+- include: nginx-setup.yml
+
+

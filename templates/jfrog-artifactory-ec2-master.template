@@ -13,14 +13,22 @@ Metadata:
           - PublicSubnet1CIDR
           - PublicSubnet2CIDR
       - Label:
+          default: Bastion Configuration
+        Parameters:
+          - ProvisionBastionHost
+          - BastionInstanceType
+          - BastionRootVolumeSize
+          - BastionEnableTCPForwarding
+          - BastionEnableX11Forwarding
+          - BastionOS
+      - Label:
           default: Amazon EC2 Configuration
         Parameters:
           - KeyPairName
           - AmiId
           - VolumeSize
           - InstanceType
-          - NumberOfSecondary
-          - ExtraJavaOptions        
+          - NumberOfSecondary     
       - Label:
           default: JFrog Artifactory Configuration
         Parameters:
@@ -39,6 +47,8 @@ Metadata:
           default: Amazon RDS Configuration
         Parameters:
           - DatabaseName
+          - DatabaseEngine
+          - DatabaseVersion
           - DatabaseUser
           - DatabasePassword
           - DatabaseInstance
@@ -49,7 +59,7 @@ Metadata:
         Parameters:
           - QSS3BucketName
           - QSS3KeyPrefix
-          - OutputBucketName
+          #- OutputBucketName
     ParameterLabels:
       AvailabilityZones:
         default: Availability Zones
@@ -67,6 +77,18 @@ Metadata:
         default: Public Subnet 2 CIDR
       VPCCIDR:
         default: VPC CIDR
+      ProvisionBastionHost:
+        default: Provision Bastion Host
+      BastionInstanceType:
+        default: Bastion Instance Type
+      BastionRootVolumeSize:
+        default: Bastion Root Volume Size
+      BastionEnableTCPForwarding:
+        default: Bastion Enable TCP Forwarding
+      BastionEnableX11Forwarding:
+        default: Bastion Enable X11 Forwarding
+      BastionOS:
+        default: Bastion OS
       VolumeSize:
         default: Volume Size
       InstanceType:
@@ -99,6 +121,10 @@ Metadata:
         default: Master Server Key
       DatabaseName:
         default: Database Name
+      DatabaseEngine:
+        default: Database Engine
+      DatabaseVersion:
+        default: Database Version
       DatabaseUser:
         default: Database User
       DatabasePassword:
@@ -113,20 +139,20 @@ Metadata:
         default: Quick Start S3 Bucket Name
       QSS3KeyPrefix:
         default: Quick Start S3 Key Prefix
-      OutputBucketName:
-        default: Output S3 Bucket Name
+      #OutputBucketName:
+      #  default: Output S3 Bucket Name
 
 Parameters:
   AmiId:
     Description: Ami being utilized to install the infrastructure. 
     Type: String
-    Default: ""
+    Default: AMZNLINUXHVM
   AvailabilityZones:
     Description: List of Availability Zones to use for the subnets in the VPC. Two
       Availability Zones are used for this deployment, and the logical order of your
       selections is preserved.
     Type: List<AWS::EC2::AvailabilityZone::Name>
-    Default: us-east-1a, us-east-1b
+    Default: us-west-2a, us-west-1b
   KeyPairName:
     Description: The name of an existing public/private key pair, which allows you
       to securely connect to your instance after it launches
@@ -172,7 +198,7 @@ Parameters:
     AllowedPattern: ^[0-9a-zA-Z-/]*$
     ConstraintDescription: Quick Start key prefix can include numbers, lowercase letters,
       uppercase letters, hyphens (-), and forward slash (/).
-    Default: quickstart-artifactory-ha/
+    Default: quickstart-jfrog-artifactory/
     Description: S3 key prefix for the Quick Start assets. Quick Start key prefix
       can include numbers, lowercase letters, uppercase letters, hyphens (-), and
       forward slash (/).
@@ -186,52 +212,39 @@ Parameters:
   ProvisionBastionHost:
     Type: String
     AllowedValues: [ "Enabled", "Disabled" ]
+    Description: Whether to boot a Bastion host or not. Due to the Artifactory nodes being
+      created in private subnets, this is highly recommended.
     Default: "Enabled"
-  BastionBootstrapScript:
-    Default: ""
-    Type: String
   BastionInstanceType:
+    Description: Size of the Bastion instance.
     Default: "t2.micro"
     Type: String
   BastionRootVolumeSize:
+    Description: Size of the root volume on the Bastion instance.
     Type: Number
     Default: 10
-  BastionIAMRoleName:
-    Type: String
-    Default: ""
   BastionEnableTCPForwarding:
+    Description: Whether to enable TCPForwarding via the bootstraping of the Bastion vm
+      or not.
     Type: String
-    Default: "false"
+    Default: "true"
     AllowedValues: [ "true", "false" ]
   BastionEnableX11Forwarding:
+    Description: Whether to enable X11 via the bootstraping of the Bastion vm
+      or not.
     Type: String
     Default: "false"
     AllowedValues: [ "true", "false" ]
-  BastionVariables:
-    Type: String
-    Default: ""
   BastionOS:
+    Description: Which OS the bastion host to be.
     Type: String
     AllowedValues: [ "Amazon-Linux-HVM", "CentOS-7-HVM", "Ubuntu-Server-14.04-LTS-HVM", "Ubuntu-Server-16.04-LTS-HVM", "SUSE-SLES-15-HVM" ]
     Default: "Amazon-Linux-HVM"
   RemoteAccessCIDR:
+    Description: Remote CIDR range for allowing SSH into the Bastion instance.
     AllowedPattern: ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/([0-9]|[1-2][0-9]|3[0-2]))$
     Type: String
-    Default: 0.0.0.0/0    
-#  VPCID:
-#    Type: "AWS::EC2::VPC::Id"
-#  PublicSubnet1ID:
-#    Type: "AWS::EC2::Subnet::Id"
-#  PublicSubnet2ID:
-#    Type: "AWS::EC2::Subnet::Id"
-#  PublicSubnet3ID:
-#    Type: "AWS::EC2::Subnet::Id"
-#  PrivateSubnet1ID:
-#    Type: "AWS::EC2::Subnet::Id"
-#  PrivateSubnet2ID:
-#    Type: "AWS::EC2::Subnet::Id"
-#  PrivateSubnet3ID:
-#    Type: "AWS::EC2::Subnet::Id"    
+    Default: 0.0.0.0/0 
   VolumeSize:
     Description: Size in GB of the available storage (will create 3x ebs volumes of this size)
     Type: Number
@@ -249,12 +262,12 @@ Parameters:
     Description: Max number of secondary Artifactory servers
     Type: Number
     Default: 1
-  ExtraJavaOptions:
-    Description: Setting Java Memory Parameters for Artifactory. 
-      Learn about system requirements for Artifactory 
-      https://www.jfrog.com/confluence/display/RTF/System+Requirements#SystemRequirements-RecommendedHardware.
-    Type: String
-    Default: -server -Xms2g -Xmx14g -Xss256k -XX:+UseG1GC -XX:OnOutOfMemoryError=\\\\\\\"kill -9 %p\\\\\\\
+  #ExtraJavaOptions:
+  #  Description: Setting Java Memory Parameters for Artifactory. 
+  #    Learn about system requirements for Artifactory 
+  #    https://www.jfrog.com/confluence/display/RTF/System+Requirements#SystemRequirements-RecommendedHardware.
+  #  Type: String
+  #  Default: -server -Xms2g -Xmx14g -Xss256k -XX:+UseG1GC -XX:OnOutOfMemoryError=\\\\\\\"kill -9 %p\\\\\\\
   ArtifactoryVersion:
     Description: Version of Artifactory you wish to deploy into the Quick Start
     ConstraintDescription: A version that matches X.X.X per Artifactory releases
@@ -315,13 +328,26 @@ Parameters:
     Description: Type a name for your DB instance. The name must be unique cross all DB instances 
       owned by your AWS account in the current AWS Region. The DB instance identifier is case-insensitive, 
       but is stored as all lowercase (as in "mydbinstance")
-    ConstraintDescription: 1 to 60 alphanumeric characters or hyphens. 
-      First character must be a letter. Can't contain two consecutive hyphens. Can't end with a hyphen.
+    ConstraintDescription: 1 to 60 alphanumeric characters First character must be a letter.
     Type: String
     MinLength: '1'
     MaxLength: '60'
-    AllowedPattern: ^[a-zA-Z](?!.*--)([a-zA-Z-0-9])+[a-zA-Z0-9]$
-    Default: artdb-1
+    AllowedPattern: ^[a-zA-Z]([a-zA-Z0-9])+$
+    Default: artdb
+  DatabaseEngine:
+    Description: Database Engine you wish to run, currently locked to mysql
+    AllowedValues:
+    - MySQL
+    Type: String
+    Default: MySQL
+  DatabaseVersion:
+    Description: Version of the Database Engine you wish to run, currently locked to mysql
+    AllowedValues:
+    - 5.5
+    - 5.6
+    - 5.7
+    Type: String
+    Default: 5.7
   DatabaseUser:
     Description: Login ID for the master user of your DB instance.
     ConstraintDescription: 1 to 16 alphanumeric characters. First character must be a letter
@@ -344,14 +370,23 @@ Parameters:
     Description: Size of the database to be deployed as part of the Quick Start
     ConstraintDescription: Must be a valid database Instance Type
     AllowedValues:
-    - db.t2.small
-    - db.t2.medium
-    - db.t3.small
-    - db.t3.medium
-    - db.t3.large
-    - db.t3.xlarge
+    - db.m3.medium
+    - db.m3.large
+    - db.m3.xlarge
+    - db.m3.2xlarge
+    - db.m4.large
+    - db.m4.xlarge
+    - db.m4.2xlarge
+    - db.m4.10xlarge
+    - db.m4.16xlarge
+    - db.m5.large
+    - db.m5.xlarge
+    - db.m5.2xlarge
+    - db.m5.4xlarge
+    - db.m5.12xlarge
+    - db.m5.24xlarge
     Type: String
-    Default: db.t2.small
+    Default: db.m4.large
   DatabaseAllocatedStorage:
     Description: Size in GB of the available storage for the Database Instance
     Type: Number
@@ -365,19 +400,31 @@ Parameters:
     - True
     - False
     Type: String
-    Default: False
+    Default: False 
 Mappings:
   AWSAMIRegionMap:
     AMI:
-      HVMG2: amzn2-ami-hvm-2.0.????????-x86_64-gp2
-      #us-east-1:
-      #  HVMG2: ami-0b898040803850657
+      AMZNLINUXHVM: amzn-ami-hvm-2018.03.0.20181129-x86_64-gp2
+    us-east-1:
+      AMZNLINUXHVM: ami-0080e4c5bc078760e
+    us-east-2:
+      AMZNLINUXHVM: ami-0cd3dfa4e37921605
+    us-west-1:
+      AMZNLINUXHVM: ami-0ec6517f6edbf8044
+    us-west-2:
+      AMZNLINUXHVM: ami-01e24be29428c15b2
+  # Stubbed for future if Debian is wanted.
+  #LinuxAMINameMap:
+  #  Amazon-Linux-HVM:
+  #    Code: AMZNLINUXHVM
 
 Conditions:
-  DefaultBastionBootstrap: !Equals [!Ref 'BastionBootstrapScript', '']
   EnableBastion: !Equals [!Ref 'ProvisionBastionHost', 'Enabled']
-  CustomBastionRole: !Not [!Equals [!Ref 'BastionIAMRoleName', '']]
-  AdditionalVars: !Not [!Equals [!Ref 'BastionVariables', '']]
+  #CustomBastionRole: !Not [!Equals [!Ref 'BastionIAMRoleName', '']]
+  #AdditionalVars: !Not [!Equals [!Ref 'BastionVariables', '']]
+  GovCloudCondition: !Equals 
+    - !Ref 'AWS::Region'
+    - us-gov-west-1
 Resources:
   VPCStack:
     Type: AWS::CloudFormation::Stack
@@ -417,18 +464,400 @@ Resources:
         RemoteAccessCIDR: !Ref RemoteAccessCIDR
         BastionInstanceType: !Ref BastionInstanceType
         RootVolumeSize: !Ref BastionRootVolumeSize
-        AlternativeInitializationScript: !If
-          - DefaultBastionBootstrap
-          - !Sub 'https://${QSS3BucketName}.s3.amazonaws.com/${QSS3KeyPrefix}scripts/bastion_bootstrap.sh'
-          - !Ref BastionBootstrapScript
-        #AlternativeIAMRole: !If [CustomBastionRole, !Ref BastionIAMRoleName, !GetAtt IamStack.Outputs.BastionRole]
         BastionAMIOS: !Ref BastionOS
         EnableTCPForwarding: !Ref BastionEnableTCPForwarding
         EnableX11Forwarding: !Ref BastionEnableX11Forwarding
-        EnvironmentVariables: !Sub
-        - >
-          ARTIFACTORY_TEST=${MasterKey}
-        - Joiner: !If [AdditionalVars, ",", ""]
+        #EnvironmentVariables: !Sub
+        #- >
+        #  ARTIFACTORY_TEST=${MasterKey}
+        #- Joiner: !If [AdditionalVars, ",", ""]
+  ArtifactoryS3IAMUser:
+    Type: AWS::IAM::User
+    Properties:
+      UserName: ArtifactoryS3
+  ArtifactoryIAMAcessKey: 
+    Type: AWS::IAM::AccessKey
+    Properties: 
+      UserName: !Ref ArtifactoryS3IAMUser 
+  ArtifactoryS3Bucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      AccessControl: Private
+  ArtifactoryS3IAMPolicy: 
+    Type: AWS::IAM::Policy
+    Properties: 
+      PolicyName: S3BucketPermissions
+      PolicyDocument: 
+        Version: 2012-10-17
+        Statement: 
+          - Sid: S3BucketPermissions
+            Effect: Allow
+            Action: 
+              - s3:*
+            Resource:
+              - Fn::Join:
+                - ''
+                - - "arn:aws:s3:::"
+                  - !Ref ArtifactoryS3Bucket
+              - Fn::Join:
+                - ''
+                - - "arn:aws:s3:::"
+                  - !Ref ArtifactoryS3Bucket
+                  - "/*"
+      Users:
+        - !Ref ArtifactoryS3IAMUser  
+  ArtifactoryELB:
+    Type: AWS::ElasticLoadBalancing::LoadBalancer
+    Properties:
+      SecurityGroups: 
+        - !Ref EC2InstancesSG
+      Subnets: 
+        - !GetAtt VPCStack.Outputs.PublicSubnet1ID
+        - !GetAtt VPCStack.Outputs.PublicSubnet2ID
+      AppCookieStickinessPolicy:
+        - PolicyName: HTTPSCookieStickinessPolicy
+          CookieName: connect.sid
+      Listeners:
+        - LoadBalancerPort: '80'
+          InstancePort: '80'
+          InstanceProtocol: HTTP
+          Protocol: HTTP
+        - LoadBalancerPort: '443'
+          InstancePort: '443'
+          InstanceProtocol: TCP
+          Protocol: TCP
+      HealthCheck:
+        Target: HTTP:80/artifactory/webapp/
+        HealthyThreshold: '3'
+        UnhealthyThreshold: '3'
+        Interval: '30'
+        Timeout: '15'
+  ArtifactoryDBSubnetGroup:
+    Type: AWS::RDS::DBSubnetGroup
+    Properties:
+      DBSubnetGroupDescription: Private Subnets available to the RDS Instance(s)
+      SubnetIds: 
+        - !GetAtt VPCStack.Outputs.PrivateSubnet1AID
+        - !GetAtt VPCStack.Outputs.PrivateSubnet2AID
+  ArtifactoryDB:
+    Type: AWS::RDS::DBInstance
+    Properties: 
+      AllocatedStorage: !Ref DatabaseAllocatedStorage
+      MultiAZ: !Ref MultiAZDatabase
+      Engine: !Ref DatabaseEngine
+      EngineVersion: !Ref DatabaseVersion
+      MasterUsername: !Ref DatabaseUser
+      MasterUserPassword: !Ref DatabasePassword
+      DBInstanceClass: !Ref DatabaseInstance
+      DBName: !Ref DatabaseName
+      DBSubnetGroupName: !Ref  ArtifactoryDBSubnetGroup
+      VPCSecurityGroups: 
+        - !Ref ArtifactoryDBSG
+  ArtifactoryDBSG:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      Tags:
+        - Key: Name
+          Value: ec2-artifactory-rds-sg
+      GroupDescription: SG for RDS Instance to allow communication from the Bastion and Artifactory servers.
+      VpcId: !GetAtt VPCStack.Outputs.VPCID #!Ref VPCID
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: !Ref VPCCIDR
+        - IpProtocol: tcp
+          FromPort: 3306
+          ToPort: 3306
+          CidrIp: !Ref PrivateSubnet1CIDR
+        - IpProtocol: tcp
+          FromPort: 3306
+          ToPort: 3306
+          CidrIp: !Ref PrivateSubnet2CIDR
+      SecurityGroupEgress:
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 443
+          ToPort: 443
+          CidrIp: 0.0.0.0/0         
+  EC2InstancesSG:
+    #Condition: EnableBastion
+    DependsOn: BastionStack
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      Tags:
+        - Key: Name
+          Value: ec2-artifactory-instances-sg
+      GroupDescription: SG for EC2 instances (also permits SSH access from the bastion host)
+      VpcId: !GetAtt VPCStack.Outputs.VPCID #!Ref VPCID
+      SecurityGroupIngress:   
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: !Ref VPCCIDR
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 443
+          ToPort: 443
+          CidrIp: 0.0.0.0/0                                   
+      SecurityGroupEgress:
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 443
+          ToPort: 443
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 3306
+          ToPort: 3306
+          CidrIp: !Ref PrivateSubnet1CIDR
+        - IpProtocol: tcp
+          FromPort: 3306
+          ToPort: 3306
+          CidrIp: !Ref PrivateSubnet2CIDR           
+  ArtifactoryHostRole:
+    #Condition: CreateIAMRole
+    Type: 'AWS::IAM::Role'
+    Properties:
+      Path: /
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action:
+              - 'sts:AssumeRole'
+            Principal:
+              Service:
+                - ec2.amazonaws.com
+            Effect: Allow
+        Version: 2012-10-17
+      ManagedPolicyArns:
+        - 'arn:aws:iam::aws:policy/service-role/AmazonEC2RoleforSSM'
+  ArtifactoryHostProfile:
+      Type: 'AWS::IAM::InstanceProfile'
+      Properties:
+        Roles:
+          - !Ref ArtifactoryHostRole
+        Path: /            
+  ArtifactoryMaster:
+    Type: 'AWS::AutoScaling::AutoScalingGroup'
+    Properties:
+      LaunchConfigurationName: !Ref ArtifactoryMasterLaunchConfiguration
+      VPCZoneIdentifier:
+        - !GetAtt VPCStack.Outputs.PrivateSubnet1AID #!Ref PublicSubnet1ID
+        - !GetAtt VPCStack.Outputs.PrivateSubnet2AID #!Ref PublicSubnet2ID
+      MinSize: "1"
+      MaxSize: "1"
+      Cooldown: '300'
+      DesiredCapacity: "1"
+      Tags:
+        - Key: Name
+          Value: ArtifactoryMaster
+          PropagateAtLaunch: true
+    CreationPolicy:
+      ResourceSignal:
+        Count: 1
+        Timeout: PT30M
+  ArtifactoryMasterLaunchConfiguration:
+      Type: 'AWS::AutoScaling::LaunchConfiguration'
+      DependsOn: ArtifactoryDB
+      Metadata:
+        'AWS::CloudFormation::Authentication':
+          S3AccessCreds:
+            type: S3
+            roleName: 
+              - !Ref ArtifactoryHostRole
+            buckets:
+              - !Ref QSS3BucketName
+        'AWS::CloudFormation::Init':
+          configSets:
+            artifactory_install:
+              - "config-artifactory-master"
+              - "run_service-artifactory"
+          config-artifactory-master:
+            packages:
+              yum:
+                wget: []
+                curl: []
+                nginx: []
+          run_service-artifactory:
+            files:
+              /root/.artifactory_ansible/artifactory.yml:
+                content: !Sub |
+                  # Base install for Artifactory
+                  - import_playbook: site-artifactory.yml
+                    vars:
+                      artifactory_licenses: ${ArtifactoryLicense1}
+                      artifactory_server_name: ${ArtifactoryServerName}
+                      cetificate_domain: ${CertificateDomain}
+                      s3_endpoint: s3.dualstack.${AWS::Region}.amazonaws.com
+                      s3_access_key: ${ArtifactoryIAMAcessKey}
+                      s3_access_secret_key: ${ArtifactoryIAMAcessKey.SecretAccessKey}
+                      s3_bucket: ${ArtifactoryS3Bucket}
+                      certificate_key: ${CertificateKey}
+                      certificate: ${Certificate}
+                      db_type: mysql
+                      db_ipaddr: ${ArtifactoryDB.Endpoint.Address}
+                      db_name: ${DatabaseName}
+                      db_user: ${DatabaseUser}
+                      db_password: ${DatabasePassword}
+                      art_id: art1
+                      art_primary: true 
+                      master_key: ${MasterKey}
+                      artifactory_version: ${ArtifactoryVersion}
+                mode: "0400"
+            #commands:
+              #start_nginx:
+              #  command: echo "hello" > /tmp/hello.txt
+              #install_ansible:
+              #  command: pip install ansible awscli
+              #download_role:
+              #  command: !Sub |
+              #    aws s3 sync s3://${QSS3BucketName}/${QSS3KeyPrefix}scripts/ .
+              #ansible_playbook:
+              #  command: /usr/local/bin/ansible-playbook artifactory.yml
+      Properties:
+        AssociatePublicIpAddress: false
+        #PlacementTenancy: !Ref BastionTenancy
+        KeyName: !Ref KeyPairName
+        IamInstanceProfile: !Ref ArtifactoryHostProfile
+        ImageId: !FindInMap 
+          - AWSAMIRegionMap
+          - !Ref 'AWS::Region'
+          - !Ref AmiId
+        SecurityGroups:
+          - !Ref EC2InstancesSG
+        InstanceType: !Ref InstanceType
+        BlockDeviceMappings:
+          - DeviceName: /dev/xvda
+            Ebs:
+              VolumeSize: !Ref VolumeSize
+              VolumeType: gp2
+              DeleteOnTermination: true
+        UserData: !Base64 
+          'Fn::Sub':
+            - >
+              #!/bin/bash -x
+
+              #CFN Functions
+
+              function cfn_fail
+
+              {
+
+              cfn-signal -e 1 --stack ${AWS::StackName} --region ${AWS::Region}
+              --resource ArtifactoryMaster
+
+              exit 1
+
+              }
+
+              function cfn_success
+
+              {
+
+              cfn-signal -e 0 --stack ${AWS::StackName} --region ${AWS::Region}
+              --resource ArtifactoryMaster
+
+              exit 0
+
+              }
+
+              S3URI=https://${QSS3BucketName}.${S3Region}.amazonaws.com/${QSS3KeyPrefix}
+
+              yum install -y git
+
+              echo $PATH
+
+              PATH=/opt/aws/bin:$PATH
+
+              echo $PATH
+              echo \'[Cloning: Load QuickStart Common Utils]\'
+
+              git clone
+              https://github.com/aws-quickstart/quickstart-linux-utilities.git
+
+              source /quickstart-linux-utilities/quickstart-cfn-tools.source
+
+              echo \'[Loaded: Load QuickStart Common Utils]\'
+
+              echo \'[Update Operating System]\'
+
+              qs_update-os || qs_err
+
+              qs_bootstrap_pip || qs_err
+
+              qs_aws-cfn-bootstrap || qs_err
+
+              cfn-init -v --stack ${AWS::StackName} --resource
+              ArtifactoryMasterLaunchConfiguration --configsets artifactory_install
+              --region ${AWS::Region} || cfn_fail
+
+              pip install ansible awscli              
+
+              aws s3 sync s3://${QSS3BucketName}/${QSS3KeyPrefix}scripts/ ~/.artifactory_ansible/
+
+              /usr/local/bin/ansible-playbook ~/.artifactory_ansible/artifactory.yml
+              # Signal cfn-init (final check)
+
+              #rm -rf /root/artifactory.yml
+
+              [ $(qs_status) == 0 ] && cfn_success || cfn_fail
+            - S3Region: !If 
+              - GovCloudCondition
+              - s3-us-gov-west-1
+              - s3
+  ArtifactorySecondary:
+    Condition: EnableBastion
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub 'https://${QSS3BucketName}.s3.amazonaws.com/${QSS3KeyPrefix}templates/jfrog-artifactory-ec2-instance.template'
+      Parameters:
+        PublicSubnet1ID: !GetAtt VPCStack.Outputs.PrivateSubnet1AID
+        PublicSubnet2ID: !GetAtt VPCStack.Outputs.PrivateSubnet2AID
+        MinScalingNodes: 1
+        MaxScalingNodes: 1
+        DeploymentTag: ArtifactorySecondary
+        HostRole: !Ref ArtifactoryHostRole
+        QSS3BucketName: !Ref QSS3BucketName
+        QSS3KeyPrefix: !Ref QSS3KeyPrefix
+        ImageId: !FindInMap 
+          - AWSAMIRegionMap
+          - !Ref 'AWS::Region'
+          - !Ref AmiId
+        ArtifactoryLicense1: !Ref ArtifactoryLicense1
+        ArtifactoryServerName: !Ref ArtifactoryServerName
+        CertificateDomain: !Ref CertificateDomain
+        ArtifactoryIAMAcessKey: !Ref ArtifactoryIAMAcessKey
+        SecretAccessKey: !Ref ArtifactoryIAMAcessKey.SecretAccessKey
+        ArtifactoryS3Bucket: !Ref ArtifactoryS3Bucket 
+        CertificateKey: !Ref CertificateKey
+        Certificate: !Ref Certificate
+        DBType: mysql
+        ArtifactoryDBEndpointAddress: !Ref ArtifactoryDB.Endpoint.Address
+        DatabaseName: !Ref DatabaseName
+        DatabaseUser: !Ref DatabaseUser
+        DatabasePassword: !Ref DatabasePassword
+        art_id: secondary
+        art_primary: false
+        MasterKey: !Ref MasterKey
+        ArtifactoryVersion: !Ref ArtifactoryVersion
+        KeyPairName: !Ref KeyPairName
+
 
 Outputs:
   URL:
