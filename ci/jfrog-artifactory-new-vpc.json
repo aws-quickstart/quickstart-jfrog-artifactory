@@ -32,12 +32,20 @@
         "ParameterValue": "override"
     },
     {
+        "ParameterKey": "ArtifactoryLicense3",
+        "ParameterValue": "override"
+    },
+    {
         "ParameterKey": "DatabaseInstance",
         "ParameterValue": "db.m3.medium"
     },
     {
         "ParameterKey": "ArtifactoryVersion",
         "ParameterValue": "6.11.1"
+    },
+    {
+        "ParameterKey": "NumberOfSecondary",
+        "ParameterValue": "2"
     },
     {
         "ParameterKey": "ArtifactoryServerName",
