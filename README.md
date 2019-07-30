@@ -11,6 +11,18 @@ The goal of this project is to have several deployment options depending on a cu
     - New VPC deploying EKS, with Artifactory deployed onto the K8s cluster
     - Existing VPC deploying EKS, with Artifactory deployed onto the K8s cluster
 
+## Project Setup
+
+--> master template
+----> Existing VPC
+------> ec2-instances.
+
+Master requires a VPC and will create, and then call Existing
+
+Existing is then always called for this setup and will call ec2-instances
+
+ec2-Instances builds the Primary and Secondary AutoScale/Launch Configs.
+
 ## Deployment from Command line
 
 In order to deploy a test deployment:
