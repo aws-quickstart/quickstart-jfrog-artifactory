@@ -5,3 +5,9 @@
   service:
     name: nginx
     state: restarted
+
+- name: Enable Artifactory
+  service:
+    name: artifactory
+    state: started
+    enabled: yes
