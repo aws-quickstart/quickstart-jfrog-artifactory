@@ -19,7 +19,7 @@ Parameters:
     Type: String
   QSS3KeyPrefix:
     Type: String
-  ArtifactoryLicense1:
+  ArtifactoryLicense:
     Type: String
   ArtifactoryServerName:
     Type: String
@@ -45,8 +45,6 @@ Parameters:
     Type: String
   DatabasePassword:
     Type: String
-  ArtifactoryID:
-    Type: String
   ArtifactoryPrimary:
     Type: String
   MasterKey:
@@ -55,6 +53,8 @@ Parameters:
     Type: String
   KeyPairName:
     Type: AWS::EC2::KeyPair::KeyName
+  ArtifactoryELB:
+    Type: String
   HostProfile:
     Type: String
   SecurityGroups:
@@ -94,7 +94,11 @@ Resources:
       MinSize: !Ref MinScalingNodes
       MaxSize: !Ref MaxScalingNodes
       Cooldown: '300'
-      DesiredCapacity: "1"
+      DesiredCapacity: !Ref MinScalingNodes
+      LoadBalancerNames: 
+        - !Ref ArtifactoryELB
+      HealthCheckType: ELB
+      HealthCheckGracePeriod: 300
       Tags:
         - Key: Name
           Value: !Ref DeploymentTag
@@ -126,12 +130,12 @@ Resources:
                 nginx: []
           run_service-artifactory:
             files:
-              /root/artifactory.yml:
+              /root/.artifactory_ansible/artifactory.yml:
                 content: !Sub |
                   # Base install for Artifactory
                   - import_playbook: site-artifactory.yml
                     vars:
-                      artifactory_licenses: ${ArtifactoryLicense1}
+                      artifactory_licenses: ${ArtifactoryLicense}
                       artifactory_server_name: ${ArtifactoryServerName}
                       cetificate_domain: ${CertificateDomain}
                       s3_endpoint: s3.${AWS::Region}.amazonaws.com
@@ -145,7 +149,6 @@ Resources:
                       db_name: ${DatabaseName}
                       db_user: ${DatabaseUser}
                       db_password: ${DatabasePassword}
-                      art_id: ${ArtifactoryID}
                       art_primary: ${ArtifactoryPrimary} 
                       master_key: ${MasterKey}
                       artifactory_version: ${ArtifactoryVersion}
@@ -180,7 +183,7 @@ Resources:
               {
 
               cfn-signal -e 1 --stack ${AWS::StackName} --region ${AWS::Region}
-              --resource ArtifactoryMaster
+              --resource ArtifactoryScalingGroup
 
               exit 1
 
@@ -191,7 +194,7 @@ Resources:
               {
 
               cfn-signal -e 0 --stack ${AWS::StackName} --region ${AWS::Region}
-              --resource ArtifactoryMaster
+              --resource ArtifactoryScalingGroup
 
               exit 0
 

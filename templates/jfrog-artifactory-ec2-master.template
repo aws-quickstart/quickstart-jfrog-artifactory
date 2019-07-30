@@ -37,7 +37,6 @@ Metadata:
           - ArtifactoryLicense2
           - ArtifactoryLicense3
           - ArtifactoryLicense4
-          - ArtifactoryLicense5
           - Certificate
           - CertificateKey
           - CertificateDomain
@@ -107,8 +106,6 @@ Metadata:
         default: Artifactory License 3
       ArtifactoryLicense4:
         default: Artifactory License 4
-      ArtifactoryLicense5:
-        default: Artifactory License 5
       Certificate:
         default: Certificate
       CertificateKey:
@@ -263,12 +260,6 @@ Parameters:
     Description: Max number of secondary Artifactory servers
     Type: Number
     Default: 1
-  #ExtraJavaOptions:
-  #  Description: Setting Java Memory Parameters for Artifactory. 
-  #    Learn about system requirements for Artifactory 
-  #    https://www.jfrog.com/confluence/display/RTF/System+Requirements#SystemRequirements-RecommendedHardware.
-  #  Type: String
-  #  Default: -server -Xms2g -Xmx14g -Xss256k -XX:+UseG1GC -XX:OnOutOfMemoryError=\\\\\\\"kill -9 %p\\\\\\\
   ArtifactoryVersion:
     Description: Version of Artifactory you wish to deploy into the Quick Start
     ConstraintDescription: A version that matches X.X.X per Artifactory releases
@@ -288,10 +279,6 @@ Parameters:
     Type: String
     Default: ""
   ArtifactoryLicense4:
-    Description: Artifactory Enterprise License 
-    Type: String
-    Default: ""
-  ArtifactoryLicense5:
     Description: Artifactory Enterprise License 
     Type: String
     Default: ""
@@ -402,30 +389,10 @@ Parameters:
     - False
     Type: String
     Default: False 
-Mappings:
-  AWSAMIRegionMap:
-    AMI:
-      AMZNLINUXHVM: amzn-ami-hvm-2018.03.0.20181129-x86_64-gp2
-    us-east-1:
-      AMZNLINUXHVM: ami-0080e4c5bc078760e
-    us-east-2:
-      AMZNLINUXHVM: ami-0cd3dfa4e37921605
-    us-west-1:
-      AMZNLINUXHVM: ami-0ec6517f6edbf8044
-    us-west-2:
-      AMZNLINUXHVM: ami-01e24be29428c15b2
-  # Stubbed for future if Debian is wanted.
-  #LinuxAMINameMap:
-  #  Amazon-Linux-HVM:
-  #    Code: AMZNLINUXHVM
-
 Conditions:
   EnableBastion: !Equals [!Ref 'ProvisionBastionHost', 'Enabled']
   #CustomBastionRole: !Not [!Equals [!Ref 'BastionIAMRoleName', '']]
   #AdditionalVars: !Not [!Equals [!Ref 'BastionVariables', '']]
-  GovCloudCondition: !Equals 
-    - !Ref 'AWS::Region'
-    - us-gov-west-1
 Resources:
   VPCStack:
     Type: AWS::CloudFormation::Stack
@@ -655,197 +622,24 @@ Resources:
           - !Ref ArtifactoryHostRole
         Path: /            
   ArtifactoryMaster:
-    Type: 'AWS::AutoScaling::AutoScalingGroup'
-    Properties:
-      LaunchConfigurationName: !Ref ArtifactoryMasterLaunchConfiguration
-      VPCZoneIdentifier:
-        - !GetAtt VPCStack.Outputs.PrivateSubnet1AID #!Ref PublicSubnet1ID
-        - !GetAtt VPCStack.Outputs.PrivateSubnet2AID #!Ref PublicSubnet2ID
-      MinSize: "1"
-      MaxSize: "1"
-      Cooldown: '300'
-      DesiredCapacity: "1"
-      LoadBalancerNames: 
-        - !Ref ArtifactoryELB
-      HealthCheckType: ELB
-      HealthCheckGracePeriod: 300
-      Tags:
-        - Key: Name
-          Value: ArtifactoryMaster
-          PropagateAtLaunch: true
-    CreationPolicy:
-      ResourceSignal:
-        Count: 1
-        Timeout: PT30M
-
-  ArtifactoryMasterLaunchConfiguration:
-      Type: 'AWS::AutoScaling::LaunchConfiguration'
-      DependsOn: ArtifactoryDB
-      Metadata:
-        'AWS::CloudFormation::Authentication':
-          S3AccessCreds:
-            type: S3
-            roleName: 
-              - !Ref ArtifactoryHostRole
-            buckets:
-              - !Ref QSS3BucketName
-        'AWS::CloudFormation::Init':
-          configSets:
-            artifactory_install:
-              - "config-artifactory-master"
-              - "run_service-artifactory"
-          config-artifactory-master:
-            packages:
-              yum:
-                wget: []
-                curl: []
-                nginx: []
-          run_service-artifactory:
-            files:
-              /root/.artifactory_ansible/artifactory.yml:
-                content: !Sub |
-                  # Base install for Artifactory
-                  - import_playbook: site-artifactory.yml
-                    vars:
-                      artifactory_licenses: ${ArtifactoryLicense1},${ArtifactoryLicense2}
-                      artifactory_server_name: ${ArtifactoryServerName}
-                      cetificate_domain: ${CertificateDomain}
-                      s3_endpoint: s3.dualstack.${AWS::Region}.amazonaws.com
-                      s3_access_key: ${ArtifactoryIAMAcessKey}
-                      s3_access_secret_key: ${ArtifactoryIAMAcessKey.SecretAccessKey}
-                      s3_bucket: ${ArtifactoryS3Bucket}
-                      certificate_key: ${CertificateKey}
-                      certificate: ${Certificate}
-                      db_type: mysql
-                      db_ipaddr: ${ArtifactoryDB.Endpoint.Address}
-                      db_name: ${DatabaseName}
-                      db_user: ${DatabaseUser}
-                      db_password: ${DatabasePassword}
-                      art_id: art1
-                      art_primary: true 
-                      master_key: ${MasterKey}
-                      artifactory_version: ${ArtifactoryVersion}
-                mode: "0400"
-            #commands:
-              #start_nginx:
-              #  command: echo "hello" > /tmp/hello.txt
-              #install_ansible:
-              #  command: pip install ansible awscli
-              #download_role:
-              #  command: !Sub |
-              #    aws s3 sync s3://${QSS3BucketName}/${QSS3KeyPrefix}scripts/ .
-              #ansible_playbook:
-              #  command: /usr/local/bin/ansible-playbook artifactory.yml
-      Properties:
-        AssociatePublicIpAddress: false
-        #PlacementTenancy: !Ref BastionTenancy
-        KeyName: !Ref KeyPairName
-        IamInstanceProfile: !Ref ArtifactoryHostProfile
-        ImageId: !FindInMap 
-          - AWSAMIRegionMap
-          - !Ref 'AWS::Region'
-          - !Ref AmiId
-        SecurityGroups:
-          - !Ref EC2InstancesSG
-        InstanceType: !Ref InstanceType
-        BlockDeviceMappings:
-          - DeviceName: /dev/xvda
-            Ebs:
-              VolumeSize: !Ref VolumeSize
-              VolumeType: gp2
-              DeleteOnTermination: true
-        UserData: !Base64 
-          'Fn::Sub':
-            - >
-              #!/bin/bash -x
-
-              #CFN Functions
-
-              function cfn_fail
-
-              {
-
-              cfn-signal -e 1 --stack ${AWS::StackName} --region ${AWS::Region}
-              --resource ArtifactoryMaster
-
-              exit 1
-
-              }
-
-              function cfn_success
-
-              {
-
-              cfn-signal -e 0 --stack ${AWS::StackName} --region ${AWS::Region}
-              --resource ArtifactoryMaster
-
-              exit 0
-
-              }
-
-              S3URI=https://${QSS3BucketName}.${S3Region}.amazonaws.com/${QSS3KeyPrefix}
-
-              yum install -y git
-
-              echo $PATH
-
-              PATH=/opt/aws/bin:$PATH
-
-              echo $PATH
-              echo \'[Cloning: Load QuickStart Common Utils]\'
-
-              git clone
-              https://github.com/aws-quickstart/quickstart-linux-utilities.git
-
-              source /quickstart-linux-utilities/quickstart-cfn-tools.source
-
-              echo \'[Loaded: Load QuickStart Common Utils]\'
-
-              echo \'[Update Operating System]\'
-
-              qs_update-os || qs_err
-
-              qs_bootstrap_pip || qs_err
-
-              qs_aws-cfn-bootstrap || qs_err
-
-              cfn-init -v --stack ${AWS::StackName} --resource
-              ArtifactoryMasterLaunchConfiguration --configsets artifactory_install
-              --region ${AWS::Region} || cfn_fail
-
-              pip install ansible awscli              
-
-              aws s3 sync s3://${QSS3BucketName}/${QSS3KeyPrefix}scripts/ ~/.artifactory_ansible/
-
-              /usr/local/bin/ansible-playbook ~/.artifactory_ansible/artifactory.yml
-              # Signal cfn-init (final check)
-
-              #rm -rf /root/artifactory.yml
-
-              [ $(qs_status) == 0 ] && cfn_success || cfn_fail
-            - S3Region: !If 
-              - GovCloudCondition
-              - s3-us-gov-west-1
-              - s3
-  ArtifactorySecondary:
-    Condition: EnableBastion
     Type: AWS::CloudFormation::Stack
     Properties:
       TemplateURL: !Sub 'https://${QSS3BucketName}.s3.amazonaws.com/${QSS3KeyPrefix}templates/jfrog-artifactory-ec2-instance.template'
       Parameters:
-        PublicSubnet1ID: !GetAtt VPCStack.Outputs.PrivateSubnet1AID
-        PublicSubnet2ID: !GetAtt VPCStack.Outputs.PrivateSubnet2AID
-        MinScalingNodes: !Ref NumberOfSecondary
-        MaxScalingNodes: !Ref NumberOfSecondary
-        DeploymentTag: ArtifactorySecondary
+        PrivateSubnet1ID: !GetAtt VPCStack.Outputs.PrivateSubnet1AID
+        PrivateSubnet2ID: !GetAtt VPCStack.Outputs.PrivateSubnet2AID
+        MinScalingNodes: 1 # Always have 1 MasterNode
+        MaxScalingNodes: 1 # Always have 1 MasterNode
+        DeploymentTag: ArtifactoryMaster
         HostRole: !Ref ArtifactoryHostRole
         QSS3BucketName: !Ref QSS3BucketName
         QSS3KeyPrefix: !Ref QSS3KeyPrefix
         AmiId: !Ref AmiId
-        ArtifactoryLicense1: !Join # Does this work? If so we can do up to 4 due to length
+        ArtifactoryLicense: !Join # We can do up to 4 due to length
           - ','
           - - !Ref ArtifactoryLicense1
             - !Ref ArtifactoryLicense2
+            - !Ref ArtifactoryLicense3
         ArtifactoryServerName: !Ref ArtifactoryServerName
         CertificateDomain: !Ref CertificateDomain
         ArtifactoryIAMAcessKey: !Ref ArtifactoryIAMAcessKey
@@ -858,7 +652,6 @@ Resources:
         DatabaseName: !Ref DatabaseName
         DatabaseUser: !Ref DatabaseUser
         DatabasePassword: !Ref DatabasePassword
-        ArtifactoryID: secondary # How do we randomize this for each new node deployed?
         ArtifactoryPrimary: 'false'
         MasterKey: !Ref MasterKey
         ArtifactoryVersion: !Ref ArtifactoryVersion
@@ -867,6 +660,47 @@ Resources:
         SecurityGroups: !Ref EC2InstancesSG
         InstanceType: !Ref InstanceType
         VolumeSize: !Ref VolumeSize
+        ArtifactoryELB: !Ref ArtifactoryELB
+  ArtifactorySecondary:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub 'https://${QSS3BucketName}.s3.amazonaws.com/${QSS3KeyPrefix}templates/jfrog-artifactory-ec2-instance.template'
+      Parameters:
+        PrivateSubnet1ID: !GetAtt VPCStack.Outputs.PrivateSubnet1AID
+        PrivateSubnet2ID: !GetAtt VPCStack.Outputs.PrivateSubnet2AID
+        MinScalingNodes: !Ref NumberOfSecondary
+        MaxScalingNodes: !Ref NumberOfSecondary
+        DeploymentTag: ArtifactorySecondary
+        HostRole: !Ref ArtifactoryHostRole
+        QSS3BucketName: !Ref QSS3BucketName
+        QSS3KeyPrefix: !Ref QSS3KeyPrefix
+        AmiId: !Ref AmiId
+        ArtifactoryLicense: !Join # We can do up to 4 due to length
+          - ','
+          - - !Ref ArtifactoryLicense1
+            - !Ref ArtifactoryLicense2
+            - !Ref ArtifactoryLicense3
+        ArtifactoryServerName: !Ref ArtifactoryServerName
+        CertificateDomain: !Ref CertificateDomain
+        ArtifactoryIAMAcessKey: !Ref ArtifactoryIAMAcessKey
+        SecretAccessKey: !GetAtt ArtifactoryIAMAcessKey.SecretAccessKey
+        ArtifactoryS3Bucket: !Ref ArtifactoryS3Bucket 
+        CertificateKey: !Ref CertificateKey
+        Certificate: !Ref Certificate
+        DBType: mysql
+        ArtifactoryDBEndpointAddress: !GetAtt ArtifactoryDB.Endpoint.Address
+        DatabaseName: !Ref DatabaseName
+        DatabaseUser: !Ref DatabaseUser
+        DatabasePassword: !Ref DatabasePassword
+        ArtifactoryPrimary: 'false'
+        MasterKey: !Ref MasterKey
+        ArtifactoryVersion: !Ref ArtifactoryVersion
+        KeyPairName: !Ref KeyPairName
+        HostProfile: !Ref ArtifactoryHostProfile
+        SecurityGroups: !Ref EC2InstancesSG
+        InstanceType: !Ref InstanceType
+        VolumeSize: !Ref VolumeSize
+        ArtifactoryELB: !Ref ArtifactoryELB
 
 Outputs:
   URL:
