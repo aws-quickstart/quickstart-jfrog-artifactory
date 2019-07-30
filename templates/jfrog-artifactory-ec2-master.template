@@ -95,8 +95,8 @@ Metadata:
         default: Instance Type
       NumberOfSecondary:
         default: Number of Secondary Nodes
-      ExtraJavaOptions:
-        default: Extra JVM Options
+      #ExtraJavaOptions:
+      #  default: Extra JVM Options
       ArtifactoryVersion:
         default: Artifactory Version
       ArtifactoryLicense1:
@@ -146,6 +146,7 @@ Parameters:
   AmiId:
     Description: Ami being utilized to install the infrastructure. 
     Type: String
+    AllowedValues: [ 'AMZNLINUXHVM' ]
     Default: AMZNLINUXHVM
   AvailabilityZones:
     Description: List of Availability Zones to use for the subnets in the VPC. Two
@@ -664,6 +665,10 @@ Resources:
       MaxSize: "1"
       Cooldown: '300'
       DesiredCapacity: "1"
+      LoadBalancerNames: 
+        - !Ref ArtifactoryELB
+      HealthCheckType: ELB
+      HealthCheckGracePeriod: 300
       Tags:
         - Key: Name
           Value: ArtifactoryMaster
@@ -672,6 +677,7 @@ Resources:
       ResourceSignal:
         Count: 1
         Timeout: PT30M
+
   ArtifactoryMasterLaunchConfiguration:
       Type: 'AWS::AutoScaling::LaunchConfiguration'
       DependsOn: ArtifactoryDB
@@ -701,7 +707,7 @@ Resources:
                   # Base install for Artifactory
                   - import_playbook: site-artifactory.yml
                     vars:
-                      artifactory_licenses: ${ArtifactoryLicense1}
+                      artifactory_licenses: ${ArtifactoryLicense1},${ArtifactoryLicense2}
                       artifactory_server_name: ${ArtifactoryServerName}
                       cetificate_domain: ${CertificateDomain}
                       s3_endpoint: s3.dualstack.${AWS::Region}.amazonaws.com
@@ -829,35 +835,38 @@ Resources:
       Parameters:
         PublicSubnet1ID: !GetAtt VPCStack.Outputs.PrivateSubnet1AID
         PublicSubnet2ID: !GetAtt VPCStack.Outputs.PrivateSubnet2AID
-        MinScalingNodes: 1
-        MaxScalingNodes: 1
+        MinScalingNodes: !Ref NumberOfSecondary
+        MaxScalingNodes: !Ref NumberOfSecondary
         DeploymentTag: ArtifactorySecondary
         HostRole: !Ref ArtifactoryHostRole
         QSS3BucketName: !Ref QSS3BucketName
         QSS3KeyPrefix: !Ref QSS3KeyPrefix
-        ImageId: !FindInMap 
-          - AWSAMIRegionMap
-          - !Ref 'AWS::Region'
-          - !Ref AmiId
-        ArtifactoryLicense1: !Ref ArtifactoryLicense1
+        AmiId: !Ref AmiId
+        ArtifactoryLicense1: !Join # Does this work? If so we can do up to 4 due to length
+          - ','
+          - - !Ref ArtifactoryLicense1
+            - !Ref ArtifactoryLicense2
         ArtifactoryServerName: !Ref ArtifactoryServerName
         CertificateDomain: !Ref CertificateDomain
         ArtifactoryIAMAcessKey: !Ref ArtifactoryIAMAcessKey
-        SecretAccessKey: !Ref ArtifactoryIAMAcessKey.SecretAccessKey
+        SecretAccessKey: !GetAtt ArtifactoryIAMAcessKey.SecretAccessKey
         ArtifactoryS3Bucket: !Ref ArtifactoryS3Bucket 
         CertificateKey: !Ref CertificateKey
         Certificate: !Ref Certificate
         DBType: mysql
-        ArtifactoryDBEndpointAddress: !Ref ArtifactoryDB.Endpoint.Address
+        ArtifactoryDBEndpointAddress: !GetAtt ArtifactoryDB.Endpoint.Address
         DatabaseName: !Ref DatabaseName
         DatabaseUser: !Ref DatabaseUser
         DatabasePassword: !Ref DatabasePassword
-        art_id: secondary
-        art_primary: false
+        ArtifactoryID: secondary # How do we randomize this for each new node deployed?
+        ArtifactoryPrimary: 'false'
         MasterKey: !Ref MasterKey
         ArtifactoryVersion: !Ref ArtifactoryVersion
         KeyPairName: !Ref KeyPairName
-
+        HostProfile: !Ref ArtifactoryHostProfile
+        SecurityGroups: !Ref EC2InstancesSG
+        InstanceType: !Ref InstanceType
+        VolumeSize: !Ref VolumeSize
 
 Outputs:
   URL:

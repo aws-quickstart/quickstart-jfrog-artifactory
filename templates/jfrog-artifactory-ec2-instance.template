@@ -1,10 +1,10 @@
 AWSTemplateFormatVersion: "2010-09-09"
 Description: "Deploys the EC2 Autoscaling, LaunchConfig and Instance for Artifactory"
 Parameters:
-  PublicSubnet1ID:
-    Type: String
-  PublicSubnet2ID:
-    Type: String
+  PrivateSubnet1ID:
+    Type: 'AWS::EC2::Subnet::Id'
+  PrivateSubnet2ID:
+    Type: 'AWS::EC2::Subnet::Id'
   MinScalingNodes:
     Type: Number
   MaxScalingNodes:
@@ -13,7 +13,7 @@ Parameters:
     Type: String
   HostRole:
     Type: String
-  ImageId:
+  AmiId:
     Type: String
   QSS3BucketName:
     Type: String
@@ -45,24 +45,52 @@ Parameters:
     Type: String
   DatabasePassword:
     Type: String
-  art_id:
+  ArtifactoryID:
     Type: String
-  art_primary:
+  ArtifactoryPrimary:
     Type: String
   MasterKey:
     Type: String
   ArtifactoryVersion:
     Type: String
   KeyPairName:
+    Type: AWS::EC2::KeyPair::KeyName
+  HostProfile:
     Type: String
+  SecurityGroups:
+    Type: String
+  InstanceType:
+    Type: String
+  VolumeSize:
+    Type: Number
+Mappings:
+  AWSAMIRegionMap:
+    AMI:
+      AMZNLINUXHVM: amzn-ami-hvm-2018.03.0.20181129-x86_64-gp2
+    us-east-1:
+      AMZNLINUXHVM: ami-0080e4c5bc078760e
+    us-east-2:
+      AMZNLINUXHVM: ami-0cd3dfa4e37921605
+    us-west-1:
+      AMZNLINUXHVM: ami-0ec6517f6edbf8044
+    us-west-2:
+      AMZNLINUXHVM: ami-01e24be29428c15b2
+  # Stubbed for future if Debian is wanted.
+  #LinuxAMINameMap:
+  #  Amazon-Linux-HVM:
+  #    Code: AMZNLINUXHVM
+Conditions:
+  GovCloudCondition: !Equals 
+    - !Ref 'AWS::Region'
+    - us-gov-west-1
 Resources:
   ArtifactoryScalingGroup:
     Type: 'AWS::AutoScaling::AutoScalingGroup'
     Properties:
       LaunchConfigurationName: !Ref ArtifactoryLaunchConfiguration
       VPCZoneIdentifier:
-        - !Ref PublicSubnet1ID #!GetAtt VPCStack.Outputs.PrivateSubnet1AID #
-        - !Ref PublicSubnet1ID #!GetAtt VPCStack.Outputs.PrivateSubnet2AID #
+        - !Ref PrivateSubnet1ID
+        - !Ref PrivateSubnet2ID
       MinSize: !Ref MinScalingNodes
       MaxSize: !Ref MaxScalingNodes
       Cooldown: '300'
@@ -108,17 +136,17 @@ Resources:
                       cetificate_domain: ${CertificateDomain}
                       s3_endpoint: s3.${AWS::Region}.amazonaws.com
                       s3_access_key: ${ArtifactoryIAMAcessKey}
-                      s3_access_secret_key: ${ArtifactoryIAMAcessKey.SecretAccessKey}
+                      s3_access_secret_key: ${SecretAccessKey}
                       s3_bucket: ${ArtifactoryS3Bucket}
                       certificate_key: ${CertificateKey}
                       certificate: ${Certificate}
-                      db_type: mysql
-                      db_ipaddr: ${ArtifactoryDB.Endpoint.Address}
+                      db_type: ${DBType}
+                      db_ipaddr: ${ArtifactoryDBEndpointAddress}
                       db_name: ${DatabaseName}
                       db_user: ${DatabaseUser}
                       db_password: ${DatabasePassword}
-                      art_id: art1
-                      art_primary: true 
+                      art_id: ${ArtifactoryID}
+                      art_primary: ${ArtifactoryPrimary} 
                       master_key: ${MasterKey}
                       artifactory_version: ${ArtifactoryVersion}
                 mode: "0400"
@@ -126,10 +154,13 @@ Resources:
         AssociatePublicIpAddress: false
         #PlacementTenancy: !Ref BastionTenancy
         KeyName: !Ref KeyPairName
-        IamInstanceProfile: !Ref ArtifactoryHostProfile
-        ImageId: !Ref ImageId
+        IamInstanceProfile: !Ref HostProfile
+        ImageId: !FindInMap 
+          - AWSAMIRegionMap
+          - !Ref 'AWS::Region'
+          - !Ref AmiId
         SecurityGroups:
-          - !Ref EC2InstancesSG
+          - !Ref SecurityGroups
         InstanceType: !Ref InstanceType
         BlockDeviceMappings:
           - DeviceName: /dev/xvda
