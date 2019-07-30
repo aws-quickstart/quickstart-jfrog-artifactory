@@ -98,7 +98,7 @@ Resources:
       LoadBalancerNames: 
         - !Ref ArtifactoryELB
       HealthCheckType: ELB
-      HealthCheckGracePeriod: 300
+      HealthCheckGracePeriod: 600
       Tags:
         - Key: Name
           Value: !Ref DeploymentTag

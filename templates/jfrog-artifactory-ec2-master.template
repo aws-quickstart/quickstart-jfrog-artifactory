@@ -21,6 +21,7 @@ Metadata:
           - BastionEnableTCPForwarding
           - BastionEnableX11Forwarding
           - BastionOS
+          - RemoteAccessCIDR
       - Label:
           default: Amazon EC2 Configuration
         Parameters:
@@ -88,6 +89,8 @@ Metadata:
         default: Bastion Enable X11 Forwarding
       BastionOS:
         default: Bastion OS
+      RemoteAccessCIDR:
+        default: Remote Access CIDR        
       VolumeSize:
         default: Volume Size
       InstanceType:
@@ -389,10 +392,6 @@ Parameters:
     - False
     Type: String
     Default: False 
-Conditions:
-  EnableBastion: !Equals [!Ref 'ProvisionBastionHost', 'Enabled']
-  #CustomBastionRole: !Not [!Equals [!Ref 'BastionIAMRoleName', '']]
-  #AdditionalVars: !Not [!Equals [!Ref 'BastionVariables', '']]
 Resources:
   VPCStack:
     Type: AWS::CloudFormation::Stack
@@ -417,291 +416,52 @@ Resources:
           Ref: PublicSubnet2CIDR
         VPCCIDR:
           Ref: VPCCIDR
-  BastionStack:
-    Condition: EnableBastion
+  ArtifactoryExistingVPCStack:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: !Sub 'https://${QSS3BucketName}.s3.amazonaws.com/${QSS3KeyPrefix}submodules/quickstart-linux-bastion/templates/linux-bastion.template'
+      TemplateURL: !Sub 'https://${QSS3BucketName}.s3.amazonaws.com/${QSS3KeyPrefix}templates/jfrog-artifactory-ec2-existing-vpc.template'
       Parameters:
-        VPCID: !GetAtt VPCStack.Outputs.VPCID #!Ref VPCID
-        PublicSubnet1ID: !GetAtt VPCStack.Outputs.PublicSubnet1ID #!Ref PublicSubnet1ID
-        PublicSubnet2ID: !GetAtt VPCStack.Outputs.PublicSubnet2ID #!Ref PublicSubnet2ID
+        AmiId: !Ref AmiId
         KeyPairName: !Ref KeyPairName
-        QSS3BucketName: !Ref QSS3BucketName
-        QSS3KeyPrefix: !Sub '${QSS3KeyPrefix}submodules/quickstart-linux-bastion/'
-        RemoteAccessCIDR: !Ref RemoteAccessCIDR
+        VPCID: !GetAtt VPCStack.Outputs.VPCID
+        VPCCIDR: !Ref VPCCIDR
+        PublicSubnet1ID: !GetAtt VPCStack.Outputs.PublicSubnet1ID
+        PublicSubnet2ID: !GetAtt VPCStack.Outputs.PublicSubnet2ID
+        PrivateSubnet1ID: !GetAtt VPCStack.Outputs.PrivateSubnet1AID
+        PrivateSubnet2ID: !GetAtt VPCStack.Outputs.PrivateSubnet2AID
+        PrivateSubnet1CIDR: !Ref PrivateSubnet1CIDR
+        PrivateSubnet2CIDR: !Ref PrivateSubnet2CIDR
+        ProvisionBastionHost: !Ref ProvisionBastionHost
         BastionInstanceType: !Ref BastionInstanceType
-        RootVolumeSize: !Ref BastionRootVolumeSize
-        BastionAMIOS: !Ref BastionOS
-        EnableTCPForwarding: !Ref BastionEnableTCPForwarding
-        EnableX11Forwarding: !Ref BastionEnableX11Forwarding
-        #EnvironmentVariables: !Sub
-        #- >
-        #  ARTIFACTORY_TEST=${MasterKey}
-        #- Joiner: !If [AdditionalVars, ",", ""]
-  ArtifactoryS3IAMUser:
-    Type: AWS::IAM::User
-    Properties:
-      UserName: ArtifactoryS3
-  ArtifactoryIAMAcessKey: 
-    Type: AWS::IAM::AccessKey
-    Properties: 
-      UserName: !Ref ArtifactoryS3IAMUser 
-  ArtifactoryS3Bucket:
-    Type: AWS::S3::Bucket
-    Properties:
-      AccessControl: Private
-  ArtifactoryS3IAMPolicy: 
-    Type: AWS::IAM::Policy
-    Properties: 
-      PolicyName: S3BucketPermissions
-      PolicyDocument: 
-        Version: 2012-10-17
-        Statement: 
-          - Sid: S3BucketPermissions
-            Effect: Allow
-            Action: 
-              - s3:*
-            Resource:
-              - Fn::Join:
-                - ''
-                - - "arn:aws:s3:::"
-                  - !Ref ArtifactoryS3Bucket
-              - Fn::Join:
-                - ''
-                - - "arn:aws:s3:::"
-                  - !Ref ArtifactoryS3Bucket
-                  - "/*"
-      Users:
-        - !Ref ArtifactoryS3IAMUser  
-  ArtifactoryELB:
-    Type: AWS::ElasticLoadBalancing::LoadBalancer
-    Properties:
-      SecurityGroups: 
-        - !Ref EC2InstancesSG
-      Subnets: 
-        - !GetAtt VPCStack.Outputs.PublicSubnet1ID
-        - !GetAtt VPCStack.Outputs.PublicSubnet2ID
-      AppCookieStickinessPolicy:
-        - PolicyName: HTTPSCookieStickinessPolicy
-          CookieName: connect.sid
-      Listeners:
-        - LoadBalancerPort: '80'
-          InstancePort: '80'
-          InstanceProtocol: HTTP
-          Protocol: HTTP
-        - LoadBalancerPort: '443'
-          InstancePort: '443'
-          InstanceProtocol: TCP
-          Protocol: TCP
-      HealthCheck:
-        Target: HTTP:80/artifactory/webapp/
-        HealthyThreshold: '3'
-        UnhealthyThreshold: '3'
-        Interval: '30'
-        Timeout: '15'
-  ArtifactoryDBSubnetGroup:
-    Type: AWS::RDS::DBSubnetGroup
-    Properties:
-      DBSubnetGroupDescription: Private Subnets available to the RDS Instance(s)
-      SubnetIds: 
-        - !GetAtt VPCStack.Outputs.PrivateSubnet1AID
-        - !GetAtt VPCStack.Outputs.PrivateSubnet2AID
-  ArtifactoryDB:
-    Type: AWS::RDS::DBInstance
-    Properties: 
-      AllocatedStorage: !Ref DatabaseAllocatedStorage
-      MultiAZ: !Ref MultiAZDatabase
-      Engine: !Ref DatabaseEngine
-      EngineVersion: !Ref DatabaseVersion
-      MasterUsername: !Ref DatabaseUser
-      MasterUserPassword: !Ref DatabasePassword
-      DBInstanceClass: !Ref DatabaseInstance
-      DBName: !Ref DatabaseName
-      DBSubnetGroupName: !Ref  ArtifactoryDBSubnetGroup
-      VPCSecurityGroups: 
-        - !Ref ArtifactoryDBSG
-  ArtifactoryDBSG:
-    Type: AWS::EC2::SecurityGroup
-    Properties:
-      Tags:
-        - Key: Name
-          Value: ec2-artifactory-rds-sg
-      GroupDescription: SG for RDS Instance to allow communication from the Bastion and Artifactory servers.
-      VpcId: !GetAtt VPCStack.Outputs.VPCID #!Ref VPCID
-      SecurityGroupIngress:
-        - IpProtocol: tcp
-          FromPort: 22
-          ToPort: 22
-          CidrIp: !Ref VPCCIDR
-        - IpProtocol: tcp
-          FromPort: 3306
-          ToPort: 3306
-          CidrIp: !Ref PrivateSubnet1CIDR
-        - IpProtocol: tcp
-          FromPort: 3306
-          ToPort: 3306
-          CidrIp: !Ref PrivateSubnet2CIDR
-      SecurityGroupEgress:
-        - IpProtocol: tcp
-          FromPort: 22
-          ToPort: 22
-          CidrIp: 0.0.0.0/0
-        - IpProtocol: tcp
-          FromPort: 80
-          ToPort: 80
-          CidrIp: 0.0.0.0/0
-        - IpProtocol: tcp
-          FromPort: 443
-          ToPort: 443
-          CidrIp: 0.0.0.0/0         
-  EC2InstancesSG:
-    #Condition: EnableBastion
-    DependsOn: BastionStack
-    Type: AWS::EC2::SecurityGroup
-    Properties:
-      Tags:
-        - Key: Name
-          Value: ec2-artifactory-instances-sg
-      GroupDescription: SG for EC2 instances (also permits SSH access from the bastion host)
-      VpcId: !GetAtt VPCStack.Outputs.VPCID #!Ref VPCID
-      SecurityGroupIngress:   
-        - IpProtocol: tcp
-          FromPort: 22
-          ToPort: 22
-          CidrIp: !Ref VPCCIDR
-        - IpProtocol: tcp
-          FromPort: 80
-          ToPort: 80
-          CidrIp: 0.0.0.0/0
-        - IpProtocol: tcp
-          FromPort: 443
-          ToPort: 443
-          CidrIp: 0.0.0.0/0                                   
-      SecurityGroupEgress:
-        - IpProtocol: tcp
-          FromPort: 22
-          ToPort: 22
-          CidrIp: 0.0.0.0/0
-        - IpProtocol: tcp
-          FromPort: 80
-          ToPort: 80
-          CidrIp: 0.0.0.0/0
-        - IpProtocol: tcp
-          FromPort: 443
-          ToPort: 443
-          CidrIp: 0.0.0.0/0
-        - IpProtocol: tcp
-          FromPort: 3306
-          ToPort: 3306
-          CidrIp: !Ref PrivateSubnet1CIDR
-        - IpProtocol: tcp
-          FromPort: 3306
-          ToPort: 3306
-          CidrIp: !Ref PrivateSubnet2CIDR           
-  ArtifactoryHostRole:
-    #Condition: CreateIAMRole
-    Type: 'AWS::IAM::Role'
-    Properties:
-      Path: /
-      AssumeRolePolicyDocument:
-        Statement:
-          - Action:
-              - 'sts:AssumeRole'
-            Principal:
-              Service:
-                - ec2.amazonaws.com
-            Effect: Allow
-        Version: 2012-10-17
-      ManagedPolicyArns:
-        - 'arn:aws:iam::aws:policy/service-role/AmazonEC2RoleforSSM'
-  ArtifactoryHostProfile:
-      Type: 'AWS::IAM::InstanceProfile'
-      Properties:
-        Roles:
-          - !Ref ArtifactoryHostRole
-        Path: /            
-  ArtifactoryMaster:
-    Type: AWS::CloudFormation::Stack
-    Properties:
-      TemplateURL: !Sub 'https://${QSS3BucketName}.s3.amazonaws.com/${QSS3KeyPrefix}templates/jfrog-artifactory-ec2-instance.template'
-      Parameters:
-        PrivateSubnet1ID: !GetAtt VPCStack.Outputs.PrivateSubnet1AID
-        PrivateSubnet2ID: !GetAtt VPCStack.Outputs.PrivateSubnet2AID
-        MinScalingNodes: 1 # Always have 1 MasterNode
-        MaxScalingNodes: 1 # Always have 1 MasterNode
-        DeploymentTag: ArtifactoryMaster
-        HostRole: !Ref ArtifactoryHostRole
-        QSS3BucketName: !Ref QSS3BucketName
-        QSS3KeyPrefix: !Ref QSS3KeyPrefix
-        AmiId: !Ref AmiId
-        ArtifactoryLicense: !Join # We can do up to 4 due to length
-          - ','
-          - - !Ref ArtifactoryLicense1
-            - !Ref ArtifactoryLicense2
-            - !Ref ArtifactoryLicense3
-        ArtifactoryServerName: !Ref ArtifactoryServerName
-        CertificateDomain: !Ref CertificateDomain
-        ArtifactoryIAMAcessKey: !Ref ArtifactoryIAMAcessKey
-        SecretAccessKey: !GetAtt ArtifactoryIAMAcessKey.SecretAccessKey
-        ArtifactoryS3Bucket: !Ref ArtifactoryS3Bucket 
-        CertificateKey: !Ref CertificateKey
+        BastionRootVolumeSize: !Ref BastionRootVolumeSize
+        BastionEnableTCPForwarding: !Ref BastionEnableTCPForwarding
+        BastionEnableX11Forwarding: !Ref BastionEnableX11Forwarding
+        BastionOS: !Ref BastionOS
+        RemoteAccessCIDR: !Ref RemoteAccessCIDR
+        VolumeSize: !Ref VolumeSize
+        InstanceType: !Ref InstanceType
+        NumberOfSecondary: !Ref NumberOfSecondary
+        ArtifactoryVersion: !Ref ArtifactoryVersion
+        ArtifactoryLicense1: !Ref ArtifactoryLicense1
+        ArtifactoryLicense2: !Ref ArtifactoryLicense2
+        ArtifactoryLicense3: !Ref ArtifactoryLicense3
+        ArtifactoryLicense4: !Ref ArtifactoryLicense4
         Certificate: !Ref Certificate
-        DBType: mysql
-        ArtifactoryDBEndpointAddress: !GetAtt ArtifactoryDB.Endpoint.Address
+        CertificateKey: !Ref CertificateKey
+        CertificateDomain: !Ref CertificateDomain
+        ArtifactoryServerName: !Ref ArtifactoryServerName
+        MasterKey: !Ref MasterKey
         DatabaseName: !Ref DatabaseName
+        DatabaseEngine: !Ref DatabaseEngine
+        DatabaseVersion: !Ref DatabaseVersion
         DatabaseUser: !Ref DatabaseUser
         DatabasePassword: !Ref DatabasePassword
-        ArtifactoryPrimary: 'false'
-        MasterKey: !Ref MasterKey
-        ArtifactoryVersion: !Ref ArtifactoryVersion
-        KeyPairName: !Ref KeyPairName
-        HostProfile: !Ref ArtifactoryHostProfile
-        SecurityGroups: !Ref EC2InstancesSG
-        InstanceType: !Ref InstanceType
-        VolumeSize: !Ref VolumeSize
-        ArtifactoryELB: !Ref ArtifactoryELB
-  ArtifactorySecondary:
-    Type: AWS::CloudFormation::Stack
-    Properties:
-      TemplateURL: !Sub 'https://${QSS3BucketName}.s3.amazonaws.com/${QSS3KeyPrefix}templates/jfrog-artifactory-ec2-instance.template'
-      Parameters:
-        PrivateSubnet1ID: !GetAtt VPCStack.Outputs.PrivateSubnet1AID
-        PrivateSubnet2ID: !GetAtt VPCStack.Outputs.PrivateSubnet2AID
-        MinScalingNodes: !Ref NumberOfSecondary
-        MaxScalingNodes: !Ref NumberOfSecondary
-        DeploymentTag: ArtifactorySecondary
-        HostRole: !Ref ArtifactoryHostRole
+        DatabaseInstance: !Ref DatabaseInstance
+        DatabaseAllocatedStorage: !Ref DatabaseAllocatedStorage
+        MultiAZDatabase: !Ref MultiAZDatabase
         QSS3BucketName: !Ref QSS3BucketName
         QSS3KeyPrefix: !Ref QSS3KeyPrefix
-        AmiId: !Ref AmiId
-        ArtifactoryLicense: !Join # We can do up to 4 due to length
-          - ','
-          - - !Ref ArtifactoryLicense1
-            - !Ref ArtifactoryLicense2
-            - !Ref ArtifactoryLicense3
-        ArtifactoryServerName: !Ref ArtifactoryServerName
-        CertificateDomain: !Ref CertificateDomain
-        ArtifactoryIAMAcessKey: !Ref ArtifactoryIAMAcessKey
-        SecretAccessKey: !GetAtt ArtifactoryIAMAcessKey.SecretAccessKey
-        ArtifactoryS3Bucket: !Ref ArtifactoryS3Bucket 
-        CertificateKey: !Ref CertificateKey
-        Certificate: !Ref Certificate
-        DBType: mysql
-        ArtifactoryDBEndpointAddress: !GetAtt ArtifactoryDB.Endpoint.Address
-        DatabaseName: !Ref DatabaseName
-        DatabaseUser: !Ref DatabaseUser
-        DatabasePassword: !Ref DatabasePassword
-        ArtifactoryPrimary: 'false'
-        MasterKey: !Ref MasterKey
-        ArtifactoryVersion: !Ref ArtifactoryVersion
-        KeyPairName: !Ref KeyPairName
-        HostProfile: !Ref ArtifactoryHostProfile
-        SecurityGroups: !Ref EC2InstancesSG
-        InstanceType: !Ref InstanceType
-        VolumeSize: !Ref VolumeSize
-        ArtifactoryELB: !Ref ArtifactoryELB
-
+        
 Outputs:
   URL:
     Description: URL of the ELB to access Artifactory

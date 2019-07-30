@@ -7,10 +7,13 @@ Metadata:
           default: Network Configuration
         Parameters:
           - VPCID
+          - VPCCIDR
           - PublicSubnet1ID
           - PublicSubnet2ID
           - PrivateSubnet1ID
           - PrivateSubnet2ID
+          - PrivateSubnet1CIDR
+          - PrivateSubnet2CIDR
       - Label:
           default: Bastion Configuration
         Parameters:
@@ -20,6 +23,7 @@ Metadata:
           - BastionEnableTCPForwarding
           - BastionEnableX11Forwarding
           - BastionOS
+          - RemoteAccessCIDR
       - Label:
           default: Amazon EC2 Configuration
         Parameters:
@@ -64,7 +68,9 @@ Metadata:
       KeyPairName:
         default: SSH Key Name
       VPCID:
-        default: VPC ID        
+        default: VPC ID
+      VPCCIDR:
+        default: VPC CIDR
       PublicSubnet1ID:
         default: Public Subnet 1 ID
       PublicSubnet2ID:
@@ -73,6 +79,10 @@ Metadata:
         default: Private Subnet 1 ID
       PrivateSubnet2ID:
         default: Private Subnet 2 ID
+      PrivateSubnet1CIDR:
+        default: Private Subnet 1 CIDR
+      PrivateSubnet2CIDR:
+        default: Private Subnet 2 CIDR
       ProvisionBastionHost:
         default: Provision Bastion Host
       BastionInstanceType:
@@ -85,6 +95,8 @@ Metadata:
         default: Bastion Enable X11 Forwarding
       BastionOS:
         default: Bastion OS
+      RemoteAccessCIDR:
+        default: Remote Access CIDR
       VolumeSize:
         default: Volume Size
       InstanceType:
@@ -142,12 +154,6 @@ Parameters:
     Type: String
     AllowedValues: [ 'AMZNLINUXHVM' ]
     Default: AMZNLINUXHVM
-  AvailabilityZones:
-    Description: List of Availability Zones to use for the subnets in the VPC. Two
-      Availability Zones are used for this deployment, and the logical order of your
-      selections is preserved.
-    Type: List<AWS::EC2::AvailabilityZone::Name>
-    Default: us-west-2a, us-west-1b
   KeyPairName:
     Description: The name of an existing public/private key pair, which allows you
       to securely connect to your instance after it launches
@@ -155,6 +161,12 @@ Parameters:
     Default: ""
   VPCID:
     Type: "AWS::EC2::VPC::Id"
+  VPCCIDR:
+    AllowedPattern: ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/(1[6-9]|2[0-8]))$
+    ConstraintDescription: CIDR block parameter must be in the form x.x.x.x/16-28
+    Default: 10.0.0.0/16
+    Description: CIDR block for the VPC
+    Type: String
   PublicSubnet1ID:
     Type: "AWS::EC2::Subnet::Id"
   PublicSubnet2ID:
@@ -163,6 +175,18 @@ Parameters:
     Type: "AWS::EC2::Subnet::Id"
   PrivateSubnet2ID:
     Type: "AWS::EC2::Subnet::Id"
+  PrivateSubnet1CIDR:
+    AllowedPattern: ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/(1[6-9]|2[0-8]))$
+    ConstraintDescription: CIDR block parameter must be in the form x.x.x.x/16-28
+    Default: 10.0.0.0/19
+    Description: CIDR block for private subnet 1 located in Availability Zone 1
+    Type: String
+  PrivateSubnet2CIDR:
+    AllowedPattern: ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/(1[6-9]|2[0-8]))$
+    ConstraintDescription: CIDR block parameter must be in the form x.x.x.x/16-28
+    Default: 10.0.32.0/19
+    Description: CIDR block for private subnet 2 located in Availability Zone 2
+    Type: String    
   QSS3BucketName:
     AllowedPattern: ^[0-9a-zA-Z]+([0-9a-zA-Z-]*[0-9a-zA-Z])*$
     ConstraintDescription: Quick Start bucket name can include numbers, lowercase
@@ -375,9 +399,9 @@ Resources:
     Properties:
       TemplateURL: !Sub 'https://${QSS3BucketName}.s3.amazonaws.com/${QSS3KeyPrefix}submodules/quickstart-linux-bastion/templates/linux-bastion.template'
       Parameters:
-        VPCID: !GetAtt VPCStack.Outputs.VPCID #!Ref VPCID
-        PublicSubnet1ID: !GetAtt VPCStack.Outputs.PublicSubnet1ID #!Ref PublicSubnet1ID
-        PublicSubnet2ID: !GetAtt VPCStack.Outputs.PublicSubnet2ID #!Ref PublicSubnet2ID
+        VPCID: !Ref VPCID
+        PublicSubnet1ID: !Ref PublicSubnet1ID
+        PublicSubnet2ID: !Ref PublicSubnet2ID
         KeyPairName: !Ref KeyPairName
         QSS3BucketName: !Ref QSS3BucketName
         QSS3KeyPrefix: !Sub '${QSS3KeyPrefix}submodules/quickstart-linux-bastion/'
@@ -430,10 +454,10 @@ Resources:
     Type: AWS::ElasticLoadBalancing::LoadBalancer
     Properties:
       SecurityGroups: 
-        - !Ref EC2InstancesSG
+        - !Ref ArtifactoryEC2SG
       Subnets: 
-        - !GetAtt VPCStack.Outputs.PublicSubnet1ID
-        - !GetAtt VPCStack.Outputs.PublicSubnet2ID
+        - !Ref PublicSubnet1ID
+        - !Ref PublicSubnet2ID
       AppCookieStickinessPolicy:
         - PolicyName: HTTPSCookieStickinessPolicy
           CookieName: connect.sid
@@ -457,8 +481,8 @@ Resources:
     Properties:
       DBSubnetGroupDescription: Private Subnets available to the RDS Instance(s)
       SubnetIds: 
-        - !GetAtt VPCStack.Outputs.PrivateSubnet1AID
-        - !GetAtt VPCStack.Outputs.PrivateSubnet2AID
+        - !Ref PrivateSubnet1ID
+        - !Ref PrivateSubnet2ID
   ArtifactoryDB:
     Type: AWS::RDS::DBInstance
     Properties: 
@@ -480,7 +504,7 @@ Resources:
         - Key: Name
           Value: ec2-artifactory-rds-sg
       GroupDescription: SG for RDS Instance to allow communication from the Bastion and Artifactory servers.
-      VpcId: !GetAtt VPCStack.Outputs.VPCID #!Ref VPCID
+      VpcId: !Ref VPCID
       SecurityGroupIngress:
         - IpProtocol: tcp
           FromPort: 22
@@ -507,7 +531,7 @@ Resources:
           FromPort: 443
           ToPort: 443
           CidrIp: 0.0.0.0/0         
-  EC2InstancesSG:
+  ArtifactoryEC2SG:
     #Condition: EnableBastion
     DependsOn: BastionStack
     Type: AWS::EC2::SecurityGroup
@@ -516,7 +540,7 @@ Resources:
         - Key: Name
           Value: ec2-artifactory-instances-sg
       GroupDescription: SG for EC2 instances (also permits SSH access from the bastion host)
-      VpcId: !GetAtt VPCStack.Outputs.VPCID #!Ref VPCID
+      VpcId: !Ref VPCID
       SecurityGroupIngress:   
         - IpProtocol: tcp
           FromPort: 22
@@ -578,10 +602,10 @@ Resources:
     Properties:
       TemplateURL: !Sub 'https://${QSS3BucketName}.s3.amazonaws.com/${QSS3KeyPrefix}templates/jfrog-artifactory-ec2-instance.template'
       Parameters:
-        PrivateSubnet1ID: !GetAtt VPCStack.Outputs.PrivateSubnet1AID
-        PrivateSubnet2ID: !GetAtt VPCStack.Outputs.PrivateSubnet2AID
-        MinScalingNodes: 1 # Always have 1 MasterNode
-        MaxScalingNodes: 1 # Always have 1 MasterNode
+        PrivateSubnet1ID: !Ref PrivateSubnet1ID
+        PrivateSubnet2ID: !Ref PrivateSubnet2ID
+        MinScalingNodes: '1' # Always have 1 MasterNode
+        MaxScalingNodes: '1' # Always have 1 MasterNode
         DeploymentTag: ArtifactoryMaster
         HostRole: !Ref ArtifactoryHostRole
         QSS3BucketName: !Ref QSS3BucketName
@@ -609,17 +633,18 @@ Resources:
         ArtifactoryVersion: !Ref ArtifactoryVersion
         KeyPairName: !Ref KeyPairName
         HostProfile: !Ref ArtifactoryHostProfile
-        SecurityGroups: !Ref EC2InstancesSG
+        SecurityGroups: !Ref ArtifactoryEC2SG
         InstanceType: !Ref InstanceType
         VolumeSize: !Ref VolumeSize
         ArtifactoryELB: !Ref ArtifactoryELB
   ArtifactorySecondary:
+    DependsOn: ArtifactoryMaster
     Type: AWS::CloudFormation::Stack
     Properties:
       TemplateURL: !Sub 'https://${QSS3BucketName}.s3.amazonaws.com/${QSS3KeyPrefix}templates/jfrog-artifactory-ec2-instance.template'
       Parameters:
-        PrivateSubnet1ID: !GetAtt VPCStack.Outputs.PrivateSubnet1AID
-        PrivateSubnet2ID: !GetAtt VPCStack.Outputs.PrivateSubnet2AID
+        PrivateSubnet1ID: !Ref PrivateSubnet1ID
+        PrivateSubnet2ID: !Ref PrivateSubnet2ID
         MinScalingNodes: !Ref NumberOfSecondary
         MaxScalingNodes: !Ref NumberOfSecondary
         DeploymentTag: ArtifactorySecondary
@@ -649,7 +674,7 @@ Resources:
         ArtifactoryVersion: !Ref ArtifactoryVersion
         KeyPairName: !Ref KeyPairName
         HostProfile: !Ref ArtifactoryHostProfile
-        SecurityGroups: !Ref EC2InstancesSG
+        SecurityGroups: !Ref ArtifactoryEC2SG
         InstanceType: !Ref InstanceType
         VolumeSize: !Ref VolumeSize
         ArtifactoryELB: !Ref ArtifactoryELB
