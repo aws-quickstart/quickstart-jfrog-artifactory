@@ -15,3 +15,18 @@ s3_bucket: needs_to_be_passed
 
 art_primary: true
 java_version: java-1.8.0
+java_mysql_driver:
+  url: https://bintray.com/artifact/download/bintray/jcenter/mysql/mysql-connector-java/5.1.38/mysql-connector-java-5.1.38.jar
+  dest: /opt/jfrog/artifactory/tomcat/lib/mysql-connector-java-5.1.38.jar
+  owner: artifactory
+  group: artifactory
+rds_cert:
+  url: https://s3.amazonaws.com/rds-downloads/rds-combined-ca-bundle.pem
+  dest: /root/root/rds-combined-ca-bundle.pem
+  owner: root
+  group: root
+  cert_alias: rds_ca
+artifactory_keystore_path: /etc/alternatives/jre_1.8.0/lib/security/cacerts
+artifactory_keystore_default: changeit
+artifactory_keystore_pass: needs_to_be_passed
+  

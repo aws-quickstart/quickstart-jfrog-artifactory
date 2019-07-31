@@ -10,12 +10,26 @@
     name: java
     path: /usr/lib/jvm/jre-1.8.0-openjdk.x86_64/bin/java 
 
-- name: Download mysql Driver
+- name: Download Java requirements such as jbdc for mysql Driver and the RDS CA certificate
   get_url:
-    url: https://bintray.com/artifact/download/bintray/jcenter/mysql/mysql-connector-java/5.1.38/mysql-connector-java-5.1.38.jar
-    dest: /opt/jfrog/artifactory/tomcat/lib/mysql-connector-java-5.1.38.jar
-    owner: artifactory
-    group: artifactory
+    url: "{{ item.url }}"
+    dest: "{{ item.dest }}"
+    owner: "{{ item.owner }}"
+    group: "{{ item.group }}"
+  loop:
+   - java_mysql_driver
+   - rds_cert
+
+# TODO: If this was on Prem, they may not need to perform this. Though they still should :)
+- name: Import the RDS certificate into Java KeyStore
+  java_cert:
+    cert_path: "{{ rds_cert.dest }}"
+    cert_alias: "{{ rds_cert.cert_alias }}"
+    keystore_pass: "{{ artifactory_keystore_default }}" # Default JKS as you get from the Internet.
+    keystore_path: "{{ artifactory_keystore_path }}"
+
+- name: Change Keystore password
+  shell: keytool -storepasswd -keystore {{ artifactory_keystore_path }} -storepass {{ artifactory_keystore_default }} -new {{ artifactory_keystore_pass }}
 
 - name: Configure Ping
   lineinfile:
@@ -70,7 +84,7 @@
   loop:
     - src: inactiveServerCleaner.groovy
       dest: /var/opt/jfrog/artifactory/etc/plugins/inactiveServerCleaner.groovy
-      mode: '0550'
+      mode: '0660'
     - src: installer-info.json
       dest: /var/opt/jfrog/artifactory/etc/info/installer-info.json
       mode: '0660'

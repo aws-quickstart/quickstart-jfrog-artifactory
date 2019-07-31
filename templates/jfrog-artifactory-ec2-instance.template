@@ -63,6 +63,10 @@ Parameters:
     Type: String
   VolumeSize:
     Type: Number
+  KeystorePassword:
+    Description: Default Keystore from Java in which we upgrade.
+    Type: String
+    NoEcho: 'true'
 Mappings:
   AWSAMIRegionMap:
     AMI:
@@ -149,7 +153,8 @@ Resources:
                       db_name: ${DatabaseName}
                       db_user: ${DatabaseUser}
                       db_password: ${DatabasePassword}
-                      art_primary: ${ArtifactoryPrimary} 
+                      art_primary: ${ArtifactoryPrimary}
+                      artifactory_keystore_pass: ${KeystorePassword}
                       master_key: ${MasterKey}
                       artifactory_version: ${ArtifactoryVersion}
                 mode: "0400"

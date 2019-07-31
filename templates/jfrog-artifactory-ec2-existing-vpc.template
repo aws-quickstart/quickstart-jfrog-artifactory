@@ -45,6 +45,7 @@ Metadata:
           - CertificateDomain
           - ArtifactoryServerName
           - MasterKey
+          - KeystorePassword
       - Label:
           default: Amazon RDS Configuration
         Parameters:
@@ -125,6 +126,8 @@ Metadata:
         default: Artifactory Server Name
       MasterKey:
         default: Master Server Key
+      KeystorePassword:
+        default: Java Keystore Password
       DatabaseName:
         default: Database Name
       DatabaseEngine:
@@ -387,7 +390,11 @@ Parameters:
     - True
     - False
     Type: String
-    Default: False 
+    Default: False
+  KeystorePassword:
+    Description: Default Keystore from Java in which we upgrade.
+    Type: String
+    NoEcho: 'true'
 Conditions:
   EnableBastion: !Equals [!Ref 'ProvisionBastionHost', 'Enabled']
   #CustomBastionRole: !Not [!Equals [!Ref 'BastionIAMRoleName', '']]
@@ -454,7 +461,7 @@ Resources:
     Type: AWS::ElasticLoadBalancing::LoadBalancer
     Properties:
       SecurityGroups: 
-        - !Ref ArtifactoryEC2SG
+        - !Ref ArtifactoryELBSG
       Subnets: 
         - !Ref PublicSubnet1ID
         - !Ref PublicSubnet2ID
@@ -531,6 +538,34 @@ Resources:
           FromPort: 443
           ToPort: 443
           CidrIp: 0.0.0.0/0         
+  ArtifactoryELBSG:
+    #Condition: EnableBastion
+    DependsOn: BastionStack
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      Tags:
+        - Key: Name
+          Value: ELB-artifactory-sg
+      GroupDescription: SG for ELB Ingress from outside and egress to instances
+      VpcId: !Ref VPCID
+      SecurityGroupIngress:   
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 443
+          ToPort: 443
+          CidrIp: 0.0.0.0/0
+      SecurityGroupEgress:
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 443
+          ToPort: 443
+          CidrIp: 0.0.0.0/0
   ArtifactoryEC2SG:
     #Condition: EnableBastion
     DependsOn: BastionStack
@@ -630,6 +665,7 @@ Resources:
         DatabasePassword: !Ref DatabasePassword
         ArtifactoryPrimary: 'true'
         MasterKey: !Ref MasterKey
+        KeystorePassword: !Ref KeystorePassword
         ArtifactoryVersion: !Ref ArtifactoryVersion
         KeyPairName: !Ref KeyPairName
         HostProfile: !Ref ArtifactoryHostProfile
@@ -671,6 +707,7 @@ Resources:
         DatabasePassword: !Ref DatabasePassword
         ArtifactoryPrimary: 'false'
         MasterKey: !Ref MasterKey
+        KeystorePassword: !Ref KeystorePassword
         ArtifactoryVersion: !Ref ArtifactoryVersion
         KeyPairName: !Ref KeyPairName
         HostProfile: !Ref ArtifactoryHostProfile
@@ -682,4 +719,4 @@ Resources:
 Outputs:
   URL:
     Description: URL of the ELB to access Artifactory
-    Value: "https://fakefornow.com:443"
+    Value: !Sub "https://${ArtifactoryELB.DNSName}"

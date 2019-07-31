@@ -43,6 +43,7 @@ Metadata:
           - CertificateDomain
           - ArtifactoryServerName
           - MasterKey
+          - KeystorePassword
       - Label:
           default: Amazon RDS Configuration
         Parameters:
@@ -119,6 +120,8 @@ Metadata:
         default: Artifactory Server Name
       MasterKey:
         default: Master Server Key
+      KeystorePassword:
+        default: Java Keystore Password        
       DatabaseName:
         default: Database Name
       DatabaseEngine:
@@ -392,6 +395,10 @@ Parameters:
     - False
     Type: String
     Default: False 
+  KeystorePassword:
+    Description: Default Keystore from Java in which we upgrade.
+    Type: String
+    NoEcho: 'true'
 Resources:
   VPCStack:
     Type: AWS::CloudFormation::Stack
@@ -459,10 +466,11 @@ Resources:
         DatabaseInstance: !Ref DatabaseInstance
         DatabaseAllocatedStorage: !Ref DatabaseAllocatedStorage
         MultiAZDatabase: !Ref MultiAZDatabase
+        KeystorePassword: !Ref KeystorePassword
         QSS3BucketName: !Ref QSS3BucketName
         QSS3KeyPrefix: !Ref QSS3KeyPrefix
         
 Outputs:
   URL:
     Description: URL of the ELB to access Artifactory
-    Value: "https://fakefornow.com:443"
+    Value: ArtifactoryExistingVPCStack.Outputs.URL
