@@ -628,7 +628,7 @@ Resources:
         DatabaseName: !Ref DatabaseName
         DatabaseUser: !Ref DatabaseUser
         DatabasePassword: !Ref DatabasePassword
-        ArtifactoryPrimary: 'false'
+        ArtifactoryPrimary: 'true'
         MasterKey: !Ref MasterKey
         ArtifactoryVersion: !Ref ArtifactoryVersion
         KeyPairName: !Ref KeyPairName
