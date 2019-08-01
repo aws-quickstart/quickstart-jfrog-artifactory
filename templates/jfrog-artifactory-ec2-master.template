@@ -12,15 +12,7 @@ Metadata:
           - PrivateSubnet2CIDR
           - PublicSubnet1CIDR
           - PublicSubnet2CIDR
-      - Label:
-          default: Bastion Configuration
-        Parameters:
-          - ProvisionBastionHost
-          - BastionInstanceType
-          - BastionRootVolumeSize
-          - BastionEnableTCPForwarding
-          - BastionEnableX11Forwarding
-          - BastionOS
+          - AccessCIDR
           - RemoteAccessCIDR
       - Label:
           default: Amazon EC2 Configuration
@@ -76,6 +68,10 @@ Metadata:
         default: Public Subnet 1 CIDR
       PublicSubnet2CIDR:
         default: Public Subnet 2 CIDR
+      AccessCIDR:
+        default: Permitted IP Range
+      RemoteAccessCIDR:
+        default: Remote Access CIDR 
       VPCCIDR:
         default: VPC CIDR
       ProvisionBastionHost:
@@ -90,16 +86,12 @@ Metadata:
         default: Bastion Enable X11 Forwarding
       BastionOS:
         default: Bastion OS
-      RemoteAccessCIDR:
-        default: Remote Access CIDR        
       VolumeSize:
         default: Volume Size
       InstanceType:
         default: Instance Type
       NumberOfSecondary:
         default: Number of Secondary Nodes
-      #ExtraJavaOptions:
-      #  default: Extra JVM Options
       ArtifactoryVersion:
         default: Artifactory Version
       ArtifactoryLicense1:
@@ -188,6 +180,20 @@ Parameters:
     Description: CIDR block for the public (DMZ) subnet 2 located in Availability
       Zone 2
     Type: String
+  AccessCIDR:
+    Description: The CIDR IP range that is permitted to access Artifactory. 
+      We recommend that you set this value to a trusted IP range. 
+      For example, you might want to grant only your corporate network access to the software.
+    AllowedPattern: ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/([0-9]|[1-2][0-9]|3[0-2]))$
+    Type: String
+    Default: 0.0.0.0/0 
+  RemoteAccessCIDR:
+    Description: Remote CIDR range for allowing SSH into the Bastion instance. 
+      We recommend that you set this value to a trusted IP range. 
+      For example, you might want to grant specific ranges inside your corporate network ssh access.
+    AllowedPattern: ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/([0-9]|[1-2][0-9]|3[0-2]))$
+    Type: String
+    Default: 0.0.0.0/0 
   QSS3BucketName:
     AllowedPattern: ^[0-9a-zA-Z]+([0-9a-zA-Z-]*[0-9a-zA-Z])*$
     ConstraintDescription: Quick Start bucket name can include numbers, lowercase
@@ -244,13 +250,8 @@ Parameters:
     Type: String
     AllowedValues: [ "Amazon-Linux-HVM", "CentOS-7-HVM", "Ubuntu-Server-14.04-LTS-HVM", "Ubuntu-Server-16.04-LTS-HVM", "SUSE-SLES-15-HVM" ]
     Default: "Amazon-Linux-HVM"
-  RemoteAccessCIDR:
-    Description: Remote CIDR range for allowing SSH into the Bastion instance.
-    AllowedPattern: ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/([0-9]|[1-2][0-9]|3[0-2]))$
-    Type: String
-    Default: 0.0.0.0/0 
   VolumeSize:
-    Description: Size in GB of the available storage (will create 3x ebs volumes of this size)
+    Description: Size in GB of the root device served via ebs.
     Type: Number
     Default: 200
   InstanceType:
@@ -438,13 +439,14 @@ Resources:
         PrivateSubnet2ID: !GetAtt VPCStack.Outputs.PrivateSubnet2AID
         PrivateSubnet1CIDR: !Ref PrivateSubnet1CIDR
         PrivateSubnet2CIDR: !Ref PrivateSubnet2CIDR
+        AccessCIDR: !Ref AccessCIDR
+        RemoteAccessCIDR: !Ref RemoteAccessCIDR
         ProvisionBastionHost: !Ref ProvisionBastionHost
         BastionInstanceType: !Ref BastionInstanceType
         BastionRootVolumeSize: !Ref BastionRootVolumeSize
         BastionEnableTCPForwarding: !Ref BastionEnableTCPForwarding
         BastionEnableX11Forwarding: !Ref BastionEnableX11Forwarding
         BastionOS: !Ref BastionOS
-        RemoteAccessCIDR: !Ref RemoteAccessCIDR
         VolumeSize: !Ref VolumeSize
         InstanceType: !Ref InstanceType
         NumberOfSecondary: !Ref NumberOfSecondary
@@ -473,4 +475,4 @@ Resources:
 Outputs:
   URL:
     Description: URL of the ELB to access Artifactory
-    Value: ArtifactoryExistingVPCStack.Outputs.URL
+    Value: !Sub ${ArtifactoryExistingVPCStack.Outputs.URL}

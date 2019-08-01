@@ -23,6 +23,40 @@ Existing is then always called for this setup and will call ec2-instances
 
 ec2-Instances builds the Primary and Secondary AutoScale/Launch Configs.
 
+### Artifactory Configuration
+
+Currently Artifactory is installed via Ansible utilizing roles. The main items configured are:
+
+   bash
+   artifactory
+    ├── README.md
+    ├── defaults
+    │   └── main.yml
+    ├── files
+    │   ├── inactiveServerCleaner.groovy
+    │   ├── installer-info.json
+    │   └── nginx.conf
+    ├── handlers
+    │   └── main.yml
+    ├── meta
+    │   └── main.yml
+    ├── tasks
+    │   ├── configure.yml
+    │   ├── install.yml
+    │   ├── main.yml
+    │   └── nginx-setup.yml
+    └── templates
+        ├── artifactory.cluster.license.j2
+        ├── artifactory.conf.j2
+        ├── binarystore.xml.j2
+        ├── certificate.key.j2
+        ├── certificate.pem.j2
+        ├── db.properties.j2
+        ├── ha-node.properties.j2
+        └── master.key.j2
+
+The Templates are per documentation. For the ha-node(port set to 0) please see this [link](https://jfrog.com/knowledge-base/why-the-membership-port-in-the-ha-configuration-is-set-to-0/)
+
 ## Deployment from Command line
 
 In order to deploy a test deployment:

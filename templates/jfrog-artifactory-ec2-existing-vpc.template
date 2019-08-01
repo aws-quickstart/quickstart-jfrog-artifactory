@@ -14,15 +14,7 @@ Metadata:
           - PrivateSubnet2ID
           - PrivateSubnet1CIDR
           - PrivateSubnet2CIDR
-      - Label:
-          default: Bastion Configuration
-        Parameters:
-          - ProvisionBastionHost
-          - BastionInstanceType
-          - BastionRootVolumeSize
-          - BastionEnableTCPForwarding
-          - BastionEnableX11Forwarding
-          - BastionOS
+          - AccessCIDR
           - RemoteAccessCIDR
       - Label:
           default: Amazon EC2 Configuration
@@ -84,18 +76,8 @@ Metadata:
         default: Private Subnet 1 CIDR
       PrivateSubnet2CIDR:
         default: Private Subnet 2 CIDR
-      ProvisionBastionHost:
-        default: Provision Bastion Host
-      BastionInstanceType:
-        default: Bastion Instance Type
-      BastionRootVolumeSize:
-        default: Bastion Root Volume Size
-      BastionEnableTCPForwarding:
-        default: Bastion Enable TCP Forwarding
-      BastionEnableX11Forwarding:
-        default: Bastion Enable X11 Forwarding
-      BastionOS:
-        default: Bastion OS
+      AccessCIDR:
+        default: Permitted IP Range
       RemoteAccessCIDR:
         default: Remote Access CIDR
       VolumeSize:
@@ -104,8 +86,6 @@ Metadata:
         default: Instance Type
       NumberOfSecondary:
         default: Number of Secondary Nodes
-      #ExtraJavaOptions:
-      #  default: Extra JVM Options
       ArtifactoryVersion:
         default: Artifactory Version
       ArtifactoryLicense1:
@@ -189,7 +169,21 @@ Parameters:
     ConstraintDescription: CIDR block parameter must be in the form x.x.x.x/16-28
     Default: 10.0.32.0/19
     Description: CIDR block for private subnet 2 located in Availability Zone 2
-    Type: String    
+    Type: String
+  AccessCIDR:
+    Description: The CIDR IP range that is permitted to access Artifactory. 
+      We recommend that you set this value to a trusted IP range. 
+      For example, you might want to grant only your corporate network access to the software. 
+    AllowedPattern: ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/([0-9]|[1-2][0-9]|3[0-2]))$
+    Type: String
+    Default: 0.0.0.0/0 
+  RemoteAccessCIDR:
+    Description: Remote CIDR range for allowing SSH into the Bastion instance. 
+      We recommend that you set this value to a trusted IP range. 
+      For example, you might want to grant specific ranges inside your corporate network ssh access. 
+    AllowedPattern: ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/([0-9]|[1-2][0-9]|3[0-2]))$
+    Type: String
+    Default: 0.0.0.0/0 
   QSS3BucketName:
     AllowedPattern: ^[0-9a-zA-Z]+([0-9a-zA-Z-]*[0-9a-zA-Z])*$
     ConstraintDescription: Quick Start bucket name can include numbers, lowercase
@@ -240,11 +234,6 @@ Parameters:
     Type: String
     AllowedValues: [ "Amazon-Linux-HVM", "CentOS-7-HVM", "Ubuntu-Server-14.04-LTS-HVM", "Ubuntu-Server-16.04-LTS-HVM", "SUSE-SLES-15-HVM" ]
     Default: "Amazon-Linux-HVM"
-  RemoteAccessCIDR:
-    Description: Remote CIDR range for allowing SSH into the Bastion instance.
-    AllowedPattern: ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/([0-9]|[1-2][0-9]|3[0-2]))$
-    Type: String
-    Default: 0.0.0.0/0 
   VolumeSize:
     Description: Size in GB of the available storage (will create 3x ebs volumes of this size)
     Type: Number
@@ -509,7 +498,7 @@ Resources:
     Properties:
       Tags:
         - Key: Name
-          Value: ec2-artifactory-rds-sg
+          Value: artifactory-rds-sg
       GroupDescription: SG for RDS Instance to allow communication from the Bastion and Artifactory servers.
       VpcId: !Ref VPCID
       SecurityGroupIngress:
@@ -539,24 +528,22 @@ Resources:
           ToPort: 443
           CidrIp: 0.0.0.0/0         
   ArtifactoryELBSG:
-    #Condition: EnableBastion
-    DependsOn: BastionStack
     Type: AWS::EC2::SecurityGroup
     Properties:
       Tags:
         - Key: Name
-          Value: ELB-artifactory-sg
+          Value: artifactory-ELB-sg
       GroupDescription: SG for ELB Ingress from outside and egress to instances
       VpcId: !Ref VPCID
       SecurityGroupIngress:   
         - IpProtocol: tcp
           FromPort: 80
           ToPort: 80
-          CidrIp: 0.0.0.0/0
+          CidrIp: !Ref AccessCIDR
         - IpProtocol: tcp
           FromPort: 443
           ToPort: 443
-          CidrIp: 0.0.0.0/0
+          CidrIp: !Ref AccessCIDR
       SecurityGroupEgress:
         - IpProtocol: tcp
           FromPort: 80
@@ -567,13 +554,11 @@ Resources:
           ToPort: 443
           CidrIp: 0.0.0.0/0
   ArtifactoryEC2SG:
-    #Condition: EnableBastion
-    DependsOn: BastionStack
     Type: AWS::EC2::SecurityGroup
     Properties:
       Tags:
         - Key: Name
-          Value: ec2-artifactory-instances-sg
+          Value: artifactory-ec2-instances-sg
       GroupDescription: SG for EC2 instances (also permits SSH access from the bastion host)
       VpcId: !Ref VPCID
       SecurityGroupIngress:   
@@ -584,11 +569,19 @@ Resources:
         - IpProtocol: tcp
           FromPort: 80
           ToPort: 80
-          CidrIp: 0.0.0.0/0
+          CidrIp: !Ref VPCCIDR   
         - IpProtocol: tcp
           FromPort: 443
           ToPort: 443
-          CidrIp: 0.0.0.0/0                                   
+          CidrIp: !Ref VPCCIDR
+        - IpProtocol: tcp
+          FromPort: 8081
+          ToPort: 8081
+          CidrIp: !Ref PrivateSubnet1CIDR
+        - IpProtocol: tcp
+          FromPort: 8081
+          ToPort: 8081
+          CidrIp: !Ref PrivateSubnet2CIDR                                
       SecurityGroupEgress:
         - IpProtocol: tcp
           FromPort: 22
@@ -609,7 +602,15 @@ Resources:
         - IpProtocol: tcp
           FromPort: 3306
           ToPort: 3306
-          CidrIp: !Ref PrivateSubnet2CIDR           
+          CidrIp: !Ref PrivateSubnet2CIDR            
+        - IpProtocol: tcp
+          FromPort: 8081
+          ToPort: 8081
+          CidrIp: !Ref PrivateSubnet1CIDR
+        - IpProtocol: tcp
+          FromPort: 8081
+          ToPort: 8081
+          CidrIp: !Ref PrivateSubnet2CIDR
   ArtifactoryHostRole:
     #Condition: CreateIAMRole
     Type: 'AWS::IAM::Role'

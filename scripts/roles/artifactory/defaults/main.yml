@@ -22,7 +22,7 @@ java_mysql_driver:
   group: artifactory
 rds_cert:
   url: https://s3.amazonaws.com/rds-downloads/rds-combined-ca-bundle.pem
-  dest: /root/root/rds-combined-ca-bundle.pem
+  dest: /root/rds-combined-ca-bundle.pem
   owner: root
   group: root
   cert_alias: rds_ca

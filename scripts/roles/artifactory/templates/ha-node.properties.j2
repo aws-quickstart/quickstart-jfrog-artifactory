@@ -4,7 +4,6 @@ node.id=primary
 node.id={{ ansible_hostname }}
 {% endif %}
 artifactory.ha.data.dir=/var/opt/jfrog/artifactory/data
-context.url=http://127.0.0.1:8081/artifactory
-membership.port=10001
-hazelcast.interface={{ ansible_default_ipv4.address }}
+context.url=http://{{ ansible_default_ipv4.address }}:8081/artifactory
+membership.port=0
 primary={{ art_primary }}
