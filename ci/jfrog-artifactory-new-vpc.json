@@ -52,6 +52,10 @@
         "ParameterValue": "changedit"
     },
     {
+        "ParameterKey": "AnsibleVaultPass",
+        "ParameterValue": "password"
+    },
+    {
         "ParameterKey": "ArtifactoryServerName",
         "ParameterValue": "taskcat"
     }
