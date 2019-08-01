@@ -384,7 +384,7 @@ Parameters:
       symbols.
     NoEcho: 'true'
     Type: String
-DatabaseInstance:
+  DatabaseInstance:
     Description: Size of the database to be deployed as part of the Quick Start.
     AllowedValues:
       - db.m3.medium

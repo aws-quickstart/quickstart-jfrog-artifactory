@@ -159,18 +159,22 @@ Resources:
               /root/.vault_pass.txt:
                 content: !Sub |
                   ${AnsibleVaultPass}
+                mode: "0400"
+              /root/.secureit.sh:
+                content: !Sub |
+                  /usr/local/bin/ansible-vault encrypt /root/.artifactory_ansible/artifactory.yml --vault-id /root/.vault_pass.txt
+                mode: "0770"
           secure-artifactory:
             commands:
               'secure ansible playbook':
-                command: '/usr/local/bin/ansible-vault encrypt /root/.artifactory_ansible/artifactory.yml'
-                env: 
-                  ANSIBLE_VAULT_PASSWORD_FILE: "/root/.vault_pass.txt"
-              'execute ansible playbook':
-                command: '/usr/local/bin/ansible-playbook /root/.artifactory_ansible/artifactory.yml'
-                env: 
-                  ANSIBLE_VAULT_PASSWORD_FILE: "/root/.vault_pass.txt"
-              'cleanup':
-                command: 'rm -rf /root/.vault_pass.txt'
+                command: '/root/.secureit.sh'
+                ignoreErrors: 'false'
+              #'execute ansible playbook':
+              #  command: '/usr/local/bin/ansible-playbook /root/.artifactory_ansible/artifactory.yml'
+              #  env: 
+              #    ANSIBLE_VAULT_PASSWORD_FILE: "/root/.vault_pass.txt"
+              #'cleanup':
+              #  command: 'rm -rf /root/.vault_pass.txt'
       Properties:
         AssociatePublicIpAddress: false
         #PlacementTenancy: !Ref BastionTenancy
@@ -255,6 +259,10 @@ Resources:
               cfn-init -v --stack ${AWS::StackName} --resource
               ArtifactoryLaunchConfiguration --configsets artifactory_install
               --region ${AWS::Region} || cfn_fail
+
+              export ANSIBLE_VAULT_PASSWORD_FILE="/root/.vault_pass.txt"
+
+              /usr/local/bin/ansible-playbook /root/.artifactory_ansible/artifactory.yml localhost
     
               # Signal cfn-init (final check)
 
