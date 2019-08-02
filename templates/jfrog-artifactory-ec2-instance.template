@@ -169,15 +169,8 @@ Resources:
               'secure ansible playbook':
                 command: '/root/.secureit.sh'
                 ignoreErrors: 'false'
-              #'execute ansible playbook':
-              #  command: '/usr/local/bin/ansible-playbook /root/.artifactory_ansible/artifactory.yml'
-              #  env: 
-              #    ANSIBLE_VAULT_PASSWORD_FILE: "/root/.vault_pass.txt"
-              #'cleanup':
-              #  command: 'rm -rf /root/.vault_pass.txt'
       Properties:
         AssociatePublicIpAddress: false
-        #PlacementTenancy: !Ref BastionTenancy
         KeyName: !Ref KeyPairName
         IamInstanceProfile: !Ref HostProfile
         ImageId: !FindInMap 
@@ -262,11 +255,9 @@ Resources:
 
               export ANSIBLE_VAULT_PASSWORD_FILE="/root/.vault_pass.txt"
 
-              /usr/local/bin/ansible-playbook /root/.artifactory_ansible/artifactory.yml localhost
-    
-              # Signal cfn-init (final check)
+              /usr/local/bin/ansible-playbook /root/.artifactory_ansible/artifactory.yml
 
-              #rm -rf /root/artifactory.yml
+              rm -rf /root/.secureit.sh
 
               [ $(qs_status) == 0 ] && cfn_success || cfn_fail
             - S3Region: !If 
