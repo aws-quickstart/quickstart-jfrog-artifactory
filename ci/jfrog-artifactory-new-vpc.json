@@ -36,6 +36,10 @@
         "ParameterValue": "override"
     },
     {
+        "ParameterKey": "ArtifactoryLicense4",
+        "ParameterValue": "override"
+    },
+    {
         "ParameterKey": "DatabaseInstance",
         "ParameterValue": "db.m3.medium"
     },
