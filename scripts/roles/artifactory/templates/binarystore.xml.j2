@@ -33,5 +33,6 @@
         <identity>{{ s3_access_key }}</identity>
         <credential>{{  s3_access_secret_key }}</credential>
         <bucketName>{{ s3_bucket }}</bucketName>
+        <property name="s3service.server-side-encryption" value="AES256"/>
     </provider>
 </config>
