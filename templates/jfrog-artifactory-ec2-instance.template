@@ -67,6 +67,10 @@ Parameters:
     Description: Default Keystore from Java in which we upgrade.
     Type: String
     NoEcho: 'true'
+  AnsibleVaultPass:
+    Description: Default Keystore from Java in which we upgrade.
+    Type: String
+    NoEcho: 'true'
 # To populate additional mappings use the following with the desired --region
 # aws --region us-west-2 ec2 describe-images --owners amazon --filters 'Name=name,Values=amzn-ami-hvm-2018.03.0.20181129-x86_64-gp2' 'Name=state,Values=available' --output json | jq -r '.Images | sort_by(.CreationDate) | last(.[]).ImageId'
 Mappings:
@@ -145,14 +149,8 @@ Resources:
           configSets:
             artifactory_install:
               - "config-artifactory-master"
-              - "run_service-artifactory"
+              - "secure-artifactory"
           config-artifactory-master:
-            packages:
-              yum:
-                wget: []
-                curl: []
-                nginx: []
-          run_service-artifactory:
             files:
               /root/.artifactory_ansible/artifactory.yml:
                 content: !Sub |
@@ -178,9 +176,21 @@ Resources:
                       master_key: ${MasterKey}
                       artifactory_version: ${ArtifactoryVersion}
                 mode: "0400"
+              /root/.vault_pass.txt:
+                content: !Sub |
+                  ${AnsibleVaultPass}
+                mode: "0400"
+              /root/.secureit.sh:
+                content: !Sub |
+                  /usr/local/bin/ansible-vault encrypt /root/.artifactory_ansible/artifactory.yml --vault-id /root/.vault_pass.txt
+                mode: "0770"
+          secure-artifactory:
+            commands:
+              'secure ansible playbook':
+                command: '/root/.secureit.sh'
+                ignoreErrors: 'false'
       Properties:
         AssociatePublicIpAddress: false
-        #PlacementTenancy: !Ref BastionTenancy
         KeyName: !Ref KeyPairName
         IamInstanceProfile: !Ref HostProfile
         ImageId: !FindInMap 
@@ -251,20 +261,23 @@ Resources:
 
               qs_aws-cfn-bootstrap || qs_err
 
+              pip install awscli &> /var/log/userdata.awscli_install.log || qs_err " awscli install failed "
+              
+              pip install ansible &> /var/log/userdata.ansible_install.log || qs_err " ansible install failed "
+
+              mkdir ~/.artifactory_ansible
+
+              aws s3 sync s3://${QSS3BucketName}/${QSS3KeyPrefix}scripts/ ~/.artifactory_ansible/ 
+
               cfn-init -v --stack ${AWS::StackName} --resource
               ArtifactoryLaunchConfiguration --configsets artifactory_install
               --region ${AWS::Region} || cfn_fail
 
-              pip install ansible awscli
+              export ANSIBLE_VAULT_PASSWORD_FILE="/root/.vault_pass.txt"
 
-              mkdir ~/.artifactory_ansible
+              /usr/local/bin/ansible-playbook /root/.artifactory_ansible/artifactory.yml
 
-              aws s3 sync s3://${QSS3BucketName}/${QSS3KeyPrefix}scripts/ ~/.artifactory_ansible/
-
-              /usr/local/bin/ansible-playbook ~/.artifactory_ansible/artifactory.yml
-              # Signal cfn-init (final check)
-
-              #rm -rf /root/artifactory.yml
+              rm -rf /root/.secureit.sh
 
               [ $(qs_status) == 0 ] && cfn_success || cfn_fail
             - S3Region: !If 
