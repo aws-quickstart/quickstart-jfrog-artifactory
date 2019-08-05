@@ -181,8 +181,7 @@ Resources:
                   ${AnsibleVaultPass}
                 mode: "0400"
               /root/.secureit.sh:
-                content: !Sub |
-                  /usr/local/bin/ansible-vault encrypt /root/.artifactory_ansible/artifactory.yml --vault-id /root/.vault_pass.txt
+                content: /usr/local/bin/ansible-vault encrypt /root/.artifactory_ansible/artifactory.yml --vault-id /root/.vault_pass.txt
                 mode: "0770"
           secure-artifactory:
             commands:
