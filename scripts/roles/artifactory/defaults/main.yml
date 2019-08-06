@@ -1,6 +1,8 @@
 ---
 # defaults file for quickstart-jfrog-artifactory/scripts/roles/artifactory
 
+ecs_deployment: false
+
 db_type: mysql
 db_driver: com.mysql.jdbc.Driver
 db_ipaddr: 127.0.0.1
@@ -26,6 +28,9 @@ rds_cert:
   owner: root
   group: root
   cert_alias: rds_ca
+
+# The Docker scripts handle this, so we do not need these variables when configuring
+# A docker system that will host
 artifactory_keystore_path: /etc/alternatives/jre_1.8.0/lib/security/cacerts
 artifactory_keystore_default: changeit
 artifactory_keystore_pass: needs_to_be_passed

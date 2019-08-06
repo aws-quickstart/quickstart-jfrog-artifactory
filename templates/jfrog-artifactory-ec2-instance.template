@@ -68,7 +68,7 @@ Parameters:
     Type: String
     NoEcho: 'true'
   AnsibleVaultPass:
-    Description: Default Keystore from Java in which we upgrade.
+    Description: Ansiblevault Password to secure the artifactory.yml
     Type: String
     NoEcho: 'true'
 # To populate additional mappings use the following with the desired --region
