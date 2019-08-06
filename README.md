@@ -13,9 +13,9 @@ The goal of this project is to have several deployment options depending on a cu
 
 ## Project Setup
 
---> master template
-----> Existing VPC
-------> ec2-instances.
+    --> master template
+    ----> Existing VPC
+    ------> ec2-instances.
 
 Master requires a VPC and will create, and then call Existing
 
@@ -27,33 +27,32 @@ ec2-Instances builds the Primary and Secondary AutoScale/Launch Configs.
 
 Currently Artifactory is installed via Ansible utilizing roles. The main items configured are:
 
-   bash
-   artifactory
-    ├── README.md
-    ├── defaults
-    │   └── main.yml
-    ├── files
-    │   ├── inactiveServerCleaner.groovy
-    │   ├── installer-info.json
-    │   └── nginx.conf
-    ├── handlers
-    │   └── main.yml
-    ├── meta
-    │   └── main.yml
-    ├── tasks
-    │   ├── configure.yml
-    │   ├── install.yml
-    │   ├── main.yml
-    │   └── nginx-setup.yml
-    └── templates
-        ├── artifactory.cluster.license.j2
-        ├── artifactory.conf.j2
-        ├── binarystore.xml.j2
-        ├── certificate.key.j2
-        ├── certificate.pem.j2
-        ├── db.properties.j2
-        ├── ha-node.properties.j2
-        └── master.key.j2
+    artifactory
+     ├── README.md
+     ├── defaults
+     │   └── main.yml
+     ├── files
+     │   ├── inactiveServerCleaner.groovy
+     │   ├── installer-info.json
+     │   └── nginx.conf
+     ├── handlers
+     │   └── main.yml
+     ├── meta
+     │   └── main.yml
+     ├── tasks
+     │   ├── configure.yml
+     │   ├── install.yml
+     │   ├── main.yml
+     │   └── nginx-setup.yml
+     └── templates
+         ├── artifactory.cluster.license.j2
+         ├── artifactory.conf.j2
+         ├── binarystore.xml.j2
+         ├── certificate.key.j2
+         ├── certificate.pem.j2
+         ├── db.properties.j2
+         ├── ha-node.properties.j2
+         └── master.key.j2
 
 The Templates are per documentation. For the ha-node(port set to 0) please see this [link](https://jfrog.com/knowledge-base/why-the-membership-port-in-the-ha-configuration-is-set-to-0/)
 
@@ -75,13 +74,11 @@ In order to deploy a test deployment:
 To install [taskcat](#https://aws-quickstart.github.io/install-taskcat.html)
 Download the submodules:
 
-    bash
     git submodule init
     git submodule update
 
 #### venv
 
-    bash
     python3 -m venv ~/theflashvenv
     source ~/theflashvenv/bin/activate
     pip install awscli taskcat
@@ -90,7 +87,6 @@ Download the submodules:
 
 Use the following Curl|Bash script (Feel free to look inside first) to "install" taskcat via Docker. I then moved `taskcat.docker` to `/usr/local/bin/taskcat`
 
-    bash
     curl -s https://raw.githubusercontent.com/aws-quickstart/taskcat/master/installer/docker-installer.sh | sh
     mv taskcat.docker /usr/local/bin
 
@@ -98,7 +94,6 @@ Use the following Curl|Bash script (Feel free to look inside first) to "install"
 
 In order to test from taskcat you need an override file in your home .aws directory: `~/.aws/taskcat_global_override.json`
 
-    bash
     [  
         {
             "ParameterKey": "KeyPairName",
