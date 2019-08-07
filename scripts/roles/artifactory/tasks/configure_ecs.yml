@@ -34,18 +34,18 @@
   template:
     src: "{{ item.src }}"
     dest: "{{ item.dest }}"
-    owner: artifactory
-    group: artifactory
+    owner: root
+    group: root
     mode: '0664'
   loop: 
     - src: binarystore.xml.j2
       dest: /data/jfrog/artifactory/etc/binarystore.xml
-    - src: master.key.j2
+    - src: certificate.pem.j2
       dest: /data/jfrog/nginx/ssl/cert.pem
     - src: certificate.key.j2
       dest: /data/jfrog/nginx/ssl/cert.key
     - src: artifactory.cluster.license.j2
-      dest: /var/opt/jfrog/artifactory/etc/artifactory.cluster.license
+      dest: /data/jfrog/artifactory/etc/artifactory.cluster.license
     - src: artifactory.conf.j2
       dest: /data/jfrog/nginx/conf.d/artifactory.conf
 
