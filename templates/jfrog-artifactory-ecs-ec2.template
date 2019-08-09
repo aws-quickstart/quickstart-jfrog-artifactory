@@ -40,11 +40,11 @@ Parameters:
     Type: String
   DBType:
     Type: String
-  DB_PLUGIN_URL:
-    defualt: https://bintray.com/artifact/download/bintray/jcenter/mysql/mysql-connector-java/5.1.38/mysql-connector-java-5.1.38.jar
+  DBPluginUrl:
+    Default: https://bintray.com/artifact/download/bintray/jcenter/mysql/mysql-connector-java/5.1.38/mysql-connector-java-5.1.38.jar
     Type: String
-  DB_PLUGIN:
-    default: mysql-connector-java-5.1.38.jar
+  DBPlugin:
+    Default: mysql-connector-java-5.1.38.jar
     Type: String
   ArtifactoryDBEndpointAddress:
     Type: String
@@ -227,8 +227,8 @@ Resources:
                     certificate_key: ${CertificateKey}
                     certificate: ${Certificate}
                     java_mysql_driver:
-                      url: ${DB_PLUGIN_URL}
-                      dest: /data/jfrog/artifactory/plugins/${DB_PLUGIN}
+                      url: ${DBPluginUrl}
+                      dest: /data/jfrog/artifactory/plugins/${DBPlugin}
                       owner: root
                       group: root
                     rds_cert:
@@ -396,7 +396,8 @@ Resources:
             SourcePath: /data/jfrog/artifactory/java_certs
         - Name: plugins
           Host: 
-            SourcePath: /data/jfrog/artifactory/plugins/${DB_PLUGIN}
+            SourcePath: !Sub 
+              /data/jfrog/artifactory/plugins/${DBPlugin}
         - Name: nginx
           Host: 
             SourcePath: /data/jfrog/nginx
@@ -418,7 +419,8 @@ Resources:
             - ContainerPath: /artifactory_extra_certs
               ReadOnly: False
               SourceVolume: java-certs
-            - ContainerPath: !Sub /opt/jfrog/artifactory/tomcat/lib/${DB_PLUGIN}
+            - ContainerPath: !Sub 
+                /opt/jfrog/artifactory/tomcat/lib/${DBPlugin}
               ReadOnly: False
               SourceVolume: plugins                           
           Ulimits:
@@ -464,7 +466,7 @@ Resources:
               Protocol: tcp
           Essential: false
           DependsOn: 
-            - Condition: HEALTHY
+            - Condition: START
               ContainerName: artifactory
           MountPoints:
             - ContainerPath: /var/opt/jfrog/nginx
