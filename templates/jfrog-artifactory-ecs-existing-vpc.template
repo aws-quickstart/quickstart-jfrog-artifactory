@@ -541,7 +541,6 @@ Resources:
       LoadBalancerArn: !Ref ArtifactoryELB
       Port: 443
       Protocol: TCP
-
   ArtifactoryDBSubnetGroup:
     Type: AWS::RDS::DBSubnetGroup
     Properties:
@@ -689,7 +688,7 @@ Resources:
           FromPort: 8081
           ToPort: 8081
           CidrIp: !Ref PrivateSubnet2CIDR           
-  ArtifactoryTasks:
+  ArtifactoryECSBuild:
     Type: AWS::CloudFormation::Stack
     Properties:
       TemplateURL: !Sub 'https://${QSS3BucketName}.s3.amazonaws.com/${QSS3KeyPrefix}templates/jfrog-artifactory-ecs-ec2.template'
@@ -697,14 +696,13 @@ Resources:
         VPCID: !Ref VPCID
         PrivateSubnet1ID: !Ref PrivateSubnet1ID
         PrivateSubnet2ID: !Ref PrivateSubnet2ID
-        MinScalingNodes: '1'
+        MinScalingNodes: '3'
         MaxScalingNodes: '3'
         KeyPairName: !Ref KeyPairName
         InstanceType: !Ref InstanceType
         VolumeSize: !Ref VolumeSize
         DeploymentTag: ArtifactoryMaster
-        QSS3BucketName: !Ref QSS3BucketName
-        QSS3KeyPrefix: !Ref QSS3KeyPrefix
+        NumberOfSecondary: !Ref NumberOfSecondary
         ArtifactoryLicense: !Join # We can do up to 4 due to length
           - ','
           - - !Ref ArtifactoryLicense1
@@ -723,13 +721,14 @@ Resources:
         DatabaseName: !Ref DatabaseName
         DatabaseUser: !Ref DatabaseUser
         DatabasePassword: !Ref DatabasePassword
-        ArtifactoryPrimary: 'true'
         MasterKey: !Ref MasterKey
         #KeystorePassword: !Ref KeystorePassword
         ArtifactoryVersion: !Ref ArtifactoryVersion
         SecurityGroups: !Ref ArtifactoryEC2SG
         ArtifactoryTargetGroupArn: !Ref ArtifactoryTargetGroup
         AnsibleVaultPass: !Ref AnsibleVaultPass
+        QSS3BucketName: !Ref QSS3BucketName
+        QSS3KeyPrefix: !Ref QSS3KeyPrefix
 
 
 

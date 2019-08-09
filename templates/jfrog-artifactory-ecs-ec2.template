@@ -1,9 +1,6 @@
 AWSTemplateFormatVersion: "2010-09-09"
-Description: "Deploys the EC2 Autoscaling, LaunchConfig and Instance for Artifactory"
+Description: "Deploys the EC2 Autoscaling, LaunchConfig, ECS Cluster, and calls nested Stack for the ECS Service"
 Parameters:
-  VPCID:
-    Description: The ID of your existing VPC (e.g., vpc-0343606e).
-    Type: "AWS::EC2::VPC::Id"
   PrivateSubnet1ID:
     Type: 'AWS::EC2::Subnet::Id'
   PrivateSubnet2ID:
@@ -15,18 +12,18 @@ Parameters:
   InstanceType:
     Type: String
   VolumeSize:
-    Type: Number 
+    Type: Number
   ClusterName:
     Description: Desired name for your cluster.
-    Type: String
-    Default: JFrog    
+    Default: JFrog  
+    Type: String  
   DeploymentTag:
     Type: String
+  NumberOfSecondary:
+    Type: Number
   ArtifactoryLicense:
     Type: String
   ArtifactoryServerName:
-    Type: String
-  CertificateDomain:
     Type: String
   ArtifactoryIAMAcessKey:
     Type: String
@@ -53,8 +50,7 @@ Parameters:
   DatabaseUser:
     Type: String
   DatabasePassword:
-    Type: String
-  ArtifactoryPrimary:
+    NoEcho: 'true'
     Type: String
   MasterKey:
     Type: String
@@ -68,16 +64,16 @@ Parameters:
     Type: String
   AnsibleVaultPass:
     Description: Ansiblevault Password to secure the artifactory.yml
-    Type: String
-    NoEcho: 'true'    
+    NoEcho: 'true'  
+    Type: String  
   QSS3BucketName:
     Type: String
   QSS3KeyPrefix:
     Type: String
 Mappings:
   AWSAMIRegionMap:
-    AMI:
-       AMZECSOTP: amzn-ami-2018.03.a-amazon-ecs-optimized
+    #AMI:
+    #   AMZECSOTP: amzn-ami-2018.03.a-amazon-ecs-optimized
     us-east-2:
        AMI: ami-0307f7ccf6ea35750
     us-east-1:
@@ -351,138 +347,47 @@ Resources:
     Type: AWS::Logs::LogGroup
     Properties:
       RetentionInDays: 7
-  ECSService:
-    Type: AWS::ECS::Service
-    Properties:
-      Cluster: !Ref ECSCluster
-      ServiceName: artifactoryHA
-      LaunchType: EC2
-      DesiredCount: 1
-      LoadBalancers:
-        - ContainerName: nginx
-          ContainerPort: 443
-          TargetGroupArn: !Ref ArtifactoryTargetGroupArn
-      TaskDefinition:
-        Ref: ArtifactoryTaskDefinition
-      HealthCheckGracePeriodSeconds: 300
-  ArtifactoryTaskDefinition:
+  PrimaryStack:
     DependsOn: ECSCluster
-    Type: AWS::ECS::TaskDefinition
+    Type: AWS::CloudFormation::Stack
     Properties:
-      Cpu: "2048"
-      Memory: "4096"
-      NetworkMode: bridge
-      RequiresCompatibilities:
-        - EC2
-      ExecutionRoleArn:
-        Fn::GetAtt: ECSRole.Arn
-      Volumes:
-        - Name: etc
-          Host: 
-            SourcePath: /data/jfrog/artifactory/etc/
-        - Name: temp-plugins
-          Host: 
-            SourcePath: /data/jfrog/artifactory/tmp/plugins
-        - Name: java-certs
-          Host: 
-            SourcePath: /data/jfrog/artifactory/java_certs
-        - Name: plugins
-          Host: 
-            SourcePath: !Sub 
-              /data/jfrog/artifactory/plugins/${DBPlugin}
-        - Name: nginx
-          Host: 
-            SourcePath: /data/jfrog/nginx
-      ContainerDefinitions:
-        - Name: artifactory
-          Image: !Sub
-            docker.bintray.io/jfrog/artifactory-pro:${ArtifactoryVersion}
-          PortMappings:
-            - ContainerPort: 8081
-              HostPort: 8081
-              Protocol: tcp
-          MountPoints:
-            - ContainerPath: /artifactory_extra_conf
-              ReadOnly: False
-              SourceVolume: etc
-            - ContainerPath: /tmp/plugins
-              ReadOnly: False
-              SourceVolume: temp-plugins
-            - ContainerPath: /artifactory_extra_certs
-              ReadOnly: False
-              SourceVolume: java-certs
-            - ContainerPath: !Sub 
-                /opt/jfrog/artifactory/tomcat/lib/${DBPlugin}
-              ReadOnly: False
-              SourceVolume: plugins                           
-          Ulimits:
-            - Name: nproc
-              SoftLimit: 65535
-              HardLimit: 65535
-            - Name: nofile
-              SoftLimit: 32000
-              HardLimit: 40000
-          Environment:
-            - Name: EXTRA_JAVA_OPTIONS
-              Value: -Xmx4g
-            - Name: ARTIFACTORY_MASTER_KEY
-              Value: !Ref MasterKey
-            - Name: HA_IS_PRIMARY
-              Value: !Ref ArtifactoryPrimary
-            - Name: DB_URL
-              Value: !Sub
-                jdbc:mysql://${ArtifactoryDBEndpointAddress}:3306/${DatabaseName}?characterEncoding=UTF-8&elideSetAutoCommits=true&verifyServerCertificate=true&useSSL=true&requireSSL=true 
-            - Name: DB_TYPE
-              Value: !Ref DBType
-            - Name: DB_USER
-              Value: !Ref DatabaseUser
-            - Name: DB_PASSWORD
-              Value: !Ref DatabasePassword
-          LogConfiguration:
-            LogDriver: awslogs
-            Options:
-              awslogs-group:
-                Ref: ECSLogGroup
-              awslogs-region:
-                Ref: AWS::Region
-              awslogs-stream-prefix: artifactory
-        - Name: nginx
-          Image: !Sub
-            docker.bintray.io/jfrog/nginx-artifactory-pro:${ArtifactoryVersion}
-          PortMappings:
-            - ContainerPort: 80
-              HostPort: 80
-              Protocol: tcp
-            - ContainerPort: 443
-              HostPort: 443
-              Protocol: tcp
-          Essential: false
-          DependsOn: 
-            - Condition: START
-              ContainerName: artifactory
-          Links:
-            - artifactory:artifactory
-          MountPoints:
-            - ContainerPath: /var/opt/jfrog/nginx
-              ReadOnly: False
-              SourceVolume: nginx
-          Ulimits:
-            - Name: nproc
-              SoftLimit: 65535
-              HardLimit: 65535
-            - Name: nofile
-              SoftLimit: 32000
-              HardLimit: 40000
-          Environment:
-            - Name: ART_BASE_URL
-              Value: http://artifactory:8081/artifactory
-            - Name: SSL
-              Value: "true"
-          LogConfiguration:
-            LogDriver: awslogs
-            Options:
-              awslogs-group:
-                Ref: ECSLogGroup
-              awslogs-region:
-                Ref: AWS::Region
-              awslogs-stream-prefix: nginx
+      TemplateURL: !Sub 'https://${QSS3BucketName}.s3.amazonaws.com/${QSS3KeyPrefix}templates/jfrog-artifactory-ecs.template'
+      Parameters:
+        ECSCluster: !Ref ClusterName # In case we do not build the cluster we still require the Name of the cluster built.
+        ServiceName: ArtifactoryPrimary
+        ArtifactoryTargetGroupArn: !Ref ArtifactoryTargetGroupArn
+        ArtifactoryVersion: !Ref ArtifactoryVersion
+        DBPlugin: !Ref DBPlugin
+        MasterKey: !Ref MasterKey
+        NumberNodes: "1"
+        ArtifactoryPrimary: "true"
+        DBType: !Ref DBType
+        DatabaseUser: !Ref DatabaseUser
+        DatabaseName: !Ref DatabaseName
+        DatabasePassword: !Ref DatabasePassword
+        ArtifactoryDBEndpointAddress: !Ref ArtifactoryDBEndpointAddress
+        ECSLogGroup: !Ref ECSLogGroup
+        ECSRoleArn: 
+          Fn::GetAtt: ECSRole.Arn
+  SecondaryStack:
+    DependsOn: ECSCluster
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub 'https://${QSS3BucketName}.s3.amazonaws.com/${QSS3KeyPrefix}templates/jfrog-artifactory-ecs.template'
+      Parameters:
+        ECSCluster: !Ref ClusterName # In case we do not build the cluster we still require the Name of the cluster built.
+        ServiceName: ArtifactorySecondary
+        ArtifactoryTargetGroupArn: !Ref ArtifactoryTargetGroupArn
+        ArtifactoryVersion: !Ref ArtifactoryVersion
+        DBPlugin: !Ref DBPlugin
+        MasterKey: !Ref MasterKey
+        NumberNodes: !Ref NumberOfSecondary
+        ArtifactoryPrimary: "false"
+        DBType: !Ref DBType
+        DatabaseUser: !Ref DatabaseUser
+        DatabaseName: !Ref DatabaseName
+        DatabasePassword: !Ref DatabasePassword
+        ArtifactoryDBEndpointAddress: !Ref ArtifactoryDBEndpointAddress
+        ECSLogGroup: !Ref ECSLogGroup
+        ECSRoleArn: 
+          Fn::GetAtt: ECSRole.Arn
