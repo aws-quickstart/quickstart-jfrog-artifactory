@@ -30,6 +30,7 @@ Metadata:
           - ArtifactoryServerName
           - MasterKey
           - KeystorePassword
+          - AnsibleVaultPass
       - Label:
           default: Amazon RDS Configuration
         Parameters:
@@ -101,7 +102,11 @@ Metadata:
       MasterKey:
         default: Master Server Key
       KeystorePassword:
-        default: Java Keystore Password          
+        default: Java Keystore Password
+      AnsibleVaultPass:
+        Description: Ansiblevault Password to secure the artifactory.yml
+        Type: String
+        NoEcho: 'true'      
       DatabaseName:
         default: Database Name
       DatabaseEngine:
@@ -458,6 +463,7 @@ Resources:
         ArtifactoryServerName: !Ref ArtifactoryServerName
         MasterKey: !Ref MasterKey
         KeystorePassword: !Ref KeystorePassword
+        AnsibleVaultPass: !Ref AnsibleVaultPass
         DatabaseName: !Ref DatabaseName
         DatabaseEngine: !Ref DatabaseEngine
         DatabaseVersion: !Ref DatabaseVersion
