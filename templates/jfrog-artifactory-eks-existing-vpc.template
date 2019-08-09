@@ -1,0 +1,364 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: Deploys an EKS cluster with JFrog Artifactory into an existing VPC
+Metadata:
+  AWS::CloudFormation::Interface:
+    ParameterGroups:
+      - Label:
+          default: Security configuration
+        Parameters:
+          - KeyPairName
+          - RemoteAccessCIDR
+          - AdditionalEKSAdminArns
+          - KubeConfigKmsContext
+      - Label:
+          default: Network configuration
+        Parameters:
+          - VPCID
+          - PrivateSubnet1ID
+          - PrivateSubnet2ID
+          - PrivateSubnet3ID
+          - PublicSubnet1ID
+          - PublicSubnet2ID
+          - PublicSubnet3ID
+      - Label:
+          default: EC2/EKS configuration
+        Parameters:
+          - MasterNodeInstanceType
+          - SecondaryNodeInstanceType
+          - NumberOfMasterNodes
+          - NumberOfSecondary
+          - MasterNodeVolumeSize
+          - SecondaryNodeVolumeSize
+          - KubernetesVersion
+      - Label:
+          default: JFrog Artifactory Configuration
+        Parameters:
+          - ArtifactoryVersion
+          - NumberOfSecondary 
+          - ArtifactoryLicense1
+          - ArtifactoryLicense2
+          - ArtifactoryLicense3
+          - ArtifactoryLicense4
+          - Certificate
+          - CertificateKey
+          - CertificateDomain
+          - ArtifactoryServerName
+          - MasterKey
+          - KeystorePassword
+          - AnsibleVaultPass
+      - Label:
+          default: AWS Quick Start configuration
+        Parameters:
+          - QSS3BucketName
+          - QSS3KeyPrefix
+          - LambdaZipsBucketName
+    ParameterLabels:
+      KeyPairName:
+        default: SSH key name
+      RemoteAccessCIDR:
+        default: Remote access CIDR
+      AdditionalEKSAdminArns:
+        default: Additional EKS admin ARNs
+      KubeConfigKmsContext:
+        default: Kubernetes config KMS context
+      VPCID:
+        default: VPC ID
+      PrivateSubnet1ID:
+        default: Private subnet 1 ID
+      PrivateSubnet2ID:
+        default: Private subnet 2 ID
+      PrivateSubnet3ID:
+        default: Private subnet 3 ID
+      PublicSubnet1ID:
+        default: Public subnet 1 ID
+      PublicSubnet2ID:
+        default: Public subnet 2 ID
+      PublicSubnet3ID:
+        default: Public subnet 3 ID
+      MasterNodeInstanceType:
+        default: Master node instance type
+      SecondaryNodeInstanceType:
+        default: Secondary nodes instance type
+      NumberOfMasterNodes:
+        default: Number of master nodes
+      NumberOfSecondary:
+        default: Number of secondary nodes
+      MasterNodeVolumeSize:
+        default: Master node EBS volume size
+      SecondaryNodeVolumeSize:
+        default: Secondary node EBS volume size
+      KubernetesVersion:
+        default: Kubernetes version
+      DatabaseName:
+        default: Database Name
+      DatabaseEngine:
+        default: Database Engine
+      DatabaseVersion:
+        default: Database Version
+      DatabaseUser:
+        default: Database User
+      DatabasePassword:
+        default: Database Password
+      DatabaseInstance:
+        default: Database Instance Type
+      DBAllocatedStorage:
+        default: Database Allocated Storage
+      MultiAZDatabase:
+        default: High Available Database
+      QSS3BucketName:
+        default: Quick Start S3 bucket name
+      QSS3KeyPrefix:
+        default: Quick Start S3 key prefix
+      LambdaZipsBucketName:
+        default: Lambda zips bucket name
+
+Parameters:
+  KeyPairName:
+    Description: The name of an existing public/private key pair, which allows you
+      to securely connect to your instance after it launches
+    Type: AWS::EC2::KeyPair::KeyName
+  RemoteAccessCIDR:
+    AllowedPattern: ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/([0-9]|[1-2][0-9]|3[0-2]))$
+    ConstraintDescription: CIDR block parameter must be in the form x.x.x.x/x
+    Default: "0.0.0.0/0"
+    Description:
+      The CIDR IP range that is permitted to access the bastion host. We recommend
+      that you set this value to a trusted IP range. Setting this parameter to 0.0.0.0/0 
+      will open SSH access to the bastion host from any source address.
+    Type: String
+  AdditionalEKSAdminArns:
+    Default: ""
+    Description: "[OPTIONAL] Comma-separated list of IAM users/roles to be granted admin access to the EKS cluster"
+    Type: CommaDelimitedList
+  KubeConfigKmsContext:
+    Description: String value used by KMS to encrypt/decrypt Kubernetes config
+    Type: String
+    Default: "JFrogArtifactory"
+  VPCID:
+    Description: ID of your existing VPC for deployment
+    Type: AWS::EC2::VPC::Id
+  PrivateSubnet1ID:
+    Description: ID of private subnet 1 in Availability Zone 1 for the Workload (e.g.,
+      subnet-a0246dcd)
+    Type: AWS::EC2::Subnet::Id
+  PrivateSubnet2ID:
+    Description: ID of private subnet 2 in Availability Zone 2 for the Workload (e.g.,
+      subnet-b1f432cd)
+    Type: AWS::EC2::Subnet::Id
+  PrivateSubnet3ID:
+    Description: ID of private subnet 3 in Availability Zone 3 for the Workload (e.g.,
+      subnet-b1f4a2cd)
+    Type: AWS::EC2::Subnet::Id
+  PublicSubnet1ID:
+    Description: ID of public subnet 1 in Availability Zone 1 for the ELB load balancer
+      (e.g., subnet-9bc642ac)
+    Type: AWS::EC2::Subnet::Id
+  PublicSubnet2ID:
+    Description: ID of public subnet 2 in Availability Zone 2 for the ELB load balancer
+      (e.g., subnet-e3246d8e)
+    Type: AWS::EC2::Subnet::Id
+  PublicSubnet3ID:
+    Description: ID of public subnet 3 in Availability Zone 3 for the ELB load balancer
+      (e.g., subnet-5e26bac2)
+    Type: AWS::EC2::Subnet::Id
+  MasterNodeInstanceType:
+    Default: m4.xlarge
+    AllowedValues:
+      - m4.xlarge
+      - m4.2xlarge
+      - m4.4xlarge
+    ConstraintDescription: Must be a valid EC2 instance type
+    Description: The Amazon EC2 instance type for the masters node group.
+    Type: String
+  SecondaryNodeInstanceType:
+    Default: m4.xlarge
+    AllowedValues:
+      - m4.xlarge
+      - m4.2xlarge
+      - m4.4xlarge
+    ConstraintDescription: Must be a valid EC2 instance type
+    Description: The Amazon EC2 instance type for the secondary node group.
+    Type: String
+  NumberOfMasterNodes:
+    Default: 1
+    Description: The initial number of master node instances to create.
+    Type: Number
+  NumberOfSecondary:
+    Default: 2
+    Description: The initial number of secondary node instances to create.
+    Type: Number
+  MasterNodeVolumeSize:
+    Default: 20
+    Description: The size of EBS volumes for master node instances, in GiB
+    Type: String
+  SecondaryNodeVolumeSize:
+    Default: 500
+    Description: The EBS volume size for each secondary node instance, in GiB.
+    Type: String
+  KubernetesVersion:
+    Type: String
+    AllowedValues: [ "1.13", "1.12", "1.11" ]
+    Default: "1.13"
+    Description: The Kubernetes control plane version
+  DatabaseName:
+    Description: Type a name for your DB instance. The name must be unique cross all DB instances 
+      owned by your AWS account in the current AWS Region. The DB instance identifier is case-insensitive, 
+      but is stored as all lowercase (as in "mydbinstance")
+    AllowedPattern: ^[a-zA-Z]([a-zA-Z0-9])+$
+    MinLength: '1'
+    MaxLength: '60'
+    ConstraintDescription: 1 to 60 alphanumeric characters First character must be a letter.   
+    Default: artdb
+    Type: String
+  DatabaseEngine:
+    Description: Database Engine you wish to run, currently locked to mysql
+    AllowedValues:
+    - MySQL
+    Default: MySQL
+    Type: String
+  DatabaseVersion:
+    Description: Major Version of the Database Engine you wish to run, currently locked to mysql versions
+      supported by Artifactory and RDS.
+    AllowedValues:
+      - 5.5
+      - 5.6
+      - 5.7
+    Default: 5.7
+    Type: String
+  DatabaseUser:
+    Description: Login ID for the master user of your DB instance.
+    MinLength: '1'
+    MaxLength: '16'
+    AllowedPattern: ^[a-zA-Z]([a-zA-Z0-9])+$
+    ConstraintDescription: 1 to 16 alphanumeric characters. First character must be a letter
+    Default: artifactory
+    Type: String
+  DatabasePassword:
+    Description: Password for Artifactory Database User.
+    AllowedPattern: ^[^ \\']+$
+    MinLength: '8'
+    MaxLength: '12'
+    ConstraintDescription: Must be at least 8 and no more than
+      12 characters containing letters and (minimum 1 capital letter), numbers and
+      symbols.
+    NoEcho: 'true'
+    Type: String
+  DatabaseInstance:
+    Description: Size of the database to be deployed as part of the Quick Start.
+    AllowedValues:
+      - db.m3.medium
+      - db.m3.large
+      - db.m3.xlarge
+      - db.m3.2xlarge
+      - db.m4.large
+      - db.m4.xlarge
+      - db.m4.2xlarge
+      - db.m4.10xlarge
+      - db.m4.16xlarge
+      - db.m5.large
+      - db.m5.xlarge
+      - db.m5.2xlarge
+      - db.m5.4xlarge
+      - db.m5.12xlarge
+      - db.m5.24xlarge
+      ConstraintDescription: Must be a valid database Instance Type
+      Default: db.m4.large
+      Type: String
+  DBAllocatedStorage:
+      Description: Size in GB of the available storage for the Database Instance.
+      MinValue: 5
+      MaxValue: 1024
+      Default: 10
+      Type: Number
+  MultiAZDatabase:
+      Description: Create a Multi-Availability Zone Amazon RDS instance.
+      ConstraintDescription: True or False
+      AllowedValues:
+      - True
+      - False
+    Default: False
+      Type: String
+  QSS3BucketName:
+    AllowedPattern: ^[0-9a-zA-Z]+([0-9a-zA-Z-]*[0-9a-zA-Z])*$
+    ConstraintDescription:
+      Quick Start bucket name can include numbers, lowercase
+      letters, uppercase letters, and hyphens (-). It cannot start or end with a hyphen
+      (-).
+    Default: aws-quickstart
+    Description:
+      S3 bucket name for the Quick Start assets. This string can include
+      numbers, lowercase letters, uppercase letters, and hyphens (-). It cannot start
+      or end with a hyphen (-).
+    Type: String
+  QSS3KeyPrefix:
+    AllowedPattern: ^[0-9a-zA-Z-/]*$
+    ConstraintDescription:
+      Quick Start key prefix can include numbers, lowercase letters,
+      uppercase letters, hyphens (-), and forward slash (/).
+    Default: quickstart-artifactory/
+    Description:
+      S3 key prefix for the Quick Start assets. Quick Start key prefix
+      can include numbers, lowercase letters, uppercase letters, hyphens (-), and
+      forward slash (/).
+    Type: String
+  LambdaZipsBucketName:
+    Description: '[OPTIONAL] The name of the S3 bucket where the Lambda .zip files should be placed. If you leave this parameter blank, an S3 bucket will be created.'
+    Type: String
+    Default: ''
+Rules:
+  EKSSupport:
+    Assertions:
+      - AssertDescription: Your AWS Region does *NOT* yet support Amazon EKS
+        Assert: !Contains
+          -  - us-west-2
+             - us-east-1
+             - us-east-2
+             - eu-west-1
+             - eu-west-2
+             - eu-west-3
+             - eu-north-1
+             - eu-central-1
+             - ap-southeast-1
+             - ap-southeast-2
+             - ap-northeast-1
+             - ap-northeast-2
+             - ap-south-1
+          - !Ref 'AWS::Region'
+
+Resources:
+  EKSStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub "https://${QSS3BucketName}.s3.amazonaws.com/${QSS3KeyPrefix}submodules/quickstart-amazon-eks/templates/amazon-eks.template.yaml"
+      Parameters:
+        KeyPairName: !Ref KeyPairName
+        RemoteAccessCIDR: !Ref RemoteAccessCIDR
+        AdditionalEKSAdminArns: !Join [ ",", !Ref AdditionalEKSAdminArns ]
+        VPCID: !Ref VPCID
+        PrivateSubnet1ID: !Ref PrivateSubnet1ID
+        PrivateSubnet2ID: !Ref PrivateSubnet2ID
+        PrivateSubnet3ID: !Ref PrivateSubnet3ID
+        PublicSubnet1ID: !Ref PublicSubnet1ID
+        PublicSubnet2ID: !Ref PublicSubnet2ID
+        PublicSubnet3ID: !Ref PublicSubnet3ID
+        KubernetesVersion: !Ref KubernetesVersion
+        NodeInstanceType: !Ref MasterNodeInstanceType
+        NumberOfNodes: !Ref NumberOfMasterNodes
+        NodeGroupName: "artifactory-master"
+        NodeVolumeSize: !Ref MasterNodeVolumeSize
+        KubeConfigKmsContext: !Ref KubeConfigKmsContext
+        BootstrapArguments: "--kubelet-extra-args '--node-labels=partition=masters'"
+        QSS3BucketName: !Ref QSS3BucketName
+        QSS3KeyPrefix: !Sub "${QSS3KeyPrefix}submodules/quickstart-amazon-eks/"
+        LambdaZipsBucketName: !Ref LambdaZipsBucketName
+
+Outputs:
+  ArtifactoryUrl:
+    Value: !GetAtt ArtifactoryStack.Outputs.ArtifactoryUrl
+    Description: Public Artifactory URL
+  BastionIP:
+    Value: !GetAtt EKSStack.Outputs.BastionIP
+    Description: Bastion host IP, for admin access via SSH
+  KubeConfigPath:
+    Value: !GetAtt EKSStack.Outputs.KubeConfigPath
+    Description: (Advanced) Amazon S3 bucket containing encrypted Kubernetes config which can be used to access the Kubernetes API.
