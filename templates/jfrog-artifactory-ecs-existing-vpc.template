@@ -434,6 +434,13 @@ Parameters:
       uppercase letters, hyphens (-), and forward slash (/).
     Default: quickstart-jfrog-artifactory/
     Type: String
+  ELBScheme:
+    Description: Whether this will be internet facing or internal
+    AllowedValues:
+      - internal
+      - internet-facing
+    Default: internet-facing
+    Type: String
 
 Conditions:
   EnableBastion: !Equals [!Ref 'ProvisionBastionHost', 'Enabled']
@@ -497,31 +504,44 @@ Resources:
       Users:
         - !Ref ArtifactoryS3IAMUser  
   ArtifactoryELB:
-    Type: AWS::ElasticLoadBalancing::LoadBalancer
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
     Properties:
-      SecurityGroups: 
-        - !Ref ArtifactoryELBSG
+      IpAddressType: ipv4
+      Name: ArtifactoryELB
+      Scheme: !Ref ELBScheme
       Subnets: 
         - !Ref PublicSubnet1ID
         - !Ref PublicSubnet2ID
-      AppCookieStickinessPolicy:
-        - PolicyName: HTTPSCookieStickinessPolicy
-          CookieName: connect.sid
-      Listeners:
-        - LoadBalancerPort: '80'
-          InstancePort: '80'
-          InstanceProtocol: HTTP
-          Protocol: HTTP
-        - LoadBalancerPort: '443'
-          InstancePort: '443'
-          InstanceProtocol: TCP
-          Protocol: TCP
-      HealthCheck:
-        Target: HTTP:80/artifactory/webapp/
-        HealthyThreshold: '3'
-        UnhealthyThreshold: '3'
-        Interval: '30'
-        Timeout: '15'
+      Tags: 
+        - Key: Name
+          Value: artifactory-ELB
+      Type: network
+  ArtifactoryTargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties: 
+      HealthCheckEnabled: True
+      HealthCheckIntervalSeconds: 30
+      HealthCheckProtocol: TCP
+      HealthCheckTimeoutSeconds: 10
+      HealthyThresholdCount: 3
+      Name: Artifactory
+      Port: 443
+      Protocol: TCP
+      #Tags: 
+      #  - !Ref DeploymentTag
+      TargetType: instance
+      UnhealthyThresholdCount: 3
+      VpcId: !Ref VPCID
+  ArtifactoryELBListener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties: 
+      DefaultActions: 
+        - TargetGroupArn: !Ref ArtifactoryTargetGroup
+          Type: forward
+      LoadBalancerArn: !Ref ArtifactoryELB
+      Port: 443
+      Protocol: TCP
+
   ArtifactoryDBSubnetGroup:
     Type: AWS::RDS::DBSubnetGroup
     Properties:
@@ -594,6 +614,10 @@ Resources:
           FromPort: 443
           ToPort: 443
           CidrIp: !Ref AccessCIDR
+        - IpProtocol: tcp
+          FromPort: 8081
+          ToPort: 8081
+          CidrIp: !Ref AccessCIDR          
       SecurityGroupEgress:
         - IpProtocol: tcp
           FromPort: 80
@@ -603,6 +627,10 @@ Resources:
           FromPort: 443
           ToPort: 443
           CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 8081
+          ToPort: 8081
+          CidrIp: 0.0.0.0/0          
   ArtifactoryEC2SG:
     Type: AWS::EC2::SecurityGroup
     Properties:
@@ -623,15 +651,15 @@ Resources:
         - IpProtocol: tcp
           FromPort: 443
           ToPort: 443
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 8081
+          ToPort: 8081
           CidrIp: !Ref VPCCIDR
         - IpProtocol: tcp
           FromPort: 8081
           ToPort: 8081
-          CidrIp: !Ref PrivateSubnet1CIDR
-        - IpProtocol: tcp
-          FromPort: 8081
-          ToPort: 8081
-          CidrIp: !Ref PrivateSubnet2CIDR                                
+          CidrIp: !Ref VPCCIDR                                
       SecurityGroupEgress:
         - IpProtocol: tcp
           FromPort: 22
@@ -687,7 +715,7 @@ Resources:
         CertificateDomain: !Ref CertificateDomain
         ArtifactoryIAMAcessKey: !Ref ArtifactoryIAMAcessKey
         SecretAccessKey: !GetAtt ArtifactoryIAMAcessKey.SecretAccessKey
-        ArtifactoryS3Bucket: !Ref ArtifactoryS3Bucket 
+        ArtifactoryS3Bucket: !Ref ArtifactoryS3Bucket
         CertificateKey: !Ref CertificateKey
         Certificate: !Ref Certificate
         DBType: mysql
@@ -700,7 +728,7 @@ Resources:
         #KeystorePassword: !Ref KeystorePassword
         ArtifactoryVersion: !Ref ArtifactoryVersion
         SecurityGroups: !Ref ArtifactoryEC2SG
-        ArtifactoryELB: !Ref ArtifactoryELB
+        ArtifactoryTargetGroupArn: !Ref ArtifactoryTargetGroup
         AnsibleVaultPass: !Ref AnsibleVaultPass
 
 

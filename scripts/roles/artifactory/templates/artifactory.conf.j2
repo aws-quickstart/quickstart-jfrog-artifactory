@@ -1,5 +1,5 @@
-ssl_certificate      /etc/pki/tls/certs/cert.pem;
-ssl_certificate_key  /etc/pki/tls/private/cert.key;
+ssl_certificate      {{ ssl_dir }}/cert.pem;
+ssl_certificate_key  {{ key_dir }}/cert.key;
 ssl_session_cache shared:SSL:1m;
 ssl_prefer_server_ciphers   on;
 ## server configuration
@@ -15,7 +15,7 @@ server {
   ## error_log /var/log/nginx/artifactory-error.log;
   rewrite ^/$ /artifactory/webapp/ redirect;
   rewrite ^/artifactory/?(/webapp)?$ /artifactory/webapp/ redirect;
-  rewrite ^/(v2)/(.*) /artifactory/$1/$2;
+  rewrite ^/(v1|v2)/(.*) /artifactory/api/docker/$repo/$1/$2;
   chunked_transfer_encoding on;
   client_max_body_size 0;
   location / {
@@ -23,9 +23,9 @@ server {
     proxy_pass_header   Server;
     proxy_cookie_path   ~*^/.* /;
     if ( $request_uri ~ ^/artifactory/(.*)$ )  {
-        proxy_pass          http://127.0.0.1:8081/artifactory/$1;
+        proxy_pass          http://{{ artifactory_hostname }}:8081/artifactory/$1;
     }
-    proxy_pass         http://127.0.0.1:8081/artifactory/;
+    proxy_pass         http://{{ artifactory_hostname }}:8081/artifactory/;
     proxy_set_header    X-Artifactory-Override-Base-Url $http_x_forwarded_proto://$host:$server_port/artifactory;
     proxy_set_header    X-Forwarded-Port  $server_port;
     proxy_set_header    X-Forwarded-Proto $http_x_forwarded_proto;

@@ -40,6 +40,12 @@ Parameters:
     Type: String
   DBType:
     Type: String
+  DB_PLUGIN_URL:
+    defualt: https://bintray.com/artifact/download/bintray/jcenter/mysql/mysql-connector-java/5.1.38/mysql-connector-java-5.1.38.jar
+    Type: String
+  DB_PLUGIN:
+    default: mysql-connector-java-5.1.38.jar
+    Type: String
   ArtifactoryDBEndpointAddress:
     Type: String
   DatabaseName:
@@ -56,7 +62,7 @@ Parameters:
     Type: String
   KeyPairName:
     Type: AWS::EC2::KeyPair::KeyName    
-  ArtifactoryELB:
+  ArtifactoryTargetGroupArn:
     Type: String
   SecurityGroups:
     Type: String
@@ -129,6 +135,7 @@ Resources:
       ManagedPolicyArns:
         - 'arn:aws:iam::aws:policy/service-role/AmazonEC2RoleforSSM'
         - arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy
+        - arn:aws:iam::aws:policy/service-role/AmazonEC2ContainerServiceforEC2Role
       Policies:
         - PolicyName: ecs-service
           PolicyDocument: 
@@ -158,6 +165,7 @@ Resources:
       Roles: 
         - !Ref ECSRole
   ECSCluster: 
+    DependsOn: ArtifactoryScalingGroup
     #Condition: CreateECSCluster
     Type: AWS::ECS::Cluster
     Properties: 
@@ -165,6 +173,7 @@ Resources:
   ArtifactoryScalingGroup:
     Type: 'AWS::AutoScaling::AutoScalingGroup'
     Properties:
+      AutoScalingGroupName: ArtifactoryECSEC2ScaleGroup
       LaunchConfigurationName: !Ref ArtifactoryLaunchConfiguration
       VPCZoneIdentifier:
         - !Ref PrivateSubnet1ID
@@ -173,9 +182,7 @@ Resources:
       MaxSize: !Ref MaxScalingNodes
       Cooldown: '300'
       DesiredCapacity: !Ref MinScalingNodes
-      LoadBalancerNames: 
-        - !Ref ArtifactoryELB
-      HealthCheckType: ELB
+      HealthCheckType: EC2
       HealthCheckGracePeriod: 600
       Tags:
         - Key: Name
@@ -208,16 +215,20 @@ Resources:
                 - import_playbook: site-artifactory.yml
                   vars:
                     ecs_deployment: true
+                    artifactory_hostname: artifactory
+                    ssl_dir: /var/opt/jfrog/nginx/ssl
+                    key_dir: /var/opt/jfrog/nginx/ssl
                     artifactory_licenses: ${ArtifactoryLicense}
                     s3_endpoint: s3.${AWS::Region}.amazonaws.com
                     s3_access_key: ${ArtifactoryIAMAcessKey}
                     s3_access_secret_key: ${SecretAccessKey}
                     s3_bucket: ${ArtifactoryS3Bucket}
+                    artifactory_server_name: ${ArtifactoryServerName}
                     certificate_key: ${CertificateKey}
                     certificate: ${Certificate}
                     java_mysql_driver:
-                      url: https://bintray.com/artifact/download/bintray/jcenter/mysql/mysql-connector-java/5.1.38/mysql-connector-java-5.1.38.jar
-                      dest: /data/jfrog/artifactory/plugins/mysql-connector-java-5.1.38.jar
+                      url: ${DB_PLUGIN_URL}
+                      dest: /data/jfrog/artifactory/plugins/${DB_PLUGIN}
                       owner: root
                       group: root
                     rds_cert:
@@ -249,6 +260,7 @@ Resources:
       SecurityGroups:
         - !Ref SecurityGroups
       InstanceType: !Ref InstanceType
+      LaunchConfigurationName: ArtifactoryECSEC2LaunchConfig
       BlockDeviceMappings:
         - DeviceName: /dev/xvda
           Ebs:
@@ -342,31 +354,52 @@ Resources:
   ECSService:
     Type: AWS::ECS::Service
     Properties:
-      Cluster:
-        Ref: ECSCluster
-      ServiceName: artifactory
+      Cluster: !Ref ECSCluster
+      ServiceName: artifactoryHA
       LaunchType: EC2
       DesiredCount: 1
+      LoadBalancers:
+        - ContainerName: artifactory
+          ContainerPort: 8081
+          TargetGroupArn: !Ref ArtifactoryTargetGroupArn
       TaskDefinition:
         Ref: ArtifactoryTaskDefinition
+      HealthCheckGracePeriodSeconds: 300
       NetworkConfiguration:
         AwsvpcConfiguration:
-          AssignPublicIp: ENABLED
+          AssignPublicIp: DISABLED
           SecurityGroups:
-            - SecurityGroups
+            - !Ref SecurityGroups
           Subnets:
             - Ref: PrivateSubnet1ID
             - Ref: PrivateSubnet2ID
   ArtifactoryTaskDefinition:
+    DependsOn: ECSCluster
     Type: AWS::ECS::TaskDefinition
     Properties:
       Cpu: "2048"
       Memory: "4096"
-      NetworkMode: awsvpc
+      NetworkMode: bridge
       RequiresCompatibilities:
         - EC2
       ExecutionRoleArn:
         Fn::GetAtt: ECSRole.Arn
+      Volumes:
+        - Name: etc
+          Host: 
+            SourcePath: /data/jfrog/artifactory/etc/
+        - Name: temp-plugins
+          Host: 
+            SourcePath: /data/jfrog/artifactory/tmp/plugins
+        - Name: java-certs
+          Host: 
+            SourcePath: /data/jfrog/artifactory/java_certs
+        - Name: plugins
+          Host: 
+            SourcePath: /data/jfrog/artifactory/plugins/${DB_PLUGIN}
+        - Name: nginx
+          Host: 
+            SourcePath: /data/jfrog/nginx
       ContainerDefinitions:
         - Name: artifactory
           Image: !Sub
@@ -378,16 +411,16 @@ Resources:
           MountPoints:
             - ContainerPath: /artifactory_extra_conf
               ReadOnly: False
-              SourceVolume: /data/jfrog/artifactory/etc/
+              SourceVolume: etc
             - ContainerPath: /tmp/plugins
               ReadOnly: False
-              SourceVolume: /data/jfrog/artifactory/tmp/plugins
+              SourceVolume: temp-plugins
             - ContainerPath: /artifactory_extra_certs
               ReadOnly: False
-              SourceVolume: /data/jfrog/artifactory/java_certs
-            - ContainerPath: /opt/jfrog/artifactory/tomcat/lib/
+              SourceVolume: java-certs
+            - ContainerPath: !Sub /opt/jfrog/artifactory/tomcat/lib/${DB_PLUGIN}
               ReadOnly: False
-              SourceVolume: /data/jfrog/artifactory/plugins                           
+              SourceVolume: plugins                           
           Ulimits:
             - Name: nproc
               SoftLimit: 65535
@@ -429,15 +462,14 @@ Resources:
             - ContainerPort: 443
               HostPort: 443
               Protocol: tcp
+          Essential: false
           DependsOn: 
             - Condition: HEALTHY
               ContainerName: artifactory
-          Links:
-            - artifactory
           MountPoints:
             - ContainerPath: /var/opt/jfrog/nginx
               ReadOnly: False
-              SourceVolume: /data/jfrog/nginx
+              SourceVolume: nginx
           Ulimits:
             - Name: nproc
               SoftLimit: 65535
@@ -449,7 +481,7 @@ Resources:
             - Name: ART_BASE_URL
               Value: http://artifactory:8081/artifactory
             - Name: SSL
-              Value: "True"
+              Value: "true"
           LogConfiguration:
             LogDriver: awslogs
             Options:
