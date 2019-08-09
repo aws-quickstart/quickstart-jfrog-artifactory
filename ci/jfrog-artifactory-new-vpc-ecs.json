@@ -58,5 +58,9 @@
     {
         "ParameterKey": "ArtifactoryServerName",
         "ParameterValue": "taskcat"
-    }
+    },
+    {
+        "ParameterKey": "AnsibleVaultPass",
+        "ParameterValue": "password"
+    }  
 ]
