@@ -24,18 +24,18 @@ tests:
   #  template_file: jfrog-artifactory-ec2-master.template
   #  regions:
   #    - us-west-2
-  #jfrog-artifactory-ecs:
-  #  parameter_input: jfrog-artifactory-new-vpc-ecs.json
-  #  template_file: jfrog-artifactory-ecs-master.template
-  #  regions:
-  #    - us-west-2
+  jfrog-artifactory-ecs:
+    parameter_input: jfrog-artifactory-new-vpc-ecs.json
+    template_file: jfrog-artifactory-ecs-master.template
+    regions:
+      - us-west-2
   #jfrog-artifactory-ecs:
   #  parameter_input: jfrog-artifactory-new-vpc-ecs-existing.json
   #  template_file: jfrog-artifactory-ecs-existing-vpc.template
   #  regions:
   #    - us-west-2 
-  jfrog-artifactory-ecs:
-    parameter_input: jfrog-artifactory-new-vpc-ecs-existing-db.json
-    template_file: jfrog-artifactory-ecs-ec2.template
-    regions:
-      - us-west-2    
+  #jfrog-artifactory-ecs:
+  #  parameter_input: jfrog-artifactory-new-vpc-ecs-existing-db.json
+  #  template_file: jfrog-artifactory-ecs-ec2.template
+  #  regions:
+  #    - us-west-2    

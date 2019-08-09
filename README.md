@@ -79,8 +79,8 @@ Download the submodules:
 
 #### venv
 
-    python3 -m venv ~/theflashvenv
-    source ~/theflashvenv/bin/activate
+    python3 -m venv ~/cloudformationvenv
+    source ~/cloudformationvenv/bin/activate
     pip install awscli taskcat
 
 #### Docker
@@ -101,9 +101,15 @@ In order to test from taskcat you need an override file in your home .aws direct
         }
     ]
 
-Please also verify the `ci/config.yml` is updated with the region you wish to deploy to. The rest of the parameters should be answered in the `ci/<test>.json`
+Please also verify the `ci/config.yml` is updated with the region you wish to deploy to. The rest of the parameters should be answered in the `ci/<test>.json` : `jfrog-artifactory-new-vpc-ec2.json`
 
-Then you need to be above the repository directory and execute: `taskcat -c theflash/ci/config.yml`.
+NOTE: We have seen issues running taskcat under the following conditions, please verify:
+    * Your Environment variables for AWS are what you want as they override your `~/.aws/credentials` and `~/.aws/config`
+    * You have initialized and updated the git submodules
+    * You Account has the correct IAM Permissions to execute in the region.
+    * Your default region and test region match.
+
+Then you need to be above the repository directory and execute: `taskcat -c quickstart-jfrog-artifactory/ci/config.yml`.
 
 ### Clean up
 

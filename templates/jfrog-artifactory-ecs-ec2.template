@@ -359,20 +359,12 @@ Resources:
       LaunchType: EC2
       DesiredCount: 1
       LoadBalancers:
-        - ContainerName: artifactory
-          ContainerPort: 8081
+        - ContainerName: nginx
+          ContainerPort: 443
           TargetGroupArn: !Ref ArtifactoryTargetGroupArn
       TaskDefinition:
         Ref: ArtifactoryTaskDefinition
       HealthCheckGracePeriodSeconds: 300
-      NetworkConfiguration:
-        AwsvpcConfiguration:
-          AssignPublicIp: DISABLED
-          SecurityGroups:
-            - !Ref SecurityGroups
-          Subnets:
-            - Ref: PrivateSubnet1ID
-            - Ref: PrivateSubnet2ID
   ArtifactoryTaskDefinition:
     DependsOn: ECSCluster
     Type: AWS::ECS::TaskDefinition
@@ -468,6 +460,8 @@ Resources:
           DependsOn: 
             - Condition: START
               ContainerName: artifactory
+          Links:
+            - artifactory:artifactory
           MountPoints:
             - ContainerPath: /var/opt/jfrog/nginx
               ReadOnly: False
