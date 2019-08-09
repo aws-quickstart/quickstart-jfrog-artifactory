@@ -106,7 +106,7 @@ Metadata:
       AnsibleVaultPass:
         Description: Ansiblevault Password to secure the artifactory.yml
         Type: String
-        NoEcho: 'true'      
+        NoEcho: 'true'
       DatabaseName:
         default: Database Name
       DatabaseEngine:
@@ -308,6 +308,10 @@ Parameters:
       password to the one specified.
     NoEcho: 'true'
     Type: String    
+  AnsibleVaultPass:
+    Description: Ansiblevault Password to secure the artifactory.yml
+    NoEcho: 'true'
+    Type: String
   DatabaseName:
     Description: Type a name for your DB instance. The name must be unique cross all DB instances 
       owned by your AWS account in the current AWS Region. The DB instance identifier is case-insensitive, 
