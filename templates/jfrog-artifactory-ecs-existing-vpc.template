@@ -661,7 +661,7 @@ Resources:
         - IpProtocol: tcp
           FromPort: 8081
           ToPort: 8081
-          CidrIp: !Ref PrivateSubnet1CIDR                                
+          CidrIp: !Ref PrivateSubnet2CIDR                                
       SecurityGroupEgress:
         - IpProtocol: tcp
           FromPort: 22

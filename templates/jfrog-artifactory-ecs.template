@@ -111,7 +111,7 @@ Resources:
           HealthCheck:
             Command: 
               - CMD-SHELL
-              - (printf 'GET /artifactory/api/system/ping HTTP/1.0\r\n\r\n'; sleep 1) | nc 127.0.0.1 8081 || exit 1
+              - (printf 'GET /artifactory/api/system/ping HTTP/1.0\r\n\r\n'; sleep 1) | nc 127.0.0.1 8081 | grep OK || exit 1
             Interval: 5
             Retries: 3
             StartPeriod: 60
