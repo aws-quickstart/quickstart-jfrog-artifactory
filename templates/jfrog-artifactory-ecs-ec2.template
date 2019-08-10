@@ -382,7 +382,7 @@ Resources:
         DBPlugin: !Ref DBPlugin
         MasterKey: !Ref MasterKey
         NumberNodes: !Ref NumberOfSecondary
-        ArtifactoryPrimary: "false"
+        ArtifactoryPrimary: "true" # If this is false then the entrypoint-artifactory script will get stuck in a forever waiting loop 
         DBType: !Ref DBType
         DatabaseUser: !Ref DatabaseUser
         DatabaseName: !Ref DatabaseName

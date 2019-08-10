@@ -76,6 +76,11 @@ Resources:
             SourcePath: /data/jfrog/nginx
       ContainerDefinitions:
         - Name: artifactory
+          EntryPoint:
+            - /bin/bash
+            - "-c"
+          Command: 
+            - "echo export HA_HOST_IP=`wget -q -O - http://169.254.169.254/latest/meta-data/local-ipv4` > /tmp/source; echo /entrypoint-artifactory.sh >> /tmp/source; chmod +x /tmp/source; /tmp/source"
           Image: !Sub
             docker.bintray.io/jfrog/artifactory-pro:${ArtifactoryVersion}
           PortMappings:
@@ -103,6 +108,14 @@ Resources:
             - Name: nofile
               SoftLimit: 32000
               HardLimit: 40000
+          HealthCheck:
+            Command: 
+              - CMD-SHELL
+              - (printf 'GET /artifactory/api/system/ping HTTP/1.0\r\n\r\n'; sleep 1) | nc 127.0.0.1 8081 || exit 1
+            Interval: 5
+            Retries: 3
+            StartPeriod: 60
+            Timeout: 10
           Environment:
             - Name: EXTRA_JAVA_OPTIONS
               Value: -Xmx4g
@@ -137,7 +150,7 @@ Resources:
               Protocol: tcp
           Essential: false
           DependsOn: 
-            - Condition: START
+            - Condition: HEALTHY
               ContainerName: artifactory
           Links:
             - artifactory:artifactory

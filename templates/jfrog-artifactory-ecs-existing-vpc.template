@@ -654,11 +654,11 @@ Resources:
         - IpProtocol: tcp
           FromPort: 8081
           ToPort: 8081
-          CidrIp: !Ref VPCCIDR
+          CidrIp: !Ref PrivateSubnet1CIDR
         - IpProtocol: tcp
           FromPort: 8081
           ToPort: 8081
-          CidrIp: !Ref VPCCIDR                                
+          CidrIp: !Ref PrivateSubnet1CIDR                                
       SecurityGroupEgress:
         - IpProtocol: tcp
           FromPort: 22
@@ -693,7 +693,6 @@ Resources:
     Properties:
       TemplateURL: !Sub 'https://${QSS3BucketName}.s3.amazonaws.com/${QSS3KeyPrefix}templates/jfrog-artifactory-ecs-ec2.template'
       Parameters:
-        VPCID: !Ref VPCID
         PrivateSubnet1ID: !Ref PrivateSubnet1ID
         PrivateSubnet2ID: !Ref PrivateSubnet2ID
         MinScalingNodes: '3'
@@ -710,7 +709,6 @@ Resources:
             - !Ref ArtifactoryLicense3
             - !Ref ArtifactoryLicense4
         ArtifactoryServerName: !Ref ArtifactoryServerName
-        CertificateDomain: !Ref CertificateDomain
         ArtifactoryIAMAcessKey: !Ref ArtifactoryIAMAcessKey
         SecretAccessKey: !GetAtt ArtifactoryIAMAcessKey.SecretAccessKey
         ArtifactoryS3Bucket: !Ref ArtifactoryS3Bucket

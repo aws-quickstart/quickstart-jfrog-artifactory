@@ -76,7 +76,7 @@
     mode: "{{ item.mode }}"
   loop:
     - src: inactiveServerCleaner.groovy
-      dest: /data/jfrog/artifactory/tmp/plugins/inactiveServerCleaner.groovy
+      dest: /data/jfrog/artifactory/plugins/inactiveServerCleaner.groovy
       mode: '0660'
 
 

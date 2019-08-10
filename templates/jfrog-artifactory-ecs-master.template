@@ -307,7 +307,11 @@ Parameters:
     Description: To ensure better security we will change the default Java keystore
       password to the one specified.
     NoEcho: 'true'
-    Type: String    
+    Type: String
+  AnsibleVaultPass:
+    Description: Ansiblevault Password to secure the artifactory.yml
+    Type: String
+    NoEcho: 'true'
   DatabaseName:
     Description: Type a name for your DB instance. The name must be unique cross all DB instances 
       owned by your AWS account in the current AWS Region. The DB instance identifier is case-insensitive, 
