@@ -251,8 +251,20 @@ Parameters:
       - '4'
     Default: '1'
     Type: String
+  ClusterName:
+    Description: Desired name for your ECS cluster.
+    Default: JFrog  
+    Type: String
+  CreateNewECSCluster:
+    Description: Whether to boot a Bastion host or not. Due to the Artifactory nodes being
+      created in private subnets, this is highly recommended.
+    AllowedValues:
+      - "Enabled"
+      - "Disabled"
+    Default: "Enabled"
+    Type: String
   InstanceType:
-    Description: EC2 instance type for the Artifactory instances.
+    Description: EC2 instance type for the Artifactory docker hosts
     AllowedValues:
       - m4.xlarge
       - m4.2xlarge
@@ -433,8 +445,6 @@ Parameters:
       uppercase letters, hyphens (-), and forward slash (/).
     Default: quickstart-jfrog-artifactory/
     Type: String
-
-
 Conditions:
   EnableBastion: !Equals [!Ref 'ProvisionBastionHost', 'Enabled']
 Resources:
@@ -688,6 +698,8 @@ Resources:
       Parameters:
         PrivateSubnet1ID: !Ref PrivateSubnet1ID
         PrivateSubnet2ID: !Ref PrivateSubnet2ID
+        ClusterName: !Ref ClusterName
+        CreateNewECSCluster: !Ref CreateNewECSCluster
         MinScalingNodes: '3'
         MaxScalingNodes: '3'
         KeyPairName: !Ref KeyPairName
@@ -695,12 +707,13 @@ Resources:
         VolumeSize: !Ref VolumeSize
         DeploymentTag: ArtifactoryMaster
         NumberOfSecondary: !Ref NumberOfSecondary
-        ArtifactoryLicense: !Join # We can do up to 4 due to length
+        ArtifactoryLicense: !Join # We can do up to 4 due to length For E+ we can only support 1.
           - ','
           - - !Ref ArtifactoryLicense1
             - !Ref ArtifactoryLicense2
             - !Ref ArtifactoryLicense3
             - !Ref ArtifactoryLicense4
+        CertificateDomain: !Ref CertificateDomain
         ArtifactoryServerName: !Ref ArtifactoryServerName
         ArtifactoryIAMAcessKey: !Ref ArtifactoryIAMAcessKey
         SecretAccessKey: !GetAtt ArtifactoryIAMAcessKey.SecretAccessKey
@@ -708,7 +721,7 @@ Resources:
         CertificateKey: !Ref CertificateKey
         Certificate: !Ref Certificate
         DBType: mysql
-        ArtifactoryDBEndpointAddress: !GetAtt ArtifactoryDB.Endpoint.Address #"https://localhost" #
+        ArtifactoryDBEndpointAddress: !GetAtt ArtifactoryDB.Endpoint.Address
         DatabaseName: !Ref DatabaseName
         DatabaseUser: !Ref DatabaseUser
         DatabasePassword: !Ref DatabasePassword

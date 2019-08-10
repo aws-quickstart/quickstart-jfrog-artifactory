@@ -88,10 +88,6 @@
         "ParameterValue": "password"
     },    
     {
-        "ParameterKey": "KeystorePassword",
-        "ParameterValue": "changedit"
-    },
-    {
         "ParameterKey": "ArtifactoryServerName",
         "ParameterValue": "taskcat"
     }

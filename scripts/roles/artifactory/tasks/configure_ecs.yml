@@ -71,13 +71,13 @@
   copy:
     src: "{{ item.src }}"
     dest: "{{ item.dest }}"
-    owner: artifactory
-    group: artifactory
+    owner: root
+    group: root
     mode: "{{ item.mode }}"
   loop:
     - src: inactiveServerCleaner.groovy
-      dest: /data/jfrog/artifactory/plugins/inactiveServerCleaner.groovy
-      mode: '0660'
+      dest: /data/jfrog/artifactory/tmp/plugins/inactiveServerCleaner.groovy
+      mode: '0777'
 
 
 #- name: Configure Ping

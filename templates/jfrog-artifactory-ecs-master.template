@@ -46,7 +46,6 @@ Metadata:
         Parameters:
           - QSS3BucketName
           - QSS3KeyPrefix
-          #- OutputBucketName
     ParameterLabels:
       AvailabilityZones:
         default: Availability Zones
@@ -124,9 +123,6 @@ Metadata:
         default: Quick Start S3 Bucket Name
       QSS3KeyPrefix:
         default: Quick Start S3 Key Prefix
-      #OutputBucketName:
-      #  default: Output S3 Bucket Name
-
 Parameters:
   VPCCIDR:
     Description: CIDR block for the VPC

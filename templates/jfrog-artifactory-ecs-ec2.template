@@ -16,7 +16,11 @@ Parameters:
   ClusterName:
     Description: Desired name for your cluster.
     Default: JFrog  
-    Type: String  
+    Type: String
+  CreateNewECSCluster:
+    Description: Whether to create the ECS Cluster with given name or not.
+    Default: Enabled
+    Type: String
   DeploymentTag:
     Type: String
   NumberOfSecondary:
@@ -25,6 +29,8 @@ Parameters:
     Type: String
   ArtifactoryServerName:
     Type: String
+  CertificateDomain:
+    Type: String    
   ArtifactoryIAMAcessKey:
     Type: String
   SecretAccessKey:
@@ -107,6 +113,7 @@ Mappings:
     sa-east-1:
        AMI: ami-084b1eee100c102ee
 Conditions:
+  CreateECSCluster: !Equals [!Ref 'CreateNewECSCluster', 'Enabled']
   GovCloudCondition: !Equals 
     - !Ref 'AWS::Region'
     - us-gov-west-1       
@@ -161,8 +168,7 @@ Resources:
       Roles: 
         - !Ref ECSRole
   ECSCluster: 
-    DependsOn: ArtifactoryScalingGroup
-    #Condition: CreateECSCluster
+    Condition: CreateECSCluster
     Type: AWS::ECS::Cluster
     Properties: 
       ClusterName: !Ref ClusterName
@@ -220,6 +226,7 @@ Resources:
                     s3_access_secret_key: ${SecretAccessKey}
                     s3_bucket: ${ArtifactoryS3Bucket}
                     artifactory_server_name: ${ArtifactoryServerName}
+                    certificate_domain: ${CertificateDomain}
                     certificate_key: ${CertificateKey}
                     certificate: ${Certificate}
                     java_mysql_driver:
@@ -348,7 +355,7 @@ Resources:
     Properties:
       RetentionInDays: 7
   PrimaryStack:
-    DependsOn: ECSCluster
+    DependsOn: ArtifactoryScalingGroup
     Type: AWS::CloudFormation::Stack
     Properties:
       TemplateURL: !Sub 'https://${QSS3BucketName}.s3.amazonaws.com/${QSS3KeyPrefix}templates/jfrog-artifactory-ecs.template'
@@ -370,7 +377,7 @@ Resources:
         ECSRoleArn: 
           Fn::GetAtt: ECSRole.Arn
   SecondaryStack:
-    DependsOn: ECSCluster
+    DependsOn: PrimaryStack
     Type: AWS::CloudFormation::Stack
     Properties:
       TemplateURL: !Sub 'https://${QSS3BucketName}.s3.amazonaws.com/${QSS3KeyPrefix}templates/jfrog-artifactory-ecs.template'

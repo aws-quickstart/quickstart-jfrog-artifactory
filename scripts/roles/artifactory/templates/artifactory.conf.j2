@@ -6,7 +6,7 @@ ssl_prefer_server_ciphers   on;
 server {
   listen 443 ssl;
   listen 80 ;
-  server_name {{ artifactory_server_name }}.{{ cetificate_domain }}~(?<repo>.+)\\.{{ cetificate_domain }};
+  server_name {{ artifactory_server_name }}.{{ certificate_domain }}~(?<repo>.+)\\.{{ cetificate_domain }};
   if ($http_x_forwarded_proto = '') {
     set $http_x_forwarded_proto  $scheme;
   }
