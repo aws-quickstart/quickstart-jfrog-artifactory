@@ -29,7 +29,6 @@ Metadata:
           - CertificateDomain
           - ArtifactoryServerName
           - MasterKey
-          - KeystorePassword
           - AnsibleVaultPass
       - Label:
           default: Amazon RDS Configuration
@@ -101,12 +100,10 @@ Metadata:
         default: Artifactory Server Name
       MasterKey:
         default: Master Server Key
-      KeystorePassword:
-        default: Java Keystore Password
       AnsibleVaultPass:
         Description: Ansiblevault Password to secure the artifactory.yml
         Type: String
-        NoEcho: 'true'      
+        NoEcho: 'true'
       DatabaseName:
         default: Database Name
       DatabaseEngine:
@@ -303,15 +300,10 @@ Parameters:
     Default: 1ce2be4490ca2c662cb79636cf9b7b8e
     NoEcho: 'true'
     Type: String
-  KeystorePassword:
-    Description: To ensure better security we will change the default Java keystore
-      password to the one specified.
-    NoEcho: 'true'
-    Type: String
   AnsibleVaultPass:
     Description: Ansiblevault Password to secure the artifactory.yml
-    Type: String
     NoEcho: 'true'
+    Type: String
   DatabaseName:
     Description: Type a name for your DB instance. The name must be unique cross all DB instances 
       owned by your AWS account in the current AWS Region. The DB instance identifier is case-insensitive, 
@@ -466,7 +458,6 @@ Resources:
         CertificateDomain: !Ref CertificateDomain
         ArtifactoryServerName: !Ref ArtifactoryServerName
         MasterKey: !Ref MasterKey
-        KeystorePassword: !Ref KeystorePassword
         AnsibleVaultPass: !Ref AnsibleVaultPass
         DatabaseName: !Ref DatabaseName
         DatabaseEngine: !Ref DatabaseEngine

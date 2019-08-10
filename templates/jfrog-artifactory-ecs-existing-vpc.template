@@ -40,7 +40,6 @@ Metadata:
           - CertificateDomain
           - ArtifactoryServerName
           - MasterKey
-          - KeystorePassword
       - Label:
           default: Amazon RDS Configuration
         Parameters:
@@ -115,8 +114,6 @@ Metadata:
         default: Artifactory Server Name
       MasterKey:
         default: Master Server Key
-      KeystorePassword:
-        default: Java Keystore Password
       DatabaseName:
         default: Database Name
       DatabaseEngine:
@@ -328,15 +325,10 @@ Parameters:
     Default: 1ce2be4490ca2c662cb79636cf9b7b8e
     NoEcho: 'true'
     Type: String
-  KeystorePassword:
-    Description: To ensure better security we will change the default Java keystore
-      password to the one specified.
-    NoEcho: 'true'
-    Type: String
   AnsibleVaultPass:
     Description: Ansiblevault Password to secure the artifactory.yml
+    NoEcho: 'true' 
     Type: String
-    NoEcho: 'true'    
   DatabaseName:
     Description: Type a name for your DB instance. The name must be unique cross all DB instances 
       owned by your AWS account in the current AWS Region. The DB instance identifier is case-insensitive, 
@@ -415,6 +407,13 @@ Parameters:
       - False
     Default: False
     Type: String
+  ELBScheme:
+    Description: Whether this will be internet facing or internal
+    AllowedValues:
+      - internal
+      - internet-facing
+    Default: internet-facing
+    Type: String
   QSS3BucketName:
     Description: S3 bucket name for the Quick Start assets. This string can include
       numbers, lowercase letters, uppercase letters, and hyphens (-). It cannot start
@@ -424,7 +423,7 @@ Parameters:
       letters, uppercase letters, and hyphens (-). It cannot start or end with a hyphen
       (-).
     Default: aws-quickstart
-    Type: String
+    Type: String  
   QSS3KeyPrefix:
     Description: S3 key prefix for the Quick Start assets. Quick Start key prefix
       can include numbers, lowercase letters, uppercase letters, hyphens (-), and
@@ -434,13 +433,7 @@ Parameters:
       uppercase letters, hyphens (-), and forward slash (/).
     Default: quickstart-jfrog-artifactory/
     Type: String
-  ELBScheme:
-    Description: Whether this will be internet facing or internal
-    AllowedValues:
-      - internal
-      - internet-facing
-    Default: internet-facing
-    Type: String
+
 
 Conditions:
   EnableBastion: !Equals [!Ref 'ProvisionBastionHost', 'Enabled']
@@ -720,7 +713,6 @@ Resources:
         DatabaseUser: !Ref DatabaseUser
         DatabasePassword: !Ref DatabasePassword
         MasterKey: !Ref MasterKey
-        #KeystorePassword: !Ref KeystorePassword
         ArtifactoryVersion: !Ref ArtifactoryVersion
         SecurityGroups: !Ref ArtifactoryEC2SG
         ArtifactoryTargetGroupArn: !Ref ArtifactoryTargetGroup
