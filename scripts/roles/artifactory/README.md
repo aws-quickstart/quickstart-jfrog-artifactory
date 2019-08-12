@@ -15,7 +15,7 @@ Role Variables
 
 artifactory_licesnes is expected as a list of Artifactory licesnse.
 artifactory_server_name is the DNS name of the Artifactory instance.
-cetificate_domain: Domain name for the DNS name of the Artifactory instance.
+certificate_domain: Domain name for the DNS name of the Artifactory instance.
 s3_endpoint: S3 URL endpoint for backend storage.
 s3_access_key: S3 Access key for the S3 Endpoint + Bucket.
 s3_access_secret_key: S3 Secret key for the S3 Endpoint + Bucket.
@@ -45,7 +45,7 @@ Example Playbook
   vars:
     artifactory_licenses: ${ArtifactoryLicense}
     artifactory_server_name: ${ArtifactoryServerName}
-    cetificate_domain: ${CertificateDomain}
+    certificate_domain: ${CertificateDomain}
     s3_endpoint: s3.${AWS::Region}.amazonaws.com
     s3_access_key: ${ArtifactoryIAMAcessKey}
     s3_access_secret_key: ${SecretAccessKey}
