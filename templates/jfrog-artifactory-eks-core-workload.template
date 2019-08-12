@@ -1,0 +1,81 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "Deploys Artifactory into an existing Kubernetes cluster"
+Parameters:
+  PrivateSubnet1ID:
+    Type: 'AWS::EC2::Subnet::Id'
+  PrivateSubnet2ID:
+    Type: 'AWS::EC2::Subnet::Id'
+  MinScalingNodes:
+    Type: Number
+  MaxScalingNodes:
+    Type: Number
+  DeploymentTag:
+    Type: String
+  HostRole:
+    Type: String
+  AmiId:
+    Type: String
+  QSS3BucketName:
+    Type: String
+  QSS3KeyPrefix:
+    Type: String
+  ArtifactoryLicense:
+    Type: String
+  ArtifactoryServerName:
+    Type: String
+  CertificateDomain:
+    Type: String
+  ArtifactoryIAMAcessKey:
+    Type: String
+  SecretAccessKey:
+    Type: String
+  ArtifactoryS3Bucket:
+    Type: String
+  CertificateKey:
+    Type: String
+  Certificate:
+    Type: String
+  DBType:
+    Type: String
+  ArtifactoryDBEndpointAddress:
+    Type: String
+  DatabaseName:
+    Type: String
+  DatabaseUser:
+    Type: String
+  DatabasePassword:
+    Type: String
+  ArtifactoryPrimary:
+    Type: String
+  MasterKey:
+    Type: String
+  ArtifactoryVersion:
+    Type: String
+  KeyPairName:
+    Type: AWS::EC2::KeyPair::KeyName
+  ArtifactoryELB:
+    Type: String
+  HostProfile:
+    Type: String
+  SecurityGroups:
+    Type: String
+
+
+
+Conditions:
+  GovCloudCondition: !Equals 
+    - !Ref 'AWS::Region'
+    - us-gov-west-1
+Resources:
+  NginxIngressController:
+    Type: "Custom::Helm"
+    Version: '1.0'
+    Properties:
+      ServiceToken: !Ref HelmLambdaArn
+      KubeConfigPath: !Ref KubeConfigPath
+      KubeConfigKmsContext: !Ref KubeConfigKmsContext
+      Namespace: ingress-nginx
+      Chart: stable/nginx-ingress
+      Values:
+        rbac.create: true
+        controller.service.externalTrafficPolicy: Local
