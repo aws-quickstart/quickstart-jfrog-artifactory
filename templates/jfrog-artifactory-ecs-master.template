@@ -50,7 +50,7 @@ Metadata:
           - QSS3BucketName
           - QSS3KeyPrefix
     ParameterLabels:
-     KeyPairName:
+      KeyPairName:
         default: SSH Key Name
       AccessCIDR:
         default: Permitted IP Range
