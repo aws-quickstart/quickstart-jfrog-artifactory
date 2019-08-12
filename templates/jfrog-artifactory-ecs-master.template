@@ -4,6 +4,12 @@ Metadata:
   AWS::CloudFormation::Interface:
     ParameterGroups:
       - Label:
+          default: Security configuration
+        Parameters:
+          - KeyPairName
+          - AccessCIDR
+          - RemoteAccessCIDR        
+      - Label:
           default: Network Configuration
         Parameters:
           - AvailabilityZones
@@ -12,12 +18,9 @@ Metadata:
           - PrivateSubnet2CIDR
           - PublicSubnet1CIDR
           - PublicSubnet2CIDR
-          - AccessCIDR
-          - RemoteAccessCIDR
       - Label:
           default: JFrog Artifactory Configuration
         Parameters:
-          - KeyPairName
           - ArtifactoryVersion
           - NumberOfSecondary 
           - ArtifactoryLicense1
@@ -47,10 +50,16 @@ Metadata:
           - QSS3BucketName
           - QSS3KeyPrefix
     ParameterLabels:
-      AvailabilityZones:
-        default: Availability Zones
-      KeyPairName:
+     KeyPairName:
         default: SSH Key Name
+      AccessCIDR:
+        default: Permitted IP Range
+      RemoteAccessCIDR:
+        default: Remote Access CIDR 
+      AvailabilityZones:
+        default: Availability Zones        
+      VPCCIDR:
+        default: VPC CIDR
       PrivateSubnet1CIDR:
         default: Private Subnet 1 CIDR
       PrivateSubnet2CIDR:
@@ -59,28 +68,10 @@ Metadata:
         default: Public Subnet 1 CIDR
       PublicSubnet2CIDR:
         default: Public Subnet 2 CIDR
-      AccessCIDR:
-        default: Permitted IP Range
-      RemoteAccessCIDR:
-        default: Remote Access CIDR 
-      VPCCIDR:
-        default: VPC CIDR
-      ProvisionBastionHost:
-        default: Provision Bastion Host
-      BastionInstanceType:
-        default: Bastion Instance Type
-      BastionRootVolumeSize:
-        default: Bastion Root Volume Size
-      BastionEnableTCPForwarding:
-        default: Bastion Enable TCP Forwarding
-      BastionEnableX11Forwarding:
-        default: Bastion Enable X11 Forwarding
-      BastionOS:
-        default: Bastion OS
-      NumberOfSecondary:
-        default: Number of Secondary Nodes
       ArtifactoryVersion:
         default: Artifactory Version
+      NumberOfSecondary:
+        default: Number of Secondary Nodes
       ArtifactoryLicense1:
         default: Artifactory License 1
       ArtifactoryLicense2:

@@ -4,6 +4,12 @@ Metadata:
   AWS::CloudFormation::Interface:
     ParameterGroups:
       - Label:
+          default: Security configuration
+        Parameters:
+          - KeyPairName
+          - AccessCIDR
+          - RemoteAccessCIDR    
+      - Label:
           default: Network Configuration
         Parameters:
           - VPCID
@@ -14,8 +20,6 @@ Metadata:
           - PrivateSubnet2ID
           - PrivateSubnet1CIDR
           - PrivateSubnet2CIDR
-          - AccessCIDR
-          - RemoteAccessCIDR
       - Label:
           default: Bastion Configuration
         Parameters:
@@ -25,7 +29,6 @@ Metadata:
           - BastionRootVolumeSize
           - BastionEnableTCPForwarding
           - NumBastionHosts
-          - KeyPairName 
       - Label:
           default: JFrog Artifactory Configuration
         Parameters:
@@ -60,6 +63,10 @@ Metadata:
     ParameterLabels:
       KeyPairName:
         default: SSH Key Name
+      AccessCIDR:
+        default: Permitted IP Range
+      RemoteAccessCIDR:
+        default: Remote Access CIDR        
       VPCID:
         default: VPC ID
       VPCCIDR:
@@ -76,10 +83,6 @@ Metadata:
         default: Private Subnet 1 CIDR
       PrivateSubnet2CIDR:
         default: Private Subnet 2 CIDR
-      AccessCIDR:
-        default: Permitted IP Range
-      RemoteAccessCIDR:
-        default: Remote Access CIDR
       ProvisionBastionHost:
         default: Provision Bastion Host
       BastionInstanceType:
@@ -92,10 +95,10 @@ Metadata:
         default: Bastion Enable TCP Forwarding
       NumBastionHosts:
         default: Number of Bastion Hosts
-      NumberOfSecondary:
-        default: Number of Secondary Nodes
       ArtifactoryVersion:
         default: Artifactory Version
+      NumberOfSecondary:
+        default: Number of Secondary Nodes        
       ArtifactoryLicense1:
         default: Artifactory License 1
       ArtifactoryLicense2:
@@ -140,6 +143,20 @@ Parameters:
     Description: The name of an existing public/private key pair, which allows you
       to securely connect to your instance after it launches
     Type: AWS::EC2::KeyPair::KeyName
+  AccessCIDR:
+    Description: The CIDR IP range that is permitted to access Artifactory. 
+      We recommend that you set this value to a trusted IP range. 
+      For example, you might want to grant only your corporate network access to the software. 
+    AllowedPattern: ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/([0-9]|[1-2][0-9]|3[0-2]))$
+    Default: 0.0.0.0/0
+    Type: String
+  RemoteAccessCIDR:
+    Description: Remote CIDR range for allowing SSH into the Bastion instance. 
+      We recommend that you set this value to a trusted IP range. 
+      For example, you might want to grant specific ranges inside your corporate network ssh access. 
+    AllowedPattern: ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/([0-9]|[1-2][0-9]|3[0-2]))$
+    Type: String
+    Default: 0.0.0.0/0 
   VPCID:
     Description: The ID of your existing VPC (e.g., vpc-0343606e).
     Type: "AWS::EC2::VPC::Id"
@@ -173,20 +190,6 @@ Parameters:
     ConstraintDescription: CIDR block parameter must be in the form x.x.x.x/16-28
     Default: 10.0.32.0/19
     Type: String
-  AccessCIDR:
-    Description: The CIDR IP range that is permitted to access Artifactory. 
-      We recommend that you set this value to a trusted IP range. 
-      For example, you might want to grant only your corporate network access to the software. 
-    AllowedPattern: ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/([0-9]|[1-2][0-9]|3[0-2]))$
-    Default: 0.0.0.0/0
-    Type: String
-  RemoteAccessCIDR:
-    Description: Remote CIDR range for allowing SSH into the Bastion instance. 
-      We recommend that you set this value to a trusted IP range. 
-      For example, you might want to grant specific ranges inside your corporate network ssh access. 
-    AllowedPattern: ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/([0-9]|[1-2][0-9]|3[0-2]))$
-    Type: String
-    Default: 0.0.0.0/0 
   ProvisionBastionHost:
     Description: Whether to boot a Bastion host or not. Due to the Artifactory nodes being
       created in private subnets, this is highly recommended.
@@ -276,20 +279,24 @@ Parameters:
     Description: Size in GB of the available storage (will create 3x ebs volumes of this size)
     Default: 200
     Type: Number    
-  NumberOfSecondary:
-    Description: Number of secondary Artifactory servers to complete your
-      HA deployment. Minimum number of 2 to fit the Artifactory best practices.
-    AllowedValues:
-      - 2
-      - 3
-    Default: 2
-    Type: Number
   ArtifactoryVersion:
     Description: Version of Artifactory you wish to deploy into the Quick Start.
     AllowedPattern: ^(([0-9]|[1-9][0-9])\.){2}([1-9][0-9]|[0-9])$
     ConstraintDescription: A version that matches X.X.X per Artifactory releases
     Default: 6.11.1
     Type: String
+  NumberOfSecondary:
+    Description: Number of secondary Artifactory servers to complete your
+      HA deployment. Minimum number of 2 to fit the Artifactory best practices.
+    AllowedValues:
+      - 2
+      - 3
+      - 4
+      - 5
+      - 6
+      - 7
+    Default: 2
+    Type: Number    
   ArtifactoryLicense1:
     Description: Artifactory Enterprise License at least one is required.
     Default: ""
@@ -705,7 +712,7 @@ Resources:
         KeyPairName: !Ref KeyPairName
         InstanceType: !Ref InstanceType
         VolumeSize: !Ref VolumeSize
-        DeploymentTag: ArtifactoryMaster
+        DeploymentTag: Artifactory
         NumberOfSecondary: !Ref NumberOfSecondary
         ArtifactoryLicense: !Join # We can do up to 4 due to length For E+ we can only support 1.
           - ','

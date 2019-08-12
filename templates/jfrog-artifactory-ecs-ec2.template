@@ -201,7 +201,7 @@ Resources:
         S3AccessCreds:
           type: S3
           roleName: 
-            - !Ref ECSRole #!Ref ArtifactoryHostRole
+            - !Ref ECSRole
           buckets:
             - !Ref QSS3BucketName
       'AWS::CloudFormation::Init':
