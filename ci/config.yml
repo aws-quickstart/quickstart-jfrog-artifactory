@@ -39,8 +39,14 @@ tests:
   #  template_file: jfrog-artifactory-ecs-ec2.template
   #  regions:
   #    - us-west-2    
+  
   jfrog-artifactory-eks:
     parameter_input: jfrog-artifactory-new-vpc-eks.json
     template_file: jfrog-artifactory-eks-master.template
     regions:
       - us-west-2
+  #jfrog-artifactory-eks:
+  #  parameter_input: jfrog-artifactory-eks-core.json
+  #  template_file: jfrog-artifactory-eks-core-workload.template
+  #  regions:
+  #    - us-west-2

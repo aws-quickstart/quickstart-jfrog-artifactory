@@ -1,10 +1,10 @@
 AWSTemplateFormatVersion: "2010-09-09"
 Description: "Deploys Artifactory into an existing Kubernetes cluster"
 Parameters:
-  PrivateSubnet1ID:
-    Type: 'AWS::EC2::Subnet::Id'
-  PrivateSubnet2ID:
-    Type: 'AWS::EC2::Subnet::Id'
+  #PrivateSubnet1ID:
+  #  Type: 'AWS::EC2::Subnet::Id'
+  #PrivateSubnet2ID:
+  #  Type: 'AWS::EC2::Subnet::Id'
   KubeManifestLambdaArn:
     Type: String    
   HelmLambdaArn:
@@ -13,20 +13,14 @@ Parameters:
     Type: String
   KubeConfigKmsContext:
     Type: String    
-  MinScalingNodes:
+  NumberOfSecondary:
     Type: Number
-  MaxScalingNodes:
-    Type: Number
-  DeploymentTag:
-    Type: String
-  HostRole:
-    Type: String
-  AmiId:
-    Type: String
-  QSS3BucketName:
-    Type: String
-  QSS3KeyPrefix:
-    Type: String
+  #MinScalingNodes:
+  #  Type: Number
+  #MaxScalingNodes:
+  #  Type: Number
+  #DeploymentTag:
+  #  Type: String
   ArtifactoryLicense1:
     Type: String
   ArtifactoryLicense2:
@@ -35,22 +29,22 @@ Parameters:
     Type: String
   ArtifactoryLicense4:
     Type: String
-  ArtifactoryServerName:
-    Type: String
-  CertificateDomain:
-    Type: String
+  #ArtifactoryServerName:
+  #  Type: String
+  #CertificateDomain:
+  #  Type: String
   ArtifactoryIAMAcessKey:
     Type: String
   SecretAccessKey:
     Type: String
   ArtifactoryS3Bucket:
     Type: String
-  CertificateKey:
-    Type: String
-  Certificate:
-    Type: String
-  DBType:
-    Type: String
+  #CertificateKey:
+  #  Type: String
+  #Certificate:
+  #  Type: String
+  #DBType:
+  #  Type: String
   ArtifactoryDBEndpointAddress:
     Type: String
   DatabaseName:
@@ -59,27 +53,29 @@ Parameters:
     Type: String
   DatabasePassword:
     Type: String
-  ArtifactoryPrimary:
-    Type: String
+  #ArtifactoryPrimary:
+  #  Type: String
   MasterKey:
     Type: String
   ArtifactoryVersion:
     Type: String
-  KeyPairName:
-    Type: AWS::EC2::KeyPair::KeyName
-  ArtifactoryELB:
-    Type: String
-  HostProfile:
-    Type: String
-  SecurityGroups:
-    Type: String
+  #KeyPairName:
+  #  Type: AWS::EC2::KeyPair::KeyName
+  #ArtifactoryELB:
+  # Type: String
+  #SecurityGroups:
+  #  Type: String
+  #QSS3BucketName:
+  #  Type: String
+  #QSS3KeyPrefix:
+  #  Type: String    
 
 
 
-Conditions:
-  GovCloudCondition: !Equals 
-    - !Ref 'AWS::Region'
-    - us-gov-west-1
+#Conditions:
+#  GovCloudCondition: !Equals 
+#    - !Ref 'AWS::Region'
+#    - us-gov-west-1
 Resources:
   LicenseStore:
     Type: "Custom::KubeManifest"
@@ -97,7 +93,8 @@ Resources:
             app: artifactory
             chart: artifactory
         stringData: 
-          art.lic: !Sub |
+          art.lic: !Sub 
+            >-
             ${ArtifactoryLicense1}
 
 
@@ -109,9 +106,9 @@ Resources:
 
             ${ArtifactoryLicense4}
 
-  NginxIngressController:
+  ArtifactoryDeployment:
     Type: "Custom::Helm"
-    DependsOn: LicensStore
+    DependsOn: LicenseStore
     Version: '1.0'
     Properties:
       ServiceToken: !Ref HelmLambdaArn
@@ -122,11 +119,13 @@ Resources:
       Chart: jfrog/artifactory-ha
       RepoUrl: https://charts.jfrog.io
       Values:
+        artifactory.image.repository: !Sub docker.bintray.io/jfrog/artifactory-pro:${ArtifactoryVersion}
         artifactory.persistence.type: aws-s3
         artifactory.persistence.awsS3.endpoint: !Sub s3.${AWS::Region}.amazonaws.com
         artifactory.persistence.awsS3.region: !Sub ${AWS::Region}
         artifactory.persistence.awsS3.identity: !Sub ${ArtifactoryIAMAcessKey}
         artifactory.persistence.awsS3.credential: !Sub ${SecretAccessKey}
+        artifactory.persistence.awsS3.bucketName: !Sub ${ArtifactoryS3Bucket}
         artifactory.masterKey: !Sub ${MasterKey}
         artifactory.license.secret: artifactory-cluster-license
         artifactory.license.dataKey: art.lic
