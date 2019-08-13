@@ -61,11 +61,12 @@ The Templates are per documentation. For the ha-node(port set to 0) please see t
 In order to deploy a test deployment:
 
 1. Download the repo
-2. pip install the awscli (--user)
-3. create a hidden folder: .ignore/
-4. Inside the .ignore/ create a `params` file that is plain Text ParameterKey=DatabasePassword,ParameterValue=Password ParameterKey=KeyPairName,ParameterValue=My-SSH,ParameterKey=AvailabilityZones,ParameterValue="us-west-2a,us-west-2b"
-5. Configure your `~/.aws/credentials` for use with the awscli
-6. Execute the cloudformation template from inside the repo: `aws cloudformation create-stack --stack-name test --template-body file://$(pwd)/templates/jfrog-artifactory-ec2-master.template --parameters $(cat .ignore/params) --capabilities CAPABILITY_NAMED_IAM`
+2. `git submodule init; git submodule update` inside the repo.
+3. pip install the awscli (--user)
+4. create a hidden folder: .ignore/
+5. Inside the .ignore/ create a `params` file that is plain Text ParameterKey=DatabasePassword,ParameterValue=Password ParameterKey=KeyPairName,ParameterValue=My-SSH,ParameterKey=AvailabilityZones,ParameterValue="us-west-2a,us-west-2b"
+6. Configure your `~/.aws/credentials` for use with the awscli
+7. Execute the cloudformation template from inside the repo: `aws cloudformation create-stack --stack-name test --template-body file://$(pwd)/templates/jfrog-artifactory-ec2-master.template --parameters $(cat .ignore/params) --capabilities CAPABILITY_NAMED_IAM`
 
 ## Testing with TaskCat
 
@@ -79,8 +80,8 @@ Download the submodules:
 
 #### venv
 
-    python3 -m venv ~/theflashvenv
-    source ~/theflashvenv/bin/activate
+    python3 -m venv ~/cloudformationvenv
+    source ~/cloudformationvenv/bin/activate
     pip install awscli taskcat
 
 #### Docker
@@ -101,9 +102,15 @@ In order to test from taskcat you need an override file in your home .aws direct
         }
     ]
 
-Please also verify the `ci/config.yml` is updated with the region you wish to deploy to. The rest of the parameters should be answered in the `ci/<test>.json`
+Please also verify the `ci/config.yml` is updated with the region you wish to deploy to. The rest of the parameters should be answered in the `ci/<test>.json` : `jfrog-artifactory-new-vpc-ec2.json`
 
-Then you need to be above the repository directory and execute: `taskcat -c theflash/ci/config.yml`.
+NOTE: We have seen issues running taskcat under the following conditions, please verify:
+    * Your Environment variables for AWS are what you want as they override your `~/.aws/credentials` and `~/.aws/config`
+    * You have initialized and updated the git submodules
+    * You Account has the correct IAM Permissions to execute in the region.
+    * Your default region and test region match.
+
+Then you need to be above the repository directory and execute: `taskcat -c quickstart-jfrog-artifactory/ci/config.yml`.
 
 ### Clean up
 
