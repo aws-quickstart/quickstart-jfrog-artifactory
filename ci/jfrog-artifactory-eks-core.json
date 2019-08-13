@@ -1,0 +1,66 @@
+[
+    {
+        "ParameterKey": "KubeManifestLambdaArn",
+        "ParameterValue": "arn:aws:lambda:us-west-2:256271319870:function:tcat-tag-jfrog-artifactory-eks-KubeManifestLambda-F6EIIKC4AG5K"
+    },
+    {
+        "ParameterKey": "HelmLambdaArn",
+        "ParameterValue": "arn:aws:lambda:us-west-2:256271319870:function:tcat-tag-jfrog-artifactory-eks-1fa87e3e-HelmLambda-45X7GK8BY9I"
+    },
+    {
+        "ParameterKey": "KubeConfigPath",
+        "ParameterValue": "s3://tcat-tag-jfrog-artifactory-eks-1-kubeconfigbucket-1pba8pqw064pb/.kube/config.enc"
+    },
+    {
+        "ParameterKey": "KubeConfigKmsContext",
+        "ParameterValue": "JFrogArtifactory"
+    },
+    {
+        "ParameterKey": "ArtifactoryLicense1",
+        "ParameterValue": "override"
+    },
+    {
+        "ParameterKey": "ArtifactoryLicense2",
+        "ParameterValue": "override"
+    },
+    {
+        "ParameterKey": "ArtifactoryLicense3",
+        "ParameterValue": "override"
+    },
+    {
+        "ParameterKey": "ArtifactoryLicense4",
+        "ParameterValue": "override"
+    },
+    {
+        "ParameterKey": "ArtifactoryVersion",
+        "ParameterValue": "6.11.1"
+    },
+    {
+        "ParameterKey": "NumberOfSecondary",
+        "ParameterValue": "2"
+    },
+    {
+        "ParameterKey": "NumberOfSecondary",
+        "ParameterValue": "3"
+    },
+    {
+        "ParameterKey": "ArtifactoryDBEndpointAddress",
+        "ParameterValue": "ta1ltq107wnows2.cncci4pv7wym.us-west-2.rds.amazonaws.com"
+    },
+    {
+        "ParameterKey": "DatabaseName",
+        "ParameterValue": "artdb"
+    },
+    {
+        "ParameterKey": "DatabaseUser",
+        "ParameterValue": "artifactory"
+    },
+    {
+        "ParameterKey": "DatabasePassword",
+        "ParameterValue": "Admin123!"
+    },
+    {
+        "ParameterKey": "MasterKey",
+        "ParameterValue": "1ce2be4490ca2c662cb79636cf9b7b8e"
+    }
+]
