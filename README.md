@@ -13,9 +13,9 @@ The goal of this project is to have several deployment options depending on a cu
 
 ## Project Setup
 
---> master template
-----> Existing VPC
-------> ec2-instances.
+    --> master template
+    ----> Existing VPC
+    ------> ec2-instances.
 
 Master requires a VPC and will create, and then call Existing
 
@@ -27,33 +27,32 @@ ec2-Instances builds the Primary and Secondary AutoScale/Launch Configs.
 
 Currently Artifactory is installed via Ansible utilizing roles. The main items configured are:
 
-   bash
-   artifactory
-    ├── README.md
-    ├── defaults
-    │   └── main.yml
-    ├── files
-    │   ├── inactiveServerCleaner.groovy
-    │   ├── installer-info.json
-    │   └── nginx.conf
-    ├── handlers
-    │   └── main.yml
-    ├── meta
-    │   └── main.yml
-    ├── tasks
-    │   ├── configure.yml
-    │   ├── install.yml
-    │   ├── main.yml
-    │   └── nginx-setup.yml
-    └── templates
-        ├── artifactory.cluster.license.j2
-        ├── artifactory.conf.j2
-        ├── binarystore.xml.j2
-        ├── certificate.key.j2
-        ├── certificate.pem.j2
-        ├── db.properties.j2
-        ├── ha-node.properties.j2
-        └── master.key.j2
+    artifactory
+     ├── README.md
+     ├── defaults
+     │   └── main.yml
+     ├── files
+     │   ├── inactiveServerCleaner.groovy
+     │   ├── installer-info.json
+     │   └── nginx.conf
+     ├── handlers
+     │   └── main.yml
+     ├── meta
+     │   └── main.yml
+     ├── tasks
+     │   ├── configure.yml
+     │   ├── install.yml
+     │   ├── main.yml
+     │   └── nginx-setup.yml
+     └── templates
+         ├── artifactory.cluster.license.j2
+         ├── artifactory.conf.j2
+         ├── binarystore.xml.j2
+         ├── certificate.key.j2
+         ├── certificate.pem.j2
+         ├── db.properties.j2
+         ├── ha-node.properties.j2
+         └── master.key.j2
 
 The Templates are per documentation. For the ha-node(port set to 0) please see this [link](https://jfrog.com/knowledge-base/why-the-membership-port-in-the-ha-configuration-is-set-to-0/)
 
@@ -62,11 +61,12 @@ The Templates are per documentation. For the ha-node(port set to 0) please see t
 In order to deploy a test deployment:
 
 1. Download the repo
-2. pip install the awscli (--user)
-3. create a hidden folder: .ignore/
-4. Inside the .ignore/ create a `params` file that is plain Text ParameterKey=DatabasePassword,ParameterValue=Password ParameterKey=KeyPairName,ParameterValue=My-SSH,ParameterKey=AvailabilityZones,ParameterValue="us-west-2a,us-west-2b"
-5. Configure your `~/.aws/credentials` for use with the awscli
-6. Execute the cloudformation template from inside the repo: `aws cloudformation create-stack --stack-name test --template-body file://$(pwd)/templates/jfrog-artifactory-ec2-master.template --parameters $(cat .ignore/params) --capabilities CAPABILITY_NAMED_IAM`
+2. `git submodule init; git submodule update` inside the repo.
+3. pip install the awscli (--user)
+4. create a hidden folder: .ignore/
+5. Inside the .ignore/ create a `params` file that is plain Text ParameterKey=DatabasePassword,ParameterValue=Password ParameterKey=KeyPairName,ParameterValue=My-SSH,ParameterKey=AvailabilityZones,ParameterValue="us-west-2a,us-west-2b"
+6. Configure your `~/.aws/credentials` for use with the awscli
+7. Execute the cloudformation template from inside the repo: `aws cloudformation create-stack --stack-name test --template-body file://$(pwd)/templates/jfrog-artifactory-ec2-master.template --parameters $(cat .ignore/params) --capabilities CAPABILITY_NAMED_IAM`
 
 ## Testing with TaskCat
 
@@ -75,22 +75,19 @@ In order to deploy a test deployment:
 To install [taskcat](#https://aws-quickstart.github.io/install-taskcat.html)
 Download the submodules:
 
-    bash
     git submodule init
     git submodule update
 
 #### venv
 
-    bash
-    python3 -m venv ~/theflashvenv
-    source ~/theflashvenv/bin/activate
+    python3 -m venv ~/cloudformationvenv
+    source ~/cloudformationvenv/bin/activate
     pip install awscli taskcat
 
 #### Docker
 
 Use the following Curl|Bash script (Feel free to look inside first) to "install" taskcat via Docker. I then moved `taskcat.docker` to `/usr/local/bin/taskcat`
 
-    bash
     curl -s https://raw.githubusercontent.com/aws-quickstart/taskcat/master/installer/docker-installer.sh | sh
     mv taskcat.docker /usr/local/bin
 
@@ -98,7 +95,6 @@ Use the following Curl|Bash script (Feel free to look inside first) to "install"
 
 In order to test from taskcat you need an override file in your home .aws directory: `~/.aws/taskcat_global_override.json`
 
-    bash
     [  
         {
             "ParameterKey": "KeyPairName",
@@ -106,9 +102,15 @@ In order to test from taskcat you need an override file in your home .aws direct
         }
     ]
 
-Please also verify the `ci/config.yml` is updated with the region you wish to deploy to. The rest of the parameters should be answered in the `ci/<test>.json`
+Please also verify the `ci/config.yml` is updated with the region you wish to deploy to. The rest of the parameters should be answered in the `ci/<test>.json` : `jfrog-artifactory-new-vpc-ec2.json`
 
-Then you need to be above the repository directory and execute: `taskcat -c theflash/ci/config.yml`.
+NOTE: We have seen issues running taskcat under the following conditions, please verify:
+    * Your Environment variables for AWS are what you want as they override your `~/.aws/credentials` and `~/.aws/config`
+    * You have initialized and updated the git submodules
+    * You Account has the correct IAM Permissions to execute in the region.
+    * Your default region and test region match.
+
+Then you need to be above the repository directory and execute: `taskcat -c quickstart-jfrog-artifactory/ci/config.yml`.
 
 ### Clean up
 
