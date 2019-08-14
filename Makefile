@@ -1,8 +1,10 @@
-.PHONY: help run
+.PHONY: help run submodules
 
 submodules:
 	git submodule init
 	git submodule update
+	cd submodules/quickstart-linux-bastion && git submodule init && git submodule update 
+	cd submodules/quickstart-amazon-eks && git submodule init && git submodule update 
 
 help:
 	@echo   "make test  : executes taskcat"
