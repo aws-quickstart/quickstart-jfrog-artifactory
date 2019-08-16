@@ -487,7 +487,7 @@ Resources:
         VPCCIDR: !Ref VPCCIDR
         PrivateSubnet1CIDR: !Ref PrivateSubnet1CIDR
         PrivateSubnet2CIDR: !Ref PrivateSubnet2CIDR
-        PrivateSubnet3CIDR: !Ref PrivateSubnet3CIDR
+        PrivateSubnet3CIDR: !Ref PrivateSubnet2CIDR # This should end up in no new rule but required for EKS
         SubnetIds: !Join [ ",", [ !Ref PrivateSubnet1ID, !Ref PrivateSubnet2ID, !Ref PrivateSubnet3ID ]]
         DBAllocatedStorage: !Ref DBAllocatedStorage
         MultiAZDatabase: !Ref MultiAZDatabase
@@ -497,7 +497,6 @@ Resources:
         DatabasePassword: !Ref DatabasePassword
         DatabaseInstance: !Ref DatabaseInstance
         DatabaseName: !Ref DatabaseName
-
   ArtifactoryELB:
     Type: AWS::ElasticLoadBalancing::LoadBalancer
     Properties:
