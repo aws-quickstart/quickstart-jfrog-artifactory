@@ -1,8 +1,13 @@
-.PHONY: help run
+.PHONY: help run submodules
 
+submodules:
+	git submodule init
+	git submodule update
+	cd submodules/quickstart-linux-bastion && git submodule init && git submodule update 
+	cd submodules/quickstart-amazon-eks && git submodule init && git submodule update 
 
 help:
-    @echo   "make test  : executes taskcat"
+	@echo   "make test  : executes taskcat"
 
 create:
 	aws cloudformation create-stack --stack-name test --template-body file://$(pwd)/templates/jfrog-artifactory-ec2-new-vpc.template --parameters $(cat .ignore/params) --capabilities CAPABILITY_IAM
@@ -10,8 +15,9 @@ create:
 delete:
 	aws cloudformation delete-stack --stack-name test
 
-test: lint
-	taskcat -c ci/config.yml
+.ONESHELL:
+test: lint submodules
+	cd .. && pwd && taskcat -c theflash/ci/config.yml -n
 
 lint:
 	taskcat -l -c ci/config.yml
