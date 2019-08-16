@@ -25,7 +25,13 @@ Parameters:
     Type: String
   NumberOfSecondary:
     Type: Number
-  ArtifactoryLicense:
+  ArtifactoryLicense1:
+    Type: String
+  ArtifactoryLicense2:
+    Type: String
+  ArtifactoryLicense3:
+    Type: String
+  ArtifactoryLicense4:
     Type: String
   ArtifactoryServerName:
     Type: String
@@ -220,7 +226,10 @@ Resources:
                     artifactory_hostname: artifactory
                     ssl_dir: /var/opt/jfrog/nginx/ssl
                     key_dir: /var/opt/jfrog/nginx/ssl
-                    artifactory_licenses: ${ArtifactoryLicense}
+                    artifactory_license1: ${ArtifactoryLicense1}
+                    artifactory_license2: ${ArtifactoryLicense2}
+                    artifactory_license3: ${ArtifactoryLicense3}
+                    artifactory_license4: ${ArtifactoryLicense4}
                     s3_endpoint: s3.${AWS::Region}.amazonaws.com
                     s3_access_key: ${ArtifactoryIAMAcessKey}
                     s3_access_secret_key: ${SecretAccessKey}

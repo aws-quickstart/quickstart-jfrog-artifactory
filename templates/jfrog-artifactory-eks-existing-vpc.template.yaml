@@ -350,7 +350,7 @@ Parameters:
     Type: String
   Certificate:
     Description: The Certificate file to be used to terminate SSL.
-    AllowedPattern: ^(-----BEGIN CERTIFICATE-----)([ a-zA-Z0-9\/+=]+) (-----END CERTIFICATE-----)$
+    AllowedPattern: ^(-----BEGIN CERTIFICATE-----)\n(.*?\n)+(-----END CERTIFICATE-----)$
     ConstraintDescription: A Certificate that begins with "-----BEGIN CERTIFICATE----- " and ends with "-----END CERTIFICATE----- "
     Default: >
       -----BEGIN CERTIFICATE-----
@@ -387,7 +387,7 @@ Parameters:
     Type: String
   CertificateKey: 
     Description: The Private Key for the Certificate.     
-    AllowedPattern: ^(-----BEGIN PRIVATE KEY-----)([ a-zA-Z0-9\/+=]+) (-----END PRIVATE KEY-----)$
+    AllowedPattern: ^(-----BEGIN [A-Za-z ]+ KEY-----)\n(.*?\n)+(-----END [A-Za-z ]+ KEY-----)$
     ConstraintDescription: A Private key that begins with "-----BEGIN PRIVATE KEY-----" and ends with "-----END PRIVATE KEY-----"
     Default: >
       -----BEGIN PRIVATE KEY-----
