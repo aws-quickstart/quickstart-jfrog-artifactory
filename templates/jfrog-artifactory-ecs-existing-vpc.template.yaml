@@ -484,7 +484,7 @@ Resources:
         PrivateSubnet1CIDR: !Ref PrivateSubnet1CIDR
         PrivateSubnet2CIDR: !Ref PrivateSubnet2CIDR
         PrivateSubnet3CIDR: !Ref PrivateSubnet2CIDR # This should end up in no new rule but required for EKS
-        SubnetIds: !Join [ ",", [ !Ref PrivateSubnet1ID, !Ref PrivateSubnet2ID, !Ref PrivateSubnet3ID ]]
+        SubnetIds: !Join [ ",", [ !Ref PrivateSubnet1ID, !Ref PrivateSubnet2ID ]]
         DBAllocatedStorage: !Ref DBAllocatedStorage
         MultiAZDatabase: !Ref MultiAZDatabase
         DatabaseEngine: !Ref DatabaseEngine

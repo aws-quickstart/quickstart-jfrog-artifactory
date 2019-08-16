@@ -46,6 +46,7 @@ Metadata:
           - CertificateDomain
           - ArtifactoryServerName
           - MasterKey
+          - ExtraJavaOptions
           - KeystorePassword
           - AnsibleVaultPass
       - Label:
@@ -128,6 +129,8 @@ Metadata:
         default: Artifactory Server Name
       MasterKey:
         default: Master Server Key
+      ExtraJavaOptions:
+        default: Extra Java Options
       KeystorePassword:
         default: Java Keystore Password
       AnsibleVaultPass:
@@ -349,6 +352,11 @@ Parameters:
     Default: 1ce2be4490ca2c662cb79636cf9b7b8e
     NoEcho: 'true'
     Type: String
+  ExtraJavaOptions:
+    Description: Setting Java Memory Parameters for Artifactory. Learn about system requirements for Artifactory 
+      https://www.jfrog.com/confluence/display/RTF/System+Requirements#SystemRequirements-RecommendedHardware.
+    Default: -server -Xms2g -Xmx14g -Xss256k -XX:+UseG1GC
+    Type: String    
   KeystorePassword:
     Description: To ensure better security we will change the default Java keystore
       password to the one specified.
@@ -488,7 +496,7 @@ Resources:
         PrivateSubnet1CIDR: !Ref PrivateSubnet1CIDR
         PrivateSubnet2CIDR: !Ref PrivateSubnet2CIDR
         PrivateSubnet3CIDR: !Ref PrivateSubnet2CIDR # This should end up in no new rule but required for EKS
-        SubnetIds: !Join [ ",", [ !Ref PrivateSubnet1ID, !Ref PrivateSubnet2ID, !Ref PrivateSubnet3ID ]]
+        SubnetIds: !Join [ ",", [ !Ref PrivateSubnet1ID, !Ref PrivateSubnet2ID ]]
         DBAllocatedStorage: !Ref DBAllocatedStorage
         MultiAZDatabase: !Ref MultiAZDatabase
         DatabaseEngine: !Ref DatabaseEngine
@@ -663,6 +671,7 @@ Resources:
         DatabasePassword: !Ref DatabasePassword
         ArtifactoryPrimary: 'true'
         MasterKey: !Ref MasterKey
+        ExtraJavaOptions: !Ref ExtraJavaOptions
         KeystorePassword: !Ref KeystorePassword
         ArtifactoryVersion: !Ref ArtifactoryVersion
         KeyPairName: !Ref KeyPairName
@@ -676,7 +685,7 @@ Resources:
     DependsOn: ArtifactoryMaster
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: !Sub 'https://${QSS3BucketName}.s3.amazonaws.com/${QSS3KeyPrefix}templates/jfrog-artifactory-ec2-instance.template'
+      TemplateURL: !Sub 'https://${QSS3BucketName}.s3.amazonaws.com/${QSS3KeyPrefix}templates/jfrog-artifactory-ec2-instance.template.yaml'
       Parameters:
         PrivateSubnet1ID: !Ref PrivateSubnet1ID
         PrivateSubnet2ID: !Ref PrivateSubnet2ID
@@ -687,12 +696,10 @@ Resources:
         QSS3BucketName: !Ref QSS3BucketName
         QSS3KeyPrefix: !Ref QSS3KeyPrefix
         AmiId: !Ref AmiId
-        ArtifactoryLicense: !Join # We can do up to 4 due to length
-          - ','
-          - - !Ref ArtifactoryLicense1
-            - !Ref ArtifactoryLicense2
-            - !Ref ArtifactoryLicense3
-            - !Ref ArtifactoryLicense4
+        ArtifactoryLicense1: !Ref ArtifactoryLicense1
+        ArtifactoryLicense2: !Ref ArtifactoryLicense2
+        ArtifactoryLicense3: !Ref ArtifactoryLicense3
+        ArtifactoryLicense4: !Ref ArtifactoryLicense4
         ArtifactoryServerName: !Ref ArtifactoryServerName
         CertificateDomain: !Ref CertificateDomain
         ArtifactoryIAMAcessKey: !GetAtt ArtifactoryCoreInfraStack.Outputs.IAMAcessKey
@@ -707,6 +714,7 @@ Resources:
         DatabasePassword: !Ref DatabasePassword
         ArtifactoryPrimary: 'false'
         MasterKey: !Ref MasterKey
+        ExtraJavaOptions: !Ref ExtraJavaOptions
         KeystorePassword: !Ref KeystorePassword
         ArtifactoryVersion: !Ref ArtifactoryVersion
         KeyPairName: !Ref KeyPairName

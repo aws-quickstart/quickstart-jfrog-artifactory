@@ -325,7 +325,7 @@ Parameters:
     Description: The Certificate file to be used to terminate SSL.
     AllowedPattern: ^(-----BEGIN CERTIFICATE-----)([ a-zA-Z0-9\/+=-]+) (-----END CERTIFICATE-----)$
     ConstraintDescription: A Certificate that begins with "-----BEGIN CERTIFICATE----- " and ends with "-----END CERTIFICATE----- "
-    Default: >
+    Default: |
       -----BEGIN CERTIFICATE-----
       MIIFaDCCA1ACCQD45dB5tZFvCDANBgkqhkiG9w0BAQsFADB2MQswCQYDVQQGEwJV
       UzELMAkGA1UECAwCQ0ExEjAQBgNVBAcMCVN1bm55dmFsZTEOMAwGA1UECgwFSkZy
@@ -362,7 +362,7 @@ Parameters:
     Description: The Private Key for the Certificate.     
     AllowedPattern: ^(-----BEGIN PRIVATE KEY-----)([ a-zA-Z0-9\/+=]+) (-----END PRIVATE KEY-----)$
     ConstraintDescription: A Private key that begins with "-----BEGIN PRIVATE KEY-----" and ends with "-----END PRIVATE KEY-----"
-    Default: >
+    Default: |
       -----BEGIN PRIVATE KEY-----
       MIIJQgIBADANBgkqhkiG9w0BAQEFAASCCSwwggkoAgEAAoICAQDRvc6BMUqQ1tdc
       fM+/eX0ipft8Vlx9LZkwPiYG42UZDqTLKtp6goqJV2Q6BBX93APEt5brL7rfsnYo

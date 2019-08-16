@@ -156,7 +156,6 @@ Resources:
       Name: quickstart-artifactory-ha
       Chart: jfrog/artifactory-ha
       RepoUrl: https://charts.jfrog.io
-      #Version: !Sub ${ArtifactoryVersion}
       ValueYaml: !Sub 
         - |
           artifactory:
@@ -233,51 +232,6 @@ Resources:
             limits_cpu: !FindInMap [DeploymentSize, !Ref ArtifactoryDeploymentSize, limitsCpu ],
             java_xms: !FindInMap [DeploymentSize, !Ref ArtifactoryDeploymentSize, javaOptsXms ],
             java_xmx: !FindInMap [DeploymentSize, !Ref ArtifactoryDeploymentSize, javaOptsXmx ] }
-      #    
-      #Values:
-      #  # Image Configuration
-      #  artifactory.image.repository: docker.bintray.io/jfrog/artifactory-pro
-      #  artifactory.image.version: !Sub ${ArtifactoryVersion}
-      #  artifactory.image.pullPolicy: Always
-      #  # NGINX Configuration
-      #  nginx.tlsSecretName: artifactory-nginx-tls
-      #  nginx.image.version: !Sub ${ArtifactoryVersion}
-      #  #nginx.service.loadBalancerSourceRanges: !Sub "'{ ${AccessCIDR} }'"
-      #  # Primary config
-      #  #artifactory.primary.resources.requests.memory: !FindInMap [DeploymentSize, !Ref ArtifactoryDeploymentSize, requestsMem]
-      #  #artifactory.primary.resources.requests.cpu: !FindInMap [DeploymentSize, !Ref ArtifactoryDeploymentSize, requestsCpu]
-      #  #artifactory.primary.resources.limits.memory: !FindInMap [DeploymentSize, !Ref ArtifactoryDeploymentSize, limitsMem]
-      #  #artifactory.primary.resources.limits.cpu: !FindInMap [DeploymentSize, !Ref ArtifactoryDeploymentSize, limitsCpu]
-      #  #artifactory.primary.javaOpts.xms: !FindInMap [DeploymentSize, !Ref ArtifactoryDeploymentSize, javaOptsXms]
-      #  #artifactory.primary.javaOpts.xmx: !FindInMap [DeploymentSize, !Ref ArtifactoryDeploymentSize, javaOptsXmx]
-      #  ## Secondaries config
-      #  #artifactory.node.resources.requests.memory: !FindInMap [DeploymentSize, !Ref ArtifactoryDeploymentSize, requestsMem]
-      #  #artifactory.node.resources.requests.cpu: !FindInMap [DeploymentSize, !Ref ArtifactoryDeploymentSize, requestsCpu]
-      #  #artifactory.node.resources.limits.memory: !FindInMap [DeploymentSize, !Ref ArtifactoryDeploymentSize, limitsMem]
-      #  #artifactory.node.resources.limits.cpu: !FindInMap [DeploymentSize, !Ref ArtifactoryDeploymentSize, limitsCpu]
-      #  #artifactory.node.javaOpts.xms: !FindInMap [DeploymentSize, !Ref ArtifactoryDeploymentSize, javaOptsXms]
-      #  #artifactory.node.javaOpts.xmx: !FindInMap [DeploymentSize, !Ref ArtifactoryDeploymentSize, javaOptsXmx]
-      #  # Storage Configuration
-      #  artifactory.persistence.enabled: false
-      #  artifactory.persistence.type: aws-s3
-      #  artifactory.persistence.awsS3.endpoint: !Sub s3.${AWS::Region}.amazonaws.com
-      #  artifactory.persistence.awsS3.region: !Sub ${AWS::Region}
-      #  artifactory.persistence.awsS3.identity: !Ref ArtifactoryIAMAcessKey
-      #  artifactory.persistence.awsS3.credential: !Ref SecretAccessKey
-      #  artifactory.persistence.awsS3.bucketName: !Ref ArtifactoryS3Bucket 
-      #  # License Information
-      #  artifactory.license.secret: artifactory-cluster-license
-      #  artifactory.license.dataKey: art.lic
-      #  # HA Configuration
-      #  artifactory.masterKey: !Sub ${MasterKey}
-      #  artifactory.node.replicaCount: !Sub ${NumberOfSecondary}
-      #  # Database configuration
-      #  postgresql.enabled: false
-      #  artifactory.preStartCommand: '"wget -O /opt/jfrog/artifactory/tomcat/lib/mysql-connector-java-5.1.41.jar https://jcenter.bintray.com/mysql/mysql-connector-java/5.1.41/mysql-connector-java-5.1.41.jar"'
-      #  database.type: mysql
-      #  database.url: !Sub jdbc:mysql://${ArtifactoryDBEndpointAddress}:3306/${DatabaseName}?characterEncoding=UTF-8&elideSetAutoCommits=true #&verifyServerCertificate=true&useSSL=true&requireSSL=true
-      #  database.user: !Sub ${DatabaseUser}
-      #  database.password: !Sub ${DatabasePassword}
   IngressHostName:
     DependsOn: ArtifactoryDeployment
     Type: "Custom::KubeGet"

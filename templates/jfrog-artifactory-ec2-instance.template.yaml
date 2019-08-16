@@ -19,7 +19,13 @@ Parameters:
     Type: String
   QSS3KeyPrefix:
     Type: String
-  ArtifactoryLicense:
+  ArtifactoryLicense1:
+    Type: String
+  ArtifactoryLicense2:
+    Type: String
+  ArtifactoryLicense3:
+    Type: String
+  ArtifactoryLicense4:
     Type: String
   ArtifactoryServerName:
     Type: String
@@ -48,6 +54,8 @@ Parameters:
   ArtifactoryPrimary:
     Type: String
   MasterKey:
+    Type: String
+  ExtraJavaOptions:
     Type: String
   ArtifactoryVersion:
     Type: String
@@ -157,7 +165,10 @@ Resources:
                   # Base install for Artifactory
                   - import_playbook: site-artifactory.yml
                     vars:
-                      artifactory_licenses: ${ArtifactoryLicense}
+                      artifactory_license1: ${ArtifactoryLicense1}
+                      artifactory_license2: ${ArtifactoryLicense2}
+                      artifactory_license3: ${ArtifactoryLicense3}
+                      artifactory_license4: ${ArtifactoryLicense4}
                       artifactory_server_name: ${ArtifactoryServerName}
                       certificate_domain: ${CertificateDomain}
                       s3_endpoint: s3.${AWS::Region}.amazonaws.com
@@ -174,6 +185,7 @@ Resources:
                       art_primary: ${ArtifactoryPrimary}
                       artifactory_keystore_pass: ${KeystorePassword}
                       master_key: ${MasterKey}
+                      extra_java_opts: ${ExtraJavaOptions}
                       artifactory_version: ${ArtifactoryVersion}
                 mode: "0400"
               /root/.vault_pass.txt:

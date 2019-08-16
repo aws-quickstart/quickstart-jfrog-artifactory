@@ -22,6 +22,7 @@ key_dir: /etc/pki/tls/private
 
 art_primary: true
 java_version: java-1.8.0
+extra_java_opts: -server -Xms2g -Xmx14g -Xss256k -XX:+UseG1GC
 java_mysql_driver:
   url: https://bintray.com/artifact/download/bintray/jcenter/mysql/mysql-connector-java/5.1.38/mysql-connector-java-5.1.38.jar
   dest: /opt/jfrog/artifactory/tomcat/lib/mysql-connector-java-5.1.38.jar
