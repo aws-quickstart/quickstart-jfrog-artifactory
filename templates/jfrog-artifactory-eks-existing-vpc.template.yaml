@@ -630,7 +630,7 @@ Resources:
         NodeInstanceProfile: !GetAtt EKSStack.Outputs.NodeInstanceProfile
         NodeInstanceRoleName: !GetAtt EKSStack.Outputs.NodeInstanceRoleName
         KubernetesVersion: !Ref KubernetesVersion
-        BootstrapArguments: "--kubelet-extra-args '--node-labels=partition=artifactory-secondary"        
+        BootstrapArguments: "--kubelet-extra-args '--node-labels=partition=artifactory-secondary'"        
   # Allow the bastion host to SSH into the secondary node pools
   BastionToRegularIngress:
     Type: "AWS::EC2::SecurityGroupIngress"

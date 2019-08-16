@@ -31,22 +31,22 @@ tests:
   #    - us-west-2
   #jfrog-artifactory-ecs:
   #  parameter_input: jfrog-artifactory-new-vpc-ecs-existing.json
-  #  template_file: jfrog-artifactory-ecs-existing-vpc.template
+  #  template_file: jfrog-artifactory-ecs-existing-vpc.template.yaml
   #  regions:
   #    - us-west-2 
   #jfrog-artifactory-ecs:
   #  parameter_input: jfrog-artifactory-new-vpc-ecs-existing-db.json
-  #  template_file: jfrog-artifactory-ecs-ec2.template
+  #  template_file: jfrog-artifactory-ecs-ec2.template.yaml
   #  regions:
   #    - us-west-2    
   
-  #jfrog-artifactory-eks:
-  #  parameter_input: jfrog-artifactory-new-vpc-eks.json
-  #  template_file: jfrog-artifactory-eks-master.template.yaml
-  #  regions:
-  #    - us-west-2
   jfrog-artifactory-eks:
-    parameter_input: jfrog-artifactory-eks-core.json
-    template_file: jfrog-artifactory-eks-core-workload.template.yaml
+    parameter_input: jfrog-artifactory-new-vpc-eks.json
+    template_file: jfrog-artifactory-eks-master.template.yaml
     regions:
       - us-west-2
+  #jfrog-artifactory-eks:
+  #  parameter_input: jfrog-artifactory-eks-core.json
+  #  template_file: jfrog-artifactory-eks-core-workload.template.yaml
+  #  regions:
+  #    - us-west-2
