@@ -50,9 +50,5 @@
     {
         "ParameterKey": "NumberOfSecondary",
         "ParameterValue": "2"
-    },
-    {
-        "ParameterKey": "ArtifactoryServerName",
-        "ParameterValue": "taskcat"
     }
 ]
