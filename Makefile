@@ -20,7 +20,7 @@ test: lint submodules
 	cd .. && pwd && taskcat -c theflash/ci/config.yml -n
 
 lint:
-	taskcat -l -c ci/config.yml
+	time taskcat -l -c ci/config.yml
 
 public_repo:
 	taskcat -c theflash/ci/config.yml -u
