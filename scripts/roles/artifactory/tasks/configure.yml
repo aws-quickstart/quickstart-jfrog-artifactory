@@ -20,13 +20,13 @@
    - "{{ java_mysql_driver }}"
    - "{{ rds_cert }}"
 
-# TODO: If this was on Prem, they may not need to perform this. Though they still should :)
 - name: Import the RDS certificate into Java KeyStore
   java_cert:
     cert_path: "{{ rds_cert.dest }}"
     cert_alias: "{{ rds_cert.cert_alias }}"
     keystore_pass: "{{ artifactory_keystore_default }}" # Default JKS as you get from the Internet.
     keystore_path: "{{ artifactory_keystore_path }}"
+  when: import_rds == true
 
 - name: Change Keystore password
   shell: keytool -storepasswd -keystore {{ artifactory_keystore_path }} -storepass {{ artifactory_keystore_default }} -new {{ artifactory_keystore_pass }}

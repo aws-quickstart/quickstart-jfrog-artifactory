@@ -38,6 +38,7 @@ rds_cert:
   owner: root
   group: root
   cert_alias: rds_ca
+import_rds: true
 
 
 
