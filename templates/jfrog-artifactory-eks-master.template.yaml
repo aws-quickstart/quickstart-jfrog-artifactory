@@ -51,6 +51,7 @@ Metadata:
         Parameters:
           - NodeInstanceType
           - NodeVolumeSize
+          - NumofSecondaryNodes
           - KubernetesVersion
       - Label:
           default: AWS Quick Start configuration
@@ -122,9 +123,11 @@ Metadata:
       MultiAZDatabase:
         default: High Available Database              
       NodeInstanceType:
-        default: Master nodes instance type
+        default: Node instance type
       NodeVolumeSize:
         default: Master node EBS volume size
+      NumofSecondaryNodes:
+        default: Number Of Secondary nodes
       KubernetesVersion:
         default: Kubernetes version
       QSS3BucketName:
@@ -213,7 +216,7 @@ Parameters:
     Default: 10.0.160.0/20
     Type: String
   NodeInstanceType:
-    Description: The Amazon EC2 instance type for the masters node group.
+    Description: The Amazon EC2 instance type for the nodes hosting the Kubernetes pods.
     AllowedValues:
       - m4.xlarge
       - m4.2xlarge
@@ -225,8 +228,16 @@ Parameters:
     Description: The size of EBS volumes for master node instances, in GiB
     Default: 200
     Type: String
-  NumberOfSecondary:
-    Description: The initial number of secondary node instances to create.
+  NumofSecondaryNodes:
+    Description: The initial number of secondary node instances to create. 
+      NOTE if you do not have large enough instances to boot the number of secondary pods the deployment will fail.
+    AllowedValues:
+      - 2
+      - 3
+      - 4
+      - 5
+      - 6
+      - 7
     Default: 2
     Type: Number
   KubernetesVersion:
@@ -305,6 +316,19 @@ Parameters:
       - Large
     Default: Medium
     Type: String
+  NumberOfSecondary:
+    Description: Number of secondary Artifactory pods to complete your HA deployment. 
+      Minimum number of 2 to fit the Artifactory best practices. Do not select more than
+      you license for.
+    AllowedValues:
+      - 2
+      - 3
+      - 4
+      - 5
+      - 6
+      - 7
+    Default: 2
+    Type: Number
   ArtifactoryLicense1:
     Description: Artifactory Enterprise License at least one is required.
     Default: ""
@@ -501,9 +525,9 @@ Parameters:
     Description: Create a Multi-Availability Zone Amazon RDS instance.
     ConstraintDescription: True or False
     AllowedValues:
-      - True
-      - False
-    Default: False
+      - "true"
+      - "false"
+    Default: "false"
     Type: String
   QSS3BucketName:
     AllowedPattern: ^[0-9a-zA-Z]+([0-9a-zA-Z-]*[0-9a-zA-Z])*$
@@ -617,6 +641,7 @@ Resources:
         KubernetesVersion: !Ref KubernetesVersion
         NodeInstanceType: !Ref NodeInstanceType
         NodeVolumeSize: !Ref NodeVolumeSize
+        NumofSecondaryNodes: !Ref NumofSecondaryNodes
         QSS3BucketName: !Ref QSS3BucketName
         QSS3KeyPrefix: !Ref QSS3KeyPrefix
         LambdaZipsBucketName: !Ref LambdaZipsBucketName

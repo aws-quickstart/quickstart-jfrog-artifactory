@@ -4,6 +4,12 @@ Metadata:
   AWS::CloudFormation::Interface:
     ParameterGroups:
       - Label:
+          default: Security configuration
+        Parameters:
+          - KeyPairName
+          - AccessCIDR
+          - RemoteAccessCIDR    
+      - Label:
           default: Network Configuration
         Parameters:
           - VPCID
@@ -14,8 +20,6 @@ Metadata:
           - PrivateSubnet2ID
           - PrivateSubnet1CIDR
           - PrivateSubnet2CIDR
-          - AccessCIDR
-          - RemoteAccessCIDR
       - Label:
           default: Bastion Configuration
         Parameters:
@@ -28,7 +32,6 @@ Metadata:
       - Label:
           default: Amazon EC2 Configuration
         Parameters:
-          - KeyPairName
           - AmiId
           - VolumeSize
           - InstanceType    
@@ -293,10 +296,15 @@ Parameters:
     Type: String
   NumberOfSecondary:
     Description: Number of secondary Artifactory servers to complete your
-      HA deployment. Minimum number of 2 to fit the Artifactory best practices.
+      HA deployment. Minimum number of 2 to fit the Artifactory best practices. Do not select more than
+      you license for.
     AllowedValues:
       - 2
       - 3
+      - 4
+      - 5
+      - 6
+      - 7
     Default: 2
     Type: Number
   ArtifactoryVersion:
@@ -523,9 +531,9 @@ Parameters:
     Description: Create a Multi-Availability Zone Amazon RDS instance.
     ConstraintDescription: True or False
     AllowedValues:
-      - True
-      - False
-    Default: False
+      - "true"
+      - "false"
+    Default: "false"
     Type: String
   QSS3BucketName:
     Description: S3 bucket name for the Quick Start assets. This string can include
@@ -807,6 +815,11 @@ Resources:
         QSS3KeyPrefix: !Ref QSS3KeyPrefix
 
 Outputs:
-  URL:
+  ArtifactoryUrl:
     Description: URL of the ELB to access Artifactory
     Value: !Sub "https://${ArtifactoryELB.DNSName}"
+  BastionIP:
+    Value: !If
+      - EnableBastion
+      - !GetAtt BastionStack.Outputs.EIP1
+      - ""

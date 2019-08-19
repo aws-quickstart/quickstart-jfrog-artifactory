@@ -68,7 +68,6 @@ Metadata:
         Parameters:
           - QSS3BucketName
           - QSS3KeyPrefix
-          #- OutputBucketName
     ParameterLabels:
       KeyPairName:
         default: SSH Key Name
@@ -309,7 +308,8 @@ Parameters:
     Type: String
   NumberOfSecondary:
     Description: Number of secondary Artifactory servers to complete your
-      HA deployment. Minimum number of 2 to fit the Artifactory best practices.
+      HA deployment. Minimum number of 2 to fit the Artifactory best practices. Do not select more than
+      you license for.
     AllowedValues:
       - 2
       - 3
@@ -532,9 +532,9 @@ Parameters:
     Description: Create a Multi-Availability Zone Amazon RDS instance.
     ConstraintDescription: True or False
     AllowedValues:
-      - True
-      - False
-    Default: False
+      - "true"
+      - "false"
+    Default: "false"
     Type: String
   ELBScheme:
     Description: Whether this will be internet facing or internal
@@ -777,6 +777,11 @@ Resources:
 
 
 Outputs:
-  URL:
+  ArtifactoryUrl:
     Description: URL of the ELB to access Artifactory
     Value: !Sub "https://${ArtifactoryELB.DNSName}"
+  BastionIP:
+    Value: !If
+      - EnableBastion
+      - !GetAtt BastionStack.Outputs.EIP1
+      - ""

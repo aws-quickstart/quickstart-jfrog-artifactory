@@ -260,10 +260,15 @@ Parameters:
     Type: Number  
   NumberOfSecondary:
     Description: Number of secondary Artifactory servers to complete your
-      HA deployment. Minimum number of 2 to fit the Artifactory best practices.
+      HA deployment. Minimum number of 2 to fit the Artifactory best practices. Do not select more than
+      you license for.
     AllowedValues:
       - 2
       - 3
+      - 4
+      - 5
+      - 6
+      - 7
     Default: 2
     Type: Number
   ArtifactoryVersion:
@@ -485,9 +490,9 @@ Parameters:
     Description: Create a Multi-Availability Zone Amazon RDS instance.
     ConstraintDescription: True or False
     AllowedValues:
-      - True
-      - False
-    Default: False
+      - "true"
+      - "false"
+    Default: "false"
     Type: String
   QSS3BucketName:
     Description: S3 bucket name for the Quick Start assets. This string can include
@@ -582,6 +587,9 @@ Resources:
         QSS3KeyPrefix: !Ref QSS3KeyPrefix
         
 Outputs:
-  URL:
+  ArtifactoryUrl:
     Description: URL of the ELB to access Artifactory
-    Value: !Sub ${ArtifactoryExistingVPCStack.Outputs.URL}
+    Value: !Sub ${ArtifactoryExistingVPCStack.Outputs.ArtifactoryUrl}
+  BastionIP:
+    Value: !Sub ${ArtifactoryExistingVPCStack.Outputs.BastionIP
+    Description: Bastion host IP, for admin access via SSH
