@@ -293,6 +293,7 @@ Parameters:
       - m4.xlarge
       - m4.2xlarge
       - m4.4xlarge
+      - m4.10xlarge
     ConstraintDescription: Must contain valid instance type
     Default: m4.xlarge
     Type: String
