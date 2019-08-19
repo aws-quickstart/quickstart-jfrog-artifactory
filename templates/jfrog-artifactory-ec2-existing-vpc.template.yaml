@@ -734,12 +734,10 @@ Resources:
         QSS3BucketName: !Ref QSS3BucketName
         QSS3KeyPrefix: !Ref QSS3KeyPrefix
         AmiId: !Ref AmiId
-        ArtifactoryLicense: !Join # We can do up to 4 due to length
-          - ','
-          - - !Ref ArtifactoryLicense1
-            - !Ref ArtifactoryLicense2
-            - !Ref ArtifactoryLicense3
-            - !Ref ArtifactoryLicense4
+        ArtifactoryLicense1: !Ref ArtifactoryLicense1
+        ArtifactoryLicense2: !Ref ArtifactoryLicense2
+        ArtifactoryLicense3: !Ref ArtifactoryLicense3
+        ArtifactoryLicense4: !Ref ArtifactoryLicense4
         ArtifactoryServerName: !Ref ArtifactoryServerName
         CertificateDomain: !Ref CertificateDomain
         ArtifactoryIAMAcessKey: !GetAtt ArtifactoryCoreInfraStack.Outputs.IAMAcessKey
@@ -748,7 +746,7 @@ Resources:
         ArtifactoryDBEndpointAddress: !GetAtt ArtifactoryCoreInfraStack.Outputs.ArtifactoryDBEndpointAddress 
         CertificateKey: !Ref CertificateKey
         Certificate: !Ref Certificate
-        DBType: mysql
+        DBType: mysql # Only supported type currently
         DatabaseName: !Ref DatabaseName
         DatabaseUser: !Ref DatabaseUser
         DatabasePassword: !Ref DatabasePassword
@@ -776,8 +774,6 @@ Resources:
         MaxScalingNodes: !Ref NumberOfSecondary
         DeploymentTag: ArtifactorySecondary
         HostRole: !Ref ArtifactoryHostRole
-        QSS3BucketName: !Ref QSS3BucketName
-        QSS3KeyPrefix: !Ref QSS3KeyPrefix
         AmiId: !Ref AmiId
         ArtifactoryLicense1: !Ref ArtifactoryLicense1
         ArtifactoryLicense2: !Ref ArtifactoryLicense2
@@ -807,6 +803,8 @@ Resources:
         VolumeSize: !Ref VolumeSize
         ArtifactoryELB: !Ref ArtifactoryELB
         AnsibleVaultPass: !Ref AnsibleVaultPass
+        QSS3BucketName: !Ref QSS3BucketName
+        QSS3KeyPrefix: !Ref QSS3KeyPrefix
 
 Outputs:
   URL:

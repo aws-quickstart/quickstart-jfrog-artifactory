@@ -13,6 +13,8 @@ Parameters:
     Type: String
   MasterKey:
     Type: String
+  ExtraJavaOptions:
+    Type: String
   ArtifactoryPrimary:
     Type: String
   NumberNodes:
@@ -118,7 +120,7 @@ Resources:
             Timeout: 10
           Environment:
             - Name: EXTRA_JAVA_OPTIONS
-              Value: -Xmx4g
+              Value: !Ref ExtraJavaOptions
             - Name: ARTIFACTORY_MASTER_KEY
               Value: !Ref MasterKey
             - Name: HA_IS_PRIMARY

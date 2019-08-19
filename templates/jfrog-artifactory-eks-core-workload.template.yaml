@@ -191,7 +191,7 @@ Resources:
                 xms: "${java_xms}"
                 xmx: "${java_xmx}"
               nodeSelector:
-                partition: artifactory-master
+                partition: artifactory-primary
             node:
               replicaCount: ${NumberOfSecondary}
               resources:
@@ -223,7 +223,7 @@ Resources:
               version: ${ArtifactoryVersion}
             tlsSecretName: artifactory-nginx-tls
             nodeSelector:
-              partition: artifactory-master
+              partition: artifactory-primary
             service:
               loadBalancerSourceRanges:  [ "${AccessCIDR}" ]
         - { requests_memory: !FindInMap [DeploymentSize, !Ref ArtifactoryDeploymentSize, requestsMem],
@@ -244,5 +244,5 @@ Resources:
       Name: svc/quickstart-artifactory-ha-nginx
       JsonPath: '{.status.loadBalancer.ingress[0].hostname}'        
 Outputs:
-  ExampleSelfLink:
+  ArtifactoryUrl:
     Value: !Sub https://${IngressHostName}

@@ -30,6 +30,13 @@ Metadata:
           - BastionEnableTCPForwarding
           - NumBastionHosts
       - Label:
+          default: ECS Configuration
+        Parameters:
+          - ClusterName
+          - CreateNewECSCluster
+          - InstanceType
+          - VolumeSize
+      - Label:
           default: JFrog Artifactory Configuration
         Parameters:
           - ArtifactoryVersion
@@ -43,6 +50,8 @@ Metadata:
           - CertificateDomain
           - ArtifactoryServerName
           - MasterKey
+          - ExtraJavaOptions
+          - AnsibleVaultPass
       - Label:
           default: Amazon RDS Configuration
         Parameters:
@@ -95,6 +104,14 @@ Metadata:
         default: Bastion Enable TCP Forwarding
       NumBastionHosts:
         default: Number of Bastion Hosts
+      ClusterName:
+        default: ECS Cluster Name
+      CreateNewECSCluster:
+        default: Create New ECS Cluster
+      InstanceType:
+        default: Instance Type
+      VolumeSize:
+        default: EBS Root Volume Size
       ArtifactoryVersion:
         default: Artifactory Version
       NumberOfSecondary:
@@ -117,6 +134,10 @@ Metadata:
         default: Artifactory Server Name
       MasterKey:
         default: Master Server Key
+      ExtraJavaOptions:
+        default: Extra Java Options
+      AnsibleVaultPass:
+        default: Ansible Vault Password
       DatabaseName:
         default: Database Name
       DatabaseEngine:
@@ -259,8 +280,9 @@ Parameters:
     Default: JFrog  
     Type: String
   CreateNewECSCluster:
-    Description: Whether to boot a Bastion host or not. Due to the Artifactory nodes being
-      created in private subnets, this is highly recommended.
+    Description: Whether to create a new ECS Cluster with the ClusterName or not
+      if you choose Disabled a ECS Cluster with the name used in CluserName must
+      exist
     AllowedValues:
       - "Enabled"
       - "Disabled"
@@ -427,6 +449,11 @@ Parameters:
     Default: 1ce2be4490ca2c662cb79636cf9b7b8e
     NoEcho: 'true'
     Type: String
+  ExtraJavaOptions:
+    Description: Setting Java Memory Parameters for Artifactory. Learn about system requirements for Artifactory 
+      https://www.jfrog.com/confluence/display/RTF/System+Requirements#SystemRequirements-RecommendedHardware.
+    Default: -Xmx4g
+    Type: String      
   AnsibleVaultPass:
     Description: Ansiblevault Password to secure the artifactory.yml
     NoEcho: 'true' 
@@ -575,7 +602,7 @@ Resources:
         DatabaseUser: !Ref DatabaseUser
         DatabasePassword: !Ref DatabasePassword
         DatabaseInstance: !Ref DatabaseInstance
-        DatabaseName: !Ref DatabaseNam
+        DatabaseName: !Ref DatabaseName
   ArtifactoryELB:
     Type: AWS::ElasticLoadBalancingV2::LoadBalancer
     Properties:
@@ -722,12 +749,10 @@ Resources:
         VolumeSize: !Ref VolumeSize
         DeploymentTag: Artifactory
         NumberOfSecondary: !Ref NumberOfSecondary
-        ArtifactoryLicense: !Join # We can do up to 4 due to length For E+ we can only support 1.
-          - ','
-          - - !Ref ArtifactoryLicense1
-            - !Ref ArtifactoryLicense2
-            - !Ref ArtifactoryLicense3
-            - !Ref ArtifactoryLicense4
+        ArtifactoryLicense1: !Ref ArtifactoryLicense1
+        ArtifactoryLicense2: !Ref ArtifactoryLicense2
+        ArtifactoryLicense3: !Ref ArtifactoryLicense3
+        ArtifactoryLicense4: !Ref ArtifactoryLicense4
         CertificateDomain: !Ref CertificateDomain
         ArtifactoryServerName: !Ref ArtifactoryServerName
         ArtifactoryIAMAcessKey: !GetAtt ArtifactoryCoreInfraStack.Outputs.IAMAcessKey
@@ -741,6 +766,7 @@ Resources:
         DatabaseUser: !Ref DatabaseUser
         DatabasePassword: !Ref DatabasePassword
         MasterKey: !Ref MasterKey
+        ExtraJavaOptions: !Ref ExtraJavaOptions
         ArtifactoryVersion: !Ref ArtifactoryVersion
         SecurityGroups: !Ref ArtifactoryEC2SG
         ArtifactoryTargetGroupArn: !Ref ArtifactoryTargetGroup

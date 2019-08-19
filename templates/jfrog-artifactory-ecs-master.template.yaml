@@ -19,6 +19,12 @@ Metadata:
           - PublicSubnet1CIDR
           - PublicSubnet2CIDR
       - Label:
+          default: ECS Configuration
+        Parameters:
+          - ClusterName
+          - InstanceType
+          - VolumeSize
+      - Label:
           default: JFrog Artifactory Configuration
         Parameters:
           - ArtifactoryVersion
@@ -32,6 +38,7 @@ Metadata:
           - CertificateDomain
           - ArtifactoryServerName
           - MasterKey
+          - ExtraJavaOptions
           - AnsibleVaultPass
       - Label:
           default: Amazon RDS Configuration
@@ -72,6 +79,12 @@ Metadata:
         default: Artifactory Version
       NumberOfSecondary:
         default: Number of Secondary Nodes
+      ClusterName:
+        default: ECS Cluster Name
+      InstanceType:
+        default: Instance Type
+      VolumeSize:
+        default: EBS Root Volume Size
       ArtifactoryLicense1:
         default: Artifactory License 1
       ArtifactoryLicense2:
@@ -90,6 +103,8 @@ Metadata:
         default: Artifactory Server Name
       MasterKey:
         default: Master Server Key
+      ExtraJavaOptions:
+        default: Extra Java Options
       AnsibleVaultPass:
         Description: Ansiblevault Password to secure the artifactory.yml
         Type: String
@@ -226,6 +241,23 @@ Parameters:
       - "SUSE-SLES-15-HVM"
     Default: "Amazon-Linux-HVM"
     Type: String
+  ClusterName:
+    Description: Desired name for your ECS cluster.
+    Default: JFrog  
+    Type: String
+  InstanceType:
+    Description: EC2 instance type for the Artifactory docker hosts
+    AllowedValues:
+      - m4.xlarge
+      - m4.2xlarge
+      - m4.4xlarge
+    ConstraintDescription: Must contain valid instance type
+    Default: m4.xlarge
+    Type: String
+  VolumeSize:
+    Description: Size in GB of the available storage (will create 3x ebs volumes of this size)
+    Default: 200
+    Type: Number  
   NumberOfSecondary:
     Description: Number of secondary Artifactory servers to complete your
       HA deployment. Minimum number of 2 to fit the Artifactory best practices.
@@ -370,6 +402,11 @@ Parameters:
     Default: 1ce2be4490ca2c662cb79636cf9b7b8e
     NoEcho: 'true'
     Type: String
+  ExtraJavaOptions:
+    Description: Setting Java Memory Parameters for Artifactory. Learn about system requirements for Artifactory 
+      https://www.jfrog.com/confluence/display/RTF/System+Requirements#SystemRequirements-RecommendedHardware.
+    Default: -Xmx4g
+    Type: String  
   AnsibleVaultPass:
     Description: Ansiblevault Password to secure the artifactory.yml
     NoEcho: 'true'
@@ -517,6 +554,9 @@ Resources:
         BastionEnableTCPForwarding: !Ref BastionEnableTCPForwarding
         BastionEnableX11Forwarding: !Ref BastionEnableX11Forwarding
         BastionOS: !Ref BastionOS
+        ClusterName: !Ref ClusterName
+        InstanceType: !Ref InstanceType
+        VolumeSize: !Ref VolumeSize
         NumberOfSecondary: !Ref NumberOfSecondary
         ArtifactoryVersion: !Ref ArtifactoryVersion
         ArtifactoryLicense1: !Ref ArtifactoryLicense1
@@ -528,6 +568,7 @@ Resources:
         CertificateDomain: !Ref CertificateDomain
         ArtifactoryServerName: !Ref ArtifactoryServerName
         MasterKey: !Ref MasterKey
+        ExtraJavaOptions: !Ref ExtraJavaOptions
         AnsibleVaultPass: !Ref AnsibleVaultPass
         DatabaseName: !Ref DatabaseName
         DatabaseEngine: !Ref DatabaseEngine
