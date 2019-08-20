@@ -1,0 +1,399 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "Deploys the EC2 Autoscaling, LaunchConfig and Instance for Artifactory"
+Parameters:
+  PrivateSubnet1ID:
+    Type: 'AWS::EC2::Subnet::Id'
+  PrivateSubnet2ID:
+    Type: 'AWS::EC2::Subnet::Id'
+  MinScalingNodes:
+    Type: Number
+  MaxScalingNodes:
+    Type: Number
+  DeploymentTag:
+    Type: String
+  HostRole:
+    Type: String
+  AmiId:
+    Type: String
+  QSS3BucketName:
+    Type: String
+  QSS3KeyPrefix:
+    Type: String
+  ArtifactoryLicense1:
+    Type: String
+  ArtifactoryLicense2:
+    Type: String
+  ArtifactoryLicense3:
+    Type: String
+  ArtifactoryLicense4:
+    Type: String
+  ArtifactoryServerName:
+    Type: String
+  CertificateDomain:
+    Type: String
+  ArtifactoryIAMAcessKey:
+    Type: String
+  SecretAccessKey:
+    Type: String
+  ArtifactoryS3Bucket:
+    Type: String
+  Certificate:
+    Description: The Certificate file to be used to terminate SSL.
+    AllowedPattern: ^(-----BEGIN CERTIFICATE-----)\n(.*?\n)+(-----END CERTIFICATE-----)$
+    ConstraintDescription: A Certificate that begins with "-----BEGIN CERTIFICATE----- " and ends with "-----END CERTIFICATE----- "
+    Default: |
+      -----BEGIN CERTIFICATE-----
+      MIIFaDCCA1ACCQD45dB5tZFvCDANBgkqhkiG9w0BAQsFADB2MQswCQYDVQQGEwJV
+      UzELMAkGA1UECAwCQ0ExEjAQBgNVBAcMCVN1bm55dmFsZTEOMAwGA1UECgwFSkZy
+      b2cxFDASBgNVBAsMC0FydGlmYWN0b3J5MSAwHgYDVQQDDBdhcnRpZmFjdG9yeS5s
+      b2NhbGRvbWFpbjAeFw0xOTA3MjMyMzE4MjVaFw0yMDA3MjIyMzE4MjVaMHYxCzAJ
+      BgNVBAYTAlVTMQswCQYDVQQIDAJDQTESMBAGA1UEBwwJU3Vubnl2YWxlMQ4wDAYD
+      VQQKDAVKRnJvZzEUMBIGA1UECwwLQXJ0aWZhY3RvcnkxIDAeBgNVBAMMF2FydGlm
+      YWN0b3J5LmxvY2FsZG9tYWluMIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKC
+      AgEA0b3OgTFKkNbXXHzPv3l9IqX7fFZcfS2ZMD4mBuNlGQ6kyyraeoKKiVdkOgQV
+      /dwDxLeW6y+637J2KBiZTccHUS8/eC5ky9E6ECeFToCYsucUKRiWo9Uss6XS1N+Q
+      KQHktCVYy+KFDkJIVEL6LFbUMLz0k1jOhI/FRveT8LQ9cZsfy8KIrCF92ErcdPSL
+      02KO6RgaBjxRFtAw2ZdO07O9kcKBC5BpJdrEnJHalVJsJbZOqIuNjyKKp/8s9TtW
+      EYhXAbz05RrdQ97Cse1a/rHR5EWL+ITRw3Q/mQUv/ilSrSxb+chtgGb0qdP7aV0h
+      LOuxttQFFU2o62LHqnda6dWljxKpSYUz47ugCK0M4T2bRhy7lUgmZ3PcfZYLE2ue
+      h1qIJfkDfi1WpbptJAs4MbgfTvF2FCAsh8tyFnl+TA5QBWLRcOF9y1qUAATa1JKX
+      zKGf/5hExBRpuq371j4SLAb5qXYUuQqZiCe3O6qTx2Wo/jAOPV49wfK9D9fW5qmq
+      ND1Rpp8sKjlb2ixm7dhCWyWV+iGHpzX5tjBW35rikAisUoap47I1fNzYMiSTvbhv
+      2+by2YY8jsiYRCRIAKzRbgOgDOXnYVtWFpLgUldMqWqo+X3LztYE8CxD0CQK5u12
+      GxM5ztXKEaitCqUSjY34Gl4owukA9tzGnu09OuAYGkxVBO0CAwEAATANBgkqhkiG
+      9w0BAQsFAAOCAgEATH4kyuKvZtq32b3I7yZ27Xp2yaxABs17g0jAzkv7o9GILo+3
+      cVAJS2warQti+c+A2edjqEc97JXb6ul7/SHs7B9B0P4BZSUsI0byuPlQ45Kht891
+      jz3SF1o6jpKTniQPqsulMMshmYB6oY6CIyvKpaMaG3DypEXFmwEU7CdWr7oVISkn
+      pU6N6fI+V94Wzd1yHL8Jm/ixP4lqBAZqDhxNRq/Vok94wu2jvWwPIn2M+9myAiOs
+      TSpcqLg8Vn70XkK5uuN1UXYU5QDo78GEZpOj7YfCxVjB43Ct/sEiu3iB0GzyEvq6
+      jlv07H9PyLjYeM7CuhZdgULBqEWbqNhO5XL/QJMYG06kXkT3GiWFP8pjnQRcJM4Z
+      qQv8fOTDTuX5GumXKctXJwc7y9uywoIPwffEKlGuofWhihy8r/YXu2BgShDF3zYV
+      1RAHVcWtPT5IqejpRZX5LdL4Hr2eCeUkcVCo7qqYLEwxFnQNG1nMrJJ2ewnlzPac
+      JNNPRXgTDF3OkbON+3Wn/H0ndqIoqapHXSlkR54Stsk9yjHuaJ9TCANw2mxMDzf0
+      RGw9ecirjpzQdP9jT/zK9X4kqFc0T3P6qN3X3s/OPPbroassRk/eqI/oMS6lNcQm
+      y+SvRUrdtzKgmAfVE5yMLTVG0cZM4gWJ35DZHHqWnrbFEg7C0NLzoYc6yeQ=
+      -----END CERTIFICATE-----
+    Type: String
+  CertificateKey: 
+    Description: The Private Key for the Certificate.     
+    AllowedPattern: ^(-----BEGIN [A-Za-z ]+ KEY-----)\n(.*?\n)+(-----END [A-Za-z ]+ KEY-----)$
+    ConstraintDescription: A Private key that begins with "-----BEGIN PRIVATE KEY-----" and ends with "-----END PRIVATE KEY-----"
+    Default: |
+      -----BEGIN PRIVATE KEY-----
+      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
+      2YpoPnf204ak0AcDNZX257FnjRltUg==
+      -----END PRIVATE KEY-----
+    Type: String
+  #CertificateKey:
+  #  Type: String
+  #Certificate:
+  #  Type: String
+  DBType:
+    Type: String
+  ArtifactoryDBEndpointAddress:
+    Type: String
+  DatabaseName:
+    Type: String
+  DatabaseUser:
+    Type: String
+  DatabasePassword:
+    Type: String
+  ArtifactoryPrimary:
+    Type: String
+  MasterKey:
+    Type: String
+  ExtraJavaOptions:
+    Type: String
+  ArtifactoryVersion:
+    Type: String
+  KeyPairName:
+    Type: AWS::EC2::KeyPair::KeyName
+  ArtifactoryELB:
+    Type: String
+  HostProfile:
+    Type: String
+  SecurityGroups:
+    Type: String
+  InstanceType:
+    Type: String
+  VolumeSize:
+    Type: Number
+  KeystorePassword:
+    Description: Default Keystore from Java in which we upgrade.
+    Type: String
+    NoEcho: 'true'
+  AnsibleVaultPass:
+    Description: Ansiblevault Password to secure the artifactory.yml
+    Type: String
+    NoEcho: 'true'
+# To populate additional mappings use the following with the desired --region
+# aws --region us-west-2 ec2 describe-images --owners amazon --filters 'Name=name,Values=amzn-ami-hvm-2018.03.0.20181129-x86_64-gp2' 'Name=state,Values=available' --output json | jq -r '.Images | sort_by(.CreationDate) | last(.[]).ImageId'
+Mappings:
+  AWSAMIRegionMap:
+    AMI:
+      AMZNLINUXHVM: amzn-ami-hvm-2018.03.0.20181129-x86_64-gp2
+    ap-northeast-1:
+      AMZNLINUXHVM: ami-04b2d1589ab1d972c
+    ap-northeast-2:
+      AMZNLINUXHVM: ami-0be3e6f84d3b968cd 
+    ap-south-1:
+      AMZNLINUXHVM: ami-0b99c7725b9484f9e
+    ap-southeast-1:
+      AMZNLINUXHVM: ami-0fb6b6f9e81056553
+    ap-southeast-2:
+      AMZNLINUXHVM: ami-075caa3491def750b
+    ca-central-1:
+      AMZNLINUXHVM: ami-0a67d15f2858e33cb
+    eu-central-1:
+      AMZNLINUXHVM: ami-026d3b3672c6e7b66
+    eu-west-1:
+      AMZNLINUXHVM: ami-0862aabda3fb488b5
+    sa-east-1:
+      AMZNLINUXHVM: ami-0bb96001cf2299257
+    us-east-1:
+      AMZNLINUXHVM: ami-0080e4c5bc078760e
+    us-east-2:
+      AMZNLINUXHVM: ami-0cd3dfa4e37921605
+    us-west-1:
+      AMZNLINUXHVM: ami-0ec6517f6edbf8044
+    us-west-2:
+      AMZNLINUXHVM: ami-01e24be29428c15b2
+  # Stubbed for future if Debian is wanted.
+  #LinuxAMINameMap:
+  #  Amazon-Linux-HVM:
+  #    Code: AMZNLINUXHVM
+Conditions:
+  GovCloudCondition: !Equals 
+    - !Ref 'AWS::Region'
+    - us-gov-west-1
+Resources:
+  ArtifactoryScalingGroup:
+    Type: 'AWS::AutoScaling::AutoScalingGroup'
+    Properties:
+      LaunchConfigurationName: !Ref ArtifactoryLaunchConfiguration
+      VPCZoneIdentifier:
+        - !Ref PrivateSubnet1ID
+        - !Ref PrivateSubnet2ID
+      MinSize: !Ref MinScalingNodes
+      MaxSize: !Ref MaxScalingNodes
+      Cooldown: '300'
+      DesiredCapacity: !Ref MinScalingNodes
+      LoadBalancerNames: 
+        - !Ref ArtifactoryELB
+      HealthCheckType: ELB
+      HealthCheckGracePeriod: 600
+      Tags:
+        - Key: Name
+          Value: !Ref DeploymentTag
+          PropagateAtLaunch: true
+    CreationPolicy:
+      ResourceSignal:
+        Count: 1
+        Timeout: PT30M
+  ArtifactoryLaunchConfiguration:
+      Type: 'AWS::AutoScaling::LaunchConfiguration'
+      Metadata:
+        'AWS::CloudFormation::Authentication':
+          S3AccessCreds:
+            type: S3
+            roleName: 
+              - !Ref HostRole #!Ref ArtifactoryHostRole
+            buckets:
+              - !Ref QSS3BucketName
+        'AWS::CloudFormation::Init':
+          configSets:
+            artifactory_install:
+              - "config-artifactory-master"
+              - "secure-artifactory"
+          config-artifactory-master:
+            files:
+              /root/.artifactory_ansible/artifactory.yml:
+                content: !Sub
+                  - |
+                    # Base install for Artifactory
+                    - import_playbook: site-artifactory.yml
+                      vars:
+                        artifactory_license1: ${ArtifactoryLicense1}
+                        artifactory_license2: ${ArtifactoryLicense2}
+                        artifactory_license3: ${ArtifactoryLicense3}
+                        artifactory_license4: ${ArtifactoryLicense4}
+                        artifactory_server_name: ${ArtifactoryServerName}
+                        certificate_domain: ${CertificateDomain}
+                        s3_endpoint: s3.${AWS::Region}.amazonaws.com
+                        s3_access_key: ${ArtifactoryIAMAcessKey}
+                        s3_access_secret_key: ${SecretAccessKey}
+                        s3_bucket: ${ArtifactoryS3Bucket}
+                        certificate: ${cert}
+                        certificate_key: ${cert_key}
+                        ssl_dir: /etc/pki/tls/certs/
+                        db_type: ${DBType}
+                        db_ipaddr: ${ArtifactoryDBEndpointAddress}
+                        db_name: ${DatabaseName}
+                        db_user: ${DatabaseUser}
+                        db_password: ${DatabasePassword}
+                        art_primary: ${ArtifactoryPrimary}
+                        artifactory_keystore_pass: ${KeystorePassword}
+                        master_key: ${MasterKey}
+                        extra_java_opts: ${ExtraJavaOptions}
+                        artifactory_version: ${ArtifactoryVersion}
+                  - cert: !Base64
+                       "Fn::Sub": "${Certificate}"
+                    cert_key: !Base64
+                       "Fn::Sub": "${CertificateKey}" 
+                mode: "0400"
+              /root/.vault_pass.txt:
+                content: !Sub |
+                  ${AnsibleVaultPass}
+                mode: "0400"
+              /root/.secureit.sh:
+                content:
+                  /usr/local/bin/ansible-vault encrypt /root/.artifactory_ansible/artifactory.yml --vault-id /root/.vault_pass.txt
+                mode: "0770"
+          secure-artifactory:
+            commands:
+              'secure ansible playbook':
+                command: '/root/.secureit.sh'
+                ignoreErrors: 'false'
+      Properties:
+        AssociatePublicIpAddress: false
+        KeyName: !Ref KeyPairName
+        IamInstanceProfile: !Ref HostProfile
+        ImageId: !FindInMap 
+          - AWSAMIRegionMap
+          - !Ref 'AWS::Region'
+          - !Ref AmiId
+        SecurityGroups:
+          - !Ref SecurityGroups
+        InstanceType: !Ref InstanceType
+        BlockDeviceMappings:
+          - DeviceName: /dev/xvda
+            Ebs:
+              VolumeSize: !Ref VolumeSize
+              VolumeType: gp2
+              DeleteOnTermination: true
+        UserData: !Base64 
+          'Fn::Sub':
+            - >
+              #!/bin/bash -x
+
+              #CFN Functions
+
+              function cfn_fail
+
+              {
+
+              cfn-signal -e 1 --stack ${AWS::StackName} --region ${AWS::Region}
+              --resource ArtifactoryScalingGroup
+
+              exit 1
+
+              }
+
+              function cfn_success
+
+              {
+
+              cfn-signal -e 0 --stack ${AWS::StackName} --region ${AWS::Region}
+              --resource ArtifactoryScalingGroup
+
+              exit 0
+
+              }
+
+              S3URI=https://${QSS3BucketName}.${S3Region}.amazonaws.com/${QSS3KeyPrefix}
+
+              yum install -y git
+
+              echo $PATH
+
+              PATH=/opt/aws/bin:$PATH
+
+              echo $PATH
+              echo \'[Cloning: Load QuickStart Common Utils]\'
+
+              git clone
+              https://github.com/aws-quickstart/quickstart-linux-utilities.git
+
+              source /quickstart-linux-utilities/quickstart-cfn-tools.source
+
+              echo \'[Loaded: Load QuickStart Common Utils]\'
+
+              echo \'[Update Operating System]\'
+
+              qs_update-os || qs_err
+
+              qs_bootstrap_pip || qs_err
+
+              qs_aws-cfn-bootstrap || qs_err
+
+              pip install awscli &> /var/log/userdata.awscli_install.log || qs_err " awscli install failed "
+              
+              pip install ansible &> /var/log/userdata.ansible_install.log || qs_err " ansible install failed "
+
+              mkdir ~/.artifactory_ansible
+
+              aws s3 sync s3://${QSS3BucketName}/${QSS3KeyPrefix}scripts/ ~/.artifactory_ansible/ 
+
+              cfn-init -v --stack ${AWS::StackName} --resource
+              ArtifactoryLaunchConfiguration --configsets artifactory_install
+              --region ${AWS::Region} || cfn_fail
+
+              export ANSIBLE_VAULT_PASSWORD_FILE="/root/.vault_pass.txt"
+
+              /usr/local/bin/ansible-playbook /root/.artifactory_ansible/artifactory.yml || qs_err " ansible execution failed "
+
+              rm -rf /root/.secureit.sh
+
+              [ $(qs_status) == 0 ] && cfn_success || cfn_fail
+            - S3Region: !If 
+              - GovCloudCondition
+              - s3-us-gov-west-1
+              - s3

@@ -78,6 +78,8 @@ Download the submodules:
     git submodule init
     git submodule update
 
+NOTE: if you are building the EKS version of this deployment you will need to do the same commands from within the quickstart-amazon-eks (At least verify git updated the submodules).
+
 #### venv
 
     python3 -m venv ~/cloudformationvenv

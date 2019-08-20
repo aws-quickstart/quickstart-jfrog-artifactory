@@ -1,5 +1,18 @@
-{% for license in artifactory_licenses.split(',') %}
-{{ license }}
+{% if artifactory_license1 |length %}
+{{ artifactory_license1 }}
+{% endif %}
 
 
-{% endfor %}
+{% if artifactory_license2 |length %}
+{{ artifactory_license2 }}
+{% endif %}
+
+
+{% if artifactory_license3 |length %}
+{{ artifactory_license3 }}
+{% endif %}
+
+
+{% if artifactory_license4 |length %}
+{{ artifactory_license4 }}
+{% endif %}

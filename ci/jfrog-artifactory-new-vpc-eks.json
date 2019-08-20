@@ -9,7 +9,7 @@
     },
     {
         "ParameterKey": "AvailabilityZones",
-        "ParameterValue": "$[taskcat_genaz_2]"
+        "ParameterValue": "$[taskcat_genaz_3]"
     },
     {
         "ParameterKey": "DatabasePassword",
@@ -50,17 +50,5 @@
     {
         "ParameterKey": "NumberOfSecondary",
         "ParameterValue": "2"
-    },
-    {
-        "ParameterKey": "KeystorePassword",
-        "ParameterValue": "changedit"
-    },
-    {
-        "ParameterKey": "AnsibleVaultPass",
-        "ParameterValue": "password"
-    },
-    {
-        "ParameterKey": "ArtifactoryServerName",
-        "ParameterValue": "taskcat"
     }
 ]
