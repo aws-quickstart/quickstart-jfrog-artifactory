@@ -104,7 +104,7 @@ Resources:
   ArtifactoryS3IAMUser:
     Type: AWS::IAM::User
     Properties:
-      UserName: ArtifactoryS3
+      UserName: !Sub ArtifactoryS3-${AWS::Region}
   ArtifactoryIAMAcessKey: 
     Type: AWS::IAM::AccessKey
     Properties: 
