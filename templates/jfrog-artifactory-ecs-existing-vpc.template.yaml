@@ -4,6 +4,12 @@ Metadata:
   AWS::CloudFormation::Interface:
     ParameterGroups:
       - Label:
+          default: Security configuration
+        Parameters:
+          - KeyPairName
+          - AccessCIDR
+          - RemoteAccessCIDR    
+      - Label:
           default: Network Configuration
         Parameters:
           - VPCID
@@ -14,8 +20,6 @@ Metadata:
           - PrivateSubnet2ID
           - PrivateSubnet1CIDR
           - PrivateSubnet2CIDR
-          - AccessCIDR
-          - RemoteAccessCIDR
       - Label:
           default: Bastion Configuration
         Parameters:
@@ -26,12 +30,12 @@ Metadata:
           - BastionEnableTCPForwarding
           - NumBastionHosts
       - Label:
-          default: Amazon EC2 Configuration
+          default: ECS Configuration
         Parameters:
-          - KeyPairName
-          - AmiId
+          - ClusterName
+          - CreateNewECSCluster
+          - InstanceType
           - VolumeSize
-          - InstanceType    
       - Label:
           default: JFrog Artifactory Configuration
         Parameters:
@@ -46,7 +50,7 @@ Metadata:
           - CertificateDomain
           - ArtifactoryServerName
           - MasterKey
-          - KeystorePassword
+          - ExtraJavaOptions
           - AnsibleVaultPass
       - Label:
           default: Amazon RDS Configuration
@@ -64,12 +68,13 @@ Metadata:
         Parameters:
           - QSS3BucketName
           - QSS3KeyPrefix
-          #- OutputBucketName
     ParameterLabels:
-      AmiId:
-        default: AMI ID
       KeyPairName:
         default: SSH Key Name
+      AccessCIDR:
+        default: Permitted IP Range
+      RemoteAccessCIDR:
+        default: Remote Access CIDR        
       VPCID:
         default: VPC ID
       VPCCIDR:
@@ -86,10 +91,6 @@ Metadata:
         default: Private Subnet 1 CIDR
       PrivateSubnet2CIDR:
         default: Private Subnet 2 CIDR
-      AccessCIDR:
-        default: Permitted IP Range
-      RemoteAccessCIDR:
-        default: Remote Access CIDR
       ProvisionBastionHost:
         default: Provision Bastion Host
       BastionInstanceType:
@@ -102,14 +103,18 @@ Metadata:
         default: Bastion Enable TCP Forwarding
       NumBastionHosts:
         default: Number of Bastion Hosts
-      VolumeSize:
-        default: Volume Size
+      ClusterName:
+        default: ECS Cluster Name
+      CreateNewECSCluster:
+        default: Create New ECS Cluster
       InstanceType:
         default: Instance Type
-      NumberOfSecondary:
-        default: Number of Secondary Nodes
+      VolumeSize:
+        default: EBS Root Volume Size
       ArtifactoryVersion:
         default: Artifactory Version
+      NumberOfSecondary:
+        default: Number of Secondary Nodes        
       ArtifactoryLicense1:
         default: Artifactory License 1
       ArtifactoryLicense2:
@@ -128,8 +133,8 @@ Metadata:
         default: Artifactory Server Name
       MasterKey:
         default: Master Server Key
-      KeystorePassword:
-        default: Java Keystore Password
+      ExtraJavaOptions:
+        default: Extra Java Options
       AnsibleVaultPass:
         default: Ansible Vault Password
       DatabaseName:
@@ -158,6 +163,20 @@ Parameters:
     Description: The name of an existing public/private key pair, which allows you
       to securely connect to your instance after it launches
     Type: AWS::EC2::KeyPair::KeyName
+  AccessCIDR:
+    Description: The CIDR IP range that is permitted to access Artifactory. 
+      We recommend that you set this value to a trusted IP range. 
+      For example, you might want to grant only your corporate network access to the software. 
+    AllowedPattern: ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/([0-9]|[1-2][0-9]|3[0-2]))$
+    Default: 0.0.0.0/0
+    Type: String
+  RemoteAccessCIDR:
+    Description: Remote CIDR range for allowing SSH into the Bastion instance. 
+      We recommend that you set this value to a trusted IP range. 
+      For example, you might want to grant specific ranges inside your corporate network ssh access. 
+    AllowedPattern: ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/([0-9]|[1-2][0-9]|3[0-2]))$
+    Type: String
+    Default: 0.0.0.0/0 
   VPCID:
     Description: The ID of your existing VPC (e.g., vpc-0343606e).
     Type: "AWS::EC2::VPC::Id"
@@ -191,20 +210,6 @@ Parameters:
     ConstraintDescription: CIDR block parameter must be in the form x.x.x.x/16-28
     Default: 10.0.32.0/19
     Type: String
-  AccessCIDR:
-    Description: The CIDR IP range that is permitted to access Artifactory. 
-      We recommend that you set this value to a trusted IP range. 
-      For example, you might want to grant only your corporate network access to the software. 
-    AllowedPattern: ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/([0-9]|[1-2][0-9]|3[0-2]))$
-    Default: 0.0.0.0/0
-    Type: String
-  RemoteAccessCIDR:
-    Description: Remote CIDR range for allowing SSH into the Bastion instance. 
-      We recommend that you set this value to a trusted IP range. 
-      For example, you might want to grant specific ranges inside your corporate network ssh access. 
-    AllowedPattern: ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/([0-9]|[1-2][0-9]|3[0-2]))$
-    Type: String
-    Default: 0.0.0.0/0 
   ProvisionBastionHost:
     Description: Whether to boot a Bastion host or not. Due to the Artifactory nodes being
       created in private subnets, this is highly recommended.
@@ -269,39 +274,52 @@ Parameters:
       - '4'
     Default: '1'
     Type: String
-  AmiId:
-    Default: AMZNLINUXHVM
-    Description: Ami being utilized as the underlying OS to install Artifactory. 
-    AllowedValues: 
-      - 'AMZNLINUXHVM'
-    Type: String    
-  VolumeSize:
-    Description: Size in GB of the available storage (will create 3x ebs volumes of this size)
-    Default: 200
-    Type: Number
+  ClusterName:
+    Description: Desired name for your ECS cluster.
+    Default: JFrog  
+    Type: String
+  CreateNewECSCluster:
+    Description: Whether to create a new ECS Cluster with the ClusterName or not
+      if you choose Disabled a ECS Cluster with the name used in CluserName must
+      exist
+    AllowedValues:
+      - "Enabled"
+      - "Disabled"
+    Default: "Enabled"
+    Type: String
   InstanceType:
-    Description: EC2 instance type for the Artifactory instances.
+    Description: EC2 instance type for the Artifactory docker hosts
     AllowedValues:
       - m4.xlarge
       - m4.2xlarge
       - m4.4xlarge
+      - m4.10xlarge
     ConstraintDescription: Must contain valid instance type
     Default: m4.xlarge
     Type: String
-  NumberOfSecondary:
-    Description: Number of secondary Artifactory servers to complete your
-      HA deployment. Minimum number of 2 to fit the Artifactory best practices.
-    AllowedValues:
-      - 2
-      - 3
-    Default: 2
-    Type: Number
+  VolumeSize:
+    Description: Size in GB of the available storage (will create 3x ebs volumes of this size)
+    Default: 200
+    Type: Number    
   ArtifactoryVersion:
     Description: Version of Artifactory you wish to deploy into the Quick Start.
     AllowedPattern: ^(([0-9]|[1-9][0-9])\.){2}([1-9][0-9]|[0-9])$
     ConstraintDescription: A version that matches X.X.X per Artifactory releases
     Default: 6.11.1
     Type: String
+  NumberOfSecondary:
+    Description: Number of secondary Artifactory servers to complete your
+      HA deployment. Minimum number of 2 to fit the Artifactory best practices. Do not select more than
+      you license for.
+    AllowedValues:
+      - 2
+      - 3
+      - 4
+      - 5
+      - 6
+      - 7
+    Default: 2
+    Type: Number    
   ArtifactoryLicense1:
     Description: Artifactory Enterprise License at least one is required.
     Default: ""
@@ -320,15 +338,98 @@ Parameters:
     Type: String
   Certificate:
     Description: The Certificate file to be used to terminate SSL.
-    AllowedPattern: ^(-----BEGIN CERTIFICATE-----)([ a-zA-Z0-9\/+=]+) (-----END CERTIFICATE-----)$
+    AllowedPattern: ^(-----BEGIN CERTIFICATE-----)\n(.*?\n)+(-----END CERTIFICATE-----)$
     ConstraintDescription: A Certificate that begins with "-----BEGIN CERTIFICATE----- " and ends with "-----END CERTIFICATE----- "
-    Default: -----BEGIN CERTIFICATE----- MIIFaDCCA1ACCQD45dB5tZFvCDANBgkqhkiG9w0BAQsFADB2MQswCQYDVQQGEwJV UzELMAkGA1UECAwCQ0ExEjAQBgNVBAcMCVN1bm55dmFsZTEOMAwGA1UECgwFSkZy b2cxFDASBgNVBAsMC0FydGlmYWN0b3J5MSAwHgYDVQQDDBdhcnRpZmFjdG9yeS5s b2NhbGRvbWFpbjAeFw0xOTA3MjMyMzE4MjVaFw0yMDA3MjIyMzE4MjVaMHYxCzAJ BgNVBAYTAlVTMQswCQYDVQQIDAJDQTESMBAGA1UEBwwJU3Vubnl2YWxlMQ4wDAYD VQQKDAVKRnJvZzEUMBIGA1UECwwLQXJ0aWZhY3RvcnkxIDAeBgNVBAMMF2FydGlm YWN0b3J5LmxvY2FsZG9tYWluMIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKC AgEA0b3OgTFKkNbXXHzPv3l9IqX7fFZcfS2ZMD4mBuNlGQ6kyyraeoKKiVdkOgQV /dwDxLeW6y+637J2KBiZTccHUS8/eC5ky9E6ECeFToCYsucUKRiWo9Uss6XS1N+Q KQHktCVYy+KFDkJIVEL6LFbUMLz0k1jOhI/FRveT8LQ9cZsfy8KIrCF92ErcdPSL 02KO6RgaBjxRFtAw2ZdO07O9kcKBC5BpJdrEnJHalVJsJbZOqIuNjyKKp/8s9TtW EYhXAbz05RrdQ97Cse1a/rHR5EWL+ITRw3Q/mQUv/ilSrSxb+chtgGb0qdP7aV0h LOuxttQFFU2o62LHqnda6dWljxKpSYUz47ugCK0M4T2bRhy7lUgmZ3PcfZYLE2ue h1qIJfkDfi1WpbptJAs4MbgfTvF2FCAsh8tyFnl+TA5QBWLRcOF9y1qUAATa1JKX zKGf/5hExBRpuq371j4SLAb5qXYUuQqZiCe3O6qTx2Wo/jAOPV49wfK9D9fW5qmq ND1Rpp8sKjlb2ixm7dhCWyWV+iGHpzX5tjBW35rikAisUoap47I1fNzYMiSTvbhv 2+by2YY8jsiYRCRIAKzRbgOgDOXnYVtWFpLgUldMqWqo+X3LztYE8CxD0CQK5u12 GxM5ztXKEaitCqUSjY34Gl4owukA9tzGnu09OuAYGkxVBO0CAwEAATANBgkqhkiG 9w0BAQsFAAOCAgEATH4kyuKvZtq32b3I7yZ27Xp2yaxABs17g0jAzkv7o9GILo+3 cVAJS2warQti+c+A2edjqEc97JXb6ul7/SHs7B9B0P4BZSUsI0byuPlQ45Kht891 jz3SF1o6jpKTniQPqsulMMshmYB6oY6CIyvKpaMaG3DypEXFmwEU7CdWr7oVISkn pU6N6fI+V94Wzd1yHL8Jm/ixP4lqBAZqDhxNRq/Vok94wu2jvWwPIn2M+9myAiOs TSpcqLg8Vn70XkK5uuN1UXYU5QDo78GEZpOj7YfCxVjB43Ct/sEiu3iB0GzyEvq6 jlv07H9PyLjYeM7CuhZdgULBqEWbqNhO5XL/QJMYG06kXkT3GiWFP8pjnQRcJM4Z qQv8fOTDTuX5GumXKctXJwc7y9uywoIPwffEKlGuofWhihy8r/YXu2BgShDF3zYV 1RAHVcWtPT5IqejpRZX5LdL4Hr2eCeUkcVCo7qqYLEwxFnQNG1nMrJJ2ewnlzPac JNNPRXgTDF3OkbON+3Wn/H0ndqIoqapHXSlkR54Stsk9yjHuaJ9TCANw2mxMDzf0 RGw9ecirjpzQdP9jT/zK9X4kqFc0T3P6qN3X3s/OPPbroassRk/eqI/oMS6lNcQm y+SvRUrdtzKgmAfVE5yMLTVG0cZM4gWJ35DZHHqWnrbFEg7C0NLzoYc6yeQ= -----END CERTIFICATE-----
+    Default: |
+      -----BEGIN CERTIFICATE-----
+      MIIFaDCCA1ACCQD45dB5tZFvCDANBgkqhkiG9w0BAQsFADB2MQswCQYDVQQGEwJV
+      UzELMAkGA1UECAwCQ0ExEjAQBgNVBAcMCVN1bm55dmFsZTEOMAwGA1UECgwFSkZy
+      b2cxFDASBgNVBAsMC0FydGlmYWN0b3J5MSAwHgYDVQQDDBdhcnRpZmFjdG9yeS5s
+      b2NhbGRvbWFpbjAeFw0xOTA3MjMyMzE4MjVaFw0yMDA3MjIyMzE4MjVaMHYxCzAJ
+      BgNVBAYTAlVTMQswCQYDVQQIDAJDQTESMBAGA1UEBwwJU3Vubnl2YWxlMQ4wDAYD
+      VQQKDAVKRnJvZzEUMBIGA1UECwwLQXJ0aWZhY3RvcnkxIDAeBgNVBAMMF2FydGlm
+      YWN0b3J5LmxvY2FsZG9tYWluMIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKC
+      AgEA0b3OgTFKkNbXXHzPv3l9IqX7fFZcfS2ZMD4mBuNlGQ6kyyraeoKKiVdkOgQV
+      /dwDxLeW6y+637J2KBiZTccHUS8/eC5ky9E6ECeFToCYsucUKRiWo9Uss6XS1N+Q
+      KQHktCVYy+KFDkJIVEL6LFbUMLz0k1jOhI/FRveT8LQ9cZsfy8KIrCF92ErcdPSL
+      02KO6RgaBjxRFtAw2ZdO07O9kcKBC5BpJdrEnJHalVJsJbZOqIuNjyKKp/8s9TtW
+      EYhXAbz05RrdQ97Cse1a/rHR5EWL+ITRw3Q/mQUv/ilSrSxb+chtgGb0qdP7aV0h
+      LOuxttQFFU2o62LHqnda6dWljxKpSYUz47ugCK0M4T2bRhy7lUgmZ3PcfZYLE2ue
+      h1qIJfkDfi1WpbptJAs4MbgfTvF2FCAsh8tyFnl+TA5QBWLRcOF9y1qUAATa1JKX
+      zKGf/5hExBRpuq371j4SLAb5qXYUuQqZiCe3O6qTx2Wo/jAOPV49wfK9D9fW5qmq
+      ND1Rpp8sKjlb2ixm7dhCWyWV+iGHpzX5tjBW35rikAisUoap47I1fNzYMiSTvbhv
+      2+by2YY8jsiYRCRIAKzRbgOgDOXnYVtWFpLgUldMqWqo+X3LztYE8CxD0CQK5u12
+      GxM5ztXKEaitCqUSjY34Gl4owukA9tzGnu09OuAYGkxVBO0CAwEAATANBgkqhkiG
+      9w0BAQsFAAOCAgEATH4kyuKvZtq32b3I7yZ27Xp2yaxABs17g0jAzkv7o9GILo+3
+      cVAJS2warQti+c+A2edjqEc97JXb6ul7/SHs7B9B0P4BZSUsI0byuPlQ45Kht891
+      jz3SF1o6jpKTniQPqsulMMshmYB6oY6CIyvKpaMaG3DypEXFmwEU7CdWr7oVISkn
+      pU6N6fI+V94Wzd1yHL8Jm/ixP4lqBAZqDhxNRq/Vok94wu2jvWwPIn2M+9myAiOs
+      TSpcqLg8Vn70XkK5uuN1UXYU5QDo78GEZpOj7YfCxVjB43Ct/sEiu3iB0GzyEvq6
+      jlv07H9PyLjYeM7CuhZdgULBqEWbqNhO5XL/QJMYG06kXkT3GiWFP8pjnQRcJM4Z
+      qQv8fOTDTuX5GumXKctXJwc7y9uywoIPwffEKlGuofWhihy8r/YXu2BgShDF3zYV
+      1RAHVcWtPT5IqejpRZX5LdL4Hr2eCeUkcVCo7qqYLEwxFnQNG1nMrJJ2ewnlzPac
+      JNNPRXgTDF3OkbON+3Wn/H0ndqIoqapHXSlkR54Stsk9yjHuaJ9TCANw2mxMDzf0
+      RGw9ecirjpzQdP9jT/zK9X4kqFc0T3P6qN3X3s/OPPbroassRk/eqI/oMS6lNcQm
+      y+SvRUrdtzKgmAfVE5yMLTVG0cZM4gWJ35DZHHqWnrbFEg7C0NLzoYc6yeQ=
+      -----END CERTIFICATE-----
     Type: String
   CertificateKey: 
     Description: The Private Key for the Certificate.     
-    AllowedPattern: ^(-----BEGIN PRIVATE KEY-----)([ a-zA-Z0-9\/+=]+) (-----END PRIVATE KEY-----)$
+    AllowedPattern: ^(-----BEGIN [A-Za-z ]+ KEY-----)\n(.*?\n)+(-----END [A-Za-z ]+ KEY-----)$
     ConstraintDescription: A Private key that begins with "-----BEGIN PRIVATE KEY-----" and ends with "-----END PRIVATE KEY-----"
-    Default: -----BEGIN PRIVATE KEY----- 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 2YpoPnf204ak0AcDNZX257FnjRltUg== -----END PRIVATE KEY-----
+    Default: |
+      -----BEGIN PRIVATE KEY-----
+      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
+      2YpoPnf204ak0AcDNZX257FnjRltUg==
+      -----END PRIVATE KEY-----
     NoEcho: 'true'
     Type: String
   CertificateDomain:
@@ -349,15 +450,15 @@ Parameters:
     Default: 1ce2be4490ca2c662cb79636cf9b7b8e
     NoEcho: 'true'
     Type: String
-  KeystorePassword:
-    Description: To ensure better security we will change the default Java keystore
-      password to the one specified.
-    NoEcho: 'true'
-    Type: String
+  ExtraJavaOptions:
+    Description: Setting Java Memory Parameters for Artifactory. Learn about system requirements for Artifactory 
+      https://www.jfrog.com/confluence/display/RTF/System+Requirements#SystemRequirements-RecommendedHardware.
+    Default: -Xmx4g
+    Type: String      
   AnsibleVaultPass:
-    Description: Ansible Vault password to protect Artifactory YAML
-    NoEcho: 'true'
-    Type: String    
+    Description: Ansiblevault Password to secure the artifactory.yml
+    NoEcho: 'true' 
+    Type: String
   DatabaseName:
     Description: Type a name for your DB instance. The name must be unique cross all DB instances 
       owned by your AWS account in the current AWS Region. The DB instance identifier is case-insensitive, 
@@ -432,9 +533,16 @@ Parameters:
     Description: Create a Multi-Availability Zone Amazon RDS instance.
     ConstraintDescription: True or False
     AllowedValues:
-      - True
-      - False
-    Default: False
+      - "true"
+      - "false"
+    Default: "false"
+    Type: String
+  ELBScheme:
+    Description: Whether this will be internet facing or internal
+    AllowedValues:
+      - internal
+      - internet-facing
+    Default: internet-facing
     Type: String
   QSS3BucketName:
     Description: S3 bucket name for the Quick Start assets. This string can include
@@ -445,7 +553,7 @@ Parameters:
       letters, uppercase letters, and hyphens (-). It cannot start or end with a hyphen
       (-).
     Default: aws-quickstart
-    Type: String
+    Type: String  
   QSS3KeyPrefix:
     Description: S3 key prefix for the Quick Start assets. Quick Start key prefix
       can include numbers, lowercase letters, uppercase letters, hyphens (-), and
@@ -455,7 +563,6 @@ Parameters:
       uppercase letters, hyphens (-), and forward slash (/).
     Default: quickstart-jfrog-artifactory/
     Type: String
-
 Conditions:
   EnableBastion: !Equals [!Ref 'ProvisionBastionHost', 'Enabled']
 Resources:
@@ -478,126 +585,63 @@ Resources:
         EnableTCPForwarding: !Ref BastionEnableTCPForwarding
         EnableX11Forwarding: !Ref BastionEnableX11Forwarding
         NumBastionHosts: !Ref NumBastionHosts
-  ArtifactoryS3IAMUser:
-    Type: AWS::IAM::User
+  ArtifactoryCoreInfraStack:
+    Type: AWS::CloudFormation::Stack
     Properties:
-      UserName: ArtifactoryS3
-  ArtifactoryIAMAcessKey: 
-    Type: AWS::IAM::AccessKey
-    Properties: 
-      UserName: !Ref ArtifactoryS3IAMUser 
-  ArtifactoryS3Bucket:
-    Type: AWS::S3::Bucket
-    Properties:
-      AccessControl: Private
-      BucketEncryption:
-        ServerSideEncryptionConfiguration:
-          - ServerSideEncryptionByDefault:
-              SSEAlgorithm: AES256
-  ArtifactoryS3IAMPolicy: 
-    Type: AWS::IAM::Policy
-    Properties: 
-      PolicyName: S3BucketPermissions
-      PolicyDocument: 
-        Version: 2012-10-17
-        Statement: 
-          - Sid: S3BucketPermissions
-            Effect: Allow
-            Action: 
-              - s3:*
-            Resource:
-              - Fn::Join:
-                - ''
-                - - "arn:aws:s3:::"
-                  - !Ref ArtifactoryS3Bucket
-              - Fn::Join:
-                - ''
-                - - "arn:aws:s3:::"
-                  - !Ref ArtifactoryS3Bucket
-                  - "/*"
-      Users:
-        - !Ref ArtifactoryS3IAMUser  
+      TemplateURL: !Sub "https://${QSS3BucketName}.s3.amazonaws.com/${QSS3KeyPrefix}templates/jfrog-artifactory-core-infrastructure.template.yaml"
+      Parameters:
+        VPCID: !Ref VPCID
+        VPCCIDR: !Ref VPCCIDR
+        PrivateSubnet1CIDR: !Ref PrivateSubnet1CIDR
+        PrivateSubnet2CIDR: !Ref PrivateSubnet2CIDR
+        PrivateSubnet3CIDR: !Ref PrivateSubnet2CIDR # This should end up in no new rule but required for EKS
+        SubnetIds: !Join [ ",", [ !Ref PrivateSubnet1ID, !Ref PrivateSubnet2ID ]]
+        DBAllocatedStorage: !Ref DBAllocatedStorage
+        MultiAZDatabase: !Ref MultiAZDatabase
+        DatabaseEngine: !Ref DatabaseEngine
+        DatabaseVersion: !Ref DatabaseVersion
+        DatabaseUser: !Ref DatabaseUser
+        DatabasePassword: !Ref DatabasePassword
+        DatabaseInstance: !Ref DatabaseInstance
+        DatabaseName: !Ref DatabaseName
   ArtifactoryELB:
-    Type: AWS::ElasticLoadBalancing::LoadBalancer
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
     Properties:
-      SecurityGroups: 
-        - !Ref ArtifactoryELBSG
+      IpAddressType: ipv4
+      Name: ArtifactoryELB
+      Scheme: !Ref ELBScheme
       Subnets: 
         - !Ref PublicSubnet1ID
         - !Ref PublicSubnet2ID
-      AppCookieStickinessPolicy:
-        - PolicyName: HTTPSCookieStickinessPolicy
-          CookieName: connect.sid
-      Listeners:
-        - LoadBalancerPort: '80'
-          InstancePort: '80'
-          InstanceProtocol: HTTP
-          Protocol: HTTP
-        - LoadBalancerPort: '443'
-          InstancePort: '443'
-          InstanceProtocol: TCP
-          Protocol: TCP
-      HealthCheck:
-        Target: HTTP:80/artifactory/webapp/
-        HealthyThreshold: '3'
-        UnhealthyThreshold: '3'
-        Interval: '30'
-        Timeout: '15'
-  ArtifactoryDBSubnetGroup:
-    Type: AWS::RDS::DBSubnetGroup
-    Properties:
-      DBSubnetGroupDescription: Private Subnets available to the RDS Instance(s)
-      SubnetIds: 
-        - !Ref PrivateSubnet1ID
-        - !Ref PrivateSubnet2ID
-  ArtifactoryDB:
-    Type: AWS::RDS::DBInstance
-    Properties: 
-      AllocatedStorage: !Ref DBAllocatedStorage
-      MultiAZ: !Ref MultiAZDatabase
-      Engine: !Ref DatabaseEngine
-      EngineVersion: !Ref DatabaseVersion
-      MasterUsername: !Ref DatabaseUser
-      MasterUserPassword: !Ref DatabasePassword
-      DBInstanceClass: !Ref DatabaseInstance
-      DBName: !Ref DatabaseName
-      DBSubnetGroupName: !Ref  ArtifactoryDBSubnetGroup
-      VPCSecurityGroups: 
-        - !Ref ArtifactoryDBSG
-  ArtifactoryDBSG:
-    Type: AWS::EC2::SecurityGroup
-    Properties:
-      Tags:
+      Tags: 
         - Key: Name
-          Value: artifactory-rds-sg
-      GroupDescription: SG for RDS Instance to allow communication from the Bastion and Artifactory servers.
+          Value: artifactory-ELB
+      Type: network
+  ArtifactoryTargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties: 
+      HealthCheckEnabled: True
+      HealthCheckIntervalSeconds: 30
+      HealthCheckProtocol: TCP
+      HealthCheckTimeoutSeconds: 10
+      HealthyThresholdCount: 3
+      Name: Artifactory
+      Port: 443
+      Protocol: TCP
+      #Tags: 
+      #  - !Ref DeploymentTag
+      TargetType: instance
+      UnhealthyThresholdCount: 3
       VpcId: !Ref VPCID
-      SecurityGroupIngress:
-        - IpProtocol: tcp
-          FromPort: 22
-          ToPort: 22
-          CidrIp: !Ref VPCCIDR
-        - IpProtocol: tcp
-          FromPort: 3306
-          ToPort: 3306
-          CidrIp: !Ref PrivateSubnet1CIDR
-        - IpProtocol: tcp
-          FromPort: 3306
-          ToPort: 3306
-          CidrIp: !Ref PrivateSubnet2CIDR
-      SecurityGroupEgress:
-        - IpProtocol: tcp
-          FromPort: 22
-          ToPort: 22
-          CidrIp: 0.0.0.0/0
-        - IpProtocol: tcp
-          FromPort: 80
-          ToPort: 80
-          CidrIp: 0.0.0.0/0
-        - IpProtocol: tcp
-          FromPort: 443
-          ToPort: 443
-          CidrIp: 0.0.0.0/0         
+  ArtifactoryELBListener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties: 
+      DefaultActions: 
+        - TargetGroupArn: !Ref ArtifactoryTargetGroup
+          Type: forward
+      LoadBalancerArn: !Ref ArtifactoryELB
+      Port: 443
+      Protocol: TCP      
   ArtifactoryELBSG:
     Type: AWS::EC2::SecurityGroup
     Properties:
@@ -615,6 +659,10 @@ Resources:
           FromPort: 443
           ToPort: 443
           CidrIp: !Ref AccessCIDR
+        - IpProtocol: tcp
+          FromPort: 8081
+          ToPort: 8081
+          CidrIp: !Ref AccessCIDR          
       SecurityGroupEgress:
         - IpProtocol: tcp
           FromPort: 80
@@ -624,6 +672,10 @@ Resources:
           FromPort: 443
           ToPort: 443
           CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 8081
+          ToPort: 8081
+          CidrIp: 0.0.0.0/0          
   ArtifactoryEC2SG:
     Type: AWS::EC2::SecurityGroup
     Properties:
@@ -644,7 +696,7 @@ Resources:
         - IpProtocol: tcp
           FromPort: 443
           ToPort: 443
-          CidrIp: !Ref VPCCIDR
+          CidrIp: 0.0.0.0/0
         - IpProtocol: tcp
           FromPort: 8081
           ToPort: 8081
@@ -681,118 +733,56 @@ Resources:
         - IpProtocol: tcp
           FromPort: 8081
           ToPort: 8081
-          CidrIp: !Ref PrivateSubnet2CIDR
-  ArtifactoryHostRole:
-    #Condition: CreateIAMRole
-    Type: 'AWS::IAM::Role'
-    Properties:
-      Path: /
-      AssumeRolePolicyDocument:
-        Statement:
-          - Action:
-              - 'sts:AssumeRole'
-            Principal:
-              Service:
-                - ec2.amazonaws.com
-            Effect: Allow
-        Version: 2012-10-17
-      ManagedPolicyArns:
-        - 'arn:aws:iam::aws:policy/service-role/AmazonEC2RoleforSSM'
-  ArtifactoryHostProfile:
-      Type: 'AWS::IAM::InstanceProfile'
-      Properties:
-        Roles:
-          - !Ref ArtifactoryHostRole
-        Path: /            
-  ArtifactoryMaster:
+          CidrIp: !Ref PrivateSubnet2CIDR           
+  ArtifactoryECSBuild:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: !Sub 'https://${QSS3BucketName}.s3.amazonaws.com/${QSS3KeyPrefix}templates/jfrog-artifactory-ec2-instance.template'
+      TemplateURL: !Sub 'https://${QSS3BucketName}.s3.amazonaws.com/${QSS3KeyPrefix}templates/jfrog-artifactory-ecs-ec2.template.yaml'
       Parameters:
         PrivateSubnet1ID: !Ref PrivateSubnet1ID
         PrivateSubnet2ID: !Ref PrivateSubnet2ID
-        MinScalingNodes: '1' # Always have 1 MasterNode
-        MaxScalingNodes: '1' # Always have 1 MasterNode
-        DeploymentTag: ArtifactoryMaster
-        HostRole: !Ref ArtifactoryHostRole
-        QSS3BucketName: !Ref QSS3BucketName
-        QSS3KeyPrefix: !Ref QSS3KeyPrefix
-        AmiId: !Ref AmiId
-        ArtifactoryLicense: !Join # We can do up to 4 due to length
-          - ','
-          - - !Ref ArtifactoryLicense1
-            - !Ref ArtifactoryLicense2
-            - !Ref ArtifactoryLicense3
-            - !Ref ArtifactoryLicense4
-        ArtifactoryServerName: !Ref ArtifactoryServerName
+        ClusterName: !Ref ClusterName
+        CreateNewECSCluster: !Ref CreateNewECSCluster
+        MinScalingNodes: '3'
+        MaxScalingNodes: '3'
+        KeyPairName: !Ref KeyPairName
+        InstanceType: !Ref InstanceType
+        VolumeSize: !Ref VolumeSize
+        DeploymentTag: Artifactory
+        NumberOfSecondary: !Ref NumberOfSecondary
+        ArtifactoryLicense1: !Ref ArtifactoryLicense1
+        ArtifactoryLicense2: !Ref ArtifactoryLicense2
+        ArtifactoryLicense3: !Ref ArtifactoryLicense3
+        ArtifactoryLicense4: !Ref ArtifactoryLicense4
         CertificateDomain: !Ref CertificateDomain
-        ArtifactoryIAMAcessKey: !Ref ArtifactoryIAMAcessKey
-        SecretAccessKey: !GetAtt ArtifactoryIAMAcessKey.SecretAccessKey
-        ArtifactoryS3Bucket: !Ref ArtifactoryS3Bucket 
+        ArtifactoryServerName: !Ref ArtifactoryServerName
+        ArtifactoryIAMAcessKey: !GetAtt ArtifactoryCoreInfraStack.Outputs.IAMAcessKey
+        SecretAccessKey: !GetAtt ArtifactoryCoreInfraStack.Outputs.SecretAccessKey
+        ArtifactoryS3Bucket: !GetAtt ArtifactoryCoreInfraStack.Outputs.S3Bucket
+        ArtifactoryDBEndpointAddress: !GetAtt ArtifactoryCoreInfraStack.Outputs.ArtifactoryDBEndpointAddress
         CertificateKey: !Ref CertificateKey
         Certificate: !Ref Certificate
         DBType: mysql
-        ArtifactoryDBEndpointAddress: !GetAtt ArtifactoryDB.Endpoint.Address
         DatabaseName: !Ref DatabaseName
         DatabaseUser: !Ref DatabaseUser
         DatabasePassword: !Ref DatabasePassword
-        ArtifactoryPrimary: 'true'
         MasterKey: !Ref MasterKey
-        KeystorePassword: !Ref KeystorePassword
+        ExtraJavaOptions: !Ref ExtraJavaOptions
         ArtifactoryVersion: !Ref ArtifactoryVersion
-        KeyPairName: !Ref KeyPairName
-        HostProfile: !Ref ArtifactoryHostProfile
         SecurityGroups: !Ref ArtifactoryEC2SG
-        InstanceType: !Ref InstanceType
-        VolumeSize: !Ref VolumeSize
-        ArtifactoryELB: !Ref ArtifactoryELB
+        ArtifactoryTargetGroupArn: !Ref ArtifactoryTargetGroup
         AnsibleVaultPass: !Ref AnsibleVaultPass
-  ArtifactorySecondary:
-    DependsOn: ArtifactoryMaster
-    Type: AWS::CloudFormation::Stack
-    Properties:
-      TemplateURL: !Sub 'https://${QSS3BucketName}.s3.amazonaws.com/${QSS3KeyPrefix}templates/jfrog-artifactory-ec2-instance.template'
-      Parameters:
-        PrivateSubnet1ID: !Ref PrivateSubnet1ID
-        PrivateSubnet2ID: !Ref PrivateSubnet2ID
-        MinScalingNodes: !Ref NumberOfSecondary
-        MaxScalingNodes: !Ref NumberOfSecondary
-        DeploymentTag: ArtifactorySecondary
-        HostRole: !Ref ArtifactoryHostRole
         QSS3BucketName: !Ref QSS3BucketName
         QSS3KeyPrefix: !Ref QSS3KeyPrefix
-        AmiId: !Ref AmiId
-        ArtifactoryLicense: !Join # We can do up to 4 due to length
-          - ','
-          - - !Ref ArtifactoryLicense1
-            - !Ref ArtifactoryLicense2
-            - !Ref ArtifactoryLicense3
-            - !Ref ArtifactoryLicense4
-        ArtifactoryServerName: !Ref ArtifactoryServerName
-        CertificateDomain: !Ref CertificateDomain
-        ArtifactoryIAMAcessKey: !Ref ArtifactoryIAMAcessKey
-        SecretAccessKey: !GetAtt ArtifactoryIAMAcessKey.SecretAccessKey
-        ArtifactoryS3Bucket: !Ref ArtifactoryS3Bucket 
-        CertificateKey: !Ref CertificateKey
-        Certificate: !Ref Certificate
-        DBType: mysql
-        ArtifactoryDBEndpointAddress: !GetAtt ArtifactoryDB.Endpoint.Address
-        DatabaseName: !Ref DatabaseName
-        DatabaseUser: !Ref DatabaseUser
-        DatabasePassword: !Ref DatabasePassword
-        ArtifactoryPrimary: 'false'
-        MasterKey: !Ref MasterKey
-        KeystorePassword: !Ref KeystorePassword
-        ArtifactoryVersion: !Ref ArtifactoryVersion
-        KeyPairName: !Ref KeyPairName
-        HostProfile: !Ref ArtifactoryHostProfile
-        SecurityGroups: !Ref ArtifactoryEC2SG
-        InstanceType: !Ref InstanceType
-        VolumeSize: !Ref VolumeSize
-        ArtifactoryELB: !Ref ArtifactoryELB
-        AnsibleVaultPass: !Ref AnsibleVaultPass
+
+
 
 Outputs:
-  URL:
+  ArtifactoryUrl:
     Description: URL of the ELB to access Artifactory
     Value: !Sub "https://${ArtifactoryELB.DNSName}"
+  BastionIP:
+    Value: !If
+      - EnableBastion
+      - !GetAtt BastionStack.Outputs.EIP1
+      - ""

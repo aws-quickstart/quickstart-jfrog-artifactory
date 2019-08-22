@@ -61,9 +61,9 @@
     mode: '0664'
   loop: 
     - src: certificate.pem.j2
-      dest: /data/jfrog/nginx/ssl/cert.pem
+      dest: "{{ ssl_dir }}cert.pem"
     - src: certificate.key.j2
-      dest: /data/jfrog/nginx/ssl/cert.key
+      dest: "{{ key_dir }}cert.key"
     - src: artifactory.conf.j2
       dest: /data/jfrog/nginx/conf.d/artifactory.conf
 
@@ -78,14 +78,6 @@
     - src: inactiveServerCleaner.groovy
       dest: /data/jfrog/artifactory/tmp/plugins/inactiveServerCleaner.groovy
       mode: '0777'
-
-
-#- name: Configure Ping
-#  lineinfile:
-#    path: /var/opt/jfrog/artifactory/etc/artifactory.system.properties
-#    line: artifactory.ping.allowUnauthenticated=true
-#    create: yes
-
 
 
 

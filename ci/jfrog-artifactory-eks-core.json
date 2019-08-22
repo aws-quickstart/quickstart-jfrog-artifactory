@@ -1,0 +1,86 @@
+[
+    {
+        "ParameterKey": "KubeManifestLambdaArn",
+        "ParameterValue": "arn:aws:lambda:us-west-2:256271319870:function:tcat-tag-jfrog-artifactory-eks-KubeManifestLambda-18MK4VIN3EQ38"
+    },
+    {
+        "ParameterKey": "HelmLambdaArn",
+        "ParameterValue": "arn:aws:lambda:us-west-2:256271319870:function:tcat-tag-jfrog-artifactory-eks-30782514-HelmLambda-6QU6WP4189TC"
+    },
+    {
+        "ParameterKey": "KubeConfigPath",
+        "ParameterValue": "s3://tcat-tag-jfrog-artifactory-eks-3-kubeconfigbucket-9fm4v10gtxql/.kube/config.enc"
+    },
+    {
+        "ParameterKey": "KubeGetLambdaArn",
+        "ParameterValue": "arn:aws:lambda:us-west-2:256271319870:function:tcat-tag-jfrog-artifactory-eks-30782-KubeGetLambda-T9SC0WHIFCYY"
+    },
+    {
+        "ParameterKey": "ArtifactoryS3Bucket",
+        "ParameterValue": "tcat-tag-jfrog-artifactory-ek-artifactorys3bucket-18u65xypoqq14"
+    },
+    {
+        "ParameterKey": "ArtifactoryIAMAcessKey",
+        "ParameterValue": "AKIATXKXWAM7EYXWWYLI"
+    },
+    {
+        "ParameterKey": "SecretAccessKey",
+        "ParameterValue": "RrCTclCyeOBC3/E09H+qCwLhOfFI4XFuotZJU29g"
+    },
+    {
+        "ParameterKey": "KubeConfigKmsContext",
+        "ParameterValue": "JFrogArtifactory"
+    },
+    {
+        "ParameterKey": "ArtifactoryLicense1",
+        "ParameterValue": "override"
+    },
+    {
+        "ParameterKey": "ArtifactoryLicense2",
+        "ParameterValue": "override"
+    },
+    {
+        "ParameterKey": "ArtifactoryLicense3",
+        "ParameterValue": "override"
+    },
+    {
+        "ParameterKey": "ArtifactoryLicense4",
+        "ParameterValue": "override"
+    },
+    {
+        "ParameterKey": "ArtifactoryVersion",
+        "ParameterValue": "6.11.1"
+    },
+    {
+        "ParameterKey": "NumberOfSecondary",
+        "ParameterValue": 1
+    },
+    {
+        "ParameterKey": "ArtifactoryDBEndpointAddress",
+        "ParameterValue": "ta1ja40rtslgpj9.cncci4pv7wym.us-west-2.rds.amazonaws.com"
+    },
+    {
+        "ParameterKey": "DatabaseName",
+        "ParameterValue": "artdb"
+    },
+    {
+        "ParameterKey": "DatabaseUser",
+        "ParameterValue": "artifactory"
+    },
+    {
+        "ParameterKey": "DatabasePassword",
+        "ParameterValue": "Admin123!"
+    },
+    {
+        "ParameterKey": "MasterKey",
+        "ParameterValue": "1ce2be4490ca2c662cb79636cf9b7b8e"
+    },
+    {
+        "ParameterKey": "ArtifactoryDeploymentSize",
+        "ParameterValue": "Small"
+    },
+    {
+        "ParameterKey":"AccessCIDR",
+        "ParameterValue": "0.0.0.0/0"
+    }
+]

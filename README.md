@@ -6,26 +6,28 @@ This is a Quick Start to get Enterprise Production ready Artifactory deployed in
 
 The goal of this project is to have several deployment options depending on a customer's requirements.
 
-    - New VPC deployed onto dedicated EC2 Instances.
-    - Existing VPC deployed onto dedicated EC2 Instances.
-    - New VPC deploying EKS, with Artifactory deployed onto the K8s cluster
-    - Existing VPC deploying EKS, with Artifactory deployed onto the K8s cluster
+    - New/Existing VPC deployed onto dedicated EC2 Instances.
+    - New/Existing VPC deploying EKS, with Artifactory deployed onto the K8s cluster
+    - New/Existing VPC deploying ECS, with Artifactory deployed as an ECS Service
 
 ## Project Setup
 
     --> master template
     ----> Existing VPC
-    ------> ec2-instances.
+    ------> {Deployment Type}
+    --------> Core-Infrastructure
 
-Master requires a VPC and will create, and then call Existing
+Master creates a new VPC, and then call Existing `Deployment Type` stack.
 
-Existing is then always called for this setup and will call ec2-instances
-
-ec2-Instances builds the Primary and Secondary AutoScale/Launch Configs.
+Existing `Deployment Type` is then always call the required nested stacks for that deployment. All stacks have a dependency on the `jfrog-artifactory-core-infrastucture` which configures the S3 bucket and RDS database for the deployment.
 
 ### Artifactory Configuration
 
-Currently Artifactory is installed via Ansible utilizing roles. The main items configured are:
+Currently Artifactory can be deployed via EC2, ECS, and EKS. For the EC2 and ECS versions, Artifactory is installed via Ansible utilizing roles. When using EKS it is deployed using their [helm charts](https://github.com/jfrog/charts).
+
+#### Ansible Role configuration
+
+The role's structure is per the below tree:
 
     artifactory
      ├── README.md
@@ -41,6 +43,7 @@ Currently Artifactory is installed via Ansible utilizing roles. The main items c
      │   └── main.yml
      ├── tasks
      │   ├── configure.yml
+     |   ├── configure_ecs.yml
      │   ├── install.yml
      │   ├── main.yml
      │   └── nginx-setup.yml
@@ -55,6 +58,8 @@ Currently Artifactory is installed via Ansible utilizing roles. The main items c
          └── master.key.j2
 
 The Templates are per documentation. For the ha-node(port set to 0) please see this [link](https://jfrog.com/knowledge-base/why-the-membership-port-in-the-ha-configuration-is-set-to-0/)
+
+`configure_ecs.yml` is a special task for configuring docker hosts. It follows the structure from the official Artifactory [docker compose](https://github.com/jfrog/artifactory-docker-examples/tree/master/docker-compose/artifactory)
 
 ## Deployment from Command line
 
@@ -77,6 +82,8 @@ Download the submodules:
 
     git submodule init
     git submodule update
+
+NOTE: if you are building the EKS version of this deployment you will need to do the same commands from within the quickstart-amazon-eks (At least verify git updated the submodules).
 
 #### venv
 

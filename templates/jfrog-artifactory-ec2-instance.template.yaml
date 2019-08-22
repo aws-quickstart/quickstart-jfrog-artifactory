@@ -19,7 +19,13 @@ Parameters:
     Type: String
   QSS3KeyPrefix:
     Type: String
-  ArtifactoryLicense:
+  ArtifactoryLicense1:
+    Type: String
+  ArtifactoryLicense2:
+    Type: String
+  ArtifactoryLicense3:
+    Type: String
+  ArtifactoryLicense4:
     Type: String
   ArtifactoryServerName:
     Type: String
@@ -31,9 +37,9 @@ Parameters:
     Type: String
   ArtifactoryS3Bucket:
     Type: String
-  CertificateKey:
-    Type: String
   Certificate:
+    Type: String
+  CertificateKey: 
     Type: String
   DBType:
     Type: String
@@ -48,6 +54,8 @@ Parameters:
   ArtifactoryPrimary:
     Type: String
   MasterKey:
+    Type: String
+  ExtraJavaOptions:
     Type: String
   ArtifactoryVersion:
     Type: String
@@ -153,35 +161,46 @@ Resources:
           config-artifactory-master:
             files:
               /root/.artifactory_ansible/artifactory.yml:
-                content: !Sub |
-                  # Base install for Artifactory
-                  - import_playbook: site-artifactory.yml
-                    vars:
-                      artifactory_licenses: ${ArtifactoryLicense}
-                      artifactory_server_name: ${ArtifactoryServerName}
-                      certificate_domain: ${CertificateDomain}
-                      s3_endpoint: s3.${AWS::Region}.amazonaws.com
-                      s3_access_key: ${ArtifactoryIAMAcessKey}
-                      s3_access_secret_key: ${SecretAccessKey}
-                      s3_bucket: ${ArtifactoryS3Bucket}
-                      certificate_key: ${CertificateKey}
-                      certificate: ${Certificate}
-                      db_type: ${DBType}
-                      db_ipaddr: ${ArtifactoryDBEndpointAddress}
-                      db_name: ${DatabaseName}
-                      db_user: ${DatabaseUser}
-                      db_password: ${DatabasePassword}
-                      art_primary: ${ArtifactoryPrimary}
-                      artifactory_keystore_pass: ${KeystorePassword}
-                      master_key: ${MasterKey}
-                      artifactory_version: ${ArtifactoryVersion}
+                content: !Sub
+                  - |
+                    # Base install for Artifactory
+                    - import_playbook: site-artifactory.yml
+                      vars:
+                        artifactory_license1: ${ArtifactoryLicense1}
+                        artifactory_license2: ${ArtifactoryLicense2}
+                        artifactory_license3: ${ArtifactoryLicense3}
+                        artifactory_license4: ${ArtifactoryLicense4}
+                        artifactory_server_name: ${ArtifactoryServerName}
+                        certificate_domain: ${CertificateDomain}
+                        s3_endpoint: s3.${AWS::Region}.amazonaws.com
+                        s3_access_key: ${ArtifactoryIAMAcessKey}
+                        s3_access_secret_key: ${SecretAccessKey}
+                        s3_bucket: ${ArtifactoryS3Bucket}
+                        certificate: ${cert}
+                        certificate_key: ${cert_key}
+                        ssl_dir: /etc/pki/tls/certs/
+                        db_type: ${DBType}
+                        db_ipaddr: ${ArtifactoryDBEndpointAddress}
+                        db_name: ${DatabaseName}
+                        db_user: ${DatabaseUser}
+                        db_password: ${DatabasePassword}
+                        art_primary: ${ArtifactoryPrimary}
+                        artifactory_keystore_pass: ${KeystorePassword}
+                        master_key: ${MasterKey}
+                        extra_java_opts: ${ExtraJavaOptions}
+                        artifactory_version: ${ArtifactoryVersion}
+                  - cert: !Base64
+                       "Fn::Sub": "${Certificate}"
+                    cert_key: !Base64
+                       "Fn::Sub": "${CertificateKey}" 
                 mode: "0400"
               /root/.vault_pass.txt:
                 content: !Sub |
                   ${AnsibleVaultPass}
                 mode: "0400"
               /root/.secureit.sh:
-                content: /usr/local/bin/ansible-vault encrypt /root/.artifactory_ansible/artifactory.yml --vault-id /root/.vault_pass.txt
+                content:
+                  /usr/local/bin/ansible-vault encrypt /root/.artifactory_ansible/artifactory.yml --vault-id /root/.vault_pass.txt
                 mode: "0770"
           secure-artifactory:
             commands:
@@ -274,7 +293,7 @@ Resources:
 
               export ANSIBLE_VAULT_PASSWORD_FILE="/root/.vault_pass.txt"
 
-              /usr/local/bin/ansible-playbook /root/.artifactory_ansible/artifactory.yml
+              /usr/local/bin/ansible-playbook /root/.artifactory_ansible/artifactory.yml || qs_err " ansible execution failed "
 
               rm -rf /root/.secureit.sh
 
