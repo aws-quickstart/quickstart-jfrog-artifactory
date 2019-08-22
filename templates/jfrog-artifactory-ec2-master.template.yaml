@@ -194,7 +194,6 @@ Parameters:
       We recommend that you set this value to a trusted IP range. 
       For example, you might want to grant only your corporate network access to the software. 
     AllowedPattern: ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/([0-9]|[1-2][0-9]|3[0-2]))$
-    Default: 0.0.0.0/0
     Type: String
   RemoteAccessCIDR:
     Description: Remote CIDR range for allowing SSH into the Bastion instance. 
@@ -202,7 +201,6 @@ Parameters:
       For example, you might want to grant specific ranges inside your corporate network ssh access. 
     AllowedPattern: ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/([0-9]|[1-2][0-9]|3[0-2]))$
     Type: String
-    Default: 0.0.0.0/0 
   ProvisionBastionHost:
     Description: Whether to boot a Bastion host or not. Due to the Artifactory nodes being
       created in private subnets, this is highly recommended.
