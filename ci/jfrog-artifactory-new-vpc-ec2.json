@@ -8,6 +8,10 @@
         "ParameterValue": "override"
     },
     {
+        "ParameterKey": "AccessCIDR",
+        "ParameterValue": "0.0.0.0/0"
+    },
+    {
         "ParameterKey": "AvailabilityZones",
         "ParameterValue": "$[taskcat_genaz_2]"
     },

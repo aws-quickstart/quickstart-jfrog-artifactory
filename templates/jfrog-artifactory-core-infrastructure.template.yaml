@@ -103,8 +103,6 @@ Resources:
           CidrIp: 0.0.0.0/0
   ArtifactoryS3IAMUser:
     Type: AWS::IAM::User
-    Properties:
-      UserName: !Sub ArtifactoryS3-${AWS::Region}
   ArtifactoryIAMAcessKey: 
     Type: AWS::IAM::AccessKey
     Properties: 
