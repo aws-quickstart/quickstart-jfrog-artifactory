@@ -45,7 +45,7 @@
     },
     {
         "ParameterKey": "DatabaseInstance",
-        "ParameterValue": "db.m3.medium"
+        "ParameterValue": "db.m4.large"
     },
     {
         "ParameterKey": "ArtifactoryVersion",
