@@ -8,6 +8,10 @@
         "ParameterValue": "override"
     },
     {
+        "ParameterKey": "AccessCIDR",
+        "ParameterValue": "0.0.0.0/0"
+    },
+    {
         "ParameterKey": "AvailabilityZones",
         "ParameterValue": "$[taskcat_genaz_2]"
     },
@@ -41,7 +45,7 @@
     },
     {
         "ParameterKey": "DatabaseInstance",
-        "ParameterValue": "db.m3.medium"
+        "ParameterValue": "db.m4.large"
     },
     {
         "ParameterKey": "ArtifactoryVersion",

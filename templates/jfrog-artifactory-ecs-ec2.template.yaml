@@ -79,7 +79,7 @@ Parameters:
   AnsibleVaultPass:
     Description: Ansiblevault Password to secure the artifactory.yml
     NoEcho: 'true'  
-    Type: String  
+    Type: String
   QSS3BucketName:
     Type: String
   QSS3KeyPrefix:

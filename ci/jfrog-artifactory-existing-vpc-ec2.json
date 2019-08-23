@@ -12,8 +12,40 @@
         "ParameterValue": "0.0.0.0/0"
     },
     {
-        "ParameterKey": "AvailabilityZones",
-        "ParameterValue": "$[taskcat_genaz_3]"
+        "ParameterKey": "VPCID",
+        "ParameterValue": "vpc-063fda5df4cd2f165"
+    },
+    {
+        "ParameterKey": "VPCCIDR",
+        "ParameterValue": "10.0.0.0/16"
+    },
+    {
+        "ParameterKey": "PublicSubnet1ID",
+        "ParameterValue": "subnet-052ef99c1492472d7"
+    },
+    {
+        "ParameterKey": "PublicSubnet2ID",
+        "ParameterValue": "subnet-00ebf4172c6c31f06"
+    },
+    {
+        "ParameterKey": "PrivateSubnet1ID",
+        "ParameterValue": "subnet-08370ba1c4836844d"
+    },  
+    {
+        "ParameterKey": "PrivateSubnet2ID",
+        "ParameterValue": "subnet-0351096d457e17dae"
+    },  
+    {
+        "ParameterKey": "PrivateSubnet1CIDR",
+        "ParameterValue": "10.0.0.0/19"
+    },  
+    {
+        "ParameterKey": "PrivateSubnet2CIDR",
+        "ParameterValue": "10.0.32.0/19"
+    },
+    {
+        "ParameterKey": "ProvisionBastionHost",
+        "ParameterValue": "Disabled"
     },
     {
         "ParameterKey": "DatabasePassword",
@@ -54,5 +86,17 @@
     {
         "ParameterKey": "NumberOfSecondary",
         "ParameterValue": "2"
+    },
+    {
+        "ParameterKey": "KeystorePassword",
+        "ParameterValue": "changedit"
+    },
+    {
+        "ParameterKey": "AnsibleVaultPass",
+        "ParameterValue": "password"
+    },
+    {
+        "ParameterKey": "ArtifactoryServerName",
+        "ParameterValue": "taskcat"
     }
 ]
