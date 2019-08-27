@@ -27,11 +27,13 @@
     keystore_pass: "{{ artifactory_keystore_default }}" # Default JKS as you get from the Internet.
     keystore_path: "{{ artifactory_keystore_path }}"
   when: import_rds == true
+  register: r_java_cert
+  failed_when: "'Not found' in r_java_cert"
 
 - name: Change Keystore password
-  shell: keytool -storepasswd -keystore {{ artifactory_keystore_path }} -storepass {{ artifactory_keystore_default }} -new {{ artifactory_keystore_pass }}
+  command: keytool -storepasswd -keystore {{ artifactory_keystore_path }} -storepass {{ artifactory_keystore_default }} -new {{ artifactory_keystore_pass }}
   no_log: true
-  ignore_errors: yes 
+  when: r_java_cert.rc == 0 
 
 - name: Configure Java
   lineinfile:
