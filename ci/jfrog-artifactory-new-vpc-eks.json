@@ -1,0 +1,58 @@
+[
+    {
+        "ParameterKey": "KeyPairName",
+        "ParameterValue": "override"
+    },
+    {
+        "ParameterKey": "RemoteAccessCIDR",
+        "ParameterValue": "override"
+    },
+    {
+        "ParameterKey": "AccessCIDR",
+        "ParameterValue": "0.0.0.0/0"
+    },
+    {
+        "ParameterKey": "AvailabilityZones",
+        "ParameterValue": "$[taskcat_genaz_3]"
+    },
+    {
+        "ParameterKey": "DatabasePassword",
+        "ParameterValue": "Admin123!"
+    },
+    {
+        "ParameterKey": "QSS3BucketName",
+        "ParameterValue": "$[taskcat_autobucket]"
+    },
+    {
+        "ParameterKey": "QSS3KeyPrefix",
+        "ParameterValue": "quickstart-jfrog-artifactory/"
+    },
+    {
+        "ParameterKey": "ArtifactoryLicense1",
+        "ParameterValue": "override"
+    },
+    {
+        "ParameterKey": "ArtifactoryLicense2",
+        "ParameterValue": "override"
+    },
+    {
+        "ParameterKey": "ArtifactoryLicense3",
+        "ParameterValue": "override"
+    },
+    {
+        "ParameterKey": "ArtifactoryLicense4",
+        "ParameterValue": "override"
+    },
+    {
+        "ParameterKey": "DatabaseInstance",
+        "ParameterValue": "db.m3.medium"
+    },
+    {
+        "ParameterKey": "ArtifactoryVersion",
+        "ParameterValue": "6.11.1"
+    },
+    {
+        "ParameterKey": "NumberOfSecondary",
+        "ParameterValue": "2"
+    }
+]
