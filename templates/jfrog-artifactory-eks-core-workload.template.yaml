@@ -105,11 +105,10 @@ Resources:
         type: kubernetes.io/tls            
         data: 
           tls.crt: 
-            Fn::Base64: #!Join ["\n", !Split [" ", !Sub "${Certificate}"]]
+            Fn::Base64:
               !Sub "${Certificate}"
-          tls.key: 
-            #!Join ["\n", !Split [" ", !Sub "${CertificateKey}"]]
-            Fn::Base64: 
+          tls.key:
+            Fn::Base64:
               !Sub "${CertificateKey}"
   LicenseStore:
     DependsOn: NameSpace
