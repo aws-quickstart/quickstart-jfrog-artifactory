@@ -25,24 +25,30 @@ Parameters:
     Type: String
   ArtifactoryIAMAcessKey:
     Type: String
+    NoEcho: 'true'
   SecretAccessKey:
     Type: String
+    NoEcho: 'true'
   ArtifactoryS3Bucket:
     Type: String
   CertificateKey:
     Type: String
+    NoEcho: 'true'
   Certificate:
     Type: String
   ArtifactoryDBEndpointAddress:
     Type: String
   DatabaseName:
     Type: String
+    NoEcho: 'true'
   DatabaseUser:
     Type: String
   DatabasePassword:
     Type: String
+    NoEcho: 'true'
   MasterKey:
     Type: String
+    NoEcho: 'true'
   ArtifactoryVersion:
     Type: String
   ArtifactoryDeploymentSize:
@@ -105,11 +111,10 @@ Resources:
         type: kubernetes.io/tls            
         data: 
           tls.crt: 
-            Fn::Base64: #!Join ["\n", !Split [" ", !Sub "${Certificate}"]]
+            Fn::Base64:
               !Sub "${Certificate}"
-          tls.key: 
-            #!Join ["\n", !Split [" ", !Sub "${CertificateKey}"]]
-            Fn::Base64: 
+          tls.key:
+            Fn::Base64:
               !Sub "${CertificateKey}"
   LicenseStore:
     DependsOn: NameSpace
