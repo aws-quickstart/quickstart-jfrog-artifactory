@@ -162,13 +162,13 @@ Metadata:
 Parameters:
   KeyPairName:
     Description: The name of an existing public/private key pair, which allows you
-      to securely connect to your instance after it launches
+      to securely connect to your instance after it launches.
     Type: AWS::EC2::KeyPair::KeyName
   VPCID:
     Description: The ID of your existing VPC (e.g., vpc-0343606e).
     Type: "AWS::EC2::VPC::Id"
   VPCCIDR:
-    Description: CIDR block for the VPC
+    Description: CIDR block for the VPC.
     AllowedPattern: ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/(1[6-9]|2[0-8]))$
     ConstraintDescription: CIDR block parameter must be in the form x.x.x.x/16-28
     Default: 10.0.0.0/16
@@ -265,7 +265,7 @@ Parameters:
     Default: "Amazon-Linux-HVM"
     Type: String
   NumBastionHosts:
-    Description: Enter the number of bastion hosts to create
+    Description: Enter the number of bastion hosts to create.
     AllowedValues:
       - '1'
       - '2'
@@ -280,7 +280,7 @@ Parameters:
       - 'AMZNLINUXHVM'
     Type: String    
   VolumeSize:
-    Description: Size in GB of the available storage (will create 3x ebs volumes of this size)
+    Description: Size in GB of the available storage (will create EBS volumes of this size)
     Default: 200
     Type: Number
   InstanceType:
@@ -313,115 +313,30 @@ Parameters:
     Default: 6.11.1
     Type: String
   ArtifactoryLicense1:
-    Description: Artifactory Enterprise License at least one is required.
+    Description: Artifactory Enterprise license at least one is required.
     Default: ""
     Type: String
   ArtifactoryLicense2:
-    Description: Artifactory Enterprise License 
+    Description: Artifactory Enterprise license 2.
     Default: ""
     Type: String
   ArtifactoryLicense3:
-    Description: Artifactory Enterprise License 
+    Description: Artifactory Enterprise license 3.
     Default: ""
     Type: String
   ArtifactoryLicense4:
-    Description: Artifactory Enterprise License 
+    Description: Artifactory Enterprise license 4.
     Default: ""
     Type: String
   Certificate:
-    Description: The Certificate file to be used to terminate SSL.
+    Description: The certificate file to be used to terminate SSL.
     AllowedPattern: ^(-----BEGIN CERTIFICATE-----)\n(.*?\n)+(-----END CERTIFICATE-----)$
     ConstraintDescription: A Certificate that begins with "-----BEGIN CERTIFICATE----- " and ends with "-----END CERTIFICATE----- "
-    Default: |
-      -----BEGIN CERTIFICATE-----
-      MIIFaDCCA1ACCQD45dB5tZFvCDANBgkqhkiG9w0BAQsFADB2MQswCQYDVQQGEwJV
-      UzELMAkGA1UECAwCQ0ExEjAQBgNVBAcMCVN1bm55dmFsZTEOMAwGA1UECgwFSkZy
-      b2cxFDASBgNVBAsMC0FydGlmYWN0b3J5MSAwHgYDVQQDDBdhcnRpZmFjdG9yeS5s
-      b2NhbGRvbWFpbjAeFw0xOTA3MjMyMzE4MjVaFw0yMDA3MjIyMzE4MjVaMHYxCzAJ
-      BgNVBAYTAlVTMQswCQYDVQQIDAJDQTESMBAGA1UEBwwJU3Vubnl2YWxlMQ4wDAYD
-      VQQKDAVKRnJvZzEUMBIGA1UECwwLQXJ0aWZhY3RvcnkxIDAeBgNVBAMMF2FydGlm
-      YWN0b3J5LmxvY2FsZG9tYWluMIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKC
-      AgEA0b3OgTFKkNbXXHzPv3l9IqX7fFZcfS2ZMD4mBuNlGQ6kyyraeoKKiVdkOgQV
-      /dwDxLeW6y+637J2KBiZTccHUS8/eC5ky9E6ECeFToCYsucUKRiWo9Uss6XS1N+Q
-      KQHktCVYy+KFDkJIVEL6LFbUMLz0k1jOhI/FRveT8LQ9cZsfy8KIrCF92ErcdPSL
-      02KO6RgaBjxRFtAw2ZdO07O9kcKBC5BpJdrEnJHalVJsJbZOqIuNjyKKp/8s9TtW
-      EYhXAbz05RrdQ97Cse1a/rHR5EWL+ITRw3Q/mQUv/ilSrSxb+chtgGb0qdP7aV0h
-      LOuxttQFFU2o62LHqnda6dWljxKpSYUz47ugCK0M4T2bRhy7lUgmZ3PcfZYLE2ue
-      h1qIJfkDfi1WpbptJAs4MbgfTvF2FCAsh8tyFnl+TA5QBWLRcOF9y1qUAATa1JKX
-      zKGf/5hExBRpuq371j4SLAb5qXYUuQqZiCe3O6qTx2Wo/jAOPV49wfK9D9fW5qmq
-      ND1Rpp8sKjlb2ixm7dhCWyWV+iGHpzX5tjBW35rikAisUoap47I1fNzYMiSTvbhv
-      2+by2YY8jsiYRCRIAKzRbgOgDOXnYVtWFpLgUldMqWqo+X3LztYE8CxD0CQK5u12
-      GxM5ztXKEaitCqUSjY34Gl4owukA9tzGnu09OuAYGkxVBO0CAwEAATANBgkqhkiG
-      9w0BAQsFAAOCAgEATH4kyuKvZtq32b3I7yZ27Xp2yaxABs17g0jAzkv7o9GILo+3
-      cVAJS2warQti+c+A2edjqEc97JXb6ul7/SHs7B9B0P4BZSUsI0byuPlQ45Kht891
-      jz3SF1o6jpKTniQPqsulMMshmYB6oY6CIyvKpaMaG3DypEXFmwEU7CdWr7oVISkn
-      pU6N6fI+V94Wzd1yHL8Jm/ixP4lqBAZqDhxNRq/Vok94wu2jvWwPIn2M+9myAiOs
-      TSpcqLg8Vn70XkK5uuN1UXYU5QDo78GEZpOj7YfCxVjB43Ct/sEiu3iB0GzyEvq6
-      jlv07H9PyLjYeM7CuhZdgULBqEWbqNhO5XL/QJMYG06kXkT3GiWFP8pjnQRcJM4Z
-      qQv8fOTDTuX5GumXKctXJwc7y9uywoIPwffEKlGuofWhihy8r/YXu2BgShDF3zYV
-      1RAHVcWtPT5IqejpRZX5LdL4Hr2eCeUkcVCo7qqYLEwxFnQNG1nMrJJ2ewnlzPac
-      JNNPRXgTDF3OkbON+3Wn/H0ndqIoqapHXSlkR54Stsk9yjHuaJ9TCANw2mxMDzf0
-      RGw9ecirjpzQdP9jT/zK9X4kqFc0T3P6qN3X3s/OPPbroassRk/eqI/oMS6lNcQm
-      y+SvRUrdtzKgmAfVE5yMLTVG0cZM4gWJ35DZHHqWnrbFEg7C0NLzoYc6yeQ=
-      -----END CERTIFICATE-----
     Type: String
   CertificateKey: 
-    Description: The Private Key for the Certificate.     
+    Description: The private key for the certificate.     
     AllowedPattern: ^(-----BEGIN [A-Za-z ]+ KEY-----)\n(.*?\n)+(-----END [A-Za-z ]+ KEY-----)$
     ConstraintDescription: A Private key that begins with "-----BEGIN PRIVATE KEY-----" and ends with "-----END PRIVATE KEY-----"
-    Default: |
-      -----BEGIN PRIVATE KEY-----
-      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
-      2YpoPnf204ak0AcDNZX257FnjRltUg==
-      -----END PRIVATE KEY-----
     NoEcho: 'true'
     Type: String
   CertificateDomain:
@@ -434,7 +349,7 @@ Parameters:
     Default: artifactory
     Type: String
   MasterKey:
-    Description: Master key for Artifactory cluster. Generate master.key using command '$openssl rand -hex 16'
+    Description: Master key for the Artifactory cluster. Generate a master key using command '$openssl rand -hex 16'.
     AllowedPattern: ^[a-zA-Z0-9]+$
     MinLength: '1'
     MaxLength: '64'
@@ -443,7 +358,7 @@ Parameters:
     NoEcho: 'true'
     Type: String
   ExtraJavaOptions:
-    Description: Setting Java Memory Parameters for Artifactory. Learn about system requirements for Artifactory 
+    Description: Setting Java memory parameters for Artifactory. Learn about system requirements for Artifactory 
       https://www.jfrog.com/confluence/display/RTF/System+Requirements#SystemRequirements-RecommendedHardware.
     Default: -server -Xms2g -Xmx14g -Xss256k -XX:+UseG1GC
     Type: String    
@@ -453,13 +368,13 @@ Parameters:
     NoEcho: 'true'
     Type: String
   AnsibleVaultPass:
-    Description: Ansible Vault password to protect Artifactory YAML
+    Description: Ansible Vault password to protect Artifactory YAML.
     NoEcho: 'true'
     Type: String    
   DatabaseName:
     Description: Type a name for your DB instance. The name must be unique cross all DB instances 
       owned by your AWS account in the current AWS Region. The DB instance identifier is case-insensitive, 
-      but is stored as all lowercase (as in "mydbinstance")
+      but is stored as all lowercase (as in "mydbinstance").
     AllowedPattern: ^[a-zA-Z]([a-zA-Z0-9])+$
     MinLength: '1'
     MaxLength: '60'
@@ -467,13 +382,13 @@ Parameters:
     Default: artdb
     Type: String
   DatabaseEngine:
-    Description: Database Engine you wish to run, currently locked to mysql
+    Description: Database engine you wish to run, currently locked to mysql
     AllowedValues:
       - MySQL
     Default: MySQL
     Type: String
   DatabaseVersion:
-    Description: Major Version of the Database Engine you wish to run, currently locked to mysql versions
+    Description: Major version of the database engine you wish to run, currently locked to mysql versions
       supported by Artifactory and RDS.
     AllowedValues:
     - 5.5
@@ -486,11 +401,11 @@ Parameters:
     MinLength: '1'
     MaxLength: '16'
     AllowedPattern: ^[a-zA-Z]([a-zA-Z0-9])+$
-    ConstraintDescription: 1 to 16 alphanumeric characters. First character must be a letter
+    ConstraintDescription: 1 to 16 alphanumeric characters. First character must be a letter.
     Default: artifactory
     Type: String
   DatabasePassword:
-    Description: Password for Artifactory Database User.
+    Description: Password for Artifactory database user.
     AllowedPattern: ^[^ \\']+$
     MinLength: '8'
     MaxLength: '12'
@@ -517,17 +432,17 @@ Parameters:
       - db.m5.4xlarge
       - db.m5.12xlarge
       - db.m5.24xlarge
-    ConstraintDescription: Must be a valid database Instance Type
+    ConstraintDescription: Must be a valid database Instance Type.
     Default: db.m4.large
     Type: String
   DBAllocatedStorage:
-    Description: Size in GB of the available storage for the Database Instance.
+    Description: Size in GB of the available storage for the database instance.
     MinValue: 5
     MaxValue: 1024
     Default: 10
     Type: Number
   MultiAZDatabase:
-    Description: Create a Multi-Availability Zone Amazon RDS instance.
+    Description: Create an Amazon RDS instance that spans multiple Availability Zones.
     ConstraintDescription: True or False
     AllowedValues:
       - "true"

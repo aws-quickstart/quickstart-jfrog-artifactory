@@ -13,6 +13,7 @@ Parameters:
     Type: String
   MasterKey:
     Type: String
+    NoEcho: 'true'
   ExtraJavaOptions:
     Type: String
   ArtifactoryPrimary:
@@ -26,8 +27,8 @@ Parameters:
   DatabaseName:
     Type: String
   DatabasePassword:
-    NoEcho: 'true'
     Type: String
+    NoEcho: 'true'
   ArtifactoryDBEndpointAddress:
     Type: String
   ECSRoleArn:
