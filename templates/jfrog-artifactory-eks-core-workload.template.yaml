@@ -25,24 +25,30 @@ Parameters:
     Type: String
   ArtifactoryIAMAcessKey:
     Type: String
+    NoEcho: 'true'
   SecretAccessKey:
     Type: String
+    NoEcho: 'true'
   ArtifactoryS3Bucket:
     Type: String
   CertificateKey:
     Type: String
+    NoEcho: 'true'
   Certificate:
     Type: String
   ArtifactoryDBEndpointAddress:
     Type: String
   DatabaseName:
     Type: String
+    NoEcho: 'true'
   DatabaseUser:
     Type: String
   DatabasePassword:
     Type: String
+    NoEcho: 'true'
   MasterKey:
     Type: String
+    NoEcho: 'true'
   ArtifactoryVersion:
     Type: String
   ArtifactoryDeploymentSize:
