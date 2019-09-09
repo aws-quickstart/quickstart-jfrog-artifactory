@@ -57,7 +57,7 @@
     },
     {
         "ParameterKey": "ArtifactoryDBEndpointAddress",
-        "ParameterValue": "ta1ja40rtslgpj9.cncci4pv7wym.us-west-2.rds.amazonaws.com"
+        "ParameterValue": "ta1l4gu688bdgyv.cncci4pv7wym.us-west-2.rds.amazonaws.com"
     },
     {
         "ParameterKey": "DatabaseName",
