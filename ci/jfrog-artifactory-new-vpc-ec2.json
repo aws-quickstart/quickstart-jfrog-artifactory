@@ -45,7 +45,7 @@
     },
     {
         "ParameterKey": "DatabaseInstance",
-        "ParameterValue": "db.m4.large"
+        "ParameterValue": "db.m3.medium"
     },
     {
         "ParameterKey": "ArtifactoryVersion",
@@ -81,10 +81,11 @@
     },
     {
         "ParameterKey": "CertificateDomain",
-        "ParameterValue": ""
+        "ParameterValue": ".localdomain"
     },
     {
         "ParameterKey": "ArtifactoryServerName",
-        "ParameterValue": ""
+        "ParameterValue": "artifactory"
     }
+    
 ]

@@ -24,4 +24,3 @@ tests:
     template_file: jfrog-artifactory-ecs-master.template.yaml
     regions:
       - us-west-2
-
