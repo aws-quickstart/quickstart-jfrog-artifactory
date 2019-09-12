@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: Deploys an EKS cluster with JFrog Artifactory into an existing VPC
+Description: Deploys an EKS cluster with JFrog Artifactory into an existing VPC (qs-1q037efm3).
 Metadata:
   AWS::CloudFormation::Interface:
     ParameterGroups:
