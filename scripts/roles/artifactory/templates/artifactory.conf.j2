@@ -6,7 +6,7 @@ ssl_prefer_server_ciphers   on;
 server {
   listen 443 ssl;
   listen 80 ;
-  server_name {{ artifactory_server_name }}{{ certificate_domain }} ~(?<repo>.+)\{{ certificate_domain }};
+  server_name {{ artifactory_server_name }}.{{ certificate_domain }} ~(?<repo>.+)\.{{ certificate_domain }};
   if ($http_x_forwarded_proto = '') {
     set $http_x_forwarded_proto  $scheme;
   }
@@ -18,14 +18,11 @@ server {
   rewrite ^/(v1|v2)/(.*) /artifactory/api/docker/$repo/$1/$2;
   chunked_transfer_encoding on;
   client_max_body_size 0;
-  location / {
+  location /artifactory/ {
     proxy_read_timeout  2400;
     proxy_pass_header   Server;
     proxy_cookie_path   ~*^/.* /;
-    if ( $request_uri ~ ^/artifactory/(.*)$ )  {
-        proxy_pass          http://{{ artifactory_hostname }}:8081/artifactory/$1;
-    }
-    proxy_pass         http://{{ artifactory_hostname }}:8081/artifactory/;
+    proxy_pass          http://{{ artifactory_hostname }}:8081/artifactory/;
     proxy_set_header    X-Artifactory-Override-Base-Url $http_x_forwarded_proto://$host:$server_port/artifactory;
     proxy_set_header    X-Forwarded-Port  $server_port;
     proxy_set_header    X-Forwarded-Proto $http_x_forwarded_proto;
