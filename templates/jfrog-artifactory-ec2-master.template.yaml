@@ -84,13 +84,13 @@ Metadata:
       PublicSubnet2CIDR:
         default: Public subnet 2 CIDR
       AccessCIDR:
-        default: Permitted IP Range
+        default: Permitted IP CIDR
       RemoteAccessCIDR:
         default: Remote access CIDR 
       VPCCIDR:
         default: VPC CIDR
       ProvisionBastionHost:
-        default: Provision Bastion host
+        default: Bastion instance
       BastionInstanceType:
         default: Bastion instance type
       BastionRootVolumeSize:
@@ -100,9 +100,9 @@ Metadata:
       BastionEnableX11Forwarding:
         default: Bastion enable X11 forwarding
       BastionOS:
-        default: Bastion OS
+        default: Bastion operating system
       NumBastionHosts:
-        default: Number of Bastion hosts        
+        default: Number of bastion instances
       VolumeSize:
         default: EBS root volume size
       InstanceType:
@@ -130,7 +130,7 @@ Metadata:
       MasterKey:
         default: Master server key
       ExtraJavaOptions:
-        default: Extra java options
+        default: Extra Java options
       KeystorePassword:
         default: Java keystore password  
       AnsibleVaultPass:
@@ -213,15 +213,15 @@ Parameters:
     AllowedPattern: ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/([0-9]|[1-2][0-9]|3[0-2]))$
     Type: String
   ProvisionBastionHost:
-    Description: Choose whether to boot a Bastion host or not. Due to the Artifactory nodes being
-      created in private subnets, this is highly recommended.
+    Description: Choose Disabled to skip creating a bastion instance. Due to the Artifactory nodes being
+      created in private subnets, the default setting of Enabled this is highly recommended.
     AllowedValues:
       - "Enabled"
       - "Disabled"
     Default: "Enabled"
     Type: String
   BastionInstanceType:
-    Description: The size of the Bastion instance.
+    Description: The size of the bastion instances.
     AllowedValues:
       - t2.nano
       - t2.micro
@@ -238,11 +238,11 @@ Parameters:
     Default: "t2.micro"
     Type: String
   BastionRootVolumeSize:
-    Description: The size of the root volume on the Bastion instance.
+    Description: The size of the root volume on the bastion instances.
     Default: 10
     Type: Number
   BastionEnableTCPForwarding:
-    Description: Choose whether to enable TCPForwarding via the bootstraping of the Bastion vm
+    Description: Choose whether to enable TCPForwarding via the bootstrapping of the bastion instance
       or not.
     AllowedValues: 
       - "true"
@@ -250,15 +250,17 @@ Parameters:
     Default: "true"
     Type: String
   BastionEnableX11Forwarding:
-    Description: Choose whether to enable X11 via the bootstraping of the Bastion vm
-      or not.
+    Description: Choose true to enable X11 via the bootstrapping of the bastion host. 
+      Setting this value to true will enable X Windows over SSH. 
+      X11 forwarding can be very useful but it is also a security risk, so we recommend 
+      that you keep the default (disabled) setting unless required.
     AllowedValues:
       - "true"
       - "false"
     Default: "false"
     Type: String
   BastionOS:
-    Description: The Linux distribution for the AMI to be used for the bastion instances.
+    Description: The Linux distribution for the Amazon Machine Image (AMI) to be used for the bastion instances.
     AllowedValues:
       - "Amazon-Linux-HVM"
       - "CentOS-7-HVM"
@@ -268,7 +270,7 @@ Parameters:
     Default: "Amazon-Linux-HVM"
     Type: String
   NumBastionHosts:
-    Description: The number of bastion hosts to create.
+    Description: The number of bastion instances to create.
     AllowedValues:
       - '1'
       - '2'
@@ -284,7 +286,8 @@ Parameters:
       - 'AMZNLINUXHVM'
     Type: String    
   VolumeSize:
-    Description: The size in GB of the available storage (will create EBS volumes of this size).
+    Description: The size in GB of the available storage; the Quick Start will create an 
+      Amazon Elastic Block Store (Amazon EBS) volumes of this size.
     Default: 200
     Type: Number
   InstanceType:
@@ -299,8 +302,9 @@ Parameters:
     Type: String
   NumberOfSecondary:
     Description: The number of secondary Artifactory servers to complete your
-      highly available deployment. Minimum number of 2 to fit the Artifactory best practices. Do not select more than
-      you license for.
+      HA deployment. To fit the Artifactory best practices, the minimum number
+      is two; the maximum is seven. Do not select more than instances than you 
+      have licenses for.
     AllowedValues:
       - 2
       - 3
@@ -312,15 +316,15 @@ Parameters:
     Type: Number
   ArtifactoryVersion:
     Description: The version of Artifactory that you want to deploy into the Quick Start.
-      Please see the release notes to select the version you wish to deploy.
+      Please see the release notes to select the version you want to deploy.
       https://www.jfrog.com/confluence/display/RTF/Release+Notes
     AllowedPattern: ^(([0-9]|[1-9][0-9])\.){2}([1-9][0-9]|[0-9])$
     ConstraintDescription: A version that matches X.X.X per Artifactory releases.
     Default: 6.11.1
     Type: String
   ArtifactoryLicense1:
-    Description: Artifactory Enterprise license at least one is required. Each license 
-      is a one-to-one match to a node. For proper high availability you will need three
+    Description: The first Artifactory Enterprise license; at least one license is required. Each license 
+      is a one-to-one match to a node. For proper HA, you will need three
       licenses.
     Type: String
   ArtifactoryLicense2:
@@ -330,9 +334,9 @@ Parameters:
     Description: Artifactory Enterprise license 3.
     Type: String
   ArtifactoryLicense4:
-    Description: Artifactory Enterprise license 4. If you need to add more than 4, please do so 
+    Description: Artifactory Enterprise license 4. If you need to add more than four licenses, please do so 
       in the Artifactory user interface after the initial deployment, then update the CloudFormation
-      stack to the correct number of secondaries. Remember to not have more total nodes than you are 
+      stack to the correct number of secondary nodes. Remember to not have more total nodes than you are 
       licensed for.
     Type: String
   Certificate:
@@ -347,13 +351,13 @@ Parameters:
     NoEcho: 'true'
     Type: String
   CertificateDomain:
-    Description: The domain matching that of the certificate. Ensure it matches your certificate.
+    Description: The domain matching that of the certificate. Ensure that it matches your certificate.
     Type: String
   ArtifactoryServerName:
-    Description: The name of your Artifactory server, ensure this matches your certificate.
+    Description: The name of your Artifactory server. Ensure that this matches your certificate.
     Type: String
   MasterKey:
-    Description: The master key for the Artifactory cluster. Generate a master key using command '$openssl rand -hex 16'.
+    Description: The master key for the Artifactory cluster. Generate a master key by using the command '$openssl rand -hex 16'.
     AllowedPattern: ^[a-zA-Z0-9]+$
     MinLength: '1'
     MaxLength: '64'
@@ -361,22 +365,24 @@ Parameters:
     NoEcho: 'true'
     Type: String
   ExtraJavaOptions:
-    Description: Setting Java memory parameters for Artifactory. Learn about system requirements for Artifactory 
+    Description: Setting Java memory parameters for Artifactory. For more information, see the Artifactory 
+      system requirements. 
       https://www.jfrog.com/confluence/display/RTF/System+Requirements#SystemRequirements-RecommendedHardware.
     Default: -server -Xms2g -Xmx14g -Xss256k -XX:+UseG1GC
-    Type: String
+    Type: String  
   KeystorePassword:
     Description: A new Java keystore password. For better security the password that you specify will 
       replace the default Java keystore password.
     NoEcho: 'true'
     Type: String
   AnsibleVaultPass:
-    Description: The Ansible Vault password to protect Artifactory YAML generated during the 
-      Artifactory deployment. This YAML is stored on the EC2 nodes and secured with this password.
+    Description: The Ansible Vault password to protect the Artifactory YAML configuration file
+      generated during the Artifactory deployment. This YAML file is stored on the EC2 nodes 
+      and secured with this password.
     NoEcho: 'true'
     Type: String    
   DatabaseName:
-    Description: The name for your DB instance. The name must be unique cross all DB instances 
+    Description: The name for your DB instance. The name must be unique across all DB instances 
       owned by your AWS account in the current AWS Region. The DB instance identifier is case-insensitive, 
       but is stored as all lowercase (as in "mydbinstance").
     AllowedPattern: ^[a-zA-Z]([a-zA-Z0-9])+$
@@ -392,7 +398,7 @@ Parameters:
     Default: MySQL
     Type: String
   DatabaseVersion:
-    Description: The major version of the MySQL database engine you wish to run, currently locked to MySQL versions
+    Description: The major version of the MySQL database engine you want to run. This is currently locked to MySQL versions
       supported by Artifactory and RDS.
     AllowedValues:
     - 5.5
@@ -409,7 +415,7 @@ Parameters:
     Default: artifactory
     Type: String
   DatabasePassword:
-    Description: The password for Artifactory database user.
+    Description: The password for the Artifactory database user.
     AllowedPattern: ^[^ \\']+$
     MinLength: '8'
     MaxLength: '12'
@@ -446,7 +452,7 @@ Parameters:
     Default: 10
     Type: Number
   MultiAZDatabase:
-    Description: Choose true to create an Amazon RDS instance that spans multiple Availability Zones.
+    Description: Choose false to create an Amazon RDS instance in a single Availability Zone.
     ConstraintDescription: True or False
     AllowedValues:
       - "true"
