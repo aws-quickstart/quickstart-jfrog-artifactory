@@ -1,15 +1,15 @@
 [
     {
         "ParameterKey": "KeyPairName",
-        "ParameterValue": "override"
+        "ParameterValue": "$[taskcat_getkeypair]"
     },
     {
         "ParameterKey": "RemoteAccessCIDR",
-        "ParameterValue": "override"
+        "ParameterValue": "10.0.0.0/16"
     },
     {
         "ParameterKey": "AccessCIDR",
-        "ParameterValue": "0.0.0.0/0"
+        "ParameterValue": "10.0.0.0/16"
     },
     {
         "ParameterKey": "AvailabilityZones",
@@ -17,7 +17,7 @@
     },
     {
         "ParameterKey": "DatabasePassword",
-        "ParameterValue": "Admin123!"
+        "ParameterValue": "$[taskcat_genpass_8A]"
     },
     {
         "ParameterKey": "QSS3BucketName",
@@ -29,23 +29,23 @@
     },
     {
         "ParameterKey": "ArtifactoryLicense1",
-        "ParameterValue": "override"
+        "ParameterValue": "cHJvZHVjdHM6CiAgYXJ0aWZhY3Rvcnk6CiAgICBwcm9kdWN0OiBaWGh3YVhKbGN6b2dNakF4T1MweE1DMHhPVlF3TURvd01Eb3dNRm9LYVdRNklEZzJaVFkyT0dVNUxURmhZak10TkRkaVl5MDVZelEyTFRFek5qWXdZelUyTlRRM01RcHZkMjVsY2pvZ1FXMWhlbTl1SUZkbFlpQlRaWEoyYVdObGN5QW9RVmRUS1Fwd2NtOXdaWEowYVdWek9pQjdmUXB6YVdkdVlYUjFjbVU2SUc1MWJHd0tkSEpwWVd3NklIUnlkV1VLZEhsd1pUb2dWRkpKUVV3S2RtRnNhV1JHY205dE9pQXlNREU1TFRBNExURTVWREUwT2pBM09qSXpMamcyTTFvSwogICAgc2lnbmF0dXJlOiBJczE0NzR3Unh6YXZlbDhrbUFtY2VzZDhXT0RmSVhWYUExR2ltdFBDSENwMzBlYXJJUytBaU0xbXlKWlVudXFVZng2b1loeDdRT1RyUWtKYS9MbEtkaHRjeTk0eTJhZlZHeEpKMFBtWVYwSmRoRnhaR09XcnFGZHQvOG9yNXNrMkJpc0QwVitrcmVqUXpRdnpUNzZyYUg5cVFOV0lNR3RGdjVVRmVYRVBIeHYwQWpXRGxSbWFBWmR2ZFlVUXUvZERzbDVXSGlGWnZ1d2JPT2E4NW1EaHhlYmw0VnZMZHBFdE03QXJvVHFCWmtNb0RjeGJCRFBiTC9KQWJ1MXJSUzF3TlA4Y3Q4SWxiUUpka2tqeUNLUUxnT3pFcE1wUGIxUS96U0h6cTBrNFhyL1lUR21hVlRtbkVnZzM3dUxROXRSWjh4c1FZNmRSM2pOb3RBMnNpcmpMUVE9PQp2ZXJzaW9uOiAxCg=="
     },
     {
         "ParameterKey": "ArtifactoryLicense2",
-        "ParameterValue": "override"
+        "ParameterValue": "cHJvZHVjdHM6CiAgYXJ0aWZhY3Rvcnk6CiAgICBwcm9kdWN0OiBaWGh3YVhKbGN6b2dNakF4T1MweE1DMHhPVlF3TURvd01Eb3dNRm9LYVdRNklHWTFOVFEwWTJaaUxUZGlZVFV0TkRjNVl5MDRNREUxTFRZM05XRTRNV1ZtTldRek9BcHZkMjVsY2pvZ1FXMWhlbTl1SUZkbFlpQlRaWEoyYVdObGN5QW9RVmRUS1Fwd2NtOXdaWEowYVdWek9pQjdmUXB6YVdkdVlYUjFjbVU2SUc1MWJHd0tkSEpwWVd3NklIUnlkV1VLZEhsd1pUb2dWRkpKUVV3S2RtRnNhV1JHY205dE9pQXlNREU1TFRBNExURTVWREUwT2pBM09qSXpMamczT1ZvSwogICAgc2lnbmF0dXJlOiBSc3ptZkJmRmkyRU1oUkdSU1gwZE1GeTBnQW1HZFVXWlc4M3RuWEErdzhoajJ1K0NhVXJLaGpQRFV4MEovMUFBTEdEcXpFU1JXUGdDV0NXL0xqRVRXbFE5cHgzcThVZ2VwV0dEaGxXQ1lLM3UzQ1BycVZtNlhhOFVGZVNaQ0l1UG8yVkx6cWZZWlU2QXlDQ1hsajkzeWxtSG04L1MvdCtpcG9OeWZjVVlBbkVjc2ZBdzBuUFZLY255dExRczJmZTMxZExRdGUveTBmMzloN0JFaVZWZ0l2RmFtRGFYOFA4Yjd4Skx3Ylg4WEtnbHFFdWUwdG51cUF1eFMzRjk0eVhnc2JZSTR0bHJEcDBJOXV2dnMrRGc5QzBsZGZOcVB1MGQ4b2tQK2JWeHVNK0VvL29nMllpdElYaFpJMUI0dVhZWkJ3VGFEU1IzNEtDTmFhSlovamJ6MEE9PQp2ZXJzaW9uOiAxCg=="
     },
     {
         "ParameterKey": "ArtifactoryLicense3",
-        "ParameterValue": "override"
+        "ParameterValue": "cHJvZHVjdHM6CiAgYXJ0aWZhY3Rvcnk6CiAgICBwcm9kdWN0OiBaWGh3YVhKbGN6b2dNakF4T1MweE1DMHhPVlF3TURvd01Eb3dNRm9LYVdRNklHTXpNR1prWVRVNExXSmpNRFF0TkRobVpDMWlZVGRqTFRVNFpEWTNOVGxoT1RnNE9BcHZkMjVsY2pvZ1FXMWhlbTl1SUZkbFlpQlRaWEoyYVdObGN5QW9RVmRUS1Fwd2NtOXdaWEowYVdWek9pQjdmUXB6YVdkdVlYUjFjbVU2SUc1MWJHd0tkSEpwWVd3NklIUnlkV1VLZEhsd1pUb2dWRkpKUVV3S2RtRnNhV1JHY205dE9pQXlNREU1TFRBNExURTVWREUwT2pBM09qSXpMamc1TmxvSwogICAgc2lnbmF0dXJlOiBMZTI0Rkc1NzJyMFlHSDluTklIREo3ajJZc3BtUHRod1M2RzdqTmdxcldMOGdmWnpkc3N3TGlJWWRYRFVkd2doVVhGNGhQMFBoVWNNSzNVZ1oxcHFubTJyNGhUWlBiaElON2NVMnNGY3I1UWQxQnJSRnFBb3dmZzJGcnZnYlZDY0xwR1BYaFNTVnE0OXdjR3pTTXFVaVFqSHZvSDNtWURNZG1ERVdpWGdtRWlFYXFxOXdGRE1zcVc2N0J6cWtkZ2VWTnNtdE56b2dTNS82Tm5vUUVWb2VBTjlTNjRRZHhIMkMvazZoQzhqcmdXUnlmbWcwY2FyeUNkbGpSMk9VU0tCRmJuWUR6TnZrU1Vqek5ReXZRQ3NrdkdhRUpVU1YwYllPOW9wYW1NN0lOSm9JZGZ6dTkyN2FMTklobHdxNDdkRmozRGwwMnc0SFVMOXgxOUdOUG5zT2c9PQp2ZXJzaW9uOiAxCg=="
     },
     {
         "ParameterKey": "ArtifactoryLicense4",
-        "ParameterValue": "override"
+        "ParameterValue": "cHJvZHVjdHM6CiAgYXJ0aWZhY3Rvcnk6CiAgICBwcm9kdWN0OiBaWGh3YVhKbGN6b2dNakF4T1MweE1DMHhPVlF3TURvd01Eb3dNRm9LYVdRNklEWXpZVFpoTTJNNExUZGlNV0l0TkRFell5MDRPR0l4TFdWallUa3dNakl3WXpnd1pBcHZkMjVsY2pvZ1FXMWhlbTl1SUZkbFlpQlRaWEoyYVdObGN5QW9RVmRUS1Fwd2NtOXdaWEowYVdWek9pQjdmUXB6YVdkdVlYUjFjbVU2SUc1MWJHd0tkSEpwWVd3NklIUnlkV1VLZEhsd1pUb2dWRkpKUVV3S2RtRnNhV1JHY205dE9pQXlNREU1TFRBNExURTVWREUwT2pBM09qSXpMamt4TWxvSwogICAgc2lnbmF0dXJlOiBnVnR5cWwyeCtTRGVsSUxxb3o1SE8wNkgrSWxRY0lmQStPVDZZeTNhNzFtU0lSbTNIWWJRb0IzZFpFRm9UQUt6QkRZaTMrVk5zRXlJa2VJTzlFYWpEWTdnK1FkVERJcy9GQVlNbjVOQjVCZy9xdHB0QXZwVGhkcHRMWUNEVDRDb2xEZDZleElxdEhKZTUzUzUzRjV3Qk00YTZFMjRwMEdzSmUwNXJjSVBFZUVoa3JsdFJjVXJhVGtidkRQZlpUZ2cvZC9LZXk0dmUwVnNnS3pMdkIxaEpidnlBWXppdHJrMDRWYzlpYUllZmVkTHR4OU5MbzlqZUQzQTM4bmpXZGtQVk1iL0FpNnZyU0Vhc2cxUzhvTDZLR0I3RFBwQmk4SUF3c2NxRnpjNDRoOHN4d0xXQmhpbVlhaVMxeXFHTnJxVUNIRTFpUnAvRkF2Q1lPTlRQdWNiL2c9PQp2ZXJzaW9uOiAxCg=="
     },
     {
         "ParameterKey": "DatabaseInstance",
-        "ParameterValue": "db.m3.medium"
+        "ParameterValue": "db.m5.large"
     },
     {
         "ParameterKey": "ArtifactoryVersion",
