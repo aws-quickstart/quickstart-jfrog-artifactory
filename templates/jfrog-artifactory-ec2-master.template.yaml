@@ -84,7 +84,7 @@ Metadata:
       PublicSubnet2CIDR:
         default: Public subnet 2 CIDR
       AccessCIDR:
-        default: Permitted IP CIDR
+        default: Permitted IP range
       RemoteAccessCIDR:
         default: Remote access CIDR 
       VPCCIDR:
@@ -253,7 +253,7 @@ Parameters:
     Description: Choose true to enable X11 via the bootstrapping of the bastion host. 
       Setting this value to true will enable X Windows over SSH. 
       X11 forwarding can be very useful but it is also a security risk, so we recommend 
-      that you keep the default (disabled) setting unless required.
+      that you keep the default (false) setting unless required.
     AllowedValues:
       - "true"
       - "false"
