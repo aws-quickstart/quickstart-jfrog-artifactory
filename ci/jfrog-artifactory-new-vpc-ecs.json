@@ -77,7 +77,7 @@
     },
     {
         "ParameterKey": "CertificateDomain",
-        "ParameterValue": ".localdomain"
+        "ParameterValue": "localdomain"
     },
     {
         "ParameterKey": "ArtifactoryServerName",
