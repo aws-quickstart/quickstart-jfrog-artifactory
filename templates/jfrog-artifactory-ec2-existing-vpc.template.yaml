@@ -354,7 +354,7 @@ Parameters:
   CertificateDomain:
     Description: The domain matching that of the certificate. Ensure that it matches your certificate.
     AllowedPattern: ^[A-Za-z0-9]+[.A-Za-z0-9]+[A-Za-z0-9]$
-    ContraintDescription: The domain must not start or end with a '.'
+    ConstraintDescription: The domain must not start or end with a '.'
     Type: String
   ArtifactoryServerName:
     Description: The name of your Artifactory server. Ensure that this matches your certificate.
