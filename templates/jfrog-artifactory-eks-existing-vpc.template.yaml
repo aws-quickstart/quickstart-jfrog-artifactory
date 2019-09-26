@@ -40,10 +40,7 @@ Metadata:
           - ArtifactoryVersion
           - ArtifactoryDeploymentSize
           - NumberOfSecondary 
-          - ArtifactoryLicense1
-          - ArtifactoryLicense2
-          - ArtifactoryLicense3
-          - ArtifactoryLicense4
+          - SMLicensesName
           - Certificate
           - CertificateKey
           - CertificateDomain
@@ -123,14 +120,8 @@ Metadata:
         default: Artifactory deployment size
       NumberOfSecondary:
         default: Number of secondary pods        
-      ArtifactoryLicense1:
-        default: Artifactory license 1
-      ArtifactoryLicense2:
-        default: Artifactory license 2
-      ArtifactoryLicense3:
-        default: Artifactory license 3
-      ArtifactoryLicense4:
-        default: Artifactory license 4
+      SMLicensesName:
+        default: Artifactory licenses secret name
       Certificate:
         default: Certificate
       CertificateKey:
@@ -361,23 +352,9 @@ Parameters:
       - Large
     Default: Medium
     Type: String
-  ArtifactoryLicense1:
-    Description: The first Artifactory Enterprise license; at least one license is required. Each license 
-      is a one-to-one match to a Atrifactory pod. For proper HA, you will need three
-      licenses.
-    Type: String
-  ArtifactoryLicense2:
-    Description: Artifactory Enterprise license 2.
-    Type: String
-  ArtifactoryLicense3:
-    Description: Artifactory Enterprise license 3.
-    Type: String
-  ArtifactoryLicense4:
-    Description: Artifactory Enterprise license 4. If you need to add more than four licenses, please do so 
-      in the Artifactory user interface after the initial deployment, then update the CloudFormation
-      stack to the correct number of secondary pods. Remember to not have more total Artifactory pods than you are 
-      licensed for.
-    Type: String     
+  SMLicensesName:
+    Description: The secret name created in AWS Secrets Manager which contains the Artifactory licenses.
+    Type: String  
   Certificate:
     Description: The certificate file to be used to terminate SSL.
     AllowedPattern: ^(-----BEGIN CERTIFICATE-----)\n(.*?\n)+(-----END CERTIFICATE-----)$
@@ -640,10 +617,10 @@ Resources:
         KubeGetLambdaArn: !GetAtt EKSStack.Outputs.KubeGetLambdaArn
         NumberOfSecondary: !Ref NumberOfSecondary
         AccessCIDR: !Ref AccessCIDR
-        ArtifactoryLicense1: !Ref ArtifactoryLicense1
-        ArtifactoryLicense2: !Ref ArtifactoryLicense2
-        ArtifactoryLicense3: !Ref ArtifactoryLicense3
-        ArtifactoryLicense4: !Ref ArtifactoryLicense4
+        ArtifactoryLicense1: !Sub '{{resolve:secretsmanager:${SMLicensesName}:SecretString:ArtifactoryLicense1}}'
+        ArtifactoryLicense2: !Sub '{{resolve:secretsmanager:${SMLicensesName}:SecretString:ArtifactoryLicense2}}'
+        ArtifactoryLicense3: !Sub '{{resolve:secretsmanager:${SMLicensesName}:SecretString:ArtifactoryLicense3}}'
+        ArtifactoryLicense4: !Sub '{{resolve:secretsmanager:${SMLicensesName}:SecretString:ArtifactoryLicense4}}'
         CertificateKey: !Ref CertificateKey
         Certificate: !Ref Certificate
         CertificateDomain: !Ref CertificateDomain
