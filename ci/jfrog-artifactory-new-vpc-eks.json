@@ -52,6 +52,10 @@
         "ParameterValue": "6.11.1"
     },
     {
+        "ParameterKey": "CertificateDomain",
+        "ParameterValue": "localdomain"
+    },
+    {
         "ParameterKey": "NumberOfSecondary",
         "ParameterValue": "2"
     },

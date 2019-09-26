@@ -46,6 +46,7 @@ Metadata:
           - ArtifactoryLicense4
           - Certificate
           - CertificateKey
+          - CertificateDomain
           - MasterKey
       - Label:
           default: Amazon RDS configuration
@@ -134,6 +135,8 @@ Metadata:
         default: Certificate
       CertificateKey:
         default: Certificate key
+      CertificateDomain:
+        default: Certificate domain
       MasterKey:
         default: Master server key
       DatabaseName:
@@ -385,6 +388,11 @@ Parameters:
     AllowedPattern: ^(-----BEGIN [A-Za-z ]+ KEY-----)\n(.*?\n)+(-----END [A-Za-z ]+ KEY-----)$
     ConstraintDescription: A Private key that begins with "-----BEGIN PRIVATE KEY-----" and ends with "-----END PRIVATE KEY-----"
     NoEcho: 'true'
+    Type: String
+  CertificateDomain:
+    Description: The domain matching that of the certificate. Ensure that it matches your certificate.
+    AllowedPattern: ^[A-Za-z0-9]+[.A-Za-z0-9]+[A-Za-z0-9]$
+    ConstraintDescription: The domain must not start or end with a '.'
     Type: String
   MasterKey:
     Description: The master key for the Artifactory cluster. Generate a master key by using the command '$openssl rand -hex 16'.
@@ -638,6 +646,7 @@ Resources:
         ArtifactoryLicense4: !Ref ArtifactoryLicense4
         CertificateKey: !Ref CertificateKey
         Certificate: !Ref Certificate
+        CertificateDomain: !Ref CertificateDomain
         ArtifactoryIAMAcessKey: !GetAtt ArtifactoryCoreInfraStack.Outputs.IAMAcessKey
         SecretAccessKey: !GetAtt ArtifactoryCoreInfraStack.Outputs.SecretAccessKey
         ArtifactoryS3Bucket: !GetAtt ArtifactoryCoreInfraStack.Outputs.S3Bucket
