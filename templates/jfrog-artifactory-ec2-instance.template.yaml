@@ -166,8 +166,7 @@ Resources:
           config-artifactory-master:
             files:
               /root/.artifactory_ansible/artifactory.yml:
-                content: !Sub
-                  - |
+                content: !Sub |
                     # Base install for Artifactory
                     - import_playbook: site-artifactory.yml
                       vars:
@@ -181,8 +180,8 @@ Resources:
                         s3_access_key: ${ArtifactoryIAMAcessKey}
                         s3_access_secret_key: ${SecretAccessKey}
                         s3_bucket: ${ArtifactoryS3Bucket}
-                        certificate: ${cert}
-                        certificate_key: ${cert_key}
+                        certificate: ${Certificate}
+                        certificate_key: ${CertificateKey}
                         ssl_dir: /etc/pki/tls/certs/
                         db_type: ${DBType}
                         db_ipaddr: ${ArtifactoryDBEndpointAddress}
@@ -194,10 +193,6 @@ Resources:
                         master_key: ${MasterKey}
                         extra_java_opts: ${ExtraJavaOptions}
                         artifactory_version: ${ArtifactoryVersion}
-                  - cert: !Base64
-                       "Fn::Sub": "${Certificate}"
-                    cert_key: !Base64
-                       "Fn::Sub": "${CertificateKey}" 
                 mode: "0400"
               /root/.vault_pass.txt:
                 content: !Sub |
