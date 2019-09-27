@@ -1,7 +1,7 @@
 # quickstart-jfrog-artifactory
 ## JFrog Artifactory on the AWS Cloud
 
-JFrog Artifactory Quick Starts options for deployment with your choice of of Amazon Elastic Compute Cloud (Amazon EC2), Amazon Elastic Container Service (Amazon ECS), or Amazon Elastic Kubernetes Service (Amazon EKS). The deployment takes 30-45 minutes, depending on the option you choose.
+Three new Quick Starts deploy JFrog Artifactory on the Amazon Web Services (AWS) Cloud in 30-45 minutes. The available options for deployment use your choice of Amazon Elastic Compute Cloud (Amazon EC2), Amazon Elastic Container Service (Amazon ECS), or Amazon Elastic Kubernetes Service (Amazon EKS).
 
 This Quick Start is for administrators who want to use JFrog Artifactory with the flexibility, scale, and availability of AWS.
 
