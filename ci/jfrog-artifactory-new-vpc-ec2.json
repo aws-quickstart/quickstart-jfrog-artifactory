@@ -58,5 +58,21 @@
     {
         "ParameterKey": "CertificateDomain",
         "ParameterValue": "localdomain"
-    }    
+    },
+    {
+        "ParameterKey": "SMLicensesName",
+        "ParameterValue": "jfrog-artifactory"
+    },
+    {
+        "ParameterKey": "MasterKey",
+        "ParameterValue": "override"
+    },
+    {
+        "ParameterKey": "Certificate",
+        "ParameterValue": "override"
+    },
+    {
+        "ParameterKey": "CertificateKey",
+        "ParameterValue": "override"
+    } 
 ]

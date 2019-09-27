@@ -54,5 +54,17 @@
     {
         "ParameterKey": "ArtifactoryServerName",
         "ParameterValue": "artifactory"
-    }
+    },
+    {
+        "ParameterKey": "MasterKey",
+        "ParameterValue": "override"
+    },
+    {
+        "ParameterKey": "Certificate",
+        "ParameterValue": "override"
+    },
+    {
+        "ParameterKey": "CertificateKey",
+        "ParameterValue": "override"
+    } 
 ]
