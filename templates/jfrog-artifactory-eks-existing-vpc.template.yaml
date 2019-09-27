@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: Deploys an EKS cluster with JFrog Artifactory into an existing VPC
+Description: Deploys an EKS cluster with JFrog Artifactory into an existing VPC (qs-1q037efm3).
 Metadata:
   AWS::CloudFormation::Interface:
     ParameterGroups:
@@ -40,12 +40,10 @@ Metadata:
           - ArtifactoryVersion
           - ArtifactoryDeploymentSize
           - NumberOfSecondary 
-          - ArtifactoryLicense1
-          - ArtifactoryLicense2
-          - ArtifactoryLicense3
-          - ArtifactoryLicense4
+          - SMLicensesName
           - Certificate
           - CertificateKey
+          - CertificateDomain
           - MasterKey
       - Label:
           default: Amazon RDS configuration
@@ -75,7 +73,7 @@ Metadata:
       KeyPairName:
         default: SSH key name
       AccessCIDR:
-        default: Permitted IP CIDR          
+        default: Permitted IP range          
       RemoteAccessCIDR:
         default: Remote access CIDR
       AdditionalEKSAdminArns:
@@ -122,18 +120,14 @@ Metadata:
         default: Artifactory deployment size
       NumberOfSecondary:
         default: Number of secondary pods        
-      ArtifactoryLicense1:
-        default: Artifactory license 1
-      ArtifactoryLicense2:
-        default: Artifactory license 2
-      ArtifactoryLicense3:
-        default: Artifactory license 3
-      ArtifactoryLicense4:
-        default: Artifactory license 4
+      SMLicensesName:
+        default: Artifactory licenses secret name
       Certificate:
         default: Certificate
       CertificateKey:
         default: Certificate key
+      CertificateDomain:
+        default: Certificate domain
       MasterKey:
         default: Master server key
       DatabaseName:
@@ -310,7 +304,7 @@ Parameters:
     Description: Choose true to enable X11 via the bootstrapping of the bastion host. 
       Setting this value to true will enable X Windows over SSH. 
       X11 forwarding can be very useful but it is also a security risk, so we recommend 
-      that you keep the default (disabled) setting unless required.
+      that you keep the default (false) setting unless required.
     AllowedValues:
       - "true"
       - "false"
@@ -358,33 +352,20 @@ Parameters:
       - Large
     Default: Medium
     Type: String
-  ArtifactoryLicense1:
-    Description: The first Artifactory Enterprise license; at least one license is required. Each license 
-      is a one-to-one match to a Atrifactory pod. For proper HA, you will need three
-      licenses.
-    Type: String
-  ArtifactoryLicense2:
-    Description: Artifactory Enterprise license 2.
-    Type: String
-  ArtifactoryLicense3:
-    Description: Artifactory Enterprise license 3.
-    Type: String
-  ArtifactoryLicense4:
-    Description: Artifactory Enterprise license 4. If you need to add more than four licenses, please do so 
-      in the Artifactory user interface after the initial deployment, then update the CloudFormation
-      stack to the correct number of secondary pods. Remember to not have more total Artifactory pods than you are 
-      licensed for.
-    Type: String     
+  SMLicensesName:
+    Description: The secret name created in AWS Secrets Manager which contains the Artifactory licenses.
+    Type: String  
   Certificate:
     Description: The certificate file to be used to terminate SSL.
-    AllowedPattern: ^(-----BEGIN CERTIFICATE-----)\n(.*?\n)+(-----END CERTIFICATE-----)$
-    ConstraintDescription: A Certificate that begins with "-----BEGIN CERTIFICATE----- " and ends with "-----END CERTIFICATE----- "
     Type: String
   CertificateKey: 
     Description: The private key for the certificate.
-    AllowedPattern: ^(-----BEGIN [A-Za-z ]+ KEY-----)\n(.*?\n)+(-----END [A-Za-z ]+ KEY-----)$
-    ConstraintDescription: A Private key that begins with "-----BEGIN PRIVATE KEY-----" and ends with "-----END PRIVATE KEY-----"
     NoEcho: 'true'
+    Type: String
+  CertificateDomain:
+    Description: The domain matching that of the certificate. Ensure that it matches your certificate.
+    AllowedPattern: ^[A-Za-z0-9]+[.A-Za-z0-9]+[A-Za-z0-9]$
+    ConstraintDescription: The domain must not start or end with a '.'
     Type: String
   MasterKey:
     Description: The master key for the Artifactory cluster. Generate a master key by using the command '$openssl rand -hex 16'.
@@ -632,12 +613,13 @@ Resources:
         KubeGetLambdaArn: !GetAtt EKSStack.Outputs.KubeGetLambdaArn
         NumberOfSecondary: !Ref NumberOfSecondary
         AccessCIDR: !Ref AccessCIDR
-        ArtifactoryLicense1: !Ref ArtifactoryLicense1
-        ArtifactoryLicense2: !Ref ArtifactoryLicense2
-        ArtifactoryLicense3: !Ref ArtifactoryLicense3
-        ArtifactoryLicense4: !Ref ArtifactoryLicense4
+        ArtifactoryLicense1: !Sub '{{resolve:secretsmanager:${SMLicensesName}:SecretString:ArtifactoryLicense1}}'
+        ArtifactoryLicense2: !Sub '{{resolve:secretsmanager:${SMLicensesName}:SecretString:ArtifactoryLicense2}}'
+        ArtifactoryLicense3: !Sub '{{resolve:secretsmanager:${SMLicensesName}:SecretString:ArtifactoryLicense3}}'
+        ArtifactoryLicense4: !Sub '{{resolve:secretsmanager:${SMLicensesName}:SecretString:ArtifactoryLicense4}}'
         CertificateKey: !Ref CertificateKey
         Certificate: !Ref Certificate
+        CertificateDomain: !Ref CertificateDomain
         ArtifactoryIAMAcessKey: !GetAtt ArtifactoryCoreInfraStack.Outputs.IAMAcessKey
         SecretAccessKey: !GetAtt ArtifactoryCoreInfraStack.Outputs.SecretAccessKey
         ArtifactoryS3Bucket: !GetAtt ArtifactoryCoreInfraStack.Outputs.S3Bucket
