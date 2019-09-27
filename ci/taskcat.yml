@@ -32,10 +32,10 @@ tests:
   #   - eu-central-1
   #   - eu-west-1
   # #  - sa-east-1
-    - us-east-1
+  #  - us-east-1
   #   - us-east-2
   #   - us-west-1
-  #   - us-west-2
+     - us-west-2
   # jfrog-artifactory-ecs:
   #   parameter_input: jfrog-artifactory-new-vpc-ecs.json
   #   template_file: jfrog-artifactory-ecs-master.template.yaml
