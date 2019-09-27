@@ -13,7 +13,7 @@ You can use the AWS CloudFormation templates included with the Quick Start to de
 - Deploying JFrog Artifactory with Amazon ECS
 - Deploying JFrog Artifactory with Amazon EKS
 
-![Quick Start architecture for JFrog Artifactory with Amazon EC2 on the AWS Cloud](https://d0.awsstatic.com/partner-network/QuickStart/datasheets/jfrog-artifactory-with-amazon-ec2-on-aws-diagram.png)
+![Quick Start architecture for JFrog Artifactory with Amazon EC2 on the AWS Cloud](https://d1.awsstatic.com/partner-network/QuickStart/datasheets/jfrog-artifactory-with-amazon-ec2-on-aws-diagram.099b374684667c4c22afa54e04f593651deec980.png)
 
 For architectural details, best practices, and step-by-step instructions, see the deployment guide for JFrog Artifactory with [Amazon EC2](https://fwd.aws/dBWPz), [Amazon ECS](https://fwd.aws/Erdv5), or [Amazon EKS](https://fwd.aws/K87wK).
 
