@@ -39,10 +39,7 @@ Metadata:
         Parameters:
           - ArtifactoryVersion
           - NumberOfSecondary 
-          - ArtifactoryLicense1
-          - ArtifactoryLicense2
-          - ArtifactoryLicense3
-          - ArtifactoryLicense4
+          - SMLicensesName
           - Certificate
           - CertificateKey
           - CertificateDomain
@@ -84,7 +81,7 @@ Metadata:
       PublicSubnet2CIDR:
         default: Public subnet 2 CIDR
       AccessCIDR:
-        default: Permitted IP CIDR
+        default: Permitted IP range
       RemoteAccessCIDR:
         default: Remote access CIDR 
       VPCCIDR:
@@ -111,14 +108,8 @@ Metadata:
         default: Number of secondary instances
       ArtifactoryVersion:
         default: Artifactory version
-      ArtifactoryLicense1:
-        default: Artifactory license 1
-      ArtifactoryLicense2:
-        default: Artifactory license 2
-      ArtifactoryLicense3:
-        default: Artifactory license 3
-      ArtifactoryLicense4:
-        default: Artifactory license 4
+      SMLicensesName:
+        default: Artifactory licenses secret name
       Certificate:
         default: Certificate
       CertificateKey:
@@ -253,7 +244,7 @@ Parameters:
     Description: Choose true to enable X11 via the bootstrapping of the bastion host. 
       Setting this value to true will enable X Windows over SSH. 
       X11 forwarding can be very useful but it is also a security risk, so we recommend 
-      that you keep the default (disabled) setting unless required.
+      that you keep the default (false) setting unless required.
     AllowedValues:
       - "true"
       - "false"
@@ -322,22 +313,8 @@ Parameters:
     ConstraintDescription: A version that matches X.X.X per Artifactory releases.
     Default: 6.11.1
     Type: String
-  ArtifactoryLicense1:
-    Description: The first Artifactory Enterprise license; at least one license is required. Each license 
-      is a one-to-one match to a node. For proper HA, you will need three
-      licenses.
-    Type: String
-  ArtifactoryLicense2:
-    Description: Artifactory Enterprise license 2.
-    Type: String
-  ArtifactoryLicense3:
-    Description: Artifactory Enterprise license 3.
-    Type: String
-  ArtifactoryLicense4:
-    Description: Artifactory Enterprise license 4. If you need to add more than four licenses, please do so 
-      in the Artifactory user interface after the initial deployment, then update the CloudFormation
-      stack to the correct number of secondary nodes. Remember to not have more total nodes than you are 
-      licensed for.
+  SMLicensesName:
+    Description: The secret name created in AWS Secrets Manager which contains the Artifactory licenses.
     Type: String
   Certificate:
     Description: The certificate file to be used to terminate SSL.
@@ -532,10 +509,7 @@ Resources:
         InstanceType: !Ref InstanceType
         NumberOfSecondary: !Ref NumberOfSecondary
         ArtifactoryVersion: !Ref ArtifactoryVersion
-        ArtifactoryLicense1: !Ref ArtifactoryLicense1
-        ArtifactoryLicense2: !Ref ArtifactoryLicense2
-        ArtifactoryLicense3: !Ref ArtifactoryLicense3
-        ArtifactoryLicense4: !Ref ArtifactoryLicense4
+        SMLicensesName: !Ref SMLicensesName
         Certificate: !Ref Certificate
         CertificateKey: !Ref CertificateKey
         CertificateDomain: !Ref CertificateDomain
