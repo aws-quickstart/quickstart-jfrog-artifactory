@@ -114,10 +114,10 @@ Resources:
         data: 
           tls.crt: 
             Fn::Base64:
-              !Sub "${Certificate}"
+              !Join [ "\n", "Fn::Split": ["|", !Ref Certificate ]] 
           tls.key:
             Fn::Base64:
-              !Sub "${CertificateKey}"
+              !Join [ "\n", "Fn::Split": ["|", !Ref CertificateKey ]]
   LicenseStore:
     DependsOn: NameSpace
     Type: "Custom::KubeManifest"
