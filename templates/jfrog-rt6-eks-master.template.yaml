@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: Deploys an EKS cluster with JFrog Artifactory into an existing VPC (qs-1q037efm3).
+Description: 'JFrog Artifactory Quick Start Deployment'
 Metadata:
   AWS::CloudFormation::Interface:
     ParameterGroups:
@@ -14,17 +14,14 @@ Metadata:
       - Label:
           default: Network configuration
         Parameters:
-          - VPCID
+          - AvailabilityZones
           - VPCCIDR
-          - PrivateSubnet1ID
-          - PrivateSubnet2ID
-          - PrivateSubnet3ID
-          - PublicSubnet1ID
-          - PublicSubnet2ID
-          - PublicSubnet3ID
           - PrivateSubnet1CIDR
           - PrivateSubnet2CIDR
           - PrivateSubnet3CIDR
+          - PublicSubnet1CIDR
+          - PublicSubnet2CIDR
+          - PublicSubnet3CIDR
       - Label:
           default: Bastion configuration
         Parameters:
@@ -33,7 +30,7 @@ Metadata:
           - BastionOS
           - BastionRootVolumeSize
           - BastionEnableTCPForwarding
-          - BastionEnableX11Forwarding
+          - BastionEnableX11Forwarding          
       - Label:
           default: JFrog Artifactory configuration
         Parameters:
@@ -55,14 +52,14 @@ Metadata:
           - DatabasePassword
           - DatabaseInstance
           - DBAllocatedStorage
-          - MultiAZDatabase              
+          - MultiAZDatabase          
       - Label:
           default: EC2/EKS configuration
         Parameters:
-          - KubernetesVersion
           - NodeInstanceType
+          - NodeVolumeSize
           - NumofSecondaryNodes
-          - NodeVolumeSize          
+          - KubernetesVersion
       - Label:
           default: AWS Quick Start configuration
         Parameters:
@@ -73,35 +70,29 @@ Metadata:
       KeyPairName:
         default: SSH key name
       AccessCIDR:
-        default: Permitted IP range          
+        default: Permitted IP range      
       RemoteAccessCIDR:
         default: Remote access CIDR
       AdditionalEKSAdminArns:
         default: Additional EKS admin ARNs
       KubeConfigKmsContext:
-        default: Kubernetes config KMS context     
-      VPCID:
-        default: VPC ID
+        default: Kubernetes config KMS context
+      AvailabilityZones:
+        default: Availability Zones
       VPCCIDR:
         default: VPC CIDR
-      PublicSubnet1ID:
-        default: Public subnet 1 ID
-      PublicSubnet2ID:
-        default: Public subnet 2 ID
-      PublicSubnet3ID:
-        default: Public subnet 3 ID        
-      PrivateSubnet1ID:
-        default: Private subnet 1 ID
-      PrivateSubnet2ID:
-        default: Private subnet 2 ID
-      PrivateSubnet3ID:
-        default: Private subnet 3 ID        
       PrivateSubnet1CIDR:
         default: Private subnet 1 CIDR
       PrivateSubnet2CIDR:
         default: Private subnet 2 CIDR
       PrivateSubnet3CIDR:
         default: Private subnet 3 CIDR
+      PublicSubnet1CIDR:
+        default: Public subnet 1 CIDR
+      PublicSubnet2CIDR:
+        default: Public subnet 2 CIDR
+      PublicSubnet3CIDR:
+        default: Public subnet 3 CIDR
       ProvisionBastionHost:
         default: Bastion instance
       BastionInstanceType:
@@ -114,12 +105,12 @@ Metadata:
         default: Bastion enable X11 forwarding
       BastionOS:
         default: Bastion operating system     
+      NumberOfSecondary:
+        default: Number of secondary pods
       ArtifactoryVersion:
         default: Artifactory version
       ArtifactoryDeploymentSize:
         default: Artifactory deployment size
-      NumberOfSecondary:
-        default: Number of secondary pods        
       SMLicensesName:
         default: Artifactory licenses secret name
       Certificate:
@@ -145,7 +136,7 @@ Metadata:
       DBAllocatedStorage:
         default: Database allocated storage
       MultiAZDatabase:
-        default: High available database              
+        default: High available database
       NodeInstanceType:
         default: Node instance type
       NodeVolumeSize:
@@ -170,7 +161,7 @@ Parameters:
       We recommend that you set this value to a trusted IP range. 
       For example, you might want to grant only your corporate network access to the software. 
     AllowedPattern: ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/([0-9]|[1-2][0-9]|3[0-2]))$
-    Type: String        
+    Type: String    
   RemoteAccessCIDR:
     Description:
       The remote CIDR range for allowing SSH into the Bastion instance. 
@@ -187,50 +178,55 @@ Parameters:
     Description: String value used by KMS to encrypt/decrypt Kubernetes configuration file.
     Default: "JFrogArtifactory"
     Type: String
-  VPCID:
-    Description: The ID of your existing VPC for deployment (e.g., vpc-0343606e).
-    Type: AWS::EC2::VPC::Id
+  AvailabilityZones:
+    Description:
+      The list of Availability Zones to use for the subnets in the VPC. Three
+      Availability Zones are used for this deployment, and the logical order of your
+      selections is preserved.
+    Type: List<AWS::EC2::AvailabilityZone::Name>
   VPCCIDR:
     Description: The CIDR block for the VPC.
     AllowedPattern: ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/(1[6-9]|2[0-8]))$
     ConstraintDescription: CIDR block parameter must be in the form x.x.x.x/16-28
     Default: 10.0.0.0/16
     Type: String
-  PublicSubnet1ID:
-    Description: The ID of the public subnet in Availability Zone 1 in your existing VPC (e.g., subnet-z0376dab).
-    Type: "AWS::EC2::Subnet::Id"
-  PublicSubnet2ID:
-    Description: The ID of the public subnet in Availability Zone 2 in your existing VPC (e.g., subnet-a29c3d84).
-    Type: "AWS::EC2::Subnet::Id"
-  PublicSubnet3ID:
-    Description: The ID of the public subnet in Availability Zone 3 in your existing VPC (e.g., subnet-a29c3d84).
-    Type: "AWS::EC2::Subnet::Id"    
-  PrivateSubnet1ID:
-    Description: The ID of the private subnet in Availability Zone 1 in your existing VPC (e.g., subnet-a0246dcd).
-    Type: "AWS::EC2::Subnet::Id"
-  PrivateSubnet2ID: 
-    Description: The ID of the private subnet in Availability Zone 2 in your existing VPC (e.g., subnet-b58c3d67).
-    Type: "AWS::EC2::Subnet::Id"
-  PrivateSubnet3ID: 
-    Description: The ID of the private subnet in Availability Zone 3 in your existing VPC (e.g., subnet-b58c3d67).
-    Type: "AWS::EC2::Subnet::Id"    
   PrivateSubnet1CIDR:
-    Description: The CIDR of the private subnet in Availability Zone 1 in your existing VPC (e.g., 10.0.0.0/19).
+    Description: The CIDR block for private subnet 1 located in Availability Zone 1.
     AllowedPattern: ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/(1[6-9]|2[0-8]))$
     ConstraintDescription: CIDR block parameter must be in the form x.x.x.x/16-28
     Default: 10.0.0.0/19
     Type: String
   PrivateSubnet2CIDR:
-    Description: The CIDR of the private subnet in Availability Zone 2 in your existing VPC (e.g., 10.0.32.0/19).
+    Description: The CIDR block for private subnet 2 located in Availability Zone 2.
     AllowedPattern: ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/(1[6-9]|2[0-8]))$
     ConstraintDescription: CIDR block parameter must be in the form x.x.x.x/16-28
     Default: 10.0.32.0/19
     Type: String
   PrivateSubnet3CIDR:
-    Description: The CIDR block for private subnet 3 located in Availability Zone 3 in your existing VPC (e.g., 10.0.64.0/19).
+    Description: The CIDR block for private subnet 3 located in Availability Zone 3.
     AllowedPattern: ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/(1[6-9]|2[0-8]))$
     ConstraintDescription: CIDR block parameter must be in the form x.x.x.x/16-28
     Default: 10.0.64.0/19
+    Type: String
+  PublicSubnet1CIDR:
+    Description:
+      The CIDR block for the public (DMZ) subnet 1 located in Availability Zone 1.
+    AllowedPattern: ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/(1[6-9]|2[0-8]))$
+    ConstraintDescription: CIDR block parameter must be in the form x.x.x.x/16-28
+    Default: 10.0.128.0/20
+    Type: String
+  PublicSubnet2CIDR:
+    Description:
+      The CIDR block for the public (DMZ) subnet 2 located in Availability Zone 2.
+    AllowedPattern: ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/(1[6-9]|2[0-8]))$
+    ConstraintDescription: CIDR block parameter must be in the form x.x.x.x/16-28
+    Default: 10.0.144.0/20
+    Type: String
+  PublicSubnet3CIDR:
+    Description: The CIDR block for the public (DMZ) subnet 3 located in Availability Zone 3.
+    AllowedPattern: ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/(1[6-9]|2[0-8]))$
+    ConstraintDescription: CIDR block parameter must be in the form x.x.x.x/16-28
+    Default: 10.0.160.0/20
     Type: String
   NodeInstanceType:
     Description: The Amazon EC2 instance type for the nodes hosting the Kubernetes pods.
@@ -239,7 +235,7 @@ Parameters:
       - m4.2xlarge
       - m4.4xlarge
       - m4.10xlarge
-    ConstraintDescription: Must be a valid EC2 instance type
+    ConstraintDescription: Must be a valid EC2 instance type.
     Default: m4.xlarge
     Type: String
   NodeVolumeSize:
@@ -255,7 +251,7 @@ Parameters:
       - 4
       - 5
       - 6
-      - 7    
+      - 7
     Default: 2
     Type: Number
   KubernetesVersion:
@@ -332,14 +328,14 @@ Parameters:
       - 6
       - 7
     Default: 2
-    Type: Number      
+    Type: Number    
   ArtifactoryVersion:
     Description: The version of Artifactory that you want to deploy into the Quick Start.
       Please see the release notes to select the version you want to deploy.
       https://www.jfrog.com/confluence/display/RTF/Release+Notes
     AllowedPattern: ^(([0-9]|[1-9][0-9])\.){2}([1-9][0-9]|[0-9])$
     ConstraintDescription: A version that matches X.X.X per Artifactory releases.
-    Default: 6.11.1
+    Default: 6.13.1
     Type: String
   ArtifactoryDeploymentSize:
     Description: Configuration settings implemented by the Helm chart. There are currently three supported sizes.
@@ -354,12 +350,12 @@ Parameters:
     Type: String
   SMLicensesName:
     Description: The secret name created in AWS Secrets Manager which contains the Artifactory licenses.
-    Type: String  
+    Type: String   
   Certificate:
     Description: The certificate file to be used to terminate SSL.
     Type: String
   CertificateKey: 
-    Description: The private key for the certificate.
+    Description: The private key for the certificate.     
     NoEcho: 'true'
     Type: String
   CertificateDomain:
@@ -477,10 +473,10 @@ Parameters:
       forward slash (/).
     Type: String
   LambdaZipsBucketName:
-    Description: '[OPTIONAL] The name of the S3 bucket where the Lambda .zip
+    Description: '[OPTIONAL] The name of the S3 bucket where the Lambda .zip 
       files should be placed. If you leave this parameter blank, an S3 bucket will be created.'
-    Default: ''
     Type: String
+    Default: ''
 Rules:
   EKSSupport:
     Assertions:
@@ -500,143 +496,82 @@ Rules:
              - ap-northeast-2
              - ap-south-1
           - !Ref 'AWS::Region'
+
 Resources:
-  EKSStack:
+  VPCStack:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: !Sub "https://${QSS3BucketName}.s3.amazonaws.com/${QSS3KeyPrefix}submodules/quickstart-amazon-eks/templates/amazon-eks.template.yaml"
+      TemplateURL: !Sub https://${QSS3BucketName}.s3.amazonaws.com/${QSS3KeyPrefix}submodules/quickstart-aws-vpc/templates/aws-vpc.template
       Parameters:
         KeyPairName: !Ref KeyPairName
+        AvailabilityZones: !Join [",", !Ref AvailabilityZones]
+        NumberOfAZs: '3'
+        VPCCIDR: !Ref VPCCIDR
+        PrivateSubnet1ACIDR: !Ref 'PrivateSubnet1CIDR'
+        PrivateSubnet2ACIDR: !Ref 'PrivateSubnet2CIDR'
+        PrivateSubnet3ACIDR: !Ref 'PrivateSubnet3CIDR'
+        PrivateSubnetATag2: "kubernetes.io/role/internal-elb="
+        PublicSubnet1CIDR: !Ref 'PublicSubnet1CIDR'
+        PublicSubnet2CIDR: !Ref 'PublicSubnet2CIDR'
+        PublicSubnet3CIDR: !Ref 'PublicSubnet3CIDR'
+        PublicSubnetTag2: "kubernetes.io/role/elb="
+  ArtifactoryEKSExistingVPCStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub 'https://${QSS3BucketName}.s3.amazonaws.com/${QSS3KeyPrefix}templates/jfrog-rt6-eks-existing-vpc.template.yaml'
+      Parameters:
+        KeyPairName: !Ref KeyPairName
+        AccessCIDR: !Ref AccessCIDR
         RemoteAccessCIDR: !Ref RemoteAccessCIDR
         AdditionalEKSAdminArns: !Join [ ",", !Ref AdditionalEKSAdminArns ]
-        VPCID: !Ref VPCID
-        PrivateSubnet1ID: !Ref PrivateSubnet1ID
-        PrivateSubnet2ID: !Ref PrivateSubnet2ID
-        PrivateSubnet3ID: !Ref PrivateSubnet3ID
-        PublicSubnet1ID: !Ref PublicSubnet1ID
-        PublicSubnet2ID: !Ref PublicSubnet2ID
-        PublicSubnet3ID: !Ref PublicSubnet3ID
-        KubernetesVersion: !Ref KubernetesVersion
-        NodeInstanceType: !Ref NodeInstanceType
-        NumberOfNodes: '1' # 1 for the Artifactory master?
-        NodeGroupName: "artifactory-primary"
-        NodeVolumeSize: !Ref NodeVolumeSize
         KubeConfigKmsContext: !Ref KubeConfigKmsContext
-        BootstrapArguments: "--kubelet-extra-args '--node-labels=partition=artifactory-primary'"
+        VPCID: !GetAtt VPCStack.Outputs.VPCID
+        VPCCIDR: !Ref VPCCIDR
+        PrivateSubnet1ID: !GetAtt 'VPCStack.Outputs.PrivateSubnet1AID'
+        PrivateSubnet2ID: !GetAtt 'VPCStack.Outputs.PrivateSubnet2AID'
+        PrivateSubnet3ID: !GetAtt 'VPCStack.Outputs.PrivateSubnet3AID'
+        PublicSubnet1ID: !GetAtt 'VPCStack.Outputs.PublicSubnet1ID'
+        PublicSubnet2ID: !GetAtt 'VPCStack.Outputs.PublicSubnet2ID'
+        PublicSubnet3ID: !GetAtt 'VPCStack.Outputs.PublicSubnet3ID'
+        PrivateSubnet1CIDR: !Ref PrivateSubnet1CIDR
+        PrivateSubnet2CIDR: !Ref PrivateSubnet2CIDR
         ProvisionBastionHost: !Ref ProvisionBastionHost
         BastionInstanceType: !Ref BastionInstanceType
         BastionOS: !Ref BastionOS
         BastionRootVolumeSize: !Ref BastionRootVolumeSize
         BastionEnableTCPForwarding: !Ref BastionEnableTCPForwarding
         BastionEnableX11Forwarding: !Ref BastionEnableX11Forwarding
-        QSS3BucketName: !Ref QSS3BucketName
-        QSS3KeyPrefix: !Sub "${QSS3KeyPrefix}submodules/quickstart-amazon-eks/"
-        LambdaZipsBucketName: !Ref LambdaZipsBucketName
-  ArtifactorySecondaryNodesStack:
-    Type: "AWS::CloudFormation::Stack"
-    Properties:
-      TemplateURL: !Sub 'https://${QSS3BucketName}.s3.amazonaws.com/${QSS3KeyPrefix}submodules/quickstart-amazon-eks/templates/amazon-eks-nodegroup.template.yaml'
-      Parameters:
-        KeyPairName: !Ref KeyPairName
-        PrivateSubnet1ID: !Ref PrivateSubnet1ID
-        PrivateSubnet2ID: !Ref PrivateSubnet2ID
-        PrivateSubnet3ID: !Ref PrivateSubnet3ID
-        VPCID: !Ref VPCID
-        NodeInstanceType: !Ref NodeInstanceType
-        NumberOfNodes: !Ref NumofSecondaryNodes
-        NodeGroupName: "artifactory-secondary"
-        NodeVolumeSize: !Ref NodeVolumeSize
-        EKSControlPlane: !GetAtt EKSStack.Outputs.EKSClusterName
-        ControlPlaneSecurityGroup: !GetAtt EKSStack.Outputs.ControlPlaneSecurityGroup
-        NodeInstanceProfile: !GetAtt EKSStack.Outputs.NodeInstanceProfile
-        NodeInstanceRoleName: !GetAtt EKSStack.Outputs.NodeInstanceRoleName
-        KubernetesVersion: !Ref KubernetesVersion
-        BootstrapArguments: "--kubelet-extra-args '--node-labels=partition=artifactory-secondary'"        
-  # Allow the bastion host to SSH into the secondary node pools
-  BastionToRegularIngress:
-    Type: "AWS::EC2::SecurityGroupIngress"
-    Properties:
-      Description: Allow SSH from Bastion server to Regular Nodes
-      GroupId: !GetAtt ArtifactorySecondaryNodesStack.Outputs.EKSNodeSecurityGroup
-      SourceSecurityGroupId: !GetAtt EKSStack.Outputs.BastionSecurityGroup
-      IpProtocol: tcp
-      ToPort: 22
-      FromPort: 22
-  # Allow the secondary node pools to bidirectionally communicate with "initial" (master) nodes
-  RegularToMasterIngress:
-    Type: AWS::EC2::SecurityGroupIngress
-    Properties: 
-      Description: Allows regular nodes to communicate with master nodes
-      GroupId: !GetAtt EKSStack.Outputs.NodeGroupSecurityGroup
-      SourceSecurityGroupId: !GetAtt ArtifactorySecondaryNodesStack.Outputs.EKSNodeSecurityGroup
-      IpProtocol: '-1'
-      FromPort: 0
-      ToPort: 65535
-  MasterToRegularIngress:
-    Type: AWS::EC2::SecurityGroupIngress
-    Properties: 
-      Description: Allows master nodes to communicate with regular agent nodes
-      GroupId: !GetAtt ArtifactorySecondaryNodesStack.Outputs.EKSNodeSecurityGroup
-      SourceSecurityGroupId: !GetAtt EKSStack.Outputs.NodeGroupSecurityGroup
-      IpProtocol: '-1'
-      FromPort: 0
-      ToPort: 65535
-  ArtifactoryCoreInfraStack:
-    Type: AWS::CloudFormation::Stack
-    Properties:
-      TemplateURL: !Sub "https://${QSS3BucketName}.s3.amazonaws.com/${QSS3KeyPrefix}templates/jfrog-artifactory-core-infrastructure.template.yaml"
-      Parameters:
-        VPCID: !Ref VPCID
-        VPCCIDR: !Ref VPCCIDR
-        PrivateSubnet1CIDR: !Ref PrivateSubnet1CIDR
-        PrivateSubnet2CIDR: !Ref PrivateSubnet2CIDR
-        PrivateSubnet3CIDR: !Ref PrivateSubnet3CIDR
-        SubnetIds: !Join [ ",", [ !Ref PrivateSubnet1ID, !Ref PrivateSubnet2ID, !Ref PrivateSubnet3ID ]]
-        DBAllocatedStorage: !Ref DBAllocatedStorage
-        MultiAZDatabase: !Ref MultiAZDatabase
+        ArtifactoryVersion: !Ref ArtifactoryVersion
+        ArtifactoryDeploymentSize: !Ref ArtifactoryDeploymentSize
+        NumberOfSecondary: !Ref NumberOfSecondary
+        SMLicensesName: !Ref SMLicensesName
+        Certificate: !Ref Certificate
+        CertificateKey: !Ref CertificateKey
+        CertificateDomain: !Ref CertificateDomain
+        MasterKey: !Ref MasterKey
+        DatabaseName: !Ref DatabaseName
         DatabaseEngine: !Ref DatabaseEngine
         DatabaseVersion: !Ref DatabaseVersion
         DatabaseUser: !Ref DatabaseUser
         DatabasePassword: !Ref DatabasePassword
         DatabaseInstance: !Ref DatabaseInstance
-        DatabaseName: !Ref DatabaseName
-  ArtifactoryCoreStack:
-    DependsOn: ArtifactorySecondaryNodesStack
-    Type: AWS::CloudFormation::Stack
-    Properties:
-      TemplateURL: !Sub "https://${QSS3BucketName}.s3.amazonaws.com/${QSS3KeyPrefix}templates/jfrog-artifactory-eks-core-workload.template.yaml"
-      Parameters:
-        KubeManifestLambdaArn: !GetAtt EKSStack.Outputs.KubeManifestLambdaArn
-        HelmLambdaArn: !GetAtt EKSStack.Outputs.HelmLambdaArn
-        KubeConfigPath: !GetAtt EKSStack.Outputs.KubeConfigPath
-        KubeConfigKmsContext: !Ref KubeConfigKmsContext
-        KubeGetLambdaArn: !GetAtt EKSStack.Outputs.KubeGetLambdaArn
-        NumberOfSecondary: !Ref NumberOfSecondary
-        AccessCIDR: !Ref AccessCIDR
-        ArtifactoryLicense1: !Sub '{{resolve:secretsmanager:${SMLicensesName}:SecretString:ArtifactoryLicense1}}'
-        ArtifactoryLicense2: !Sub '{{resolve:secretsmanager:${SMLicensesName}:SecretString:ArtifactoryLicense2}}'
-        ArtifactoryLicense3: !Sub '{{resolve:secretsmanager:${SMLicensesName}:SecretString:ArtifactoryLicense3}}'
-        ArtifactoryLicense4: !Sub '{{resolve:secretsmanager:${SMLicensesName}:SecretString:ArtifactoryLicense4}}'
-        CertificateKey: !Ref CertificateKey
-        Certificate: !Ref Certificate
-        CertificateDomain: !Ref CertificateDomain
-        ArtifactoryIAMAcessKey: !GetAtt ArtifactoryCoreInfraStack.Outputs.IAMAcessKey
-        SecretAccessKey: !GetAtt ArtifactoryCoreInfraStack.Outputs.SecretAccessKey
-        ArtifactoryS3Bucket: !GetAtt ArtifactoryCoreInfraStack.Outputs.S3Bucket
-        ArtifactoryDBEndpointAddress: !GetAtt ArtifactoryCoreInfraStack.Outputs.ArtifactoryDBEndpointAddress
-        DatabaseName: !Ref DatabaseName
-        DatabaseUser: !Ref DatabaseUser
-        DatabasePassword: !Ref DatabasePassword
-        MasterKey: !Ref MasterKey
-        ArtifactoryVersion: !Ref ArtifactoryVersion
-        ArtifactoryDeploymentSize: !Ref ArtifactoryDeploymentSize
+        DBAllocatedStorage: !Ref DBAllocatedStorage
+        MultiAZDatabase: !Ref MultiAZDatabase
+        KubernetesVersion: !Ref KubernetesVersion
+        NodeInstanceType: !Ref NodeInstanceType
+        NodeVolumeSize: !Ref NodeVolumeSize
+        NumofSecondaryNodes: !Ref NumofSecondaryNodes
+        QSS3BucketName: !Ref QSS3BucketName
+        QSS3KeyPrefix: !Ref QSS3KeyPrefix
+        LambdaZipsBucketName: !Ref LambdaZipsBucketName
+
 Outputs:
   ArtifactoryUrl:
-    Value: !GetAtt ArtifactoryCoreStack.Outputs.ArtifactoryUrl
+    Value: !GetAtt ArtifactoryEKSExistingVPCStack.Outputs.ArtifactoryUrl
     Description: Public Artifactory URL
   BastionIP:
-    Value: !GetAtt EKSStack.Outputs.BastionIP
+    Value: !GetAtt ArtifactoryEKSExistingVPCStack.Outputs.BastionIP
     Description: Bastion host IP, for admin access via SSH
   KubeConfigPath:
-    Value: !GetAtt EKSStack.Outputs.KubeConfigPath
+    Value: !GetAtt ArtifactoryEKSExistingVPCStack.Outputs.KubeConfigPath
     Description: (Advanced) Amazon S3 bucket containing encrypted Kubernetes config which can be used to access the Kubernetes API.
