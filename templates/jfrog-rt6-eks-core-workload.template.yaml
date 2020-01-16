@@ -222,7 +222,7 @@ Resources:
             enabled: false
           database:
             type: mysql
-            url: jdbc:mysql://${ArtifactoryDBEndpointAddress}:3306/${DatabaseName}?characterEncoding=UTF-8&elideSetAutoCommits=true #&verifyServerCertificate=true&useSSL=true&requireSSL=true
+            url: jdbc:mysql://${ArtifactoryDBEndpointAddress}:3306/${DatabaseName}?characterEncoding=UTF-8&elideSetAutoCommits=true&verifyServerCertificate=false&useSSL=true&requireSSL=true
             user: ${DatabaseUser}
             password: ${DatabasePassword}
           nginx:
