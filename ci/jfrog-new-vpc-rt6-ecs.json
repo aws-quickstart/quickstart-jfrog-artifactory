@@ -33,7 +33,7 @@
     },
     {
         "ParameterKey": "ArtifactoryVersion",
-        "ParameterValue": "6.13.1"
+        "ParameterValue": "6.11.1"
     },
     {
         "ParameterKey": "NumberOfSecondary",
