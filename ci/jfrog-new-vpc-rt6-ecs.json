@@ -29,35 +29,27 @@
     },
     {
         "ParameterKey": "DatabaseInstance",
-        "ParameterValue": "db.m5.large"
+        "ParameterValue": "db.m4.large"
     },
     {
         "ParameterKey": "ArtifactoryVersion",
-        "ParameterValue": "6.11.1"
+        "ParameterValue": "6.13.1"
     },
     {
         "ParameterKey": "NumberOfSecondary",
         "ParameterValue": "2"
     },
     {
-        "ParameterKey": "KeystorePassword",
-        "ParameterValue": "$[taskcat_genpass_8A]"
-    },
-    {
         "ParameterKey": "AnsibleVaultPass",
         "ParameterValue": "$[taskcat_genpass_8A]"
-    },
-    {
-        "ParameterKey": "ArtifactoryServerName",
-        "ParameterValue": "artifactory"
     },
     {
         "ParameterKey": "CertificateDomain",
         "ParameterValue": "localdomain"
     },
     {
-        "ParameterKey": "SMLicensesName",
-        "ParameterValue": "jfrog-artifactory"
+        "ParameterKey": "ArtifactoryServerName",
+        "ParameterValue": "artifactory"
     },
     {
         "ParameterKey": "MasterKey",
@@ -74,5 +66,5 @@
     {
         "ParameterKey": "SMLicensesName",
         "ParameterValue": "override"
-    }
+    } 
 ]

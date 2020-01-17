@@ -13,7 +13,7 @@
     },
     {
         "ParameterKey": "AvailabilityZones",
-        "ParameterValue": "$[taskcat_genaz_3]"
+        "ParameterValue": "$[taskcat_genaz_2]"
     },
     {
         "ParameterKey": "DatabasePassword",
@@ -33,15 +33,27 @@
     },
     {
         "ParameterKey": "ArtifactoryVersion",
-        "ParameterValue": "6.11.1"
-    },
-    {
-        "ParameterKey": "CertificateDomain",
-        "ParameterValue": "localdomain"
+        "ParameterValue": "6.17.0"
     },
     {
         "ParameterKey": "NumberOfSecondary",
         "ParameterValue": "2"
+    },
+    {
+        "ParameterKey": "KeystorePassword",
+        "ParameterValue": "$[taskcat_genpass_8A]"
+    },
+    {
+        "ParameterKey": "AnsibleVaultPass",
+        "ParameterValue": "$[taskcat_genpass_8A]"
+    },
+    {
+        "ParameterKey": "ArtifactoryServerName",
+        "ParameterValue": "artifactory"
+    },
+    {
+        "ParameterKey": "CertificateDomain",
+        "ParameterValue": "localdomain"
     },
     {
         "ParameterKey": "MasterKey",

@@ -128,7 +128,7 @@ Resources:
               Value: !Ref ArtifactoryPrimary
             - Name: DB_URL
               Value: !Sub
-                jdbc:mysql://${ArtifactoryDBEndpointAddress}:3306/${DatabaseName}?characterEncoding=UTF-8&elideSetAutoCommits=true&verifyServerCertificate=true&useSSL=true&requireSSL=true 
+                jdbc:mysql://${ArtifactoryDBEndpointAddress}:3306/${DatabaseName}?characterEncoding=UTF-8&elideSetAutoCommits=true&verifyServerCertificate=false&useSSL=true&requireSSL=true 
             - Name: DB_TYPE
               Value: !Ref DBType
             - Name: DB_USER

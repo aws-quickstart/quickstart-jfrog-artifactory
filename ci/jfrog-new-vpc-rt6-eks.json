@@ -13,7 +13,7 @@
     },
     {
         "ParameterKey": "AvailabilityZones",
-        "ParameterValue": "$[taskcat_genaz_2]"
+        "ParameterValue": "$[taskcat_genaz_3]"
     },
     {
         "ParameterKey": "DatabasePassword",
@@ -29,27 +29,19 @@
     },
     {
         "ParameterKey": "DatabaseInstance",
-        "ParameterValue": "db.m4.large"
+        "ParameterValue": "db.m5.large"
     },
     {
         "ParameterKey": "ArtifactoryVersion",
-        "ParameterValue": "6.11.1"
-    },
-    {
-        "ParameterKey": "NumberOfSecondary",
-        "ParameterValue": "2"
-    },
-    {
-        "ParameterKey": "AnsibleVaultPass",
-        "ParameterValue": "$[taskcat_genpass_8A]"
+        "ParameterValue": "6.17.0"
     },
     {
         "ParameterKey": "CertificateDomain",
         "ParameterValue": "localdomain"
     },
     {
-        "ParameterKey": "ArtifactoryServerName",
-        "ParameterValue": "artifactory"
+        "ParameterKey": "NumberOfSecondary",
+        "ParameterValue": "2"
     },
     {
         "ParameterKey": "MasterKey",
@@ -66,5 +58,5 @@
     {
         "ParameterKey": "SMLicensesName",
         "ParameterValue": "override"
-    } 
+    }
 ]
