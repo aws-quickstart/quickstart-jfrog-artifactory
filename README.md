@@ -1,127 +1,21 @@
 # quickstart-jfrog-artifactory
+## JFrog Artifactory on the AWS Cloud
 
-This is a Quick Start to get Enterprise Production ready Artifactory deployed into your AWS environment.
+Three new Quick Starts deploy JFrog Artifactory on the Amazon Web Services (AWS) Cloud in 30-45 minutes. The available options for deployment use your choice of Amazon Elastic Compute Cloud (Amazon EC2), Amazon Elastic Container Service (Amazon ECS), or Amazon Elastic Kubernetes Service (Amazon EKS).
 
-## Deployments
+This Quick Start is for administrators who want to use JFrog Artifactory with the flexibility, scale, and availability of AWS.
 
-The goal of this project is to have several deployment options depending on a customer's requirements.
+Note that if you are using the Amazon EKS option, Amazon EKS is not available in all AWS Regions. For a current list of supported Regions, see the [AWS Regions and Endpoints webpage](https://docs.aws.amazon.com/general/latest/gr/rande.html#eks_region).
 
-    - New/Existing VPC deployed onto dedicated EC2 Instances.
-    - New/Existing VPC deploying EKS, with Artifactory deployed onto the K8s cluster
-    - New/Existing VPC deploying ECS, with Artifactory deployed as an ECS Service
+You can use the AWS CloudFormation templates included with the Quick Start to deploy JFrog Artifactory into a new or existing virtual private cloud (VPC) in your AWS account. The Quick Starts automates the following:
 
-## Project Setup
+- Deploying JFrog Artifactory with Amazon EC2
+- Deploying JFrog Artifactory with Amazon ECS
+- Deploying JFrog Artifactory with Amazon EKS
 
-    --> master template
-    ----> Existing VPC
-    ------> {Deployment Type}
-    --------> Core-Infrastructure
+![Quick Start architecture for JFrog Artifactory with Amazon EC2 on the AWS Cloud](https://d1.awsstatic.com/partner-network/QuickStart/datasheets/jfrog-artifactory-with-amazon-ec2-on-aws-diagram.099b374684667c4c22afa54e04f593651deec980.png)
 
-Master creates a new VPC, and then call Existing `Deployment Type` stack.
+For architectural details, best practices, and step-by-step instructions, see the deployment guide for JFrog Artifactory with [Amazon EC2](https://fwd.aws/dBWPz), [Amazon ECS](https://fwd.aws/Erdv5), or [Amazon EKS](https://fwd.aws/K87wK).
 
-Existing `Deployment Type` is then always call the required nested stacks for that deployment. All stacks have a dependency on the `jfrog-artifactory-core-infrastucture` which configures the S3 bucket and RDS database for the deployment.
-
-### Artifactory Configuration
-
-Currently Artifactory can be deployed via EC2, ECS, and EKS. For the EC2 and ECS versions, Artifactory is installed via Ansible utilizing roles. When using EKS it is deployed using their [helm charts](https://github.com/jfrog/charts).
-
-#### Ansible Role configuration
-
-The role's structure is per the below tree:
-
-    artifactory
-     ├── README.md
-     ├── defaults
-     │   └── main.yml
-     ├── files
-     │   ├── inactiveServerCleaner.groovy
-     │   ├── installer-info.json
-     │   └── nginx.conf
-     ├── handlers
-     │   └── main.yml
-     ├── meta
-     │   └── main.yml
-     ├── tasks
-     │   ├── configure.yml
-     |   ├── configure_ecs.yml
-     │   ├── install.yml
-     │   ├── main.yml
-     │   └── nginx-setup.yml
-     └── templates
-         ├── artifactory.cluster.license.j2
-         ├── artifactory.conf.j2
-         ├── binarystore.xml.j2
-         ├── certificate.key.j2
-         ├── certificate.pem.j2
-         ├── db.properties.j2
-         ├── ha-node.properties.j2
-         └── master.key.j2
-
-The Templates are per documentation. For the ha-node(port set to 0) please see this [link](https://jfrog.com/knowledge-base/why-the-membership-port-in-the-ha-configuration-is-set-to-0/)
-
-`configure_ecs.yml` is a special task for configuring docker hosts. It follows the structure from the official Artifactory [docker compose](https://github.com/jfrog/artifactory-docker-examples/tree/master/docker-compose/artifactory)
-
-## Deployment from Command line
-
-In order to deploy a test deployment:
-
-1. Download the repo
-2. `git submodule init; git submodule update` inside the repo.
-3. pip install the awscli (--user)
-4. create a hidden folder: .ignore/
-5. Inside the .ignore/ create a `params` file that is plain Text ParameterKey=DatabasePassword,ParameterValue=Password ParameterKey=KeyPairName,ParameterValue=My-SSH,ParameterKey=AvailabilityZones,ParameterValue="us-west-2a,us-west-2b"
-6. Configure your `~/.aws/credentials` for use with the awscli
-7. Execute the cloudformation template from inside the repo: `aws cloudformation create-stack --stack-name test --template-body file://$(pwd)/templates/jfrog-artifactory-ec2-master.template --parameters $(cat .ignore/params) --capabilities CAPABILITY_NAMED_IAM`
-
-## Testing with TaskCat
-
-### Pre-Reqs
-
-To install [taskcat](#https://aws-quickstart.github.io/install-taskcat.html)
-Download the submodules:
-
-    git submodule init
-    git submodule update
-
-NOTE: if you are building the EKS version of this deployment you will need to do the same commands from within the quickstart-amazon-eks (At least verify git updated the submodules).
-
-#### venv
-
-    python3 -m venv ~/cloudformationvenv
-    source ~/cloudformationvenv/bin/activate
-    pip install awscli taskcat
-
-#### Docker
-
-Use the following Curl|Bash script (Feel free to look inside first) to "install" taskcat via Docker. I then moved `taskcat.docker` to `/usr/local/bin/taskcat`
-
-    curl -s https://raw.githubusercontent.com/aws-quickstart/taskcat/master/installer/docker-installer.sh | sh
-    mv taskcat.docker /usr/local/bin
-
-### Testing
-
-In order to test from taskcat you need an override file in your home .aws directory: `~/.aws/taskcat_global_override.json`
-
-    [  
-        {
-            "ParameterKey": "KeyPairName",
-            "ParameterValue": "<REPLACE_ME>"
-        }
-    ]
-
-Please also verify the `ci/config.yml` is updated with the region you wish to deploy to. The rest of the parameters should be answered in the `ci/<test>.json` : `jfrog-artifactory-new-vpc-ec2.json`
-
-NOTE: We have seen issues running taskcat under the following conditions, please verify:
-    * Your Environment variables for AWS are what you want as they override your `~/.aws/credentials` and `~/.aws/config`
-    * You have initialized and updated the git submodules
-    * You Account has the correct IAM Permissions to execute in the region.
-    * Your default region and test region match.
-
-Then you need to be above the repository directory and execute: `taskcat -c quickstart-jfrog-artifactory/ci/config.yml`.
-
-### Clean up
-
-To Delete the stack: `aws cloudformation delete-stack --stack-name test`
-
-To delete taskcat S3 buckets:
-`aws s3 ls | grep taskcat | cut -d ' ' -f 3 | xargs -I {} aws s3 rb s3://{} --force`
+To post feedback, submit feature ideas, or report bugs, use the **Issues** section of this GitHub repo.
+If you'd like to submit code for this Quick Start, please review the [AWS Quick Start Contributor's Kit](https://aws-quickstart.github.io/).
