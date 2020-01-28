@@ -1,0 +1,41 @@
+---
+# Install Artifactory
+
+#https://earlyaccess.jfrog.io/artifactory/enterprise-rpms/rpm -O /etc/yum.repos.d/earlyaccess-jfrog-artifactory-pro-rpms.repo; 
+# sudo yum install jfrog-artifactory-pro
+- name: Add Artifactory Repo
+  yum_repository:
+    name: bintray-jfrog-artifactory-pro-rpms
+    description: bintray-jfrog-artifactory-pro-rpms
+    baseurl: "{{ artifactory_ami_repo_url }}"
+    gpgcheck: no
+    enabled: yes
+
+- name: Change to host python for Yum
+  set_fact:
+    ansible_python_interpreter: /usr/bin/python
+
+- name: debug
+  debug:
+    msg: "orig is {{ orig_python_interpreter }} and the other is {{ ansible_python_interpreter }}"
+    verbosity: 4
+
+- name: Install Artifactory from RPM
+  yum:
+    name: "jfrog-artifactory-pro-{{ artifactory_ami_version }}"
+    state: installed
+    enablerepo: bintray-jfrog-artifactory-pro-rpms
+
+- name: Update Java
+  package:
+   name: "{{ artifactory_ami_java_version }}"
+   state: present
+
+- name: Set ansible python back
+  set_fact:
+    ansible_python_interpreter: "{{ orig_python_interpreter }}"
+
+- name: debug the change back
+  debug:
+    msg: "orig is {{ orig_python_interpreter }} and the other is {{ ansible_python_interpreter }}"
+    verbosity: 4

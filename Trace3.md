@@ -28,7 +28,7 @@ Ensure Parameters fit the diction that is required. No Camel Case for them, need
 ## Taskcat
 
 Taskcat information can be found in the README.md.
-We have extra .json examples within our internal repo. If you are debugging a stack, such as EKS you can deploy the whole stack, then just delete the "core" stack. Remeber, the name of the template will be somewhere in the name of the stack. Doing the core-workload will delete the helm deployment. You can then use the jfrog-artifactory-eks-core.json and fill in your variables. Use the Parameters of the core as a great starting point, as well as, the Outputs of the other stacks like core-infrastructure for the S3 key and properties. Then running taskcat with that file enabled will allow you to iterate much quicker than an entire stack creation/deletion.
+We have extra YAML configured test examples within our internal repo. If you are debugging a stack, such as EKS you can deploy the whole stack, then just delete the "core" stack. Remeber, the name of the template will be somewhere in the name of the stack. Doing the core-workload will delete the helm deployment. You can then use the jfrog-artifactory-eks-core test example and fill in your variables. Use the Parameters of the core as a great starting point, as well as, the Outputs of the other stacks like core-infrastructure for the S3 key and properties. Then running taskcat with that file enabled will allow you to iterate much quicker than an entire stack creation/deletion.
 
 This is a Quick Start to get Enterprise Production ready Artifactory deployed into your AWS environment.
 
@@ -117,8 +117,8 @@ NOTE: if you are building the EKS version of this deployment you will need to do
 
 #### venv
 
-    python3 -m venv ~/cloudformationvenv
-    source ~/cloudformationvenv/bin/activate
+    python3 -m venv venv
+    source venv/bin/activate
     pip install awscli taskcat
 
 #### Docker
@@ -130,16 +130,16 @@ Use the following Curl|Bash script (Feel free to look inside first) to "install"
 
 ### Testing
 
-In order to test from taskcat you need an override file in your home .aws directory: `~/.aws/taskcat_global_override.json`
+Please also verify the `.taskcat.yml` is updated with the region you wish to deploy to. The rest of the parameters should be answered in the `.taskcat.yml` for variables needed. Then a `.taskcat_overrides.yml` needs to be created to override any parameters with "override" for their value. as follows:
 
-    [  
-        {
-            "ParameterKey": "KeyPairName",
-            "ParameterValue": "<REPLACE_ME>"
-        }
-    ]
-
-Please also verify the `ci/config.yml` is updated with the region you wish to deploy to. The rest of the parameters should be answered in the `ci/<test>.json` : `jfrog-artifactory-new-vpc-ec2.json`
+    bash
+    RemoteAccessCIDR: `curl -v4 ifconfig.io`
+    AccessCIDR: `curl -v4 ifconfig.io`
+    KeyPairName: `your-keypair`
+    MasterKey: 1ce2be4490ca2c662cb79636cf9b7b8e
+    SMLicensesName: jfrog-artifactory
+    Certificate: "-----BEGIN CERTIFICATE-----|  CERTIFICATE_MATCHING_DOMAIN_LINE_SEPARATORES_WITH|-----END     CERTIFICATE-----"
+    CertificateKey: "-----BEGIN PRIVATE KEY-----|PRIVATE_KEY_MATCHING_DOMAIN_LINE_SEPARATORES_WITH`|`|-----END PRIVATE KEY-----"
 
 NOTE: We have seen issues running taskcat under the following conditions, please verify:
     * Your Environment variables for AWS are what you want as they override your `~/.aws/credentials` and `~/.aws/config`

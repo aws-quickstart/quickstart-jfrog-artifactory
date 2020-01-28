@@ -1,0 +1,11 @@
+---
+# Cleanup of SSH keys and reset of cloudinit
+
+- name: Remove SSH keys
+  file: 
+    path: "/home/{{ artifactory_ami_user }}/.ssh/authorized_keys"
+    state: absent
+
+- name: shutdown VM
+  command: /sbin/shutdown -h now
+  ignore_errors: 'yes'
