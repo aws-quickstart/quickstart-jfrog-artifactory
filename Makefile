@@ -16,11 +16,11 @@ delete:
 	aws cloudformation delete-stack --stack-name test
 
 .ONESHELL:
-test: lint submodules
-	cd .. && pwd && taskcat -c theflash/ci/config.yml -n
+test: lint #submodules
+	taskcat test run -n -l
 
 lint:
-	time taskcat -l -c ci/config.yml
+	time taskcat lint
 
 public_repo:
 	taskcat -c theflash/ci/config.yml -u
