@@ -66,7 +66,9 @@ Parameters:
     Type: String
   KeyPairName:
     Type: AWS::EC2::KeyPair::KeyName
-  ArtifactoryELB:
+  TargetGroupARN:
+    Type: String
+  SSLTargetGroupARN:
     Type: String
   HostProfile:
     Type: String
@@ -90,6 +92,7 @@ Mappings:
   AWSAMIRegionMap:
     AMI:
       AMZNLINUXHVM: amzn-ami-hvm-2018.03.0.20181129-x86_64-gp2
+      artifactory617: tmcvey-6-17
     ap-northeast-1:
       AMZNLINUXHVM: ami-079e6fb1e856e80c1
     ap-northeast-2:
@@ -110,12 +113,14 @@ Mappings:
       AMZNLINUXHVM: ami-04b202bf877b5027b
     us-east-1:
       AMZNLINUXHVM: ami-09d069a04349dc3cb
+      tmcvey700: ami-06baee01fb2ef01d2
     us-east-2:
       AMZNLINUXHVM: ami-0d542ef84ec55d71c
     us-west-1:
       AMZNLINUXHVM: ami-04bc3da8f14823e88
     us-west-2:
       AMZNLINUXHVM: ami-01460aa81365561fe
+      tmcvey700: ami-000937e944ea194bf
   # Stubbed for future if Debian is wanted.
   #LinuxAMINameMap:
   #  Amazon-Linux-HVM:
@@ -136,8 +141,9 @@ Resources:
       MaxSize: !Ref MaxScalingNodes
       Cooldown: '300'
       DesiredCapacity: !Ref MinScalingNodes
-      LoadBalancerNames: 
-        - !Ref ArtifactoryELB
+      TargetGroupARNs: 
+        - !Ref TargetGroupARN
+        - !Ref SSLTargetGroupARN
       HealthCheckType: ELB
       HealthCheckGracePeriod: 600
       Tags:
@@ -182,17 +188,20 @@ Resources:
                         s3_bucket: ${ArtifactoryS3Bucket}
                         certificate: ${Certificate}
                         certificate_key: ${CertificateKey}
-                        ssl_dir: /etc/pki/tls/certs/
+                        ssl_dir: /etc/pki/tls/certs
                         db_type: ${DBType}
                         db_ipaddr: ${ArtifactoryDBEndpointAddress}
                         db_name: ${DatabaseName}
                         db_user: ${DatabaseUser}
                         db_password: ${DatabasePassword}
                         art_primary: ${ArtifactoryPrimary}
-                        artifactory_keystore_pass: ${KeystorePassword}
                         master_key: ${MasterKey}
                         extra_java_opts: ${ExtraJavaOptions}
                         artifactory_version: ${ArtifactoryVersion}
+                        artifactory_keystore:
+                          path: /opt/jfrog/artifactory/app/third-party/java/lib/security/cacerts
+                          default_password: changeit
+                          new_keystore_pass: ${KeystorePassword}
                 mode: "0400"
               /root/.vault_pass.txt:
                 content: !Sub |
@@ -200,7 +209,7 @@ Resources:
                 mode: "0400"
               /root/.secureit.sh:
                 content:
-                  /usr/local/bin/ansible-vault encrypt /root/.artifactory_ansible/artifactory.yml --vault-id /root/.vault_pass.txt
+                  ansible-vault encrypt /root/.artifactory_ansible/artifactory.yml --vault-id /root/.vault_pass.txt
                 mode: "0770"
           secure-artifactory:
             commands:
@@ -279,9 +288,11 @@ Resources:
 
               qs_aws-cfn-bootstrap || qs_err
 
-              pip install awscli &> /var/log/userdata.awscli_install.log || qs_err " awscli install failed "
+              source ~/venv/bin/activate &> /var/log/userdata.activate_venv.log || qs_err " activate venv failed "
               
-              pip install ansible &> /var/log/userdata.ansible_install.log || qs_err " ansible install failed "
+              #pip install awscli &> /var/log/userdata.awscli_install.log || qs_err " awscli install failed "
+              
+              #pip install ansible &> /var/log/userdata.ansible_install.log || qs_err " ansible install failed "
 
               mkdir ~/.artifactory_ansible
 
@@ -293,7 +304,7 @@ Resources:
 
               export ANSIBLE_VAULT_PASSWORD_FILE="/root/.vault_pass.txt"
 
-              /usr/local/bin/ansible-playbook /root/.artifactory_ansible/artifactory.yml || qs_err " ansible execution failed "
+              ansible-playbook /root/.artifactory_ansible/artifactory.yml || qs_err " ansible execution failed "
 
               rm -rf /root/.secureit.sh
 

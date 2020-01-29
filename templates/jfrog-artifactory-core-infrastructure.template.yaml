@@ -43,6 +43,13 @@ Parameters:
     Type: String
   DatabaseName:
     Type: String
+
+Mappings:
+  DBTypetoPortMap:
+    MySQL:
+      port: 3306
+    Postgres:
+      port: 5432
 Resources:
   ArtifactoryDBSubnetGroup:
     Type: AWS::RDS::DBSubnetGroup
@@ -77,16 +84,34 @@ Resources:
           ToPort: 22
           CidrIp: !Ref VPCCIDR
         - IpProtocol: tcp
-          FromPort: 3306
-          ToPort: 3306
+          FromPort: !FindInMap 
+            - DBTypetoPortMap
+            - !Ref DatabaseEngine
+            - port
+          ToPort: !FindInMap 
+            - DBTypetoPortMap
+            - !Ref DatabaseEngine
+            - port
           CidrIp: !Ref PrivateSubnet1CIDR
         - IpProtocol: tcp
-          FromPort: 3306
-          ToPort: 3306
+          FromPort: !FindInMap 
+            - DBTypetoPortMap
+            - !Ref DatabaseEngine
+            - port
+          ToPort: !FindInMap 
+            - DBTypetoPortMap
+            - !Ref DatabaseEngine
+            - port
           CidrIp: !Ref PrivateSubnet2CIDR
         - IpProtocol: tcp
-          FromPort: 3306
-          ToPort: 3306
+          FromPort: !FindInMap 
+            - DBTypetoPortMap
+            - !Ref DatabaseEngine
+            - port
+          ToPort: !FindInMap 
+            - DBTypetoPortMap
+            - !Ref DatabaseEngine
+            - port
           CidrIp: !Ref PrivateSubnet3CIDR
       SecurityGroupEgress:
         - IpProtocol: tcp

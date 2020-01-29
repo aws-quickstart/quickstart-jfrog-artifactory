@@ -6,8 +6,13 @@
     name: nginx
     state: restarted
 
-- name: Enable Artifactory
+- name: enable artifactory
   service:
     name: artifactory
     state: started
     enabled: yes
+
+- name: restart artifactory
+  service:
+    name: artifactory
+    state: restarted

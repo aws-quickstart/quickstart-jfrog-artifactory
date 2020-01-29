@@ -275,6 +275,7 @@ Parameters:
       install Artifactory. 
     AllowedValues: 
       - 'AMZNLINUXHVM'
+      - 'tmcvey700'
     Type: String    
   VolumeSize:
     Description: The size in GB of the available storage; the Quick Start will create an 
@@ -374,15 +375,19 @@ Parameters:
     Description: The database engine that you want to run, currently locked to MySQL.
     AllowedValues:
       - MySQL
+      - Postgres
     Default: MySQL
     Type: String
   DatabaseVersion:
-    Description: The major version of the MySQL database engine you want to run. This is currently locked to MySQL versions
+    Description: The major version of the MySQL/PostgreSQL database engine you want to run. This is currently locked to MySQL/PostgreSQL versions
       supported by Artifactory and RDS.
     AllowedValues:
     - 5.5
     - 5.6
     - 5.7
+    - 10.10
+    - 11.4
+    - 11.5
     Default: 5.7
     Type: String
   DatabaseUser:

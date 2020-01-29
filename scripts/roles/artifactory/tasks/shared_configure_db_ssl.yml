@@ -1,0 +1,10 @@
+---
+
+# Download Certs and Drivers and configure Java Keystore
+- name: Download Java requirements such as jbdc for mysql Driver and the RDS CA certificate
+  get_url:
+    url: "{{ item.url }}"
+    dest: "{{ item.dest | default(artifactory_tomcat_loc) }}"
+    owner: "{{ item.owner }}"
+    group: "{{ item.group }}"
+  loop: "{{ artifactory_java_db_drivers|list + artifactory_java_db_certs|list }}"
