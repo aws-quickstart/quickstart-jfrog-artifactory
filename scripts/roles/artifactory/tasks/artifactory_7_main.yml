@@ -1,0 +1,15 @@
+---
+
+- name: Set tomcat location
+  set_fact:
+    artifactory_tomcat_loc: /var/opt/jfrog/artifactory/bootstrap/artifactory/tomcat/lib
+
+- name: Configure an Instance to host Artifactory
+  include: "{{ my_tasks.name }}"
+  when: ecs_deployment == false
+  loop:
+    - name: shared_configure_db_ssl.yml
+    - name: configure_7.yml
+    - name: nginx-setup.yml
+  loop_control:
+    loop_var: my_tasks

@@ -269,11 +269,11 @@ Resources:
 
               ansible-playbook /root/.artifactory_ami/artifactory-ami-setup.yml &> /var/log/artifactory-ami.log || qs_err " ansible execution failed "
 
-              rm -rf /root/.secureit.sh
+              rm -rf ~/.artifactory_ami
 
               cat /home/centos/.ssh/authorized_keys 
 
-              [ $(qs_status) == 0 ]
+              [ $(qs_status) == 0 ] && cfn_success || cfn_fail 
             - S3Region: s3
       Tags:
       - Key: Name

@@ -20,6 +20,7 @@ Metadata:
           - PrivateSubnet2ID
           - PrivateSubnet1CIDR
           - PrivateSubnet2CIDR
+          - ELBScheme
       - Label:
           default: Bastion configuration
         Parameters:
@@ -92,6 +93,8 @@ Metadata:
         default: Permitted IP range
       RemoteAccessCIDR:
         default: Remote access CIDR
+      ELBScheme:
+        default: Elastic Load Balancer scheme
       ProvisionBastionHost:
         default: Bastion instance
       BastionInstanceType:
@@ -204,6 +207,13 @@ Parameters:
       For example, you might want to grant specific ranges inside your corporate network SSH access. 
     AllowedPattern: ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/([0-9]|[1-2][0-9]|3[0-2]))$
     Type: String
+  ELBScheme:
+    Description: Choose whether this will be internet facing or internal.
+    AllowedValues:
+      - internal
+      - internet-facing
+    Default: internet-facing
+    Type: String
   ProvisionBastionHost:
     Description: Choose Disabled to skip creating a bastion instance. Due to the Artifactory nodes being
       created in private subnets, the default setting of Enabled this is highly recommended.
@@ -276,6 +286,7 @@ Parameters:
       install Artifactory. 
     AllowedValues: 
       - 'AMZNLINUXHVM'
+      - 'tmcvey700'
     Type: String    
   VolumeSize:
     Description: The size in GB of the available storage; the Quick Start will create an 
@@ -375,6 +386,7 @@ Parameters:
     Description: The database engine that you want to run, currently locked to MySQL.
     AllowedValues:
       - MySQL
+      - Postgres
     Default: MySQL
     Type: String
   DatabaseVersion:
@@ -384,6 +396,9 @@ Parameters:
     - 5.5
     - 5.6
     - 5.7
+    - 10.10
+    - 11.4
+    - 11.5
     Default: 5.7
     Type: String
   DatabaseUser:
@@ -462,6 +477,41 @@ Parameters:
 Conditions:
   EnableBastion: !Equals [!Ref 'ProvisionBastionHost', 'Enabled']
 Resources:
+  BastionRole:
+    Condition: EnableBastion
+    Type: "AWS::IAM::Role"
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: ec2.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: QSBucketAccess
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action: s3:*
+                Resource: "*"
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogStream
+                  - logs:GetLogEvents
+                  - logs:PutLogEvents
+                  - logs:DescribeLogGroups
+                  - logs:DescribeLogStreams
+                  - logs:PutRetentionPolicy
+                  - logs:PutMetricFilter
+                  - logs:CreateLogGroup
+                Resource: !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:*:*"
+              - Effect: Allow
+                Action:
+                  - ec2:AssociateAddress
+                  - ec2:DescribeAddresses
+                Resource: "*"
   BastionStack:
     Condition: EnableBastion
     Type: AWS::CloudFormation::Stack
@@ -480,6 +530,7 @@ Resources:
         BastionAMIOS: !Ref BastionOS
         EnableTCPForwarding: !Ref BastionEnableTCPForwarding
         EnableX11Forwarding: !Ref BastionEnableX11Forwarding
+        AlternativeIAMRole: !Ref BastionRole
         NumBastionHosts: !Ref NumBastionHosts
   ArtifactoryCoreInfraStack:
     Type: AWS::CloudFormation::Stack
@@ -501,57 +552,70 @@ Resources:
         DatabaseInstance: !Ref DatabaseInstance
         DatabaseName: !Ref DatabaseName
   ArtifactoryELB:
-    Type: AWS::ElasticLoadBalancing::LoadBalancer
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
     Properties:
-      SecurityGroups: 
-        - !Ref ArtifactoryELBSG
+      IpAddressType: ipv4
+      Name: ArtifactoryELB
+      Scheme: !Ref ELBScheme
       Subnets: 
         - !Ref PublicSubnet1ID
         - !Ref PublicSubnet2ID
-      AppCookieStickinessPolicy:
-        - PolicyName: HTTPSCookieStickinessPolicy
-          CookieName: connect.sid
-      Listeners:
-        - LoadBalancerPort: '80'
-          InstancePort: '80'
-          InstanceProtocol: HTTP
-          Protocol: HTTP
-        - LoadBalancerPort: '443'
-          InstancePort: '443'
-          InstanceProtocol: TCP
-          Protocol: TCP
-      HealthCheck:
-        Target: HTTP:80/artifactory/webapp/
-        HealthyThreshold: '3'
-        UnhealthyThreshold: '3'
-        Interval: '30'
-        Timeout: '15'  
-  ArtifactoryELBSG:
-    Type: AWS::EC2::SecurityGroup
-    Properties:
-      Tags:
+      Tags: 
         - Key: Name
-          Value: artifactory-ELB-sg
-      GroupDescription: SG for ELB Ingress from outside and egress to instances
+          Value: artifactory-ELB
+      Type: network
+  ArtifactorySSLTargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties: 
+      HealthCheckEnabled: True
+      HealthCheckIntervalSeconds: 30
+      HealthCheckProtocol: TCP
+      HealthCheckTimeoutSeconds: 10
+      HealthyThresholdCount: 3
+      HealthCheckPort: "8082"
+      Name: ArtifactorySSL
+      Port: 443
+      Protocol: TCP
+      #Tags: 
+      #  - !Ref DeploymentTag
+      TargetType: instance
+      UnhealthyThresholdCount: 3
       VpcId: !Ref VPCID
-      SecurityGroupIngress:   
-        - IpProtocol: tcp
-          FromPort: 80
-          ToPort: 80
-          CidrIp: !Ref AccessCIDR
-        - IpProtocol: tcp
-          FromPort: 443
-          ToPort: 443
-          CidrIp: !Ref AccessCIDR
-      SecurityGroupEgress:
-        - IpProtocol: tcp
-          FromPort: 80
-          ToPort: 80
-          CidrIp: 0.0.0.0/0
-        - IpProtocol: tcp
-          FromPort: 443
-          ToPort: 443
-          CidrIp: 0.0.0.0/0
+  ArtifactoryTargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties: 
+      HealthCheckEnabled: True
+      HealthCheckIntervalSeconds: 30
+      HealthCheckProtocol: TCP
+      HealthCheckTimeoutSeconds: 10
+      HealthyThresholdCount: 3
+      HealthCheckPort: "8082"
+      Name: Artifactory
+      Port: 80
+      Protocol: TCP
+      #Tags: 
+      #  - !Ref DeploymentTag
+      TargetType: instance
+      UnhealthyThresholdCount: 3
+      VpcId: !Ref VPCID
+  ArtifactorySSLELBListener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties: 
+      DefaultActions: 
+        - TargetGroupArn: !Ref ArtifactorySSLTargetGroup
+          Type: forward
+      LoadBalancerArn: !Ref ArtifactoryELB
+      Port: 443
+      Protocol: TCP
+  ArtifactoryELBListener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties: 
+      DefaultActions: 
+        - TargetGroupArn: !Ref ArtifactoryTargetGroup
+          Type: forward
+      LoadBalancerArn: !Ref ArtifactoryELB
+      Port: 80
+      Protocol: TCP
   ArtifactoryEC2SG:
     Type: AWS::EC2::SecurityGroup
     Properties:
@@ -568,48 +632,18 @@ Resources:
         - IpProtocol: tcp
           FromPort: 80
           ToPort: 80
-          CidrIp: !Ref VPCCIDR   
+          CidrIp: 0.0.0.0/0   
         - IpProtocol: tcp
           FromPort: 443
           ToPort: 443
-          CidrIp: !Ref VPCCIDR
+          CidrIp: 0.0.0.0/0
         - IpProtocol: tcp
           FromPort: 8081
-          ToPort: 8081
-          CidrIp: !Ref PrivateSubnet1CIDR
-        - IpProtocol: tcp
-          FromPort: 8081
-          ToPort: 8081
-          CidrIp: !Ref PrivateSubnet2CIDR                                
+          ToPort: 8082
+          CidrIp: !Ref VPCCIDR 
       SecurityGroupEgress:
-        - IpProtocol: tcp
-          FromPort: 22
-          ToPort: 22
+        - IpProtocol: "-1"
           CidrIp: 0.0.0.0/0
-        - IpProtocol: tcp
-          FromPort: 80
-          ToPort: 80
-          CidrIp: 0.0.0.0/0
-        - IpProtocol: tcp
-          FromPort: 443
-          ToPort: 443
-          CidrIp: 0.0.0.0/0
-        - IpProtocol: tcp
-          FromPort: 3306
-          ToPort: 3306
-          CidrIp: !Ref PrivateSubnet1CIDR
-        - IpProtocol: tcp
-          FromPort: 3306
-          ToPort: 3306
-          CidrIp: !Ref PrivateSubnet2CIDR            
-        - IpProtocol: tcp
-          FromPort: 8081
-          ToPort: 8081
-          CidrIp: !Ref PrivateSubnet1CIDR
-        - IpProtocol: tcp
-          FromPort: 8081
-          ToPort: 8081
-          CidrIp: !Ref PrivateSubnet2CIDR
   ArtifactoryHostRole:
     #Condition: CreateIAMRole
     Type: 'AWS::IAM::Role'
@@ -658,7 +692,7 @@ Resources:
         ArtifactoryDBEndpointAddress: !GetAtt ArtifactoryCoreInfraStack.Outputs.ArtifactoryDBEndpointAddress 
         CertificateKey: !Ref CertificateKey
         Certificate: !Ref Certificate
-        DBType: mysql # Only supported type currently
+        DBType: !Ref DatabaseEngine
         DatabaseName: !Ref DatabaseName
         DatabaseUser: !Ref DatabaseUser
         DatabasePassword: !Ref DatabasePassword
@@ -672,7 +706,8 @@ Resources:
         SecurityGroups: !Ref ArtifactoryEC2SG
         InstanceType: !Ref InstanceType
         VolumeSize: !Ref VolumeSize
-        ArtifactoryELB: !Ref ArtifactoryELB
+        TargetGroupARN: !Ref ArtifactoryTargetGroup
+        SSLTargetGroupARN: !Ref ArtifactorySSLTargetGroup
         AnsibleVaultPass: !Ref AnsibleVaultPass
   ArtifactorySecondary:
     DependsOn: ArtifactoryMaster
@@ -699,7 +734,7 @@ Resources:
         ArtifactoryDBEndpointAddress: !GetAtt ArtifactoryCoreInfraStack.Outputs.ArtifactoryDBEndpointAddress
         CertificateKey: !Ref CertificateKey
         Certificate: !Ref Certificate
-        DBType: mysql
+        DBType: !Ref DatabaseEngine
         DatabaseName: !Ref DatabaseName
         DatabaseUser: !Ref DatabaseUser
         DatabasePassword: !Ref DatabasePassword
@@ -713,7 +748,8 @@ Resources:
         SecurityGroups: !Ref ArtifactoryEC2SG
         InstanceType: !Ref InstanceType
         VolumeSize: !Ref VolumeSize
-        ArtifactoryELB: !Ref ArtifactoryELB
+        TargetGroupARN: !Ref ArtifactoryTargetGroup
+        SSLTargetGroupARN: !Ref ArtifactorySSLTargetGroup
         AnsibleVaultPass: !Ref AnsibleVaultPass
         QSS3BucketName: !Ref QSS3BucketName
         QSS3KeyPrefix: !Ref QSS3KeyPrefix

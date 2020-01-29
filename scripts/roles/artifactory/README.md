@@ -22,7 +22,7 @@ s3_access_secret_key: S3 Secret key for the S3 Endpoint + Bucket.
 s3_bucket: S3 bucket for backend storage.
 certificate_key: Private Certificate Key used for NGINX to terminate SSL
 certificate: Certificate used by NGINX to terminate SSL
-db_type: Currently only MySQL is supported.
+db_type: Currently only MySQL/Postgres is supported.
 db_ipaddr: MySQL endpoint for the DB connection.
 db_name: Name of the Database.
 db_user: User with write/read permission on the `db_name`

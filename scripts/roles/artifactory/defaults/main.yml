@@ -27,23 +27,40 @@ certificate_file: /root/cert
 art_primary: true
 java_version: java-1.8.0
 extra_java_opts: -server -Xms2g -Xmx14g -Xss256k -XX:+UseG1GC
-java_mysql_driver:
-  url: https://bintray.com/artifact/download/bintray/jcenter/mysql/mysql-connector-java/5.1.38/mysql-connector-java-5.1.38.jar
-  dest: /opt/jfrog/artifactory/tomcat/lib/mysql-connector-java-5.1.38.jar
-  owner: artifactory
-  group: artifactory
-rds_cert:
-  url: https://s3.amazonaws.com/rds-downloads/rds-combined-ca-bundle.pem
-  dest: /root/rds-combined-ca-bundle.pem
-  owner: root
-  group: root
-  cert_alias: rds_ca
-import_rds: true
+artifactory_java_db_drivers:
+  - name: mysql
+    url: https://bintray.com/artifact/download/bintray/jcenter/mysql/mysql-connector-java/5.1.38/mysql-connector-java-5.1.38.jar
+    #dest: /opt/jfrog/artifactory/tomcat/lib/mysql-connector-java-5.1.38.jar
+    owner: artifactory
+    group: artifactory
+  - name: postgres
+    url: https://jdbc.postgresql.org/download/postgresql-42.2.9.jar
+    #dest: /opt/jfrog/artifactory/tomcat/lib/postgresql-42.2.9.jar
+    owner: artifactory
+    group: artifactory
+artifactory_java_db_certs:
+  - name: ca-bundled
+    url: https://s3.amazonaws.com/rds-downloads/rds-combined-ca-bundle.pem
+    dest: /root/rds-combined-ca-bundle.pem
+    owner: root
+    group: root
+    cert_alias: rds_ca
+  - name: ca-root
+    url: https://s3.amazonaws.com/rds-downloads/rds-ca-2019-root.pem
+    dest: /root/rds-ca-2019-root.pem
+    owner: root
+    group: root
+    cert_alias: rds_root
+artifactory_ami_import_rds: true
 
 
 
 # The Docker scripts handle this, so we do not need these variables when configuring
 # A docker system that will host
+artifactory_keystore:
+  path: /etc/alternatives/jre_1.8.0/lib/security/cacerts
+  default_password: changeit
+  new_keystore_pass: needs_to_be_passed
 artifactory_keystore_path: /etc/alternatives/jre_1.8.0/lib/security/cacerts
 artifactory_keystore_default: changeit
 artifactory_keystore_pass: needs_to_be_passed

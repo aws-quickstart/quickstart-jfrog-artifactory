@@ -1,11 +1,6 @@
 ---
 
 # Tasks for configuring NGINX for Artifactory
-- name: Ensure latest nginx is installed
-  package:
-    name: nginx
-    state: latest
-
 - name: Configure main NGINX conf file.
   copy:
     src: nginx.conf
@@ -24,3 +19,14 @@
     group: root
     mode: '0755'
   notify: restart nginx
+
+- name: Change to host python for Yum
+  set_fact:
+    ansible_python_interpreter: /usr/bin/python
+  when: artifactory_version.split('.')[0]|int == 7
+  
+- name: Configure selinux for nginx
+  seboolean:
+    name: httpd_can_network_connect
+    state: yes
+    persistent: yes

@@ -1,17 +1,16 @@
 ---
 # tasks file for quickstart-jfrog-artifactory/scripts/roles/artifactory
 
+- name: Set tomcat location
+  set_fact:
+    artifactory_major_verion: "{{ artifactory_version.split('.')[0] }}"
 
-- name: Configure an Instance to host Artifactory
-  include: "{{ item.name }}"
-  when: ecs_deployment == false
-  loop:
-    - name: install.yml
-    - name: configure.yml
-    - name: nginx-setup.yml
+- name: Artifactory 6 install
+  include: artifactory_6_main.yml
+  when: artifactory_major_verion|int == 6
 
-- name: Configure ECS EC2 Node to host an Artifactory Container
-  include: configure_ecs.yml
-  when: ecs_deployment == true
+- name: Artifactory 7 install
+  include: artifactory_7_main.yml
+  when: artifactory_major_verion|int == 7
 
 
