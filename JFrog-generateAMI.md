@@ -1,5 +1,9 @@
 # quickstart-jfrog-artifactory-JFrog-Internal
 
+## Pre-Requisite
+
+Please ensure you have accepted the MarketPlace AMI before launching. Without doing so in the account, it will fail to launch the instance.
+
 ## Getting started
 
 It is assumed you have installed and properly configured taskcat. You will also need a VPC created with a public Subnet. You can re-use one of the current CF templates to generate this, or create one on your own. Once that is complete, note down the `VPCID` and the `PublicSubnet1ID` for inputs.
@@ -12,7 +16,7 @@ Once that is compelete you will need to modify the .taskcat.yml with the followi
        parameters:
          KeyPairName: "$[taskcat_getkeypair]"
          ArtifactoryVersion: 7.0.0
-         ArtifactoryRepoUrl: https://earlyaccess.jfrog.io   artifactory/enterprise-rpms 
+         ArtifactoryRepoUrl: https://earlyaccess.jfrog.ioartifactory/enterprise-rpms
          RemoteAccessCIDR: "10.0.0.0/16"
          VPCID: `VPCID`
          PublicSubnet1ID: `PublicSubnet1ID`

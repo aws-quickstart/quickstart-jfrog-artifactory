@@ -8,6 +8,12 @@ project:
     - us-west-2
 
 tests:
+# jfrog-ami-vpc:
+#   parameters:
+#     AvailabilityZone: us-east-1a
+#   template: templates/jfrog-ami-vpc.template.yaml
+#   regions:
+#     us-east-1
 #  jfrog-artifactory-ami:
 #    parameters:
 #      KeyPairName: "$[taskcat_getkeypair]"
