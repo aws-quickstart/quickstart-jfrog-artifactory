@@ -38,6 +38,7 @@ Metadata:
           default: JFrog Artifactory configuration
         Parameters:
           - ArtifactoryVersion
+          - ReleaseStage
           - NumberOfSecondary
           - SMLicensesName
           - Certificate
@@ -108,6 +109,8 @@ Metadata:
         default: Number of secondary instances
       ArtifactoryVersion:
         default: Artifactory version
+      ReleaseStage:
+        default: Release stage of the product to deploy
       SMLicensesName:
         default: Artifactory licenses secret name
       Certificate:
@@ -314,6 +317,13 @@ Parameters:
     ConstraintDescription: A version that matches X.X.X per Artifactory releases.
     Default: 6.11.1
     Type: String
+  ReleaseStage:
+    Description: Whether to use the upstream repository that is pre-GA.
+    AllowedValues:
+      - "GA"
+      - "BETA"
+    Default: "GA"
+    Type: String
   SMLicensesName:
     Description: The secret name created in AWS Secrets Manager which contains the Artifactory licenses.
     Type: String
@@ -514,6 +524,7 @@ Resources:
         InstanceType: !Ref InstanceType
         NumberOfSecondary: !Ref NumberOfSecondary
         ArtifactoryVersion: !Ref ArtifactoryVersion
+        ReleaseStage: !Ref ReleaseStage
         SMLicensesName: !Ref SMLicensesName
         Certificate: !Ref Certificate
         CertificateKey: !Ref CertificateKey

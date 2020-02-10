@@ -155,3 +155,53 @@ To Delete the stack: `aws cloudformation delete-stack --stack-name test`
 
 To delete taskcat S3 buckets:
 `aws s3 ls | grep taskcat | cut -d ' ' -f 3 | xargs -I {} aws s3 rb s3://{} --force`
+
+## Maintenance
+
+### Updating AMIs
+
+The easiest way to create a mapping for a particular AMI is run the following:
+
+    ```bash
+    ami_name=<name_of_ami>
+    regions=(us-east-2 us-east-1 us-west-2 us-west-1 eu-west-3 eu-west-2 eu-west-1 eu-central-1 eu-north-1 ap-northeast-2 ap-northeast-1 ap-southeast-2 ap-southeast-1 ca-central-1 ap-south-1 sa-east-1)
+    owner=309956199498
+    for i in "${regions[@]}"; do         echo "    $i:";         echo "       AMZNLINUXHVM: `aws --region $i ec2 describe-images --owners $owner --filters \"Name=name,Values=$ami_name\" 'Name=state,Values=available' --output json | jq -r '.Images | sort_by(.CreationDate) | last(.[]).ImageId'`";     done
+    ```
+
+This will output the proper list (Depending on your mapping of course):
+
+    ```bash
+    us-east-2:
+       RHEL: ami-0cf433f9a817f63d3
+    us-east-1:
+       RHEL: ami-029c0fbe456d58bd1
+    us-west-2:
+       RHEL: ami-078a6a18fb73909b2
+    us-west-1:
+       RHEL: ami-07d8d14365439bc6e
+    eu-west-3:
+       RHEL: ami-018c55e9d34f949e9
+    eu-west-2:
+       RHEL: ami-0d8f9df7aa93d806e
+    eu-west-1:
+       RHEL: ami-065ec1e661d619058
+    eu-central-1:
+       RHEL: ami-06220be3176081cf0
+    eu-north-1:
+       RHEL: ami-a4fe74da
+    ap-northeast-2:
+       RHEL: ami-0708fd0ae9a663e02
+    ap-northeast-1:
+       RHEL: ami-0be4c0b05bbeb2afd
+    ap-southeast-2:
+       RHEL: ami-01448715c06d2edb5
+    ap-southeast-1:
+       RHEL: ami-02079c0159aade6b4
+    ca-central-1:
+       RHEL: ami-05508913d3360e9af
+    ap-south-1:
+       RHEL: ami-003b12a9a1ee83922
+    sa-east-1:
+       RHEL: ami-0102667d2046392a0
+    ```
