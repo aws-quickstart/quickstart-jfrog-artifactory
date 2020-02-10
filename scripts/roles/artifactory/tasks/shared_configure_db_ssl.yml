@@ -8,3 +8,22 @@
     owner: "{{ item.owner }}"
     group: "{{ item.group }}"
   loop: "{{ artifactory_java_db_drivers|list + artifactory_java_db_certs|list }}"
+
+# Below is currently broken for RT7 and therefore commented out, until the certificates
+# Can be added so the GO Services trust the DB connection.
+
+#- name: Import the RDS certificate into Java KeyStore
+#  java_cert:
+#    cert_path: "{{ item.dest }}"
+#    cert_alias: "{{ item.cert_alias }}"
+#    keystore_pass: "{{ artifactory_keystore.default_password }}" # Default JKS as you get from the Internet.
+#    keystore_path: "{{ artifactory_keystore.path }}"
+#  when: artifactory_import_rds == true
+#  register: r_java_cert
+#  loop: "{{ artifactory_java_db_certs }}"
+#  failed_when: "'Not found' in r_java_cert['msg']"
+#
+#- name: Change Keystore password
+#  command: keytool -storepasswd -keystore {{ artifactory_keystore.path }} -storepass {{ artifactory_keystore.default_password }} -new {{ artifactory_keystore.new_keystore_pass }}
+#  no_log: false
+#  when: r_java_cert['results']| selectattr('msg', 'search', 'password was incorrect') | list | count == 0

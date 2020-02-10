@@ -8,7 +8,7 @@ Metadata:
         Parameters:
           - KeyPairName
           - AccessCIDR
-          - RemoteAccessCIDR    
+          - RemoteAccessCIDR
       - Label:
           default: Network Configuration
         Parameters:
@@ -42,6 +42,7 @@ Metadata:
           default: JFrog Artifactory Configuration
         Parameters:
           - ArtifactoryVersion
+          - ReleaseStage
           - NumberOfSecondary
           - NumberOfEC2Nodes
           - SMLicensesName
@@ -74,7 +75,7 @@ Metadata:
       AccessCIDR:
         default: Permitted IP range
       RemoteAccessCIDR:
-        default: Remote access CIDR        
+        default: Remote access CIDR
       VPCID:
         default: VPC ID
       VPCCIDR:
@@ -117,10 +118,12 @@ Metadata:
         default: EBS root volume size
       ArtifactoryVersion:
         default: Artifactory version
+      ReleaseStage:
+        default: Release stage of the product to deploy
       NumberOfSecondary:
         default: Number of secondary instances
       NumberOfEC2Nodes:
-        default: Number of EC2 nodes     
+        default: Number of EC2 nodes
       SMLicensesName:
         default: Artifactory licenses secret name
       Certificate:
@@ -164,15 +167,15 @@ Parameters:
       to securely connect to your instance after it launches.
     Type: AWS::EC2::KeyPair::KeyName
   AccessCIDR:
-    Description: The CIDR IP range that is permitted to access Artifactory. 
-      We recommend that you set this value to a trusted IP range. 
-      For example, you might want to grant only your corporate network access to the software. 
+    Description: The CIDR IP range that is permitted to access Artifactory.
+      We recommend that you set this value to a trusted IP range.
+      For example, you might want to grant only your corporate network access to the software.
     AllowedPattern: ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/([0-9]|[1-2][0-9]|3[0-2]))$
     Type: String
   RemoteAccessCIDR:
-    Description: The remote CIDR range for allowing SSH into the Bastion instance. 
-      We recommend that you set this value to a trusted IP range. 
-      For example, you might want to grant specific ranges inside your corporate network SSH access. 
+    Description: The remote CIDR range for allowing SSH into the Bastion instance.
+      We recommend that you set this value to a trusted IP range.
+      For example, you might want to grant specific ranges inside your corporate network SSH access.
     AllowedPattern: ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/([0-9]|[1-2][0-9]|3[0-2]))$
     Type: String
   VPCID:
@@ -193,7 +196,7 @@ Parameters:
   PrivateSubnet1ID:
     Description: The ID of the private subnet in Availability Zone 1 in your existing VPC (e.g., subnet-a0246dcd).
     Type: "AWS::EC2::Subnet::Id"
-  PrivateSubnet2ID: 
+  PrivateSubnet2ID:
     Description: The ID of the private subnet in Availability Zone 2 in your existing VPC (e.g., subnet-b58c3d67).
     Type: "AWS::EC2::Subnet::Id"
   PrivateSubnet1CIDR:
@@ -240,15 +243,15 @@ Parameters:
   BastionEnableTCPForwarding:
     Description: Choose whether to enable TCPForwarding via the bootstrapping of the bastion instance
       or not.
-    AllowedValues: 
+    AllowedValues:
       - "true"
       - "false"
     Default: "true"
     Type: String
   BastionEnableX11Forwarding:
-    Description: Choose true to enable X11 via the bootstrapping of the bastion host. 
-      Setting this value to true will enable X Windows over SSH. 
-      X11 forwarding can be very useful but it is also a security risk, so we recommend 
+    Description: Choose true to enable X11 via the bootstrapping of the bastion host.
+      Setting this value to true will enable X Windows over SSH.
+      X11 forwarding can be very useful but it is also a security risk, so we recommend
       that you keep the default (false) setting unless required.
     AllowedValues:
       - "true"
@@ -273,13 +276,13 @@ Parameters:
       - '3'
       - '4'
     Default: '1'
-    Type: String 
+    Type: String
   ClusterName:
     Description: The name for your ECS cluster.
-    Default: JFrog  
+    Default: JFrog
     Type: String
   CreateNewECSCluster:
-    Description: Choose whether to create a new ECS cluster with the name specified in the 'ClusterName' parameter. 
+    Description: Choose whether to create a new ECS cluster with the name specified in the 'ClusterName' parameter.
       If you choose Disabled, an ECS cluster with the name specified in the 'CluserName' parameter must already exist.
     AllowedValues:
       - "Enabled"
@@ -297,7 +300,7 @@ Parameters:
     Default: m4.xlarge
     Type: String
   VolumeSize:
-    Description: The size in GB of the available storage; the Quick Start will create an 
+    Description: The size in GB of the available storage; the Quick Start will create an
       Amazon Elastic Block Store (Amazon EBS) volumes of this size.
     Default: 200
     Type: Number
@@ -312,11 +315,11 @@ Parameters:
       - 7
       - 8
     Default: 3
-    Type: Number 
+    Type: Number
   NumberOfSecondary:
     Description: The number of secondary Artifactory servers to complete your
       HA deployment. To fit the Artifactory best practices, the minimum number
-      is two; the maximum is seven. Do not select more than instances than you 
+      is two; the maximum is seven. Do not select more than instances than you
       have licenses for.
     AllowedValues:
       - 2
@@ -335,6 +338,13 @@ Parameters:
     ConstraintDescription: A version that matches X.X.X per Artifactory releases.
     Default: 6.11.1
     Type: String
+  ReleaseStage:
+    Description: Whether to use the upstream repository that is pre-GA.
+    AllowedValues:
+      - "GA"
+      - "BETA"
+    Default: "GA"
+    Type: String
   SMLicensesName:
     Description: The secret name created in AWS Secrets Manager which contains the Artifactory licenses.
     Type: String
@@ -343,8 +353,8 @@ Parameters:
     AllowedPattern: ^(-----BEGIN CERTIFICATE-----)(.*?)+(-----END CERTIFICATE-----)$
     ConstraintDescription: A Certificate that begins with "-----BEGIN CERTIFICATE----- " and ends with "-----END CERTIFICATE----- ".
     Type: String
-  CertificateKey: 
-    Description: The private key for the certificate.     
+  CertificateKey:
+    Description: The private key for the certificate.
     AllowedPattern: ^(-----BEGIN [A-Za-z ]+ KEY-----)(.*?)+(-----END [A-Za-z ]+ KEY-----)$
     ConstraintDescription: A Private key that begins with "-----BEGIN PRIVATE KEY-----" and ends with "-----END PRIVATE KEY-----".
     NoEcho: 'true'
@@ -366,25 +376,25 @@ Parameters:
     NoEcho: 'true'
     Type: String
   ExtraJavaOptions:
-    Description: Setting Java memory parameters for Artifactory. For more information, see the Artifactory 
-      system requirements. 
+    Description: Setting Java memory parameters for Artifactory. For more information, see the Artifactory
+      system requirements.
       https://www.jfrog.com/confluence/display/RTF/System+Requirements#SystemRequirements-RecommendedHardware.
     Default: -Xmx4g
-    Type: String      
+    Type: String
   AnsibleVaultPass:
     Description: The Ansible Vault password to protect the Artifactory YAML configuration file
-      generated during the Artifactory deployment. This YAML file is stored on the EC2 nodes 
+      generated during the Artifactory deployment. This YAML file is stored on the EC2 nodes
       and secured with this password.
     NoEcho: 'true'
-    Type: String    
+    Type: String
   DatabaseName:
-    Description: The name for your DB instance. The name must be unique across all DB instances 
-      owned by your AWS account in the current AWS Region. The DB instance identifier is case-insensitive, 
+    Description: The name for your DB instance. The name must be unique across all DB instances
+      owned by your AWS account in the current AWS Region. The DB instance identifier is case-insensitive,
       but is stored as all lowercase (as in "mydbinstance").
     AllowedPattern: ^[a-zA-Z]([a-zA-Z0-9])+$
     MinLength: '1'
     MaxLength: '60'
-    ConstraintDescription: 1 to 60 alphanumeric characters First character must be a letter.   
+    ConstraintDescription: 1 to 60 alphanumeric characters First character must be a letter.
     Default: artdb
     Type: String
   DatabaseEngine:
@@ -475,7 +485,7 @@ Parameters:
       letters, uppercase letters, and hyphens (-). It cannot start or end with a hyphen
       (-).
     Default: aws-quickstart
-    Type: String  
+    Type: String
   QSS3KeyPrefix:
     Description: S3 key prefix for the Quick Start assets. Quick Start key prefix
       can include numbers, lowercase letters, uppercase letters, hyphens (-), and
@@ -485,8 +495,10 @@ Parameters:
       uppercase letters, hyphens (-), and forward slash (/).
     Default: quickstart-jfrog-artifactory/
     Type: String
+
 Conditions:
   EnableBastion: !Equals [!Ref 'ProvisionBastionHost', 'Enabled']
+
 Resources:
   BastionStack:
     Condition: EnableBastion
@@ -526,22 +538,23 @@ Resources:
         DatabasePassword: !Ref DatabasePassword
         DatabaseInstance: !Ref DatabaseInstance
         DatabaseName: !Ref DatabaseName
+        ReleaseStage: !Ref ReleaseStage
   ArtifactoryELB:
     Type: AWS::ElasticLoadBalancingV2::LoadBalancer
     Properties:
       IpAddressType: ipv4
       Name: ArtifactoryELB
       Scheme: !Ref ELBScheme
-      Subnets: 
+      Subnets:
         - !Ref PublicSubnet1ID
         - !Ref PublicSubnet2ID
-      Tags: 
+      Tags:
         - Key: Name
           Value: artifactory-ELB
       Type: network
   ArtifactoryTargetGroup:
     Type: AWS::ElasticLoadBalancingV2::TargetGroup
-    Properties: 
+    Properties:
       HealthCheckEnabled: True
       HealthCheckIntervalSeconds: 30
       HealthCheckProtocol: TCP
@@ -550,54 +563,18 @@ Resources:
       Name: Artifactory
       Port: 443
       Protocol: TCP
-      #Tags: 
-      #  - !Ref DeploymentTag
       TargetType: instance
       UnhealthyThresholdCount: 3
       VpcId: !Ref VPCID
   ArtifactoryELBListener:
     Type: AWS::ElasticLoadBalancingV2::Listener
-    Properties: 
-      DefaultActions: 
+    Properties:
+      DefaultActions:
         - TargetGroupArn: !Ref ArtifactoryTargetGroup
           Type: forward
       LoadBalancerArn: !Ref ArtifactoryELB
       Port: 443
-      Protocol: TCP      
-  ArtifactoryELBSG:
-    Type: AWS::EC2::SecurityGroup
-    Properties:
-      Tags:
-        - Key: Name
-          Value: artifactory-ELB-sg
-      GroupDescription: SG for ELB Ingress from outside and egress to instances
-      VpcId: !Ref VPCID
-      SecurityGroupIngress:   
-        - IpProtocol: tcp
-          FromPort: 80
-          ToPort: 80
-          CidrIp: !Ref AccessCIDR
-        - IpProtocol: tcp
-          FromPort: 443
-          ToPort: 443
-          CidrIp: !Ref AccessCIDR
-        - IpProtocol: tcp
-          FromPort: 8081
-          ToPort: 8081
-          CidrIp: !Ref AccessCIDR          
-      SecurityGroupEgress:
-        - IpProtocol: tcp
-          FromPort: 80
-          ToPort: 80
-          CidrIp: 0.0.0.0/0
-        - IpProtocol: tcp
-          FromPort: 443
-          ToPort: 443
-          CidrIp: 0.0.0.0/0
-        - IpProtocol: tcp
-          FromPort: 8081
-          ToPort: 8081
-          CidrIp: 0.0.0.0/0          
+      Protocol: TCP
   ArtifactoryEC2SG:
     Type: AWS::EC2::SecurityGroup
     Properties:
@@ -606,7 +583,7 @@ Resources:
           Value: artifactory-ec2-instances-sg
       GroupDescription: SG for EC2 instances (also permits SSH access from the bastion host)
       VpcId: !Ref VPCID
-      SecurityGroupIngress:   
+      SecurityGroupIngress:
         - IpProtocol: tcp
           FromPort: 22
           ToPort: 22
@@ -614,48 +591,22 @@ Resources:
         - IpProtocol: tcp
           FromPort: 80
           ToPort: 80
-          CidrIp: !Ref VPCCIDR   
+          CidrIp: !Ref VPCCIDR
         - IpProtocol: tcp
           FromPort: 443
           ToPort: 443
           CidrIp: 0.0.0.0/0
         - IpProtocol: tcp
           FromPort: 8081
-          ToPort: 8081
+          ToPort: 8082
           CidrIp: !Ref PrivateSubnet1CIDR
         - IpProtocol: tcp
           FromPort: 8081
-          ToPort: 8081
-          CidrIp: !Ref PrivateSubnet2CIDR                                
+          ToPort: 8082
+          CidrIp: !Ref PrivateSubnet2CIDR
       SecurityGroupEgress:
-        - IpProtocol: tcp
-          FromPort: 22
-          ToPort: 22
+        - IpProtocol: "-1"
           CidrIp: 0.0.0.0/0
-        - IpProtocol: tcp
-          FromPort: 80
-          ToPort: 80
-          CidrIp: 0.0.0.0/0
-        - IpProtocol: tcp
-          FromPort: 443
-          ToPort: 443
-          CidrIp: 0.0.0.0/0
-        - IpProtocol: tcp
-          FromPort: 3306
-          ToPort: 3306
-          CidrIp: !Ref PrivateSubnet1CIDR
-        - IpProtocol: tcp
-          FromPort: 3306
-          ToPort: 3306
-          CidrIp: !Ref PrivateSubnet2CIDR            
-        - IpProtocol: tcp
-          FromPort: 8081
-          ToPort: 8081
-          CidrIp: !Ref PrivateSubnet1CIDR
-        - IpProtocol: tcp
-          FromPort: 8081
-          ToPort: 8081
-          CidrIp: !Ref PrivateSubnet2CIDR           
   ArtifactoryECSBuild:
     Type: AWS::CloudFormation::Stack
     Properties:
@@ -681,10 +632,15 @@ Resources:
         ArtifactoryIAMAcessKey: !GetAtt ArtifactoryCoreInfraStack.Outputs.IAMAcessKey
         SecretAccessKey: !GetAtt ArtifactoryCoreInfraStack.Outputs.SecretAccessKey
         ArtifactoryS3Bucket: !GetAtt ArtifactoryCoreInfraStack.Outputs.S3Bucket
-        ArtifactoryDBEndpointAddress: !GetAtt ArtifactoryCoreInfraStack.Outputs.ArtifactoryDBEndpointAddress
         CertificateKey: !Ref CertificateKey
         Certificate: !Ref Certificate
-        DBType: mysql
+        DBURL: !GetAtt ArtifactoryCoreInfraStack.Outputs.DBURL
+        DBDriver: !GetAtt ArtifactoryCoreInfraStack.Outputs.DBDriver
+        ProDockerRepo: !GetAtt ArtifactoryCoreInfraStack.Outputs.ProDockerRepo
+        NginxDockerRepo: !GetAtt ArtifactoryCoreInfraStack.Outputs.NginxDockerRepo
+        DBPlugin:  !GetAtt ArtifactoryCoreInfraStack.Outputs.DBPlugin
+        DBPluginURL:  !GetAtt ArtifactoryCoreInfraStack.Outputs.DBPluginURL
+        DBType: !GetAtt ArtifactoryCoreInfraStack.Outputs.DBType
         DatabaseName: !Ref DatabaseName
         DatabaseUser: !Ref DatabaseUser
         DatabasePassword: !Ref DatabasePassword

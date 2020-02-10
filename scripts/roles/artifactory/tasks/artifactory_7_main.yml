@@ -13,3 +13,7 @@
     - name: nginx-setup.yml
   loop_control:
     loop_var: my_tasks
+
+- name: Configure ECS EC2 Node to host an Artifactory Container
+  include: configure_ecs.yml
+  when: ecs_deployment == true
