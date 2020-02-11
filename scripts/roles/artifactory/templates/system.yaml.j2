@@ -54,15 +54,8 @@ shared:
     ## Default: Embedded derby
 
     ## Example for mysql/postgresql
-    {% if db_type|lower == "mysql" -%}
-    type: mysql
-    driver: com.mysql.jdbc.Driver
-    url: "jdbc:mysql://{{ db_ipaddr }}:3306/{{ db_name }}?characterEncoding=UTF-8&elideSetAutoCommits=true"
-    {% elif db_type|lower == "postgres" -%}
-    type: postgresql
-    driver: org.postgresql.Driver
-    url: "jdbc:postgresql://{{ db_ipaddr }}:5432/{{ db_name }}" # ?ssl=true&sslfactory=org.postgresql.ssl.jdbc4.LibPQFactory&sslmode=verify-full"
-    {% endif -%}
-    username: {{ db_user }}
-    password: {{ db_password }}
-    #url=jdbc:mysql://{{ db_ipaddr }}:3306/{{ db_name }}?characterEncoding=UTF-8&elideSetAutoCommits=true&verifyServerCertificate=true&useSSL=true&requireSSL=true
+    type: "{{ db_type }}"
+    driver: "{{db_driver }}"
+    url: "{{ db_url }}"
+    username: "{{ db_user }}"
+    password: "{{ db_password }}"

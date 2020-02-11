@@ -34,7 +34,6 @@ Metadata:
       - Label:
           default: Amazon EC2 configuration
         Parameters:
-          - AmiId
           - VolumeSize
           - InstanceType
       - Label:
@@ -68,10 +67,7 @@ Metadata:
         Parameters:
           - QSS3BucketName
           - QSS3KeyPrefix
-          #- OutputBucketName
     ParameterLabels:
-      AmiId:
-        default: AMI ID
       KeyPairName:
         default: SSH key name
       VPCID:
@@ -282,14 +278,6 @@ Parameters:
       - '3'
       - '4'
     Default: '1'
-    Type: String
-  AmiId:
-    Default: AMZNLINUXHVM
-    Description: The Amazon Machine Image AMI being utilized as the underlying operating system to
-      install Artifactory.
-    AllowedValues:
-      - 'AMZNLINUXHVM'
-      - 'tmcvey700'
     Type: String
   VolumeSize:
     Description: The size in GB of the available storage; the Quick Start will create an
@@ -587,8 +575,6 @@ Resources:
       Name: ArtifactorySSL
       Port: 443
       Protocol: TCP
-      #Tags:
-      #  - !Ref DeploymentTag
       TargetType: instance
       UnhealthyThresholdCount: 3
       VpcId: !Ref VPCID
@@ -604,8 +590,6 @@ Resources:
       Name: Artifactory
       Port: 80
       Protocol: TCP
-      #Tags:
-      #  - !Ref DeploymentTag
       TargetType: instance
       UnhealthyThresholdCount: 3
       VpcId: !Ref VPCID
@@ -690,7 +674,7 @@ Resources:
         HostRole: !Ref ArtifactoryHostRole
         QSS3BucketName: !Ref QSS3BucketName
         QSS3KeyPrefix: !Ref QSS3KeyPrefix
-        AmiId: !Ref AmiId
+        AmiId: !Join [ '', !Split [".", !Ref ArtifactoryVersion] ]
         ArtifactoryLicense1: !Sub '{{resolve:secretsmanager:${SMLicensesName}:SecretString:ArtifactoryLicense1}}'
         ArtifactoryLicense2: !Sub '{{resolve:secretsmanager:${SMLicensesName}:SecretString:ArtifactoryLicense2}}'
         ArtifactoryLicense3: !Sub '{{resolve:secretsmanager:${SMLicensesName}:SecretString:ArtifactoryLicense3}}'
@@ -700,11 +684,13 @@ Resources:
         ArtifactoryIAMAcessKey: !GetAtt ArtifactoryCoreInfraStack.Outputs.IAMAcessKey
         SecretAccessKey: !GetAtt ArtifactoryCoreInfraStack.Outputs.SecretAccessKey
         ArtifactoryS3Bucket: !GetAtt ArtifactoryCoreInfraStack.Outputs.S3Bucket
-        ArtifactoryDBEndpointAddress: !GetAtt ArtifactoryCoreInfraStack.Outputs.ArtifactoryDBEndpointAddress
         CertificateKey: !Ref CertificateKey
         Certificate: !Ref Certificate
-        DBType: !Ref DatabaseEngine
-        DatabaseName: !Ref DatabaseName
+        DBURL: !GetAtt ArtifactoryCoreInfraStack.Outputs.DBURL
+        DBDriver: !GetAtt ArtifactoryCoreInfraStack.Outputs.DBDriver
+        DBPlugin:  !GetAtt ArtifactoryCoreInfraStack.Outputs.DBPlugin
+        DBPluginURL:  !GetAtt ArtifactoryCoreInfraStack.Outputs.DBPluginURL
+        DBType: !GetAtt ArtifactoryCoreInfraStack.Outputs.DBType
         DatabaseUser: !Ref DatabaseUser
         DatabasePassword: !Ref DatabasePassword
         ArtifactoryPrimary: 'true'
@@ -732,7 +718,7 @@ Resources:
         MaxScalingNodes: !Ref NumberOfSecondary
         DeploymentTag: ArtifactorySecondary
         HostRole: !Ref ArtifactoryHostRole
-        AmiId: !Ref AmiId
+        AmiId: !Join [ '', !Split [".", !Ref ArtifactoryVersion] ]
         ArtifactoryLicense1: !Sub '{{resolve:secretsmanager:${SMLicensesName}:SecretString:ArtifactoryLicense1}}'
         ArtifactoryLicense2: !Sub '{{resolve:secretsmanager:${SMLicensesName}:SecretString:ArtifactoryLicense2}}'
         ArtifactoryLicense3: !Sub '{{resolve:secretsmanager:${SMLicensesName}:SecretString:ArtifactoryLicense3}}'
@@ -742,11 +728,13 @@ Resources:
         ArtifactoryIAMAcessKey: !GetAtt ArtifactoryCoreInfraStack.Outputs.IAMAcessKey
         SecretAccessKey: !GetAtt ArtifactoryCoreInfraStack.Outputs.SecretAccessKey
         ArtifactoryS3Bucket: !GetAtt ArtifactoryCoreInfraStack.Outputs.S3Bucket
-        ArtifactoryDBEndpointAddress: !GetAtt ArtifactoryCoreInfraStack.Outputs.ArtifactoryDBEndpointAddress
         CertificateKey: !Ref CertificateKey
         Certificate: !Ref Certificate
-        DBType: !Ref DatabaseEngine
-        DatabaseName: !Ref DatabaseName
+        DBURL: !GetAtt ArtifactoryCoreInfraStack.Outputs.DBURL
+        DBDriver: !GetAtt ArtifactoryCoreInfraStack.Outputs.DBDriver
+        DBPlugin:  !GetAtt ArtifactoryCoreInfraStack.Outputs.DBPlugin
+        DBPluginURL:  !GetAtt ArtifactoryCoreInfraStack.Outputs.DBPluginURL
+        DBType: !GetAtt ArtifactoryCoreInfraStack.Outputs.DBType
         DatabaseUser: !Ref DatabaseUser
         DatabasePassword: !Ref DatabasePassword
         ArtifactoryPrimary: 'false'

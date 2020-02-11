@@ -53,14 +53,14 @@ Mappings:
       Name: postgresql
       Driver: "org.postgresql.Driver"
       Plugin: postgresql-42.2.9.jar
-      PluginURL: https://jdbc.postgresql.org/download/postgresql-42.2.9.jar
+      PluginURL: https://jdbc.postgresql.org/download/
       port: "5432"
       extraDBOps: ""
     MySQL:
       Name: mysql
       Driver: "com.mysql.jdbc.Driver"
       Plugin: mysql-connector-java-8.0.19.jar
-      PluginURL: https://bintray.com/artifact/download/bintray/jcenter/mysql/mysql-connector-java/8.0.19/mysql-connector-java-8.0.19.jar
+      PluginURL: https://bintray.com/artifact/download/bintray/jcenter/mysql/mysql-connector-java/8.0.19/
       port: "3306"
       extraDBOps: "?characterEncoding=UTF-8&elideSetAutoCommits=true"
   ReleaseStageMap:
@@ -198,18 +198,23 @@ Outputs:
   DBPlugin:
     Value: !FindInMap [DatabaseMap, !Ref DatabaseEngine, Plugin]
   DBPluginURL:
-    Value: !FindInMap [DatabaseMap, !Ref DatabaseEngine, PluginURL]
+    Value: !Sub
+      - "${MainURL}${PluginVersion}"
+      - {
+        MainURL: !FindInMap [DatabaseMap, !Ref DatabaseEngine, PluginURL],
+        PluginVersion: !FindInMap [DatabaseMap, !Ref DatabaseEngine, Plugin]
+        }
   DBType:
     Value: !FindInMap [DatabaseMap, !Ref DatabaseEngine, Name]
   DBURL:
-      Value: !Sub
-        - "jdbc:${DBType}://${ArtifactoryDBEndpointAddress}:${port}/${DatabaseName}${extraDBOps}"
-        - {
-          DBType: !FindInMap [DatabaseMap, !Ref DatabaseEngine, Name],
-          ArtifactoryDBEndpointAddress: !GetAtt ArtifactoryDB.Endpoint.Address,
-          port: !FindInMap [DatabaseMap, !Ref DatabaseEngine, port],
-          extraDBOps: !FindInMap [DatabaseMap, !Ref DatabaseEngine, extraDBOps],
-          }
+    Value: !Sub
+      - "jdbc:${DBType}://${ArtifactoryDBEndpointAddress}:${port}/${DatabaseName}${extraDBOps}"
+      - {
+        DBType: !FindInMap [DatabaseMap, !Ref DatabaseEngine, Name],
+        ArtifactoryDBEndpointAddress: !GetAtt ArtifactoryDB.Endpoint.Address,
+        port: !FindInMap [DatabaseMap, !Ref DatabaseEngine, port],
+        extraDBOps: !FindInMap [DatabaseMap, !Ref DatabaseEngine, extraDBOps],
+        }
   ProDockerRepo:
     Value: !FindInMap [ReleaseStageMap, !Ref ReleaseStage, ProDockerRepo]
   NginxDockerRepo:
