@@ -2,9 +2,14 @@
 # Cleanup of SSH keys and reset of cloudinit
 
 - name: Remove SSH keys
-  file: 
-    path: "/home/{{ artifactory_ami_user }}/.ssh/authorized_keys"
+  file:
+    path: "{{ ssh_keys.dir }}"
     state: absent
+  loop:
+    - dir: "/home/{{ artifactory_ami_user }}/.ssh/authorized_keys"
+    - dir: "/root/.ssh/authorized_keys"
+  loop_control:
+    loop_var: ssh_keys
 
 - name: shutdown VM
   command: /sbin/shutdown -h now

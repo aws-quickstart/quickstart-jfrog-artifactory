@@ -31,7 +31,6 @@ Metadata:
       - Label:
           default: Amazon EC2 configuration
         Parameters:
-          - AmiId
           - VolumeSize
           - InstanceType
       - Label:
@@ -69,8 +68,6 @@ Metadata:
     ParameterLabels:
       AvailabilityZones:
         default: Availability Zones
-      AmiId:
-        default: AMI ID
       KeyPairName:
         default: SSH key name
       PrivateSubnet1CIDR:
@@ -271,14 +268,6 @@ Parameters:
       - '3'
       - '4'
     Default: '1'
-    Type: String
-  AmiId:
-    Default: AMZNLINUXHVM
-    Description: The Amazon Machine Image AMI being utilized as the underlying operating system to
-      install Artifactory.
-    AllowedValues:
-      - 'AMZNLINUXHVM'
-      - 'tmcvey700'
     Type: String
   VolumeSize:
     Description: The size in GB of the available storage; the Quick Start will create an
@@ -501,7 +490,6 @@ Resources:
     Properties:
       TemplateURL: !Sub 'https://${QSS3BucketName}.s3.amazonaws.com/${QSS3KeyPrefix}templates/jfrog-artifactory-ec2-existing-vpc.template.yaml'
       Parameters:
-        AmiId: !Ref AmiId
         KeyPairName: !Ref KeyPairName
         VPCID: !GetAtt VPCStack.Outputs.VPCID
         VPCCIDR: !Ref VPCCIDR
