@@ -30,13 +30,14 @@ Metadata:
           - BastionOS
           - BastionRootVolumeSize
           - BastionEnableTCPForwarding
-          - BastionEnableX11Forwarding          
+          - BastionEnableX11Forwarding
       - Label:
           default: JFrog Artifactory configuration
         Parameters:
           - ArtifactoryVersion
+          - ReleaseStage
           - ArtifactoryDeploymentSize
-          - NumberOfSecondary 
+          - NumberOfSecondary
           - SMLicensesName
           - Certificate
           - CertificateKey
@@ -52,7 +53,7 @@ Metadata:
           - DatabasePassword
           - DatabaseInstance
           - DBAllocatedStorage
-          - MultiAZDatabase          
+          - MultiAZDatabase
       - Label:
           default: EC2/EKS configuration
         Parameters:
@@ -70,7 +71,7 @@ Metadata:
       KeyPairName:
         default: SSH key name
       AccessCIDR:
-        default: Permitted IP range      
+        default: Permitted IP range
       RemoteAccessCIDR:
         default: Remote access CIDR
       AdditionalEKSAdminArns:
@@ -104,11 +105,13 @@ Metadata:
       BastionEnableX11Forwarding:
         default: Bastion enable X11 forwarding
       BastionOS:
-        default: Bastion operating system     
+        default: Bastion operating system
       NumberOfSecondary:
         default: Number of secondary pods
       ArtifactoryVersion:
         default: Artifactory version
+      ReleaseStage:
+        default: Release stage of the product to deploy
       ArtifactoryDeploymentSize:
         default: Artifactory deployment size
       SMLicensesName:
@@ -157,15 +160,15 @@ Parameters:
       to securely connect to your instance after it launches.
     Type: AWS::EC2::KeyPair::KeyName
   AccessCIDR:
-    Description: The CIDR IP range that is permitted to access Artifactory. 
-      We recommend that you set this value to a trusted IP range. 
-      For example, you might want to grant only your corporate network access to the software. 
+    Description: The CIDR IP range that is permitted to access Artifactory.
+      We recommend that you set this value to a trusted IP range.
+      For example, you might want to grant only your corporate network access to the software.
     AllowedPattern: ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/([0-9]|[1-2][0-9]|3[0-2]))$
-    Type: String    
+    Type: String
   RemoteAccessCIDR:
     Description:
-      The remote CIDR range for allowing SSH into the Bastion instance. 
-      We recommend that you set this value to a trusted IP range. 
+      The remote CIDR range for allowing SSH into the Bastion instance.
+      We recommend that you set this value to a trusted IP range.
       For example, you might want to grant specific ranges inside your corporate network SSH access.
     AllowedPattern: ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/([0-9]|[1-2][0-9]|3[0-2]))$
     ConstraintDescription: CIDR block parameter must be in the form x.x.x.x/x
@@ -243,7 +246,7 @@ Parameters:
     Default: 200
     Type: String
   NumofSecondaryNodes:
-    Description: The initial number of secondary node instances to create. 
+    Description: The initial number of secondary node instances to create.
       If you do not have large enough instances to boot the number of secondary pods, the deployment will fail.
     AllowedValues:
       - 2
@@ -256,7 +259,7 @@ Parameters:
     Type: Number
   KubernetesVersion:
     Description: The Kubernetes control plane version.
-    AllowedValues: [ "1.13", "1.12", "1.11" ]
+    AllowedValues: ["1.13", "1.12", "1.11"]
     Default: "1.13"
     Type: String
   ProvisionBastionHost:
@@ -291,15 +294,15 @@ Parameters:
   BastionEnableTCPForwarding:
     Description: Choose whether to enable TCPForwarding via the bootstrapping of the bastion instance
       or not.
-    AllowedValues: 
+    AllowedValues:
       - "true"
       - "false"
     Default: "true"
     Type: String
   BastionEnableX11Forwarding:
-    Description: Choose true to enable X11 via the bootstrapping of the bastion host. 
-      Setting this value to true will enable X Windows over SSH. 
-      X11 forwarding can be very useful but it is also a security risk, so we recommend 
+    Description: Choose true to enable X11 via the bootstrapping of the bastion host.
+      Setting this value to true will enable X Windows over SSH.
+      X11 forwarding can be very useful but it is also a security risk, so we recommend
       that you keep the default (false) setting unless required.
     AllowedValues:
       - "true"
@@ -317,7 +320,7 @@ Parameters:
     Default: "Amazon-Linux-HVM"
     Type: String
   NumberOfSecondary:
-    Description: Number of secondary Artifactory pods to complete your HA deployment. 
+    Description: Number of secondary Artifactory pods to complete your HA deployment.
       Minimum number of 2 to fit the Artifactory best practices. Do not select more than
       you license for.
     AllowedValues:
@@ -328,7 +331,7 @@ Parameters:
       - 6
       - 7
     Default: 2
-    Type: Number    
+    Type: Number
   ArtifactoryVersion:
     Description: The version of Artifactory that you want to deploy into the Quick Start.
       Please see the release notes to select the version you want to deploy.
@@ -336,6 +339,13 @@ Parameters:
     AllowedPattern: ^(([0-9]|[1-9][0-9])\.){2}([1-9][0-9]|[0-9])$
     ConstraintDescription: A version that matches X.X.X per Artifactory releases.
     Default: 6.11.1
+    Type: String
+  ReleaseStage:
+    Description: Whether to use the upstream repository that is pre-GA.
+    AllowedValues:
+      - "GA"
+      - "BETA"
+    Default: "BETA"
     Type: String
   ArtifactoryDeploymentSize:
     Description: Configuration settings implemented by the Helm chart. There are currently three supported sizes.
@@ -350,12 +360,12 @@ Parameters:
     Type: String
   SMLicensesName:
     Description: The secret name created in AWS Secrets Manager which contains the Artifactory licenses.
-    Type: String   
+    Type: String
   Certificate:
     Description: The certificate file to be used to terminate SSL.
     Type: String
-  CertificateKey: 
-    Description: The private key for the certificate.     
+  CertificateKey:
+    Description: The private key for the certificate.
     NoEcho: 'true'
     Type: String
   CertificateDomain:
@@ -372,13 +382,13 @@ Parameters:
     NoEcho: 'true'
     Type: String
   DatabaseName:
-    Description: The name for your DB instance. The name must be unique across all DB instances 
-      owned by your AWS account in the current AWS Region. The DB instance identifier is case-insensitive, 
+    Description: The name for your DB instance. The name must be unique across all DB instances
+      owned by your AWS account in the current AWS Region. The DB instance identifier is case-insensitive,
       but is stored as all lowercase (as in "mydbinstance").
     AllowedPattern: ^[a-zA-Z]([a-zA-Z0-9])+$
     MinLength: '1'
     MaxLength: '60'
-    ConstraintDescription: 1 to 60 alphanumeric characters First character must be a letter.   
+    ConstraintDescription: 1 to 60 alphanumeric characters First character must be a letter.
     Default: artdb
     Type: String
   DatabaseEngine:
@@ -477,7 +487,7 @@ Parameters:
       forward slash (/).
     Type: String
   LambdaZipsBucketName:
-    Description: '[OPTIONAL] The name of the S3 bucket where the Lambda .zip 
+    Description: '[OPTIONAL] The name of the S3 bucket where the Lambda .zip
       files should be placed. If you leave this parameter blank, an S3 bucket will be created.'
     Type: String
     Default: ''
@@ -527,7 +537,7 @@ Resources:
         KeyPairName: !Ref KeyPairName
         AccessCIDR: !Ref AccessCIDR
         RemoteAccessCIDR: !Ref RemoteAccessCIDR
-        AdditionalEKSAdminArns: !Join [ ",", !Ref AdditionalEKSAdminArns ]
+        AdditionalEKSAdminArns: !Join [",", !Ref AdditionalEKSAdminArns]
         KubeConfigKmsContext: !Ref KubeConfigKmsContext
         VPCID: !GetAtt VPCStack.Outputs.VPCID
         VPCCIDR: !Ref VPCCIDR
@@ -546,6 +556,7 @@ Resources:
         BastionEnableTCPForwarding: !Ref BastionEnableTCPForwarding
         BastionEnableX11Forwarding: !Ref BastionEnableX11Forwarding
         ArtifactoryVersion: !Ref ArtifactoryVersion
+        ReleaseStage: !Ref ReleaseStage
         ArtifactoryDeploymentSize: !Ref ArtifactoryDeploymentSize
         NumberOfSecondary: !Ref NumberOfSecondary
         SMLicensesName: !Ref SMLicensesName

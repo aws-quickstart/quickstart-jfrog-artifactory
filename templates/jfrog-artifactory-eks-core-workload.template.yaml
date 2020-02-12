@@ -2,7 +2,7 @@ AWSTemplateFormatVersion: "2010-09-09"
 Description: "Deploys Artifactory into an existing Kubernetes cluster"
 Parameters:
   KubeManifestLambdaArn:
-    Type: String    
+    Type: String
   HelmLambdaArn:
     Type: String
   KubeConfigPath:
@@ -36,26 +36,42 @@ Parameters:
     NoEcho: 'true'
   Certificate:
     Type: String
-  CertificateDomain:
-    Type: String
-  ArtifactoryDBEndpointAddress:
-    Type: String
-  DatabaseName:
-    Type: String
-    NoEcho: 'true'
   DatabaseUser:
     Type: String
+    NoEcho: 'true'
   DatabasePassword:
     Type: String
     NoEcho: 'true'
+  DBURL:
+    Type: String
+  DBDriver:
+    Type: String
+  DBPluginURL:
+    Type: String
+  DBPlugin:
+    Type: String
+  DBType:
+    Type: String
   MasterKey:
     Type: String
     NoEcho: 'true'
   ArtifactoryVersion:
     Type: String
+  ProDockerRepo:
+    Type: String
+  NginxDockerRepo:
+    Type: String
   ArtifactoryDeploymentSize:
     Type: String
+  ReleaseStage:
+    Type: String
+    Default: BETA
 Mappings:
+  HelmRepoMap:
+    BETA:
+      RepoUrl: https://earlyaccess.jfrog.io/artifactory/helm/
+    GA:
+      RepoUrl: https://charts.jfrog.io/
   DeploymentSize:
     Large:
       requestsMem: "6Gi"
@@ -110,14 +126,14 @@ Resources:
           labels:
             app: artifactory
             chart: artifactory
-        type: kubernetes.io/tls            
-        data: 
-          tls.crt: 
+        type: kubernetes.io/tls
+        data:
+          tls.crt:
             Fn::Base64:
-              !Join [ "\n", "Fn::Split": ["|", !Ref Certificate ]] 
+              !Join ["\n", "Fn::Split": ["|", !Ref Certificate]]
           tls.key:
             Fn::Base64:
-              !Join [ "\n", "Fn::Split": ["|", !Ref CertificateKey ]]
+              !Join ["\n", "Fn::Split": ["|", !Ref CertificateKey]]
   LicenseStore:
     DependsOn: NameSpace
     Type: "Custom::KubeManifest"
@@ -135,23 +151,53 @@ Resources:
           labels:
             app: artifactory
             chart: artifactory
-        type: Opaque            
-        stringData: 
-          art.lic: !Sub 
+        type: Opaque
+        stringData:
+          art.lic: !Sub
             >-
             ${ArtifactoryLicense1}
-  
-  
+
+
             ${ArtifactoryLicense2}
-          
-          
+
+
             ${ArtifactoryLicense3}
-  
-  
+
+
             ${ArtifactoryLicense4}
+  SecureStoreDB:
+    DependsOn: NameSpace
+    Type: "Custom::KubeManifest"
+    Version: '1.0'
+    Properties:
+      ServiceToken: !Ref KubeManifestLambdaArn
+      KubeConfigPath: !Ref KubeConfigPath
+      KubeConfigKmsContext: !Ref KubeConfigKmsContext
+      Manifest:
+        kind: Secret
+        apiVersion: v1
+        metadata:
+          name: artifactory-cluster-db
+          namespace: jfrog-artifactory
+          labels:
+            app: artifactory
+            chart: artifactory
+        type: Opaque
+        data:
+          db-user:
+            Fn::Base64:
+              !Sub ${DatabaseUser}
+          db-password:
+            Fn::Base64:
+              !Sub ${DatabasePassword}
+          db-url:
+            Fn::Base64:
+              !Sub ${DBURL}
+
+
   ArtifactoryDeployment:
     Type: "Custom::Helm"
-    DependsOn: 
+    DependsOn:
       - LicenseStore
       - CertificateStore
     Version: '1.0'
@@ -162,13 +208,15 @@ Resources:
       Namespace: jfrog-artifactory
       Name: quickstart-artifactory-ha
       Chart: jfrog/artifactory-ha
-      RepoUrl: https://charts.jfrog.io
-      ValueYaml: !Sub 
+      RepoUrl: !FindInMap [HelmRepoMap, !Ref ReleaseStage, RepoUrl]
+      # If we want to test specific version of the Helm chart, we can pass it herefjq
+      #Version: 2.0.3
+      ValueYaml: !Sub
         - |
           artifactory:
             name: artifactory-ha
             image:
-              repository: docker.bintray.io/jfrog/artifactory-pro
+              repository: ${ProDockerRepo}
               version: ${ArtifactoryVersion}
               pullPolicy: Always
             deleteDBPropertiesOnStartup: true
@@ -176,7 +224,8 @@ Resources:
               secret: artifactory-cluster-license
               dataKey: art.lic
             masterKey: ${MasterKey}
-            preStartCommand: "wget -O /opt/jfrog/artifactory/tomcat/lib/mysql-connector-java-5.1.41.jar https://jcenter.bintray.com/mysql/mysql-connector-java/5.1.41/mysql-connector-java-5.1.41.jar"
+              #masterKeySecretName: artifactory-cluster-masterkey
+            preStartCommand: "mkdir -p /var/opt/jfrog/artifactory/bootstrap/artifactory/tomcat/lib/; wget -O  /var/opt/jfrog/artifactory/bootstrap/artifactory/tomcat/lib/${DBPlugin} ${DBPluginURL}"
             persistence:
               enabled: false
               type: aws-s3
@@ -186,6 +235,8 @@ Resources:
                 identity: ${ArtifactoryIAMAcessKey}
                 credential: ${SecretAccessKey}
                 bucketName: ${ArtifactoryS3Bucket}
+            service:
+              pool: all
             primary:
               resources:
                 requests:
@@ -212,7 +263,10 @@ Resources:
                 xms: "${java_xms}"
                 xmx: "${java_xmx}"
               nodeSelector:
-                partition: artifactory-secondary
+                #partition: artifactory-secondary
+              waitForPrimaryStartup:
+                enabled: true
+                time: 5
               ## Only used if "affinity" is empty
               podAntiAffinity:
                 ## Valid values are "soft" or "hard"; any other value indicates no anti-affinity
@@ -221,71 +275,35 @@ Resources:
           postgresql:
             enabled: false
           database:
-            type: mysql
-            url: jdbc:mysql://${ArtifactoryDBEndpointAddress}:3306/${DatabaseName}?characterEncoding=UTF-8&elideSetAutoCommits=true #&verifyServerCertificate=true&useSSL=true&requireSSL=true
-            user: ${DatabaseUser}
-            password: ${DatabasePassword}
+            type: ${DBType}
+            driver: ${DBDriver}
+            secrets:
+              user:
+                name: artifactory-cluster-db
+                key: "db-user"
+              password:
+                name: artifactory-cluster-db
+                key: "db-password"
+              url:
+                name: artifactory-cluster-db
+                key: "db-url"
           nginx:
+            enabled: true
             image:
+              repository: ${NginxDockerRepo}
               version: ${ArtifactoryVersion}
-            tlsSecretName: artifactory-nginx-tls
-            nodeSelector:
-              partition: artifactory-primary
+            replicaCount: 3
             service:
               loadBalancerSourceRanges:  [ "${AccessCIDR}" ]
-            artifactoryConf: |
-              ssl_protocols TLSv1 TLSv1.1 TLSv1.2 TLSv1.3;
-              ssl_certificate  {{ .Values.nginx.persistence.mountPath }}/ssl/tls.crt;
-              ssl_certificate_key  {{ .Values.nginx.persistence.mountPath }}/ssl/tls.key;
-              ssl_session_cache shared:SSL:1m;
-              ssl_prefer_server_ciphers   on;
-              ## server configuration
-              server {
-                listen {{ .Values.nginx.internalPortHttps }} ssl;
-                listen {{ .Values.nginx.internalPortHttp }} ;
-                server_name ~(?<repo>.+).${CertificateDomain} ~(?<repo>.+).jfrog.team
-                {{- range .Values.ingress.hosts -}}
-                  {{- if contains "." . -}}
-                    {{ "" | indent 0 }} ~(?<repo>.+)\.{{ . }}
-                  {{- end -}}
-                {{- end -}};
-                if ($http_x_forwarded_proto = '') {
-                  set $http_x_forwarded_proto  $scheme;
-                }
-                ## Application specific logs
-                ## access_log /var/log/nginx/artifactory-access.log timing;
-                ## error_log /var/log/nginx/artifactory-error.log;
-                rewrite ^/$ /artifactory/webapp/ redirect;
-                rewrite ^/artifactory/?(/webapp)?$ /artifactory/webapp/ redirect;
-                if ( $repo != "" ) {
-                  rewrite ^/(v1|v2)/(.*) /artifactory/api/docker/$repo/$1/$2 break;
-                }
-                rewrite ^/(v1|v2)/([^/]+)(.*)$ /artifactory/api/docker/$2/$1/$3;
-                rewrite ^/(v1|v2)/ /artifactory/api/docker/$1/;
-
-                chunked_transfer_encoding on;
-                client_max_body_size 0;
-                location /artifactory/ {
-                  proxy_read_timeout  900;
-                  proxy_pass_header   Server;
-                  proxy_cookie_path   ~*^/.* /;
-                  if ( $request_uri ~ ^/artifactory/(.*)$ ) {
-                    proxy_pass       http://{{ include "artifactory-ha.fullname" . }}:{{ .Values.artifactory.externalPort }}/artifactory/$1;
-                  }
-                  proxy_pass          http://{{ include "artifactory-ha.fullname" . }}:{{ .Values.artifactory.externalPort }}/artifactory/;
-                  proxy_set_header    X-Artifactory-Override-Base-Url $http_x_forwarded_proto://$host:$server_port/artifactory;
-                  proxy_set_header    X-Forwarded-Port  $server_port;
-                  proxy_set_header    X-Forwarded-Proto $http_x_forwarded_proto;
-                  proxy_set_header    Host              $http_host;
-                  proxy_set_header    X-Forwarded-For   $proxy_add_x_forwarded_for;
-                }
-              }
-        - { requests_memory: !FindInMap [DeploymentSize, !Ref ArtifactoryDeploymentSize, requestsMem],
-            requests_cpu: !FindInMap [DeploymentSize, !Ref ArtifactoryDeploymentSize, requestsCpu],
-            limits_memory: !FindInMap [DeploymentSize, !Ref ArtifactoryDeploymentSize, limitsMem ],
-            limits_cpu: !FindInMap [DeploymentSize, !Ref ArtifactoryDeploymentSize, limitsCpu ],
-            java_xms: !FindInMap [DeploymentSize, !Ref ArtifactoryDeploymentSize, javaOptsXms ],
-            java_xmx: !FindInMap [DeploymentSize, !Ref ArtifactoryDeploymentSize, javaOptsXmx ] }
+            tlsSecretName: artifactory-nginx-tls
+        - {
+           requests_memory: !FindInMap [DeploymentSize, !Ref ArtifactoryDeploymentSize, requestsMem],
+           requests_cpu: !FindInMap [DeploymentSize, !Ref ArtifactoryDeploymentSize, requestsCpu],
+           limits_memory: !FindInMap [DeploymentSize, !Ref ArtifactoryDeploymentSize, limitsMem],
+           limits_cpu: !FindInMap [DeploymentSize, !Ref ArtifactoryDeploymentSize, limitsCpu],
+           java_xms: !FindInMap [DeploymentSize, !Ref ArtifactoryDeploymentSize, javaOptsXms],
+           java_xmx: !FindInMap [DeploymentSize, !Ref ArtifactoryDeploymentSize, javaOptsXmx],
+          }
   IngressHostName:
     DependsOn: ArtifactoryDeployment
     Type: "Custom::KubeGet"
@@ -296,7 +314,7 @@ Resources:
       KubeConfigKmsContext: !Ref KubeConfigKmsContext
       Namespace: jfrog-artifactory
       Name: svc/quickstart-artifactory-ha-nginx
-      JsonPath: '{.status.loadBalancer.ingress[0].hostname}'        
+      JsonPath: '{.status.loadBalancer.ingress[0].hostname}'
 Outputs:
   ArtifactoryUrl:
     Value: !Sub https://${IngressHostName}
