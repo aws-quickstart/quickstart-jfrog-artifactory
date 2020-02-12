@@ -15,7 +15,7 @@ Parameters:
     Type: Number
   ClusterName:
     Description: Desired name for your cluster.
-    Default: JFrog  
+    Default: JFrog
     Type: String
   CreateNewECSCluster:
     Description: Whether to create the ECS Cluster with given name or not.
@@ -36,7 +36,7 @@ Parameters:
   ArtifactoryServerName:
     Type: String
   CertificateDomain:
-    Type: String    
+    Type: String
   ArtifactoryIAMAcessKey:
     Type: String
     NoEcho: 'true'
@@ -50,15 +50,19 @@ Parameters:
     NoEcho: 'true'
   Certificate:
     Type: String
-  DBType:
+  DBURL:
     Type: String
-  DBPluginUrl:
-    Default: https://bintray.com/artifact/download/bintray/jcenter/mysql/mysql-connector-java/5.1.38/mysql-connector-java-5.1.38.jar
+  DBDriver:
     Type: String
   DBPlugin:
-    Default: mysql-connector-java-5.1.38.jar
     Type: String
-  ArtifactoryDBEndpointAddress:
+  DBPluginURL:
+    Type: String
+  ProDockerRepo:
+    Type: String
+  NginxDockerRepo:
+    Type: String
+  DBType:
     Type: String
   DatabaseName:
     Type: String
@@ -75,60 +79,65 @@ Parameters:
   ArtifactoryVersion:
     Type: String
   KeyPairName:
-    Type: AWS::EC2::KeyPair::KeyName    
+    Type: AWS::EC2::KeyPair::KeyName
   ArtifactoryTargetGroupArn:
     Type: String
   SecurityGroups:
     Type: String
   AnsibleVaultPass:
     Description: Ansiblevault Password to secure the artifactory.yml
-    NoEcho: 'true'  
+    NoEcho: 'true'
     Type: String
   QSS3BucketName:
     Type: String
   QSS3KeyPrefix:
     Type: String
 Mappings:
+  PluginMap:
+    postgresql:
+      plugin: postgresql-42.2.9.jar
+      url: https://jdbc.postgresql.org/download/postgresql-42.2.9.jar
+    mysql:
+      plugin: mysql-connector-java-8.0.19.jar
+      url: https://bintray.com/artifact/download/bintray/jcenter/mysql/mysql-connector-java/8.0.19/mysql-connector-java-8.0.19.jar
   AWSAMIRegionMap:
-    #AMI:
-    #   AMZECSOTP: amzn-ami-2018.03.a-amazon-ecs-optimized
     us-east-2:
-       AMI: ami-0307f7ccf6ea35750
+      AMZNLINUXHVM: ami-025e529ec693faba6
     us-east-1:
-       AMI: ami-045f1b3f87ed83659
+      AMZNLINUXHVM: ami-0f81924348bcd01a1
     us-west-2:
-       AMI: ami-01b70aea4161476b7
+      AMZNLINUXHVM: ami-01262e56d9a240227
     us-west-1:
-       AMI: ami-0285183bbef6224bd
+      AMZNLINUXHVM: ami-0c4f775d282076047
     eu-west-3:
-       AMI: ami-0f4738fbeb53e6c3a
+      AMZNLINUXHVM: ami-00c2374f0b16417ab
     eu-west-2:
-       AMI: ami-01bee3897bba49d78
+      AMZNLINUXHVM: ami-037af9c254c6dc46c
     eu-west-1:
-       AMI: ami-0627e141ce928067c
+      AMZNLINUXHVM: ami-04c29bb1e9988c803
     eu-central-1:
-       AMI: ami-0eaa3baf6969912ba
+      AMZNLINUXHVM: ami-02171c9c6dfc9dd1a
     eu-north-1:
-       AMI: ami-03494b0c9e1c22492
+      AMZNLINUXHVM: ami-0eb986243d67b81fc
     ap-northeast-2:
-       AMI: ami-00294948a592fc052
+      AMZNLINUXHVM: ami-0bd857d087df070e6
     ap-northeast-1:
-       AMI: ami-05b296a384694dfa4
+      AMZNLINUXHVM: ami-0633805928291a0db
     ap-southeast-2:
-       AMI: ami-02c73ee1100ce3e7a
+      AMZNLINUXHVM: ami-02a1d998121cea625
     ap-southeast-1:
-       AMI: ami-050865a806e0dae53
+      AMZNLINUXHVM: ami-0dfacf29e68ba0347
     ca-central-1:
-       AMI: ami-0f552e0a86f08b660
+      AMZNLINUXHVM: ami-06a21d76fa509c0e8
     ap-south-1:
-       AMI: ami-01ef9f6a829ae3956
+      AMZNLINUXHVM: ami-005136f1190a5c6b7
     sa-east-1:
-       AMI: ami-084b1eee100c102ee
+      AMZNLINUXHVM: ami-0c16a6e54a2f933f0
 Conditions:
   CreateECSCluster: !Equals [!Ref 'CreateNewECSCluster', 'Enabled']
-  GovCloudCondition: !Equals 
+  GovCloudCondition: !Equals
     - !Ref 'AWS::Region'
-    - us-gov-west-1       
+    - us-gov-west-1
 Resources:
   ECSRole:
     Type: AWS::IAM::Role
@@ -153,7 +162,7 @@ Resources:
         - arn:aws:iam::aws:policy/service-role/AmazonEC2ContainerServiceforEC2Role
       Policies:
         - PolicyName: ecs-service
-          PolicyDocument: 
+          PolicyDocument:
             Statement:
               - Effect: Allow
                 Action:
@@ -175,14 +184,14 @@ Resources:
                 Resource: "*"
   ECSInstanceProfile:
     Type: AWS::IAM::InstanceProfile
-    Properties: 
+    Properties:
       Path: /
-      Roles: 
+      Roles:
         - !Ref ECSRole
-  ECSCluster: 
+  ECSCluster:
     Condition: CreateECSCluster
     Type: AWS::ECS::Cluster
-    Properties: 
+    Properties:
       ClusterName: !Ref ClusterName
   ArtifactoryScalingGroup:
     Type: 'AWS::AutoScaling::AutoScalingGroup'
@@ -205,14 +214,14 @@ Resources:
     CreationPolicy:
       ResourceSignal:
         Count: 1
-        Timeout: PT30M                
+        Timeout: PT30M
   ArtifactoryLaunchConfiguration:
     Type: 'AWS::AutoScaling::LaunchConfiguration'
     Metadata:
       'AWS::CloudFormation::Authentication':
         S3AccessCreds:
           type: S3
-          roleName: 
+          roleName:
             - !Ref ECSRole
           buckets:
             - !Ref QSS3BucketName
@@ -229,6 +238,7 @@ Resources:
                 - import_playbook: site-artifactory.yml
                   vars:
                     ecs_deployment: true
+                    artifactory_version: ${ArtifactoryVersion}
                     artifactory_hostname: artifactory
                     ssl_dir: /data/jfrog/nginx/ssl/
                     key_dir: /data/jfrog/nginx/ssl/
@@ -244,23 +254,33 @@ Resources:
                     certificate_domain: ${CertificateDomain}
                     certificate: ${Certificate}
                     certificate_key: ${CertificateKey}
-                    java_mysql_driver:
-                      url: ${DBPluginUrl}
-                      dest: /data/jfrog/artifactory/plugins/${DBPlugin}
-                      owner: root
-                      group: root
-                    rds_cert:
-                      url: https://s3.amazonaws.com/rds-downloads/rds-combined-ca-bundle.pem
-                      dest: /data/jfrog/artifactory/java_certs/rds-combined-ca-bundle.pem
-                      owner: root
-                      group: root                    
+                    artifactory_java_db_certs:
+                      - name: ca-bundled
+                        url: https://s3.amazonaws.com/rds-downloads/rds-combined-ca-bundle.pem
+                        dest: /data/jfrog/artifactory/java_certs/rds-combined-ca-bundle.pem
+                        owner: root
+                        group: root
+                      - name: ca-root
+                        url: https://s3.amazonaws.com/rds-downloads/rds-ca-2019-root.pem
+                        dest: /data/jfrog/artifactory/java_certs/rds-ca-2019-root.pem
+                        owner: root
+                        group: root
+                    artifactory_java_db_drivers:
+                      - name: mysql
+                        url: https://bintray.com/artifact/download/bintray/jcenter/mysql/mysql-connector-java/5.1.38/mysql-connector-java-5.1.38.jar
+                        owner: root
+                        group: root
+                      - name: postgres
+                        url: https://jdbc.postgresql.org/download/postgresql-42.2.9.jar
+                        owner: root
+                        group: root
               mode: "0400"
             /root/.vault_pass.txt:
               content: !Sub |
                 ${AnsibleVaultPass}
               mode: "0400"
             /root/.secureit.sh:
-              content: /usr/local/bin/ansible-vault encrypt /root/.artifactory_ansible/artifactory.yml --vault-id /root/.vault_pass.txt
+              content: ansible-vault encrypt /root/.artifactory_ansible/artifactory.yml --vault-id /root/.vault_pass.txt
               mode: "0770"
         secure-artifactory:
           commands:
@@ -271,10 +291,10 @@ Resources:
       AssociatePublicIpAddress: false
       KeyName: !Ref KeyPairName
       IamInstanceProfile: !Ref ECSInstanceProfile
-      ImageId: !FindInMap 
+      ImageId: !FindInMap
         - AWSAMIRegionMap
         - !Ref 'AWS::Region'
-        - AMI
+        - AMZNLINUXHVM
       SecurityGroups:
         - !Ref SecurityGroups
       InstanceType: !Ref InstanceType
@@ -285,7 +305,7 @@ Resources:
             VolumeSize: !Ref VolumeSize
             VolumeType: gp2
             DeleteOnTermination: true
-      UserData: !Base64 
+      UserData: !Base64
         'Fn::Sub':
           - >
             #!/bin/bash -x
@@ -318,7 +338,7 @@ Resources:
 
             S3URI=https://${QSS3BucketName}.${S3Region}.amazonaws.com/${QSS3KeyPrefix}
 
-            yum install -y git
+            yum install -y git https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-latest.amzn1.noarch.rpm python3-pip
 
             echo $PATH
 
@@ -327,8 +347,7 @@ Resources:
             echo $PATH
             echo \'[Cloning: Load QuickStart Common Utils]\'
 
-            git clone
-            https://github.com/aws-quickstart/quickstart-linux-utilities.git
+            git clone https://github.com/aws-quickstart/quickstart-linux-utilities.git
 
             source /quickstart-linux-utilities/quickstart-cfn-tools.source
 
@@ -340,15 +359,17 @@ Resources:
 
             qs_bootstrap_pip || qs_err
 
-            qs_aws-cfn-bootstrap || qs_err
-
             pip install awscli &> /var/log/userdata.awscli_install.log || qs_err " awscli install failed "
-            
+
             pip install ansible &> /var/log/userdata.ansible_install.log || qs_err " ansible install failed "
+
+            pip install selinux &> /var/log/userdata.selinux_install.log || qs_err " selinux install failed "
+
+            pip install aws-cfn-bootstrap &> /var/log/userdata.cfn_bootstrap_install.log || qs_err " cfn_bootstrap install failed "
 
             mkdir ~/.artifactory_ansible
 
-            aws s3 sync s3://${QSS3BucketName}/${QSS3KeyPrefix}scripts/ ~/.artifactory_ansible/ 
+            aws s3 sync s3://${QSS3BucketName}/${QSS3KeyPrefix}scripts/ ~/.artifactory_ansible/
 
             cfn-init -v --stack ${AWS::StackName} --resource
             ArtifactoryLaunchConfiguration --configsets artifactory_install
@@ -356,12 +377,12 @@ Resources:
 
             export ANSIBLE_VAULT_PASSWORD_FILE="/root/.vault_pass.txt"
 
-            /usr/local/bin/ansible-playbook /root/.artifactory_ansible/artifactory.yml
+            ansible-playbook /root/.artifactory_ansible/artifactory.yml || qs_err "Ansible execution failed "
 
             rm -rf /root/.secureit.sh
 
             [ $(qs_status) == 0 ] && cfn_success || cfn_fail
-          - S3Region: !If 
+          - S3Region: !If
             - GovCloudCondition
             - s3-us-gov-west-1
             - s3
@@ -378,20 +399,25 @@ Resources:
         ECSCluster: !Ref ClusterName # In case we do not build the cluster we still require the Name of the cluster built.
         ServiceName: ArtifactoryPrimary
         ArtifactoryTargetGroupArn: !Ref ArtifactoryTargetGroupArn
-        ArtifactoryVersion: !Ref ArtifactoryVersion
         DBPlugin: !Ref DBPlugin
+        DBPluginURL: !Ref DBPluginURL
         MasterKey: !Ref MasterKey
         ExtraJavaOptions: !Ref ExtraJavaOptions
         NumberNodes: "1"
         ArtifactoryPrimary: "true"
+        DBURL: !Ref DBURL
+        DBDriver: !Ref DBDriver
+        ProDockerRepoURL: !Sub "${ProDockerRepo}:${ArtifactoryVersion}"
+        NginxDockerRepoURL: !Sub "${NginxDockerRepo}:${ArtifactoryVersion}"
         DBType: !Ref DBType
         DatabaseUser: !Ref DatabaseUser
         DatabaseName: !Ref DatabaseName
         DatabasePassword: !Ref DatabasePassword
-        ArtifactoryDBEndpointAddress: !Ref ArtifactoryDBEndpointAddress
         ECSLogGroup: !Ref ECSLogGroup
-        ECSRoleArn: 
+        ECSRoleArn:
           Fn::GetAtt: ECSRole.Arn
+        QSS3BucketName: !Ref QSS3BucketName
+        QSS3KeyPrefix: !Ref QSS3KeyPrefix
   SecondaryStack:
     DependsOn: PrimaryStack
     Type: AWS::CloudFormation::Stack
@@ -401,17 +427,22 @@ Resources:
         ECSCluster: !Ref ClusterName # In case we do not build the cluster we still require the Name of the cluster built.
         ServiceName: ArtifactorySecondary
         ArtifactoryTargetGroupArn: !Ref ArtifactoryTargetGroupArn
-        ArtifactoryVersion: !Ref ArtifactoryVersion
         DBPlugin: !Ref DBPlugin
+        DBPluginURL: !Ref DBPluginURL
         MasterKey: !Ref MasterKey
         ExtraJavaOptions: !Ref ExtraJavaOptions
         NumberNodes: !Ref NumberOfSecondary
-        ArtifactoryPrimary: "true" # If this is false then the entrypoint-artifactory script will get stuck in a forever waiting loop 
+        ArtifactoryPrimary: "true" # If this is false then the entrypoint-artifactory script will get stuck in a forever waiting loop
+        DBURL: !Ref DBURL
+        DBDriver: !Ref DBDriver
+        ProDockerRepoURL: !Sub "${ProDockerRepo}:${ArtifactoryVersion}"
+        NginxDockerRepoURL: !Sub "${NginxDockerRepo}:${ArtifactoryVersion}"
         DBType: !Ref DBType
         DatabaseUser: !Ref DatabaseUser
         DatabaseName: !Ref DatabaseName
         DatabasePassword: !Ref DatabasePassword
-        ArtifactoryDBEndpointAddress: !Ref ArtifactoryDBEndpointAddress
         ECSLogGroup: !Ref ECSLogGroup
-        ECSRoleArn: 
+        ECSRoleArn:
           Fn::GetAtt: ECSRole.Arn
+        QSS3BucketName: !Ref QSS3BucketName
+        QSS3KeyPrefix: !Ref QSS3KeyPrefix

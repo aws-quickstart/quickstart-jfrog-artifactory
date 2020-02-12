@@ -31,13 +31,13 @@ Metadata:
       - Label:
           default: Amazon EC2 configuration
         Parameters:
-          - AmiId
           - VolumeSize
           - InstanceType
       - Label:
           default: JFrog Artifactory configuration
         Parameters:
           - ArtifactoryVersion
+          - ReleaseStage
           - NumberOfSecondary
           - SMLicensesName
           - Certificate
@@ -68,8 +68,6 @@ Metadata:
     ParameterLabels:
       AvailabilityZones:
         default: Availability Zones
-      AmiId:
-        default: AMI ID
       KeyPairName:
         default: SSH key name
       PrivateSubnet1CIDR:
@@ -108,6 +106,8 @@ Metadata:
         default: Number of secondary instances
       ArtifactoryVersion:
         default: Artifactory version
+      ReleaseStage:
+        default: Release stage of the product to deploy
       SMLicensesName:
         default: Artifactory licenses secret name
       Certificate:
@@ -269,14 +269,6 @@ Parameters:
       - '4'
     Default: '1'
     Type: String
-  AmiId:
-    Default: AMZNLINUXHVM
-    Description: The Amazon Machine Image AMI being utilized as the underlying operating system to
-      install Artifactory.
-    AllowedValues:
-      - 'AMZNLINUXHVM'
-      - 'tmcvey700'
-    Type: String
   VolumeSize:
     Description: The size in GB of the available storage; the Quick Start will create an
       Amazon Elastic Block Store (Amazon EBS) volumes of this size.
@@ -313,6 +305,13 @@ Parameters:
     AllowedPattern: ^(([0-9]|[1-9][0-9])\.){2}([1-9][0-9]|[0-9])$
     ConstraintDescription: A version that matches X.X.X per Artifactory releases.
     Default: 6.11.1
+    Type: String
+  ReleaseStage:
+    Description: Whether to use the upstream repository that is pre-GA.
+    AllowedValues:
+      - "GA"
+      - "BETA"
+    Default: "GA"
     Type: String
   SMLicensesName:
     Description: The secret name created in AWS Secrets Manager which contains the Artifactory licenses.
@@ -491,7 +490,6 @@ Resources:
     Properties:
       TemplateURL: !Sub 'https://${QSS3BucketName}.s3.amazonaws.com/${QSS3KeyPrefix}templates/jfrog-artifactory-ec2-existing-vpc.template.yaml'
       Parameters:
-        AmiId: !Ref AmiId
         KeyPairName: !Ref KeyPairName
         VPCID: !GetAtt VPCStack.Outputs.VPCID
         VPCCIDR: !Ref VPCCIDR
@@ -514,6 +512,7 @@ Resources:
         InstanceType: !Ref InstanceType
         NumberOfSecondary: !Ref NumberOfSecondary
         ArtifactoryVersion: !Ref ArtifactoryVersion
+        ReleaseStage: !Ref ReleaseStage
         SMLicensesName: !Ref SMLicensesName
         Certificate: !Ref Certificate
         CertificateKey: !Ref CertificateKey

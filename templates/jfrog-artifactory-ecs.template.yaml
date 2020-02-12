@@ -7,10 +7,6 @@ Parameters:
     Type: String
   ArtifactoryTargetGroupArn:
     Type: String
-  ArtifactoryVersion:
-    Type: String
-  DBPlugin:
-    Type: String
   MasterKey:
     Type: String
     NoEcho: 'true'
@@ -20,6 +16,18 @@ Parameters:
     Type: String
   NumberNodes:
     Type: Number
+  DBURL:
+    Type: String
+  DBDriver:
+    Type: String
+  DBPluginURL:
+    Type: String
+  DBPlugin:
+    Type: String
+  ProDockerRepoURL:
+    Type: String
+  NginxDockerRepoURL:
+    Type: String
   DBType:
     Type: String
   DatabaseUser:
@@ -29,12 +37,18 @@ Parameters:
   DatabasePassword:
     Type: String
     NoEcho: 'true'
-  ArtifactoryDBEndpointAddress:
-    Type: String
   ECSRoleArn:
     Type: String
   ECSLogGroup:
     Type: String
+  YQVersion:
+    Default: "3.0.1"
+    Type: String
+  QSS3BucketName:
+    Type: String
+  QSS3KeyPrefix:
+    Type: String
+
 Resources:
   ECSService:
     Type: AWS::ECS::Service
@@ -62,33 +76,38 @@ Resources:
       ExecutionRoleArn: !Ref ECSRoleArn
       Volumes:
         - Name: etc
-          Host: 
+          Host:
             SourcePath: /data/jfrog/artifactory/etc/
         - Name: temp-plugins
-          Host: 
+          Host:
             SourcePath: /data/jfrog/artifactory/tmp/plugins
         - Name: java-certs
-          Host: 
+          Host:
             SourcePath: /data/jfrog/artifactory/java_certs
-        - Name: plugins
-          Host: 
-            SourcePath: !Sub 
-              /data/jfrog/artifactory/plugins/${DBPlugin}
         - Name: nginx
-          Host: 
+          Host:
             SourcePath: /data/jfrog/nginx
       ContainerDefinitions:
         - Name: artifactory
           EntryPoint:
             - /bin/bash
             - "-c"
-          Command: 
-            - "echo export HA_HOST_IP=`wget -q -O - http://169.254.169.254/latest/meta-data/local-ipv4` > /tmp/source; echo /entrypoint-artifactory.sh >> /tmp/source; chmod +x /tmp/source; /tmp/source"
-          Image: !Sub
-            docker.bintray.io/jfrog/artifactory-pro:${ArtifactoryVersion}
+          Command:
+            - !Sub |
+                wget https://${QSS3BucketName}.s3.amazonaws.com/${QSS3KeyPrefix}scripts/configure_ecs_container.sh -O /tmp/source;
+                echo '' >> /tmp/source;
+                echo export HA_HOST_IP=`wget -q -O - http://169.254.169.254/latest/meta-data/local-ipv4` >> /tmp/source;
+                echo wget -O /var/opt/jfrog/artifactory/bootstrap/artifactory/tomcat/lib/${DBPlugin} ${DBPluginURL} >> /tmp/source;
+                echo /entrypoint-artifactory.sh >> /tmp/source;
+                chmod +x /tmp/source;
+                /tmp/source
+          Image: !Sub ${ProDockerRepoURL}
           PortMappings:
             - ContainerPort: 8081
               HostPort: 8081
+              Protocol: tcp
+            - ContainerPort: 8082
+              HostPort: 8082
               Protocol: tcp
           MountPoints:
             - ContainerPath: /artifactory_extra_conf
@@ -100,10 +119,6 @@ Resources:
             - ContainerPath: /artifactory_extra_certs
               ReadOnly: False
               SourceVolume: java-certs
-            - ContainerPath: !Sub 
-                /opt/jfrog/artifactory/tomcat/lib/${DBPlugin}
-              ReadOnly: False
-              SourceVolume: plugins                           
           Ulimits:
             - Name: nproc
               SoftLimit: 65535
@@ -112,7 +127,7 @@ Resources:
               SoftLimit: 32000
               HardLimit: 40000
           HealthCheck:
-            Command: 
+            Command:
               - CMD-SHELL
               - (printf 'GET /artifactory/api/system/ping HTTP/1.0\r\n\r\n'; sleep 1) | nc 127.0.0.1 8081 | grep OK || exit 1
             Interval: 5
@@ -127,14 +142,17 @@ Resources:
             - Name: HA_IS_PRIMARY
               Value: !Ref ArtifactoryPrimary
             - Name: DB_URL
-              Value: !Sub
-                jdbc:mysql://${ArtifactoryDBEndpointAddress}:3306/${DatabaseName}?characterEncoding=UTF-8&elideSetAutoCommits=true&verifyServerCertificate=true&useSSL=true&requireSSL=true 
+              Value: !Ref DBURL
             - Name: DB_TYPE
               Value: !Ref DBType
             - Name: DB_USER
               Value: !Ref DatabaseUser
             - Name: DB_PASSWORD
               Value: !Ref DatabasePassword
+            - Name: DB_DRIVER
+              Value: !Ref DBDriver
+            - Name: YQ_VERSION
+              Value: !Ref YQVersion
           LogConfiguration:
             LogDriver: awslogs
             Options:
@@ -142,8 +160,7 @@ Resources:
               awslogs-region: !Ref AWS::Region
               awslogs-stream-prefix: artifactory
         - Name: nginx
-          Image: !Sub
-            docker.bintray.io/jfrog/nginx-artifactory-pro:${ArtifactoryVersion}
+          Image: !Sub ${NginxDockerRepoURL}
           PortMappings:
             - ContainerPort: 80
               HostPort: 80
@@ -152,7 +169,7 @@ Resources:
               HostPort: 443
               Protocol: tcp
           Essential: false
-          DependsOn: 
+          DependsOn:
             - Condition: HEALTHY
               ContainerName: artifactory
           Links:

@@ -41,14 +41,18 @@ Parameters:
     Type: String
   Certificate:
     Type: String
-  CertificateKey: 
+  CertificateKey:
     Type: String
     NoEcho: 'true'
+  DBURL:
+    Type: String
+  DBDriver:
+    Type: String
+  DBPluginURL:
+    Type: String
+  DBPlugin:
+    Type: String
   DBType:
-    Type: String
-  ArtifactoryDBEndpointAddress:
-    Type: String
-  DatabaseName:
     Type: String
   DatabaseUser:
     Type: String
@@ -92,11 +96,10 @@ Mappings:
   AWSAMIRegionMap:
     AMI:
       AMZNLINUXHVM: amzn-ami-hvm-2018.03.0.20181129-x86_64-gp2
-      artifactory617: tmcvey-6-17
     ap-northeast-1:
       AMZNLINUXHVM: ami-079e6fb1e856e80c1
     ap-northeast-2:
-      AMZNLINUXHVM: ami-0e4a253fb5f082688 
+      AMZNLINUXHVM: ami-0e4a253fb5f082688
     ap-south-1:
       AMZNLINUXHVM: ami-01e074f40dfb9999d
     ap-southeast-1:
@@ -113,20 +116,17 @@ Mappings:
       AMZNLINUXHVM: ami-04b202bf877b5027b
     us-east-1:
       AMZNLINUXHVM: ami-09d069a04349dc3cb
-      tmcvey700: ami-06baee01fb2ef01d2
+      "700": ami-06baee01fb2ef01d2
+      "702": ami-085b1acc8e8b5b039
     us-east-2:
       AMZNLINUXHVM: ami-0d542ef84ec55d71c
     us-west-1:
       AMZNLINUXHVM: ami-04bc3da8f14823e88
     us-west-2:
       AMZNLINUXHVM: ami-01460aa81365561fe
-      tmcvey700: ami-000937e944ea194bf
-  # Stubbed for future if Debian is wanted.
-  #LinuxAMINameMap:
-  #  Amazon-Linux-HVM:
-  #    Code: AMZNLINUXHVM
+      "700": ami-000937e944ea194bf
 Conditions:
-  GovCloudCondition: !Equals 
+  GovCloudCondition: !Equals
     - !Ref 'AWS::Region'
     - us-gov-west-1
 Resources:
@@ -141,7 +141,7 @@ Resources:
       MaxSize: !Ref MaxScalingNodes
       Cooldown: '300'
       DesiredCapacity: !Ref MinScalingNodes
-      TargetGroupARNs: 
+      TargetGroupARNs:
         - !Ref TargetGroupARN
         - !Ref SSLTargetGroupARN
       HealthCheckType: ELB
@@ -160,7 +160,7 @@ Resources:
         'AWS::CloudFormation::Authentication':
           S3AccessCreds:
             type: S3
-            roleName: 
+            roleName:
               - !Ref HostRole #!Ref ArtifactoryHostRole
             buckets:
               - !Ref QSS3BucketName
@@ -190,8 +190,8 @@ Resources:
                         certificate_key: ${CertificateKey}
                         ssl_dir: /etc/pki/tls/certs
                         db_type: ${DBType}
-                        db_ipaddr: ${ArtifactoryDBEndpointAddress}
-                        db_name: ${DatabaseName}
+                        db_driver: ${DBDriver}
+                        db_url: ${DBURL}
                         db_user: ${DatabaseUser}
                         db_password: ${DatabasePassword}
                         art_primary: ${ArtifactoryPrimary}
@@ -202,6 +202,11 @@ Resources:
                           path: /opt/jfrog/artifactory/app/third-party/java/lib/security/cacerts
                           default_password: changeit
                           new_keystore_pass: ${KeystorePassword}
+                        artifactory_java_db_drivers:
+                          - name: ${DBPlugin}
+                            url: ${DBPluginURL}
+                            owner: artifactory
+                            group: artifactory
                 mode: "0400"
               /root/.vault_pass.txt:
                 content: !Sub |
@@ -220,7 +225,7 @@ Resources:
         AssociatePublicIpAddress: false
         KeyName: !Ref KeyPairName
         IamInstanceProfile: !Ref HostProfile
-        ImageId: !FindInMap 
+        ImageId: !FindInMap
           - AWSAMIRegionMap
           - !Ref 'AWS::Region'
           - !Ref AmiId
@@ -233,7 +238,7 @@ Resources:
               VolumeSize: !Ref VolumeSize
               VolumeType: gp2
               DeleteOnTermination: true
-        UserData: !Base64 
+        UserData: !Base64
           'Fn::Sub':
             - >
               #!/bin/bash -x
@@ -289,14 +294,14 @@ Resources:
               qs_aws-cfn-bootstrap || qs_err
 
               source ~/venv/bin/activate &> /var/log/userdata.activate_venv.log || qs_err " activate venv failed "
-              
+
               #pip install awscli &> /var/log/userdata.awscli_install.log || qs_err " awscli install failed "
-              
+
               #pip install ansible &> /var/log/userdata.ansible_install.log || qs_err " ansible install failed "
 
               mkdir ~/.artifactory_ansible
 
-              aws s3 sync s3://${QSS3BucketName}/${QSS3KeyPrefix}scripts/ ~/.artifactory_ansible/ 
+              aws s3 sync s3://${QSS3BucketName}/${QSS3KeyPrefix}scripts/ ~/.artifactory_ansible/
 
               cfn-init -v --stack ${AWS::StackName} --resource
               ArtifactoryLaunchConfiguration --configsets artifactory_install
@@ -309,7 +314,7 @@ Resources:
               rm -rf /root/.secureit.sh
 
               [ $(qs_status) == 0 ] && cfn_success || cfn_fail
-            - S3Region: !If 
+            - S3Region: !If
               - GovCloudCondition
               - s3-us-gov-west-1
               - s3

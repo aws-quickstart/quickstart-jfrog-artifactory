@@ -1,2 +1,5 @@
 .ignore/
 venv/
+.taskcat_overrides.yaml
+.taskcat/
+taskcat_outputs/

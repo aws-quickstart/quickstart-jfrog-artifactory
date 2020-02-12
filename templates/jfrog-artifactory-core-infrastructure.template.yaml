@@ -43,13 +43,33 @@ Parameters:
     Type: String
   DatabaseName:
     Type: String
+  ReleaseStage:
+    Default: GA
+    Type: String
 
 Mappings:
-  DBTypetoPortMap:
-    MySQL:
-      port: 3306
+  DatabaseMap:
     Postgres:
-      port: 5432
+      Name: postgresql
+      Driver: "org.postgresql.Driver"
+      Plugin: postgresql-42.2.9.jar
+      PluginURL: https://jdbc.postgresql.org/download/
+      port: "5432"
+      extraDBOps: ""
+    MySQL:
+      Name: mysql
+      Driver: "com.mysql.jdbc.Driver"
+      Plugin: mysql-connector-java-8.0.19.jar
+      PluginURL: https://bintray.com/artifact/download/bintray/jcenter/mysql/mysql-connector-java/8.0.19/
+      port: "3306"
+      extraDBOps: "?characterEncoding=UTF-8&elideSetAutoCommits=true"
+  ReleaseStageMap:
+    BETA:
+      ProDockerRepo: "earlyaccess-docker.jfrog.io/jfrog/artifactory-pro"
+      NginxDockerRepo: "earlyaccess-docker.jfrog.io/jfrog/nginx-artifactory-pro"
+    GA:
+      ProDockerRepo: "docker.bintray.io/jfrog/artifactory-pro"
+      NginxDockerRepo: "docker.bintray.io/jfrog/nginx-artifactory-pro"
 Resources:
   ArtifactoryDBSubnetGroup:
     Type: AWS::RDS::DBSubnetGroup
@@ -58,7 +78,7 @@ Resources:
       SubnetIds: !Ref SubnetIds
   ArtifactoryDB:
     Type: AWS::RDS::DBInstance
-    Properties: 
+    Properties:
       AllocatedStorage: !Ref DBAllocatedStorage
       MultiAZ: !Ref MultiAZDatabase
       Engine: !Ref DatabaseEngine
@@ -68,7 +88,7 @@ Resources:
       DBInstanceClass: !Ref DatabaseInstance
       DBName: !Ref DatabaseName
       DBSubnetGroupName: !Ref  ArtifactoryDBSubnetGroup
-      VPCSecurityGroups: 
+      VPCSecurityGroups:
         - !Ref ArtifactoryDBSG
   ArtifactoryDBSG:
     Type: AWS::EC2::SecurityGroup
@@ -84,32 +104,32 @@ Resources:
           ToPort: 22
           CidrIp: !Ref VPCCIDR
         - IpProtocol: tcp
-          FromPort: !FindInMap 
-            - DBTypetoPortMap
+          FromPort: !FindInMap
+            - DatabaseMap
             - !Ref DatabaseEngine
             - port
-          ToPort: !FindInMap 
-            - DBTypetoPortMap
+          ToPort: !FindInMap
+            - DatabaseMap
             - !Ref DatabaseEngine
             - port
           CidrIp: !Ref PrivateSubnet1CIDR
         - IpProtocol: tcp
-          FromPort: !FindInMap 
-            - DBTypetoPortMap
+          FromPort: !FindInMap
+            - DatabaseMap
             - !Ref DatabaseEngine
             - port
-          ToPort: !FindInMap 
-            - DBTypetoPortMap
+          ToPort: !FindInMap
+            - DatabaseMap
             - !Ref DatabaseEngine
             - port
           CidrIp: !Ref PrivateSubnet2CIDR
         - IpProtocol: tcp
-          FromPort: !FindInMap 
-            - DBTypetoPortMap
+          FromPort: !FindInMap
+            - DatabaseMap
             - !Ref DatabaseEngine
             - port
-          ToPort: !FindInMap 
-            - DBTypetoPortMap
+          ToPort: !FindInMap
+            - DatabaseMap
             - !Ref DatabaseEngine
             - port
           CidrIp: !Ref PrivateSubnet3CIDR
@@ -128,10 +148,10 @@ Resources:
           CidrIp: 0.0.0.0/0
   ArtifactoryS3IAMUser:
     Type: AWS::IAM::User
-  ArtifactoryIAMAcessKey: 
+  ArtifactoryIAMAcessKey:
     Type: AWS::IAM::AccessKey
-    Properties: 
-      UserName: !Ref ArtifactoryS3IAMUser 
+    Properties:
+      UserName: !Ref ArtifactoryS3IAMUser
   ArtifactoryS3Bucket:
     Type: AWS::S3::Bucket
     Properties:
@@ -140,16 +160,16 @@ Resources:
         ServerSideEncryptionConfiguration:
           - ServerSideEncryptionByDefault:
               SSEAlgorithm: AES256
-  ArtifactoryS3IAMPolicy: 
+  ArtifactoryS3IAMPolicy:
     Type: AWS::IAM::Policy
-    Properties: 
+    Properties:
       PolicyName: S3BucketPermissions
-      PolicyDocument: 
+      PolicyDocument:
         Version: 2012-10-17
-        Statement: 
+        Statement:
           - Sid: S3BucketPermissions
             Effect: Allow
-            Action: 
+            Action:
               - s3:*
             Resource:
               - Fn::Join:
@@ -171,8 +191,31 @@ Outputs:
     Value: !GetAtt ArtifactoryIAMAcessKey.SecretAccessKey
     Description: Secret Access key for S3 Bucket
   S3Bucket:
-    Value: !Ref ArtifactoryS3Bucket 
+    Value: !Ref ArtifactoryS3Bucket
     Description: Actual S3 bucket created for Artifactory
-  ArtifactoryDBEndpointAddress:
-    Value: !GetAtt ArtifactoryDB.Endpoint.Address
-    Description: Database Endpoint address
+  DBDriver:
+    Value: !FindInMap [DatabaseMap, !Ref DatabaseEngine, Driver]
+  DBPlugin:
+    Value: !FindInMap [DatabaseMap, !Ref DatabaseEngine, Plugin]
+  DBPluginURL:
+    Value: !Sub
+      - "${MainURL}${PluginVersion}"
+      - {
+        MainURL: !FindInMap [DatabaseMap, !Ref DatabaseEngine, PluginURL],
+        PluginVersion: !FindInMap [DatabaseMap, !Ref DatabaseEngine, Plugin]
+        }
+  DBType:
+    Value: !FindInMap [DatabaseMap, !Ref DatabaseEngine, Name]
+  DBURL:
+    Value: !Sub
+      - "jdbc:${DBType}://${ArtifactoryDBEndpointAddress}:${port}/${DatabaseName}${extraDBOps}"
+      - {
+        DBType: !FindInMap [DatabaseMap, !Ref DatabaseEngine, Name],
+        ArtifactoryDBEndpointAddress: !GetAtt ArtifactoryDB.Endpoint.Address,
+        port: !FindInMap [DatabaseMap, !Ref DatabaseEngine, port],
+        extraDBOps: !FindInMap [DatabaseMap, !Ref DatabaseEngine, extraDBOps],
+        }
+  ProDockerRepo:
+    Value: !FindInMap [ReleaseStageMap, !Ref ReleaseStage, ProDockerRepo]
+  NginxDockerRepo:
+    Value: !FindInMap [ReleaseStageMap, !Ref ReleaseStage, NginxDockerRepo]

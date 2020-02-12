@@ -5,8 +5,7 @@ ecs_deployment: false
 
 db_type: mysql
 db_driver: com.mysql.jdbc.Driver
-db_ipaddr: 127.0.0.1
-db_name: artifactory
+db_url: jdbc:mysql://127.0.0.1:3306/artdb?characterEncoding=UTF-8&elideSetAutoCommits=true&verifyServerCertificate=true&useSSL=true&requireSSL=true
 db_user: artuser
 db_password: badpassword
 
@@ -64,4 +63,4 @@ artifactory_keystore:
 artifactory_keystore_path: /etc/alternatives/jre_1.8.0/lib/security/cacerts
 artifactory_keystore_default: changeit
 artifactory_keystore_pass: needs_to_be_passed
-  
+

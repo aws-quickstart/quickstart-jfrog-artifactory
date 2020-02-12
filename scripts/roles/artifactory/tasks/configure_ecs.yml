@@ -16,16 +16,12 @@
     - path: /data/jfrog/artifactory/plugins      # Needs mapped to /opt/jfrog/artifactory/tomcat/lib/
       state: directory
 
+- name: Set tomcat location
+  set_fact:
+    artifactory_tomcat_loc: /data/jfrog/artifactory/plugins/
 
-- name: Download Java requirements such as jbdc for mysql Driver and the RDS CA certificate
-  get_url:
-    url: "{{ item.url }}"
-    dest: "{{ item.dest }}"
-    owner: "{{ item.owner }}"
-    group: "{{ item.group }}"
-  loop:
-   - "{{ java_mysql_driver }}"
-   - "{{ rds_cert }}"
+- name: Install dependencies
+  include: shared_configure_db_ssl.yml
 
 - name: Template of the properties as requires for Artifactory
   template:
@@ -34,7 +30,7 @@
     owner: root
     group: root
     mode: '0664'
-  loop: 
+  loop:
     - src: binarystore.xml.j2
       dest: /data/jfrog/artifactory/etc/binarystore.xml
     - src: artifactory.cluster.license.j2
@@ -59,7 +55,7 @@
     owner: "{{ nginx_user_id }}"
     group: "{{ nginx_group_id }}"
     mode: '0664'
-  loop: 
+  loop:
     - src: certificate.pem.j2
       dest: "{{ ssl_dir }}cert.pem"
     - src: certificate.key.j2
@@ -78,6 +74,7 @@
     - src: inactiveServerCleaner.groovy
       dest: /data/jfrog/artifactory/tmp/plugins/inactiveServerCleaner.groovy
       mode: '0777'
+  when: artifactory_major_verion|int == 6
 
 
 

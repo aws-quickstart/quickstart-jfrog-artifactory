@@ -12,5 +12,3 @@
 - name: Artifactory 7 install
   include: artifactory_7_main.yml
   when: artifactory_major_verion|int == 7
-
-

@@ -19,11 +19,11 @@
 
 - name: Update Java
   package:
-   name: 
+   name:
     - "{{ java_version }}"
     - nginx
    state: present
-  
+
 - name: Configure Java
   alternatives:
     name: java
