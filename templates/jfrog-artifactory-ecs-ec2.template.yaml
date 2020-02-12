@@ -92,14 +92,6 @@ Parameters:
     Type: String
   QSS3KeyPrefix:
     Type: String
-Mappings:
-  PluginMap:
-    postgresql:
-      plugin: postgresql-42.2.9.jar
-      url: https://jdbc.postgresql.org/download/postgresql-42.2.9.jar
-    mysql:
-      plugin: mysql-connector-java-8.0.19.jar
-      url: https://bintray.com/artifact/download/bintray/jcenter/mysql/mysql-connector-java/8.0.19/mysql-connector-java-8.0.19.jar
   AWSAMIRegionMap:
     us-east-2:
       AMZNLINUXHVM: ami-025e529ec693faba6
