@@ -137,7 +137,7 @@ Please also verify the `.taskcat.yml` is updated with the region you wish to dep
     AccessCIDR: `curl -v4 ifconfig.io`
     KeyPairName: `your-keypair`
     MasterKey: 1ce2be4490ca2c662cb79636cf9b7b8e
-    SMLicensesName: jfrog-artifactory
+    SMLicenseCertName: jfrog-artifactory
     Certificate: "-----BEGIN CERTIFICATE-----|  CERTIFICATE_MATCHING_DOMAIN_LINE_SEPARATORES_WITH|-----END     CERTIFICATE-----"
     CertificateKey: "-----BEGIN PRIVATE KEY-----|PRIVATE_KEY_MATCHING_DOMAIN_LINE_SEPARATORES_WITH`|`|-----END PRIVATE KEY-----"
 

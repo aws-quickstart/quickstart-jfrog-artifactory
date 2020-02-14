@@ -32,8 +32,6 @@ Parameters:
     Type: String
   DatabaseEngine:
     Type: String
-  DatabaseVersion:
-    Type: String
   DatabaseUser:
     Type: String
   DatabasePassword:
@@ -51,6 +49,7 @@ Mappings:
   DatabaseMap:
     Postgres:
       Name: postgresql
+      DatabaseVersion: 11.5
       Driver: "org.postgresql.Driver"
       Plugin: postgresql-42.2.9.jar
       PluginURL: https://jdbc.postgresql.org/download/
@@ -58,6 +57,7 @@ Mappings:
       extraDBOps: ""
     MySQL:
       Name: mysql
+      DatabaseVersion: 5.7
       Driver: "com.mysql.jdbc.Driver"
       Plugin: mysql-connector-java-8.0.19.jar
       PluginURL: https://bintray.com/artifact/download/bintray/jcenter/mysql/mysql-connector-java/8.0.19/
@@ -82,7 +82,10 @@ Resources:
       AllocatedStorage: !Ref DBAllocatedStorage
       MultiAZ: !Ref MultiAZDatabase
       Engine: !Ref DatabaseEngine
-      EngineVersion: !Ref DatabaseVersion
+      EngineVersion: !FindInMap
+        - DatabaseMap
+        - !Ref DatabaseEngine
+        - DatabaseVersion
       MasterUsername: !Ref DatabaseUser
       MasterUserPassword: !Ref DatabasePassword
       DBInstanceClass: !Ref DatabaseInstance
