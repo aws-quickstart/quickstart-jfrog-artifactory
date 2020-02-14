@@ -16,5 +16,10 @@
     loop_var: my_tasks
 
 - name: Configure ECS EC2 Node to host an Artifactory Container
-  include: configure_ecs.yml
+  include: "{{ my_tasks_ecs.name }}"
   when: ecs_deployment == true
+  loop:
+    - name: configure_ecs.yml
+    - name: shared_configure_db_ssl.yml
+  loop_control:
+    loop_var: my_tasks_ecs

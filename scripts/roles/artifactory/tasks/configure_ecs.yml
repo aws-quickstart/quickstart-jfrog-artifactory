@@ -20,9 +20,6 @@
   set_fact:
     artifactory_tomcat_loc: /data/jfrog/artifactory/plugins/
 
-- name: Install dependencies
-  include: shared_configure_db_ssl.yml
-
 - name: Template of the properties as requires for Artifactory
   template:
     src: "{{ item.src }}"
