@@ -111,7 +111,7 @@ Metadata:
       ArtifactoryDeploymentSize:
         default: Artifactory deployment size
       SMLicenseCertName:
-        default: Artifactory licenses secret name
+        default: Artifactory licenses and certificate secret name
       MasterKey:
         default: Master server key
       DatabaseName:

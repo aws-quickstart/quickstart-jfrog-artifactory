@@ -109,7 +109,7 @@ Metadata:
       VolumeSize:
         default: EBS Root volume size
       SMLicenseCertName:
-        default: Artifactory licenses secret name
+        default: Artifactory licenses and certificate secret name
       ArtifactoryServerName:
         default: Artifactory server name
       MasterKey:
@@ -117,9 +117,7 @@ Metadata:
       ExtraJavaOptions:
         default: Extra Java options
       AnsibleVaultPass:
-        Description: Ansiblevault Password to secure the artifactory.yml
-        Type: String
-        NoEcho: 'true'
+        default: Ansible Vault password
       DatabaseName:
         default: Database name
       DatabaseEngine:
