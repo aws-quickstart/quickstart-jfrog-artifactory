@@ -120,7 +120,7 @@ Metadata:
       NumberOfSecondary:
         default: Number of secondary pods
       SMLicenseCertName:
-        default: Artifactory licenses secret name
+        default: Artifactory licenses and certificate secret name
       MasterKey:
         default: Master server key
       DatabaseName:

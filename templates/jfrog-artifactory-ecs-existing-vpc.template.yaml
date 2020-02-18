@@ -121,7 +121,7 @@ Metadata:
       NumberOfEC2Nodes:
         default: Number of EC2 nodes
       SMLicenseCertName:
-        default: Artifactory licenses secret name
+        default: Artifactory licenses and certificate secret name
       ArtifactoryServerName:
         default: Artifactory server name
       MasterKey:

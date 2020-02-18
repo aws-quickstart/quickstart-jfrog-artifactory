@@ -111,7 +111,7 @@ Metadata:
       ArtifactoryVersion:
         default: Artifactory version
       SMLicenseCertName:
-        default: Artifactory licenses secret name
+        default: Artifactory licenses and certificate secret name
       ArtifactoryServerName:
         default: Artifactory server name
       MasterKey:
