@@ -32,8 +32,6 @@ Parameters:
     Type: String
   DatabaseUser:
     Type: String
-  DatabaseName:
-    Type: String
   DatabasePassword:
     Type: String
     NoEcho: 'true'
@@ -64,6 +62,7 @@ Resources:
       TaskDefinition:
         Ref: ArtifactoryTaskDefinition
       HealthCheckGracePeriodSeconds: 300
+
   ArtifactoryTaskDefinition:
     Type: AWS::ECS::TaskDefinition
     Properties:

@@ -35,6 +35,11 @@ Parameters:
     Type: String
   ArtifactoryServerName:
     Type: String
+  Certificate:
+    Type: String
+  CertificateKey:
+    Type: String
+    NoEcho: 'true'
   CertificateDomain:
     Type: String
   ArtifactoryIAMAcessKey:
@@ -44,11 +49,6 @@ Parameters:
     Type: String
     NoEcho: 'true'
   ArtifactoryS3Bucket:
-    Type: String
-  CertificateKey:
-    Type: String
-    NoEcho: 'true'
-  Certificate:
     Type: String
   DBURL:
     Type: String
@@ -63,8 +63,6 @@ Parameters:
   NginxDockerRepo:
     Type: String
   DBType:
-    Type: String
-  DatabaseName:
     Type: String
   DatabaseUser:
     Type: String
@@ -92,6 +90,7 @@ Parameters:
     Type: String
   QSS3KeyPrefix:
     Type: String
+Mappings:
   AWSAMIRegionMap:
     us-east-2:
       AMZNLINUXHVM: ami-025e529ec693faba6
@@ -174,17 +173,20 @@ Resources:
                   - application-autoscaling:DescribeScalableTargets
                   - iam:ListRoles
                 Resource: "*"
+
   ECSInstanceProfile:
     Type: AWS::IAM::InstanceProfile
     Properties:
       Path: /
       Roles:
         - !Ref ECSRole
+
   ECSCluster:
     Condition: CreateECSCluster
     Type: AWS::ECS::Cluster
     Properties:
       ClusterName: !Ref ClusterName
+
   ArtifactoryScalingGroup:
     Type: 'AWS::AutoScaling::AutoScalingGroup'
     Properties:
@@ -207,6 +209,7 @@ Resources:
       ResourceSignal:
         Count: 1
         Timeout: PT30M
+
   ArtifactoryLaunchConfiguration:
     Type: 'AWS::AutoScaling::LaunchConfiguration'
     Metadata:
@@ -243,29 +246,9 @@ Resources:
                     s3_access_secret_key: ${SecretAccessKey}
                     s3_bucket: ${ArtifactoryS3Bucket}
                     artifactory_server_name: ${ArtifactoryServerName}
-                    certificate_domain: ${CertificateDomain}
                     certificate: ${Certificate}
                     certificate_key: ${CertificateKey}
-                    artifactory_java_db_certs:
-                      - name: ca-bundled
-                        url: https://s3.amazonaws.com/rds-downloads/rds-combined-ca-bundle.pem
-                        dest: /data/jfrog/artifactory/java_certs/rds-combined-ca-bundle.pem
-                        owner: root
-                        group: root
-                      - name: ca-root
-                        url: https://s3.amazonaws.com/rds-downloads/rds-ca-2019-root.pem
-                        dest: /data/jfrog/artifactory/java_certs/rds-ca-2019-root.pem
-                        owner: root
-                        group: root
-                    artifactory_java_db_drivers:
-                      - name: mysql
-                        url: https://bintray.com/artifact/download/bintray/jcenter/mysql/mysql-connector-java/5.1.38/mysql-connector-java-5.1.38.jar
-                        owner: root
-                        group: root
-                      - name: postgres
-                        url: https://jdbc.postgresql.org/download/postgresql-42.2.9.jar
-                        owner: root
-                        group: root
+                    certificate_domain: ${CertificateDomain}
               mode: "0400"
             /root/.vault_pass.txt:
               content: !Sub |
@@ -378,10 +361,12 @@ Resources:
             - GovCloudCondition
             - s3-us-gov-west-1
             - s3
+
   ECSLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
       RetentionInDays: 7
+
   PrimaryStack:
     DependsOn: ArtifactoryScalingGroup
     Type: AWS::CloudFormation::Stack
@@ -403,13 +388,13 @@ Resources:
         NginxDockerRepoURL: !Sub "${NginxDockerRepo}:${ArtifactoryVersion}"
         DBType: !Ref DBType
         DatabaseUser: !Ref DatabaseUser
-        DatabaseName: !Ref DatabaseName
         DatabasePassword: !Ref DatabasePassword
         ECSLogGroup: !Ref ECSLogGroup
         ECSRoleArn:
           Fn::GetAtt: ECSRole.Arn
         QSS3BucketName: !Ref QSS3BucketName
         QSS3KeyPrefix: !Ref QSS3KeyPrefix
+
   SecondaryStack:
     DependsOn: PrimaryStack
     Type: AWS::CloudFormation::Stack
@@ -424,14 +409,13 @@ Resources:
         MasterKey: !Ref MasterKey
         ExtraJavaOptions: !Ref ExtraJavaOptions
         NumberNodes: !Ref NumberOfSecondary
-        ArtifactoryPrimary: "true" # If this is false then the entrypoint-artifactory script will get stuck in a forever waiting loop
+        ArtifactoryPrimary: "false" # If this is false then the entrypoint-artifactory script will get stuck in a forever waiting loop
         DBURL: !Ref DBURL
         DBDriver: !Ref DBDriver
         ProDockerRepoURL: !Sub "${ProDockerRepo}:${ArtifactoryVersion}"
         NginxDockerRepoURL: !Sub "${NginxDockerRepo}:${ArtifactoryVersion}"
         DBType: !Ref DBType
         DatabaseUser: !Ref DatabaseUser
-        DatabaseName: !Ref DatabaseName
         DatabasePassword: !Ref DatabasePassword
         ECSLogGroup: !Ref ECSLogGroup
         ECSRoleArn:

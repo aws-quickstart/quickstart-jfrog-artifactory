@@ -70,8 +70,10 @@ Mappings:
   HelmRepoMap:
     BETA:
       RepoUrl: https://earlyaccess.jfrog.io/artifactory/helm/
+      Helmversion: 2.0.11
     GA:
       RepoUrl: https://charts.jfrog.io/
+      Helmversion: 2.0.11
   DeploymentSize:
     Large:
       requestsMem: "6Gi"
@@ -94,6 +96,7 @@ Mappings:
       limitsCpu: "4"
       javaOptsXms: "4g"
       javaOptsXmx: "4g"
+
 Resources:
   NameSpace:
     Type: "Custom::KubeManifest"
@@ -109,6 +112,7 @@ Resources:
           name: jfrog-artifactory
           labels:
             app: artifactory
+
   CertificateStore:
     DependsOn: NameSpace
     Type: "Custom::KubeManifest"
@@ -134,6 +138,7 @@ Resources:
           tls.key:
             Fn::Base64:
               !Join ["\n", "Fn::Split": ["|", !Ref CertificateKey]]
+
   LicenseStore:
     DependsOn: NameSpace
     Type: "Custom::KubeManifest"
@@ -165,6 +170,7 @@ Resources:
 
 
             ${ArtifactoryLicense4}
+
   SecureStoreDB:
     DependsOn: NameSpace
     Type: "Custom::KubeManifest"
@@ -194,7 +200,6 @@ Resources:
             Fn::Base64:
               !Sub ${DBURL}
 
-
   ArtifactoryDeployment:
     Type: "Custom::Helm"
     DependsOn:
@@ -210,7 +215,7 @@ Resources:
       Chart: jfrog/artifactory-ha
       RepoUrl: !FindInMap [HelmRepoMap, !Ref ReleaseStage, RepoUrl]
       # If we want to test specific version of the Helm chart, we can pass it herefjq
-      #Version: 2.0.3
+      Version: !FindInMap [HelmRepoMap, !Ref ReleaseStage, Helmversion]
       ValueYaml: !Sub
         - |
           artifactory:
@@ -224,7 +229,6 @@ Resources:
               secret: artifactory-cluster-license
               dataKey: art.lic
             masterKey: ${MasterKey}
-              #masterKeySecretName: artifactory-cluster-masterkey
             preStartCommand: "mkdir -p /var/opt/jfrog/artifactory/bootstrap/artifactory/tomcat/lib/; wget -O  /var/opt/jfrog/artifactory/bootstrap/artifactory/tomcat/lib/${DBPlugin} ${DBPluginURL}"
             persistence:
               enabled: false
@@ -263,10 +267,7 @@ Resources:
                 xms: "${java_xms}"
                 xmx: "${java_xmx}"
               nodeSelector:
-                #partition: artifactory-secondary
-              waitForPrimaryStartup:
-                enabled: true
-                time: 5
+                partition: artifactory-secondary
               ## Only used if "affinity" is empty
               podAntiAffinity:
                 ## Valid values are "soft" or "hard"; any other value indicates no anti-affinity

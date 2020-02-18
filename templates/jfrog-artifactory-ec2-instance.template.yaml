@@ -29,6 +29,11 @@ Parameters:
     Type: String
   ArtifactoryServerName:
     Type: String
+  Certificate:
+    Type: String
+  CertificateKey:
+    Type: String
+    NoEcho: 'true'
   CertificateDomain:
     Type: String
   ArtifactoryIAMAcessKey:
@@ -39,11 +44,6 @@ Parameters:
     NoEcho: 'true'
   ArtifactoryS3Bucket:
     Type: String
-  Certificate:
-    Type: String
-  CertificateKey:
-    Type: String
-    NoEcho: 'true'
   DBURL:
     Type: String
   DBDriver:
@@ -154,6 +154,7 @@ Resources:
       ResourceSignal:
         Count: 1
         Timeout: PT30M
+
   ArtifactoryLaunchConfiguration:
       Type: 'AWS::AutoScaling::LaunchConfiguration'
       Metadata:
@@ -181,13 +182,13 @@ Resources:
                         artifactory_license3: ${ArtifactoryLicense3}
                         artifactory_license4: ${ArtifactoryLicense4}
                         artifactory_server_name: ${ArtifactoryServerName}
-                        certificate_domain: ${CertificateDomain}
                         s3_endpoint: s3.${AWS::Region}.amazonaws.com
                         s3_access_key: ${ArtifactoryIAMAcessKey}
                         s3_access_secret_key: ${SecretAccessKey}
                         s3_bucket: ${ArtifactoryS3Bucket}
                         certificate: ${Certificate}
                         certificate_key: ${CertificateKey}
+                        certificate_domain: ${CertificateDomain}
                         ssl_dir: /etc/pki/tls/certs
                         db_type: ${DBType}
                         db_driver: ${DBDriver}

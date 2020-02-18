@@ -41,10 +41,7 @@ Metadata:
           - ReleaseStage
           - NumberOfSecondary
           - NumberOfEC2Nodes
-          - SMLicensesName
-          - Certificate
-          - CertificateKey
-          - CertificateDomain
+          - SMLicenseCertName
           - ArtifactoryServerName
           - MasterKey
           - ExtraJavaOptions
@@ -54,7 +51,6 @@ Metadata:
         Parameters:
           - DatabaseName
           - DatabaseEngine
-          - DatabaseVersion
           - DatabaseUser
           - DatabasePassword
           - DatabaseInstance
@@ -112,14 +108,8 @@ Metadata:
         default: EC2 instance type
       VolumeSize:
         default: EBS Root volume size
-      SMLicensesName:
-        default: Artifactory licenses secret name
-      Certificate:
-        default: Certificate
-      CertificateKey:
-        default: Certificate key
-      CertificateDomain:
-        default: Certificate domain
+      SMLicenseCertName:
+        default: Artifactory licenses and certificate secret name
       ArtifactoryServerName:
         default: Artifactory server name
       MasterKey:
@@ -127,15 +117,11 @@ Metadata:
       ExtraJavaOptions:
         default: Extra Java options
       AnsibleVaultPass:
-        Description: Ansiblevault Password to secure the artifactory.yml
-        Type: String
-        NoEcho: 'true'
+        default: Ansible Vault password
       DatabaseName:
         default: Database name
       DatabaseEngine:
         default: Database negine
-      DatabaseVersion:
-        default: Database version
       DatabaseUser:
         default: Database user
       DatabasePassword:
@@ -322,7 +308,7 @@ Parameters:
       https://www.jfrog.com/confluence/display/RTF/Release+Notes
     AllowedPattern: ^(([0-9]|[1-9][0-9])\.){2}([1-9][0-9]|[0-9])$
     ConstraintDescription: A version that matches X.X.X per Artifactory releases.
-    Default: 6.11.1
+    Default: 7.0.2
     Type: String
   ReleaseStage:
     Description: Whether to use the upstream repository that is pre-GA.
@@ -331,24 +317,8 @@ Parameters:
       - "BETA"
     Default: "GA"
     Type: String
-  SMLicensesName:
-    Description: The secret name created in AWS Secrets Manager which contains the Artifactory licenses.
-    Type: String
-  Certificate:
-    Description: The certificate file to be used to terminate SSL.
-    AllowedPattern: ^(-----BEGIN CERTIFICATE-----)(.*?)+(-----END CERTIFICATE-----)$
-    ConstraintDescription: A Certificate that begins with "-----BEGIN CERTIFICATE----- " and ends with "-----END CERTIFICATE----- ".
-    Type: String
-  CertificateKey:
-    Description: The private key for the certificate.
-    AllowedPattern: ^(-----BEGIN [A-Za-z ]+ KEY-----)(.*?)+(-----END [A-Za-z ]+ KEY-----)$
-    ConstraintDescription: A Private key that begins with "-----BEGIN PRIVATE KEY-----" and ends with "-----END PRIVATE KEY-----".
-    NoEcho: 'true'
-    Type: String
-  CertificateDomain:
-    Description: The domain matching that of the certificate. Ensure that it matches your certificate.
-    AllowedPattern: ^[A-Za-z0-9]+[.A-Za-z0-9]+[A-Za-z0-9]$
-    ConstraintDescription: The domain must not start or end with a '.'
+  SMLicenseCertName:
+    Description: The secret name created in AWS Secrets Manager which contains the SSL certificate, certificate key, and Artifactory licenses.
     Type: String
   ArtifactoryServerName:
     Description: The name of your Artifactory server. Ensure that this matches your certificate.
@@ -389,18 +359,6 @@ Parameters:
       - MySQL
       - Postgres
     Default: Postgres
-    Type: String
-  DatabaseVersion:
-    Description: The major version of the MySQL/PostgreSQL database engine you want to run. This is currently locked to MySQL/PostgreSQL versions
-      supported by Artifactory and RDS.
-    AllowedValues:
-      - 5.5
-      - 5.6
-      - 5.7
-      - 10.10
-      - 11.4
-      - 11.5
-    Default: 11.5
     Type: String
   DatabaseUser:
     Description: The login ID for the master user of your DB instance.
@@ -478,8 +436,7 @@ Resources:
   VPCStack:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL:
-        Fn::Sub: https://${QSS3BucketName}.s3.amazonaws.com/${QSS3KeyPrefix}submodules/quickstart-aws-vpc/templates/aws-vpc.template
+      TemplateURL: !Sub https://${QSS3BucketName}.s3.amazonaws.com/${QSS3KeyPrefix}submodules/quickstart-aws-vpc/templates/aws-vpc.template
       Parameters:
         AvailabilityZones:
           Fn::Join:
@@ -498,6 +455,7 @@ Resources:
           Ref: PublicSubnet2CIDR
         VPCCIDR:
           Ref: VPCCIDR
+
   ArtifactoryExistingVPCStack:
     Type: AWS::CloudFormation::Stack
     Properties:
@@ -528,17 +486,13 @@ Resources:
         NumberOfEC2Nodes: !Ref NumberOfEC2Nodes
         ArtifactoryVersion: !Ref ArtifactoryVersion
         ReleaseStage: !Ref ReleaseStage
-        SMLicensesName: !Ref SMLicensesName
-        Certificate: !Ref Certificate
-        CertificateKey: !Ref CertificateKey
-        CertificateDomain: !Ref CertificateDomain
+        SMLicenseCertName: !Ref SMLicenseCertName
         ArtifactoryServerName: !Ref ArtifactoryServerName
         MasterKey: !Ref MasterKey
         ExtraJavaOptions: !Ref ExtraJavaOptions
         AnsibleVaultPass: !Ref AnsibleVaultPass
         DatabaseName: !Ref DatabaseName
         DatabaseEngine: !Ref DatabaseEngine
-        DatabaseVersion: !Ref DatabaseVersion
         DatabaseUser: !Ref DatabaseUser
         DatabasePassword: !Ref DatabasePassword
         DatabaseInstance: !Ref DatabaseInstance
