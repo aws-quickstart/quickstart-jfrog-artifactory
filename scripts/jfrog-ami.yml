@@ -2,4 +2,4 @@
   gather_facts: true
   become: true
   roles:
-  - name: artifactory-ami
+  - name: jfrog-ami
