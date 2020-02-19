@@ -204,7 +204,7 @@ Resources:
                     vars:
                       jfrog_ami_version: ${ArtifactVersion}
                       jfrog_ami_repo_url: ${ArtifactRepoUrl}
-                      jfrog_product: jfrog-artifactory-jcr
+                      jfrog_product: ${JFrogProduct}
               mode: "0400"
     Properties:
       KeyName: !Ref KeyPairName
@@ -230,6 +230,30 @@ Resources:
           'Fn::Sub':
             - >
               #!/bin/bash -x
+
+              #CFN Functions
+
+              function cfn_fail
+
+              {
+
+              cfn-signal -e 1 --stack ${AWS::StackName} --region ${AWS::Region}
+              --resource JFrogAMIInstance
+
+              exit 1
+
+              }
+
+              function cfn_success
+
+              {
+
+              cfn-signal -e 0 --stack ${AWS::StackName} --region ${AWS::Region}
+              --resource JFrogAMIInstance
+
+              exit 0
+
+              }
 
               S3URI=https://${QSS3BucketName}.${S3Region}.amazonaws.com/${QSS3KeyPrefix}
 
@@ -279,7 +303,7 @@ Resources:
               JFrogAMIInstance --configsets jfrog_ami_setup
               --region ${AWS::Region} || cfn_fail
 
-              ansible-playbook /root/.jfrog_ami/jfrog-ami-setup.yml &> /var/log/jfrog-ami.log || qs_err " ansible execution failed "
+              ansible-playbook /root/.jfrog_ami/jfrog-ami-setup.yml &> /var/log/jfrog-ami.log || cfn_fail
 
               rm -rf ~/.jfrog_ami
 
