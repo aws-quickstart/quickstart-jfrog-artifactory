@@ -21,19 +21,16 @@ tests:
 #      ArtifactoryVersion: "7.0.0"
 #      NumberOfSecondary: "2"
 #      ArtifactoryServerName: "artifactory"
-#      CertificateDomain: "localdomain"
 #      MasterKey: "override"
-#      Certificate: "override"
-#      CertificateKey: "override"
-#      SMLicensesName: "override"
+#      SMLicenseCertName: "override"
 #    template: templates/jfrog-artifactory-eks-master.template.yaml
 #    regions:
 #      - us-west-2
 #  jfrog-artifactory-ami:
 #    parameters:
 #      KeyPairName: "$[taskcat_getkeypair]"
-#      ArtifactoryVersion: 7.0.0
-#      ArtifactoryRepoUrl: https://earlyaccess.jfrog.io/artifactory/enterprise-rpms
+#      ArtifactVersion: 7.0.0
+#      ArtifactRepoUrl: https://earlyaccess.jfrog.io/artifactory/enterprise-rpms
 #      RemoteAccessCIDR: "10.0.0.0/16"
 #      VPCID: vpc-09d6fdbaf5d9e6f47
 #      PublicSubnet1ID: subnet-0f3416a77c8f51ea3
@@ -44,10 +41,8 @@ tests:
 #      - us-west-2
 #  jfrog-artifactory-ec2-postgres:
 #    parameters:
-#      AmiId: tmcvey700
 #      KeyPairName: "$[taskcat_getkeypair]"
 #      ArtifactoryVersion: 7.0.0
-#      ArtifactoryRepoUrl: https://earlyaccess.jfrog.io/artifactory/enterprise-rpms 
 #      RemoteAccessCIDR: "10.0.0.0/16"
 #      #DatabaseEngine: Postgres
 #      #DatabaseVersion: "11.5"
@@ -62,11 +57,8 @@ tests:
 #      KeystorePassword: "$[taskcat_genpass_8A]"
 #      AnsibleVaultPass: "$[taskcat_genpass_8A]"
 #      ArtifactoryServerName: "artifactory"
-#      CertificateDomain: "localdomain"
 #      MasterKey: "override"
-#      Certificate: "override"
-#      CertificateKey: "override"
-#      SMLicensesName: "override"
+#      SMLicenseCertName: "override"
 #      MultiAZDatabase: "false"
 #    template: templates/jfrog-artifactory-ec2-master.template.yaml
 #    regions:
@@ -89,11 +81,8 @@ tests:
 #      KeystorePassword: "$[taskcat_genpass_8A]"
 #      AnsibleVaultPass: "$[taskcat_genpass_8A]"
 #      ArtifactoryServerName: "artifactory"
-#      CertificateDomain: "localdomain"
 #      MasterKey: "override"
-#      Certificate: "override"
-#      CertificateKey: "override"
-#      SMLicensesName: "override"
+#      SMLicenseCertName: "override"
 #      MultiAZDatabase: "false"
 #    template: templates/jfrog-artifactory-ec2-master.template.yaml
 #    regions:
@@ -113,11 +102,8 @@ tests:
 #      NumberOfSecondary: "2"
 #      AnsibleVaultPass: "$[taskcat_genpass_8A]"
 #      ArtifactoryServerName: "artifactory"
-#      CertificateDomain: "localdomain"
 #      MasterKey: "override"
-#      Certificate: "override"
-#      CertificateKey: "override"
-#      SMLicensesName: "override"
+#      SMLicenseCertName: "override"
 #    template: templates/jfrog-artifactory-ecs-master.template.yaml
 #    regions:
 #      - us-east-1
@@ -138,11 +124,8 @@ tests:
 #      NumberOfSecondary: "2"
 #      AnsibleVaultPass: "$[taskcat_genpass_8A]"
 #      ArtifactoryServerName: "artifactory"
-#      CertificateDomain: "localdomain"
 #      MasterKey: "override"
-#      Certificate: "override"
-#      CertificateKey: "override"
-#      SMLicensesName: "override"
+#      SMLicenseCertName: "override"
 #    template: templates/jfrog-artifactory-ecs-master.template.yaml
 #    regions:
 #      - us-west-2
@@ -157,11 +140,8 @@ tests:
       ArtifactoryVersion: "7.0.2"
       NumberOfSecondary: "2"
       ArtifactoryServerName: "artifactory"
-      CertificateDomain: "localdomain"
       MasterKey: "override"
-      Certificate: "override"
-      CertificateKey: "override"
-      SMLicensesName: "override"
+      SMLicenseCertName: "override"
     template: templates/jfrog-artifactory-eks-master.template.yaml
     regions:
       - us-west-2
