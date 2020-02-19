@@ -1,13 +1,11 @@
 ---
 # Install Artifactory
 
-#https://earlyaccess.jfrog.io/artifactory/enterprise-rpms/rpm -O /etc/yum.repos.d/earlyaccess-jfrog-artifactory-pro-rpms.repo; 
-# sudo yum install jfrog-artifactory-pro
 - name: Add Artifactory Repo
   yum_repository:
     name: bintray-jfrog-artifactory-pro-rpms
     description: bintray-jfrog-artifactory-pro-rpms
-    baseurl: "{{ artifactory_ami_repo_url }}"
+    baseurl: "{{ jfrog_ami_repo_url }}"
     gpgcheck: no
     enabled: yes
 
@@ -22,16 +20,16 @@
 
 - name: Install Artifactory from RPM and EPEL
   yum:
-    name: 
-      - "jfrog-artifactory-pro-{{ artifactory_ami_version }}"
+    name:
+      - "{{ jfrog_product }}-{{ jfrog_ami_version }}"
       - epel-release
     state: installed
     enablerepo: bintray-jfrog-artifactory-pro-rpms
 
 - name: Update Java and install NGinx
   package:
-   name: 
-    - "{{ artifactory_ami_java_version }}"
+   name:
+    - "{{ jfrog_ami_java_version }}"
     - nginx
    state: present
 
@@ -48,6 +46,6 @@
   yum_repository:
     name: bintray-jfrog-artifactory-pro-rpms
     description: bintray-jfrog-artifactory-pro-rpms
-    baseurl: "{{ artifactory_ami_repo_url }}"
+    baseurl: "{{ jfrog_ami_repo_url }}"
     gpgcheck: no
     enabled: no
