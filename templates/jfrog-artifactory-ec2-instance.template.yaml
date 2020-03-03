@@ -1,9 +1,9 @@
 AWSTemplateFormatVersion: "2010-09-09"
 Description: "Deploys the EC2 Autoscaling, LaunchConfig and Instance for Artifactory"
 Parameters:
-  PrivateSubnet1ID:
+  PrivateSubnet1Id:
     Type: 'AWS::EC2::Subnet::Id'
-  PrivateSubnet2ID:
+  PrivateSubnet2Id:
     Type: 'AWS::EC2::Subnet::Id'
   MinScalingNodes:
     Type: Number
@@ -15,9 +15,9 @@ Parameters:
     Type: String
   AmiId:
     Type: String
-  QSS3BucketName:
+  QsS3BucketName:
     Type: String
-  QSS3KeyPrefix:
+  QsS3KeyPrefix:
     Type: String
   ArtifactoryLicense1:
     Type: String
@@ -36,7 +36,7 @@ Parameters:
     NoEcho: 'true'
   CertificateDomain:
     Type: String
-  ArtifactoryIAMAcessKey:
+  ArtifactoryIamAcessKey:
     Type: String
     NoEcho: 'true'
   SecretAccessKey:
@@ -44,15 +44,15 @@ Parameters:
     NoEcho: 'true'
   ArtifactoryS3Bucket:
     Type: String
-  DBURL:
+  DatabaseURL:
     Type: String
-  DBDriver:
+  DatabaseDriver:
     Type: String
-  DBPluginURL:
+  DatabasePluginURL:
     Type: String
-  DBPlugin:
+  DatabasePlugin:
     Type: String
-  DBType:
+  DatabaseType:
     Type: String
   DatabaseUser:
     Type: String
@@ -118,6 +118,7 @@ Mappings:
       AMZNLINUXHVM: ami-09d069a04349dc3cb
       "700": ami-06baee01fb2ef01d2
       "702": ami-085b1acc8e8b5b039
+      "721": ami-0ddf97d5a821c030f
     us-east-2:
       AMZNLINUXHVM: ami-0d542ef84ec55d71c
     us-west-1:
@@ -135,8 +136,8 @@ Resources:
     Properties:
       LaunchConfigurationName: !Ref ArtifactoryLaunchConfiguration
       VPCZoneIdentifier:
-        - !Ref PrivateSubnet1ID
-        - !Ref PrivateSubnet2ID
+        - !Ref PrivateSubnet1Id
+        - !Ref PrivateSubnet2Id
       MinSize: !Ref MinScalingNodes
       MaxSize: !Ref MaxScalingNodes
       Cooldown: '300'
@@ -164,7 +165,7 @@ Resources:
             roleName:
               - !Ref HostRole #!Ref ArtifactoryHostRole
             buckets:
-              - !Ref QSS3BucketName
+              - !Ref QsS3BucketName
         'AWS::CloudFormation::Init':
           configSets:
             artifactory_install:
@@ -182,17 +183,17 @@ Resources:
                         artifactory_license3: ${ArtifactoryLicense3}
                         artifactory_license4: ${ArtifactoryLicense4}
                         artifactory_server_name: ${ArtifactoryServerName}
-                        s3_endpoint: s3.${AWS::Region}.amazonaws.com
-                        s3_access_key: ${ArtifactoryIAMAcessKey}
+                        s3_region: ${AWS::Region}
+                        s3_access_key: ${ArtifactoryIamAcessKey}
                         s3_access_secret_key: ${SecretAccessKey}
                         s3_bucket: ${ArtifactoryS3Bucket}
                         certificate: ${Certificate}
                         certificate_key: ${CertificateKey}
                         certificate_domain: ${CertificateDomain}
                         ssl_dir: /etc/pki/tls/certs
-                        db_type: ${DBType}
-                        db_driver: ${DBDriver}
-                        db_url: ${DBURL}
+                        db_type: ${DatabaseType}
+                        db_driver: ${DatabaseDriver}
+                        db_url: ${DatabaseURL}
                         db_user: ${DatabaseUser}
                         db_password: ${DatabasePassword}
                         art_primary: ${ArtifactoryPrimary}
@@ -204,8 +205,8 @@ Resources:
                           default_password: changeit
                           new_keystore_pass: ${KeystorePassword}
                         artifactory_java_db_drivers:
-                          - name: ${DBPlugin}
-                            url: ${DBPluginURL}
+                          - name: ${DatabasePlugin}
+                            url: ${DatabasePluginURL}
                             owner: artifactory
                             group: artifactory
                 mode: "0400"
@@ -268,7 +269,7 @@ Resources:
 
               }
 
-              S3URI=https://${QSS3BucketName}.${S3Region}.amazonaws.com/${QSS3KeyPrefix}
+              S3URI=https://${QsS3BucketName}.${S3Region}.amazonaws.com/${QsS3KeyPrefix}
 
               yum install -y git
 
@@ -302,7 +303,7 @@ Resources:
 
               mkdir ~/.artifactory_ansible
 
-              aws s3 sync s3://${QSS3BucketName}/${QSS3KeyPrefix}scripts/ ~/.artifactory_ansible/
+              aws s3 sync s3://${QsS3BucketName}/${QsS3KeyPrefix}scripts/ ~/.artifactory_ansible/
 
               cfn-init -v --stack ${AWS::StackName} --resource
               ArtifactoryLaunchConfiguration --configsets artifactory_install

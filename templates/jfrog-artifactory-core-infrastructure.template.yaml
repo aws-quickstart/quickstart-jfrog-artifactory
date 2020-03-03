@@ -1,34 +1,34 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Description: 'JFrog Artifactory Quick Start Deployment'
 Parameters:
-  VPCID:
+  VpcId:
     Type: AWS::EC2::VPC::Id
-  VPCCIDR:
+  VpcCidr:
     Description: CIDR block for the VPC
     AllowedPattern: ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/(1[6-9]|2[0-8]))$
     ConstraintDescription: CIDR block parameter must be in the form x.x.x.x/16-28
     Default: 10.0.0.0/16
     Type: String
-  PrivateSubnet1CIDR:
+  PrivateSubnet1Cidr:
     AllowedPattern: ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/(1[6-9]|2[0-8]))$
     ConstraintDescription: CIDR block parameter must be in the form x.x.x.x/16-28
     Default: 10.0.0.0/19
     Type: String
-  PrivateSubnet2CIDR:
+  PrivateSubnet2Cidr:
     AllowedPattern: ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/(1[6-9]|2[0-8]))$
     ConstraintDescription: CIDR block parameter must be in the form x.x.x.x/16-28
     Default: 10.0.32.0/19
     Type: String
-  PrivateSubnet3CIDR:
+  PrivateSubnet3Cidr:
     AllowedPattern: ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/(1[6-9]|2[0-8]))$
     ConstraintDescription: CIDR block parameter must be in the form x.x.x.x/16-28
     Default: 10.0.64.0/19
     Type: String
   SubnetIds:
     Type: List<AWS::EC2::Subnet::Id>
-  DBAllocatedStorage:
+  DatabaseAllocatedStorage:
     Type: Number
-  MultiAZDatabase:
+  MultiAzDatabase:
     Type: String
   DatabaseEngine:
     Type: String
@@ -54,7 +54,7 @@ Mappings:
       Plugin: postgresql-42.2.9.jar
       PluginURL: https://jdbc.postgresql.org/download/
       port: "5432"
-      extraDBOps: ""
+      extraDatabaseOps: ""
     MySQL:
       Name: mysql
       DatabaseVersion: 5.7
@@ -62,7 +62,7 @@ Mappings:
       Plugin: mysql-connector-java-8.0.19.jar
       PluginURL: https://bintray.com/artifact/download/bintray/jcenter/mysql/mysql-connector-java/8.0.19/
       port: "3306"
-      extraDBOps: "?characterEncoding=UTF-8&elideSetAutoCommits=true"
+      extraDatabaseOps: "?characterEncoding=UTF-8&elideSetAutoCommits=true"
   ReleaseStageMap:
     BETA:
       ProDockerRepo: "earlyaccess-docker.jfrog.io/jfrog/artifactory-pro"
@@ -71,16 +71,16 @@ Mappings:
       ProDockerRepo: "docker.bintray.io/jfrog/artifactory-pro"
       NginxDockerRepo: "docker.bintray.io/jfrog/nginx-artifactory-pro"
 Resources:
-  ArtifactoryDBSubnetGroup:
+  ArtifactoryDatabaseSubnetGroup:
     Type: AWS::RDS::DBSubnetGroup
     Properties:
       DBSubnetGroupDescription: Private Subnets available to the RDS Instance(s)
       SubnetIds: !Ref SubnetIds
-  ArtifactoryDB:
+  ArtifactoryDatabase:
     Type: AWS::RDS::DBInstance
     Properties:
-      AllocatedStorage: !Ref DBAllocatedStorage
-      MultiAZ: !Ref MultiAZDatabase
+      AllocatedStorage: !Ref DatabaseAllocatedStorage
+      MultiAZ: !Ref MultiAzDatabase
       Engine: !Ref DatabaseEngine
       EngineVersion: !FindInMap
         - DatabaseMap
@@ -90,22 +90,22 @@ Resources:
       MasterUserPassword: !Ref DatabasePassword
       DBInstanceClass: !Ref DatabaseInstance
       DBName: !Ref DatabaseName
-      DBSubnetGroupName: !Ref  ArtifactoryDBSubnetGroup
+      DBSubnetGroupName: !Ref  ArtifactoryDatabaseSubnetGroup
       VPCSecurityGroups:
-        - !Ref ArtifactoryDBSG
-  ArtifactoryDBSG:
+        - !Ref ArtifactoryDatabaseSG
+  ArtifactoryDatabaseSG:
     Type: AWS::EC2::SecurityGroup
     Properties:
       Tags:
         - Key: Name
           Value: artifactory-rds-sg
       GroupDescription: SG for RDS Instance to allow communication from the Bastion and Artifactory servers.
-      VpcId: !Ref VPCID
+      VpcId: !Ref VpcId
       SecurityGroupIngress:
         - IpProtocol: tcp
           FromPort: 22
           ToPort: 22
-          CidrIp: !Ref VPCCIDR
+          CidrIp: !Ref VpcCidr
         - IpProtocol: tcp
           FromPort: !FindInMap
             - DatabaseMap
@@ -115,7 +115,7 @@ Resources:
             - DatabaseMap
             - !Ref DatabaseEngine
             - port
-          CidrIp: !Ref PrivateSubnet1CIDR
+          CidrIp: !Ref PrivateSubnet1Cidr
         - IpProtocol: tcp
           FromPort: !FindInMap
             - DatabaseMap
@@ -125,7 +125,7 @@ Resources:
             - DatabaseMap
             - !Ref DatabaseEngine
             - port
-          CidrIp: !Ref PrivateSubnet2CIDR
+          CidrIp: !Ref PrivateSubnet2Cidr
         - IpProtocol: tcp
           FromPort: !FindInMap
             - DatabaseMap
@@ -135,7 +135,7 @@ Resources:
             - DatabaseMap
             - !Ref DatabaseEngine
             - port
-          CidrIp: !Ref PrivateSubnet3CIDR
+          CidrIp: !Ref PrivateSubnet3Cidr
       SecurityGroupEgress:
         - IpProtocol: tcp
           FromPort: 22
@@ -151,7 +151,7 @@ Resources:
           CidrIp: 0.0.0.0/0
   ArtifactoryS3IAMUser:
     Type: AWS::IAM::User
-  ArtifactoryIAMAcessKey:
+  ArtifactoryIamAcessKey:
     Type: AWS::IAM::AccessKey
     Properties:
       UserName: !Ref ArtifactoryS3IAMUser
@@ -187,36 +187,36 @@ Resources:
       Users:
         - !Ref ArtifactoryS3IAMUser
 Outputs:
-  IAMAcessKey:
-    Value: !Ref ArtifactoryIAMAcessKey
+  ArtifactoryIamAcessKey:
+    Value: !Ref ArtifactoryIamAcessKey
     Description: IAM Access key for the S3 Bucket
   SecretAccessKey:
-    Value: !GetAtt ArtifactoryIAMAcessKey.SecretAccessKey
+    Value: !GetAtt ArtifactoryIamAcessKey.SecretAccessKey
     Description: Secret Access key for S3 Bucket
   S3Bucket:
     Value: !Ref ArtifactoryS3Bucket
     Description: Actual S3 bucket created for Artifactory
-  DBDriver:
+  DatabaseDriver:
     Value: !FindInMap [DatabaseMap, !Ref DatabaseEngine, Driver]
-  DBPlugin:
+  DatabasePlugin:
     Value: !FindInMap [DatabaseMap, !Ref DatabaseEngine, Plugin]
-  DBPluginURL:
+  DatabasePluginURL:
     Value: !Sub
       - "${MainURL}${PluginVersion}"
       - {
         MainURL: !FindInMap [DatabaseMap, !Ref DatabaseEngine, PluginURL],
         PluginVersion: !FindInMap [DatabaseMap, !Ref DatabaseEngine, Plugin]
         }
-  DBType:
+  DatabaseType:
     Value: !FindInMap [DatabaseMap, !Ref DatabaseEngine, Name]
-  DBURL:
+  DatabaseURL:
     Value: !Sub
-      - "jdbc:${DBType}://${ArtifactoryDBEndpointAddress}:${port}/${DatabaseName}${extraDBOps}"
+      - "jdbc:${DatabaseType}://${ArtifactoryDatabaseEndpointAddress}:${port}/${DatabaseName}${extraDatabaseOps}"
       - {
-        DBType: !FindInMap [DatabaseMap, !Ref DatabaseEngine, Name],
-        ArtifactoryDBEndpointAddress: !GetAtt ArtifactoryDB.Endpoint.Address,
+        DatabaseType: !FindInMap [DatabaseMap, !Ref DatabaseEngine, Name],
+        ArtifactoryDatabaseEndpointAddress: !GetAtt ArtifactoryDatabase.Endpoint.Address,
         port: !FindInMap [DatabaseMap, !Ref DatabaseEngine, port],
-        extraDBOps: !FindInMap [DatabaseMap, !Ref DatabaseEngine, extraDBOps],
+        extraDatabaseOps: !FindInMap [DatabaseMap, !Ref DatabaseEngine, extraDatabaseOps],
         }
   ProDockerRepo:
     Value: !FindInMap [ReleaseStageMap, !Ref ReleaseStage, ProDockerRepo]
