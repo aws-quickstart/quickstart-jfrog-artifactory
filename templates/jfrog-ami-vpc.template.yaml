@@ -8,37 +8,37 @@ Metadata:
           default: VPC Information
         Parameters:
           - AvailabilityZone
-          - VPCCIDR
-          - PublicSubnetCIDR
-          - VPCTenancy
+          - VpcCidr
+          - PublicSubnetCidr
+          - VpcTenancy
     ParameterLabels:
-      AvailabilityZone: 
+      AvailabilityZone:
         default: Availability Zone
-      PublicSubnetCIDR:
+      PublicSubnetCidr:
         default: Public subnet CIDR
-      VPCCIDR:
+      VpcCidr:
         default: VPC CIDR
-      VPCTenancy:
+      VpcTenancy:
         default: VPC Tenancy
 Parameters:
   AvailabilityZone:
     Description: The Availability Zone to use for the public subnet in the VPC.
     Default: us-west-2a
     Type: AWS::EC2::AvailabilityZone::Name
-  VPCCIDR:
+  VpcCidr:
     Description: The CIDR block for the VPC.
     AllowedPattern: ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/(1[6-9]|2[0-8]))$
     ConstraintDescription: CIDR block parameter must be in the form x.x.x.x/16-28
     Default: 10.0.0.0/27
     Type: String
-  PublicSubnetCIDR:
+  PublicSubnetCidr:
     Description: The CIDR block for the public (DMZ) subnet 1 located in Availability
       Zone 1.
     AllowedPattern: ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/(1[6-9]|2[0-8]))$
     ConstraintDescription: CIDR block parameter must be in the form x.x.x.x/16-28
     Default: 10.0.0.0/28
     Type: String
-  VPCTenancy:
+  VpcTenancy:
     Description: "The allowed tenancy of instances launched into the VPC"
     AllowedValues:
       - default
@@ -48,7 +48,7 @@ Parameters:
 Conditions:
     NVirginiaRegionCondition: !Equals [!Ref 'AWS::Region', 'us-east-1']
 Resources:
-  DHCPOptions:
+  AmiDHCPOptions:
     Type: AWS::EC2::DHCPOptions
     Properties:
         DomainName: !If
@@ -57,37 +57,37 @@ Resources:
           - !Sub '${AWS::Region}.compute.internal'
         DomainNameServers:
           - AmazonProvidedDNS
-  VPC:
+  AmiVpc:
     Type: AWS::EC2::VPC
     Properties:
-      CidrBlock: !Ref VPCCIDR
-      InstanceTenancy: !Ref VPCTenancy
+      CidrBlock: !Ref VpcCidr
+      InstanceTenancy: !Ref VpcTenancy
       EnableDnsSupport: true
       EnableDnsHostnames: true
       Tags:
         - Key: Name
           Value: !Ref AWS::StackName
-  VPCDHCPOptionsAssociation:
+  VpcDHCPOptionsAssociation:
     Type: AWS::EC2::VPCDHCPOptionsAssociation
     Properties:
-      VpcId: !Ref VPC
-      DhcpOptionsId: !Ref DHCPOptions
+      VpcId: !Ref AmiVpc
+      DhcpOptionsId: !Ref AmiDHCPOptions
   InternetGateway:
     Type: AWS::EC2::InternetGateway
     Properties:
       Tags:
         - Key: Name
           Value: !Ref AWS::StackName
-  VPCGatewayAttach:
+  VpcGatewayAttach:
     Type: AWS::EC2::VPCGatewayAttachment
     Properties:
-      VpcId: !Ref VPC
+      VpcId: !Ref AmiVpc
       InternetGatewayId: !Ref InternetGateway
   PublicSubnet:
     Type: AWS::EC2::Subnet
     Properties:
-      VpcId: !Ref VPC
-      CidrBlock: !Ref PublicSubnetCIDR
+      VpcId: !Ref AmiVpc
+      CidrBlock: !Ref PublicSubnetCidr
       AvailabilityZone: !Ref AvailabilityZone
       MapPublicIpOnLaunch: true
       Tags:
@@ -96,12 +96,12 @@ Resources:
   PublicSubnetRouteTable:
     Type: AWS::EC2::RouteTable
     Properties:
-      VpcId: !Ref VPC
+      VpcId: !Ref AmiVpc
       Tags:
         - Key: Name
           Value: !Sub 'Public Subnet Route table for ${AWS::StackName}'
   PublicSubnetRoute:
-    DependsOn: VPCGatewayAttach
+    DependsOn: VpcGatewayAttach
     Type: AWS::EC2::Route
     Properties:
       RouteTableId: !Ref PublicSubnetRouteTable
@@ -131,13 +131,14 @@ Resources:
       - - com.amazonaws.
         - !Ref 'AWS::Region'
         - .s3
-      VpcId: !Ref VPC
+      VpcId: !Ref AmiVpc
+
 Outputs:
-  PublicSubnetCIDR:
+  PublicSubnetCidr:
     Description: Public subnet CIDR for the newly created VPC and subnet
-    Value: !Ref PublicSubnetCIDR
+    Value: !Ref PublicSubnetCidr
     Export:
-      Name: !Sub '${AWS::StackName}-PublicSubnetCIDR'
+      Name: !Sub '${AWS::StackName}-PublicSubnetCidr:'
   PublicSubnetID:
     Description: Public subnet ID for newly created VPC
     Value: !Ref PublicSubnet
@@ -148,13 +149,13 @@ Outputs:
     Value: !Ref PublicSubnetRouteTable
     Export:
       Name: !Sub '${AWS::StackName}-PublicSubnetRouteTable'
-  VPCCIDR:
+  VpcCidr:
     Description: VPC CIDR
-    Value: !Ref VPCCIDR
+    Value: !Ref VpcCidr
     Export:
-      Name: !Sub '${AWS::StackName}-VPCCIDR'
-  VPCID:
-    Description: VPC ID
-    Value: !Ref VPC
+      Name: !Sub '${AWS::StackName}-VpcCidr:'
+  VpcId:
+    Description: Vpc ID
+    Value: !Ref AmiVpc
     Export:
-      Name: !Sub '${AWS::StackName}-VPCID'
+      Name: !Sub '${AWS::StackName}-VpcId'

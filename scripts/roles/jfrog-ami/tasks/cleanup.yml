@@ -6,7 +6,7 @@
     path: "{{ ssh_keys.dir }}"
     state: absent
   loop:
-    - dir: "/home/{{ artifactory_ami_user }}/.ssh/authorized_keys"
+    - dir: "/home/{{ jfrog_ami_user }}/.ssh/authorized_keys"
     - dir: "/root/.ssh/authorized_keys"
   loop_control:
     loop_var: ssh_keys

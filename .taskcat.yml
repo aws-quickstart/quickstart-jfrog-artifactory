@@ -8,51 +8,40 @@ project:
     - us-west-2
 
 tests:
-# jfrog-ami-vpc:
-#   parameters:
-#     AvailabilityZone: us-east-1a
-#   template: templates/jfrog-ami-vpc.template.yaml
-#   regions:
-#     - us-east-1
-#  jfrog-artifactory-ami:
+#  jfrog-product-ami:
 #    parameters:
+#      AvailabilityZone: "$[taskcat_genaz_1]"
 #      KeyPairName: "$[taskcat_getkeypair]"
-#      ArtifactoryVersion: 7.0.0
-#      ArtifactoryRepoUrl: https://earlyaccess.jfrog.io/artifactory/enterprise-rpms
-#      RemoteAccessCIDR: "10.0.0.0/16"
-#      VPCID: vpc-09d6fdbaf5d9e6f47
-#      PublicSubnet1ID: subnet-0f3416a77c8f51ea3
-#      QSS3BucketName: "$[taskcat_autobucket]"
-#      QSS3KeyPrefix: "theflash/"
-#    template: templates/jfrog-ami-creation.template.yaml
+#      ArtifactVersion: 7.2.1
+#      ArtifactRepoUrl:  https://solengha.jfrog.io/solengha/tr-rpm
+#      RemoteAccessCidr: "10.0.0.0/16"
+#      QsS3BucketName: "$[taskcat_autobucket]"
+#      QsS3KeyPrefix: "theflash/"
+#    template: templates/jfrog-ami-master.template.yaml
 #    regions:
 #      - us-west-2
 #  jfrog-artifactory-ec2-postgres:
 #    parameters:
-#      AmiId: tmcvey700
 #      KeyPairName: "$[taskcat_getkeypair]"
 #      ArtifactoryVersion: 7.0.0
 #      ArtifactoryRepoUrl: https://earlyaccess.jfrog.io/artifactory/enterprise-rpms
-#      RemoteAccessCIDR: "10.0.0.0/16"
+#      RemoteAccessCidr: "10.0.0.0/16"
 #      #DatabaseEngine: Postgres
 #      #DatabaseVersion: "11.5"
-#      AccessCIDR: "10.0.0.0/16"
+#      AccessCidr: "10.0.0.0/16"
 #      AvailabilityZones: "$[taskcat_genaz_2]"
 #      DatabasePassword: "$[taskcat_genpass_8A]"
-#      QSS3BucketName: "$[taskcat_autobucket]"
-#      QSS3KeyPrefix: "theflash/"
+#      QsS3BucketName: "$[taskcat_autobucket]"
+#      QsS3KeyPrefix: "theflash/"
 #      DatabaseInstance: "db.m5.large"
 #      ArtifactoryVersion: "7.0.0"
 #      NumberOfSecondary: "2"
 #      KeystorePassword: "$[taskcat_genpass_8A]"
 #      AnsibleVaultPass: "$[taskcat_genpass_8A]"
 #      ArtifactoryServerName: "artifactory"
-#      CertificateDomain: "localdomain"
 #      MasterKey: "override"
-#      Certificate: "override"
-#      CertificateKey: "override"
-#      SMLicensesName: "override"
-#      MultiAZDatabase: "false"
+#      SmLicenseCertName: "override"
+#      MultiAzDatabase: "false"
 #    template: templates/jfrog-artifactory-ec2-master.template.yaml
 #    regions:
 #      - us-east-1
@@ -60,10 +49,10 @@ tests:
 #    parameters:
 #      AmiId: tmcvey700
 #      KeyPairName: "$[taskcat_getkeypair]"
-#      RemoteAccessCIDR: "10.0.0.0/16"
+#      RemoteAccessCidr: "10.0.0.0/16"
 #      #DatabaseEngine: Postgres
 #      #DatabaseVersion: "11.5"
-#      AccessCIDR: "10.0.0.0/16"
+#      AccessCidr: "10.0.0.0/16"
 #      AvailabilityZones: "$[taskcat_genaz_2]"
 #      DatabasePassword: "$[taskcat_genpass_8A]"
 #      QSS3BucketName: "$[taskcat_autobucket]"
@@ -74,20 +63,17 @@ tests:
 #      KeystorePassword: "$[taskcat_genpass_8A]"
 #      AnsibleVaultPass: "$[taskcat_genpass_8A]"
 #      ArtifactoryServerName: "artifactory"
-#      CertificateDomain: "localdomain"
 #      MasterKey: "override"
-#      Certificate: "override"
-#      CertificateKey: "override"
-#      SMLicensesName: "override"
-#      MultiAZDatabase: "false"
+#      SmLicenseCertName: "override"
+#      MultiAzDatabase: "false"
 #    template: templates/jfrog-artifactory-ec2-master.template.yaml
 #    regions:
 #      - us-west-2
 #  jfrog-artifactory-ec2-only:
 #    parameters:
 #      KeyPairName: "$[taskcat_getkeypair]"
-#      RemoteAccessCIDR: "10.0.0.0/16"
-#      AccessCIDR: "10.0.0.0/16"
+#      RemoteAccessCidr: "10.0.0.0/16"
+#      AccessCidr: "10.0.0.0/16"
 #      AvailabilityZones: "$[taskcat_genaz_2]"
 #      DatabasePassword: "$[taskcat_genpass_8A]"
 #      QSS3BucketName: "$[taskcat_autobucket]"
@@ -98,19 +84,17 @@ tests:
 #      NumberOfSecondary: "2"
 #      AnsibleVaultPass: "$[taskcat_genpass_8A]"
 #      ArtifactoryServerName: "artifactory"
-#      CertificateDomain: "localdomain"
 #      MasterKey: "override"
-#      Certificate: "override"
-#      CertificateKey: "override"
-#      SMLicensesName: "override"
+#      SmLicenseCertName: "override"
+#      MultiAzDatabase: "false"
 #    template: templates/jfrog-artifactory-ecs-master.template.yaml
 #    regions:
 #      - us-east-1
 #  jfrog-artifactory-ecs-mysql:
 #    parameters:
 #      KeyPairName: "$[taskcat_getkeypair]"
-#      RemoteAccessCIDR: "10.0.0.0/16"
-#      AccessCIDR: "10.0.0.0/16"
+#      RemoteAccessCidr: "10.0.0.0/16"
+#      AccessCidr: "10.0.0.0/16"
 #      AvailabilityZones: "$[taskcat_genaz_2]"
 #      DatabasePassword: "$[taskcat_genpass_8A]"
 #      QSS3BucketName: "$[taskcat_autobucket]"
@@ -123,62 +107,29 @@ tests:
 #      NumberOfSecondary: "2"
 #      AnsibleVaultPass: "$[taskcat_genpass_8A]"
 #      ArtifactoryServerName: "artifactory"
-#      CertificateDomain: "localdomain"
 #      MasterKey: "override"
-#      Certificate: "override"
-#      CertificateKey: "override"
-#      SMLicensesName: "override"
+#      SmLicenseCertName: "override"
+#      MultiAzDatabase: "false"
 #    template: templates/jfrog-artifactory-ecs-master.template.yaml
 #    regions:
 #      - us-west-2
-  jfrog-artifactory-eks:
-    parameters:
-      KeyPairName: "$[taskcat_getkeypair]"
-      AvailabilityZones: "$[taskcat_genaz_3]"
-      DatabasePassword: "$[taskcat_genpass_8A]"
-      QSS3BucketName: "$[taskcat_autobucket]"
-      QSS3KeyPrefix: "theflash/"
-      DatabaseInstance: "db.m5.large"
-      ArtifactoryVersion: "7.0.2"
-      NumberOfSecondary: "2"
-      ArtifactoryServerName: "artifactory"
-      CertificateDomain: "localdomain"
-      MasterKey: "override"
-      Certificate: "override"
-      CertificateKey: "override"
-      SMLicensesName: "override"
-    template: templates/jfrog-artifactory-eks-master.template.yaml
-    regions:
-      - us-west-2
-#    regions:
-#      - us-west-2
-#  jfrog-artifactory-eks-core:
+#  jfrog-artifactory-eks:
 #    parameters:
-#      KubeManifestLambdaArn: "arn:aws:lambda:us-west-2:12345678911:function:tcat-tag-jfrog-artifactory-eks-KubeManifestLambda-18MK4VIN3EQ38"
-#      HelmLambdaArn: "arn:aws:lambda:us-west-2:12345678911:function:tcat-tag-jfrog-artifactory-eks-30782514-HelmLambda-6QU6WP4189TC"
-#      KubeConfigPath: "s3://tcat-tag-jfrog-artifactory-eks-3-kubeconfigbucket-9fm4v10gtxql/.kube/config.enc"
-#      KubeGetLambdaArn: "arn:aws:lambda:us-west-2:12345678911:function:tcat-tag-jfrog-artifactory-eks-30782-KubeGetLambda-T9SC0WHIFCYY"
-#      ArtifactoryS3Bucket: "tcat-tag-jfrog-artifactory-ek-artifactorys3bucket-18u65xypoqq14"
-#      ArtifactoryIAMAcessKey: "AKIATXKXWAM7EYXWWYLI"
-#      SecretAccessKey: "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"
-#      KubeConfigKmsContext: "JFrogArtifactory"
-#      ArtifactoryLicense1: "override"
-#      ArtifactoryLicense2: "override"
-#      ArtifactoryLicense3: "override"
-#      ArtifactoryLicense4: "override"
-#      ArtifactoryVersion: "6.11.1"
-#      NumberOfSecondary: 1
-#      ArtifactoryDBEndpointAddress: "ta1l4gu688bdgyv.cncci4pv7wym.us-west-2.rds.amazonaws.com"
-#      DatabaseName: "artdb"
-#      DatabaseUser: "artifactory"
-#      DatabasePassword: "Admin123!"
-#      MasterKey: "1ce2be4490ca2c662cb79636cf9b7b8e"
-#      ArtifactoryDeploymentSize: "Small"
-#      AccessCIDR: "0.0.0.0/0"
-#    template: templates/jfrog-artifactory-eks-core-workload.template.yaml
+#      KeyPairName: "$[taskcat_getkeypair]"
+#      AvailabilityZones: "$[taskcat_genaz_3]"
+#      DatabasePassword: "$[taskcat_genpass_8A]"
+#      QSS3BucketName: "$[taskcat_autobucket]"
+#      QSS3KeyPrefix: "theflash/"
+#      DatabaseInstance: "db.m5.large"
+#      ArtifactoryVersion: "7.0.2"
+#      NumberOfSecondary: "2"
+#      ArtifactoryServerName: "artifactory"
+#      MasterKey: "override"
+#      SmLicenseCertName: "override"
+#      MultiAzDatabase: "false"
+#    template: templates/jfrog-artifactory-eks-master.template.yaml
 #    regions:
 #      - us-west-2
-#      - us-east-2
 #  jfrog-artifactory-eks-core:
 #    parameters:
 #      ArtifactoryDeploymentSize: Medium

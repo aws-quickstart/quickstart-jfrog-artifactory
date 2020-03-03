@@ -1,9 +1,9 @@
 AWSTemplateFormatVersion: "2010-09-09"
 Description: "Deploys the EC2 Autoscaling, LaunchConfig, ECS Cluster, and calls nested Stack for the ECS Service"
 Parameters:
-  PrivateSubnet1ID:
+  PrivateSubnet1Id:
     Type: 'AWS::EC2::Subnet::Id'
-  PrivateSubnet2ID:
+  PrivateSubnet2Id:
     Type: 'AWS::EC2::Subnet::Id'
   MinScalingNodes:
     Type: Number
@@ -42,7 +42,7 @@ Parameters:
     NoEcho: 'true'
   CertificateDomain:
     Type: String
-  ArtifactoryIAMAcessKey:
+  ArtifactoryIamAcessKey:
     Type: String
     NoEcho: 'true'
   SecretAccessKey:
@@ -50,19 +50,19 @@ Parameters:
     NoEcho: 'true'
   ArtifactoryS3Bucket:
     Type: String
-  DBURL:
+  DatabaseURL:
     Type: String
-  DBDriver:
+  DatabaseDriver:
     Type: String
-  DBPlugin:
+  DatabasePlugin:
     Type: String
-  DBPluginURL:
+  DatabasePluginURL:
     Type: String
   ProDockerRepo:
     Type: String
   NginxDockerRepo:
     Type: String
-  DBType:
+  DatabaseType:
     Type: String
   DatabaseUser:
     Type: String
@@ -86,9 +86,9 @@ Parameters:
     Description: Ansiblevault Password to secure the artifactory.yml
     NoEcho: 'true'
     Type: String
-  QSS3BucketName:
+  QsS3BucketName:
     Type: String
-  QSS3KeyPrefix:
+  QsS3KeyPrefix:
     Type: String
 Mappings:
   AWSAMIRegionMap:
@@ -193,8 +193,8 @@ Resources:
       AutoScalingGroupName: ArtifactoryECSEC2ScaleGroup
       LaunchConfigurationName: !Ref ArtifactoryLaunchConfiguration
       VPCZoneIdentifier:
-        - !Ref PrivateSubnet1ID
-        - !Ref PrivateSubnet2ID
+        - !Ref PrivateSubnet1Id
+        - !Ref PrivateSubnet2Id
       MinSize: !Ref MinScalingNodes
       MaxSize: !Ref MaxScalingNodes
       Cooldown: '300'
@@ -219,7 +219,7 @@ Resources:
           roleName:
             - !Ref ECSRole
           buckets:
-            - !Ref QSS3BucketName
+            - !Ref QsS3BucketName
       'AWS::CloudFormation::Init':
         configSets:
           artifactory_install:
@@ -241,8 +241,8 @@ Resources:
                     artifactory_license2: ${ArtifactoryLicense2}
                     artifactory_license3: ${ArtifactoryLicense3}
                     artifactory_license4: ${ArtifactoryLicense4}
-                    s3_endpoint: s3.${AWS::Region}.amazonaws.com
-                    s3_access_key: ${ArtifactoryIAMAcessKey}
+                    s3_region: ${AWS::Region}
+                    s3_access_key: ${ArtifactoryIamAcessKey}
                     s3_access_secret_key: ${SecretAccessKey}
                     s3_bucket: ${ArtifactoryS3Bucket}
                     artifactory_server_name: ${ArtifactoryServerName}
@@ -311,7 +311,7 @@ Resources:
 
             echo ECS_CLUSTER=${ClusterName} >> /etc/ecs/ecs.config
 
-            S3URI=https://${QSS3BucketName}.${S3Region}.amazonaws.com/${QSS3KeyPrefix}
+            S3URI=https://${QsS3BucketName}.${S3Region}.amazonaws.com/${QsS3KeyPrefix}
 
             yum install -y git https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-latest.amzn1.noarch.rpm python3-pip
 
@@ -344,7 +344,7 @@ Resources:
 
             mkdir ~/.artifactory_ansible
 
-            aws s3 sync s3://${QSS3BucketName}/${QSS3KeyPrefix}scripts/ ~/.artifactory_ansible/
+            aws s3 sync s3://${QsS3BucketName}/${QsS3KeyPrefix}scripts/ ~/.artifactory_ansible/
 
             cfn-init -v --stack ${AWS::StackName} --resource
             ArtifactoryLaunchConfiguration --configsets artifactory_install
@@ -371,54 +371,54 @@ Resources:
     DependsOn: ArtifactoryScalingGroup
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: !Sub 'https://${QSS3BucketName}.s3.amazonaws.com/${QSS3KeyPrefix}templates/jfrog-artifactory-ecs.template.yaml'
+      TemplateURL: !Sub 'https://${QsS3BucketName}.s3.amazonaws.com/${QsS3KeyPrefix}templates/jfrog-artifactory-ecs.template.yaml'
       Parameters:
         ECSCluster: !Ref ClusterName # In case we do not build the cluster we still require the Name of the cluster built.
         ServiceName: ArtifactoryPrimary
         ArtifactoryTargetGroupArn: !Ref ArtifactoryTargetGroupArn
-        DBPlugin: !Ref DBPlugin
-        DBPluginURL: !Ref DBPluginURL
+        DatabasePlugin: !Ref DatabasePlugin
+        DatabasePluginURL: !Ref DatabasePluginURL
         MasterKey: !Ref MasterKey
         ExtraJavaOptions: !Ref ExtraJavaOptions
         NumberNodes: "1"
         ArtifactoryPrimary: "true"
-        DBURL: !Ref DBURL
-        DBDriver: !Ref DBDriver
+        DatabaseURL: !Ref DatabaseURL
+        DatabaseDriver: !Ref DatabaseDriver
         ProDockerRepoURL: !Sub "${ProDockerRepo}:${ArtifactoryVersion}"
         NginxDockerRepoURL: !Sub "${NginxDockerRepo}:${ArtifactoryVersion}"
-        DBType: !Ref DBType
+        DatabaseType: !Ref DatabaseType
         DatabaseUser: !Ref DatabaseUser
         DatabasePassword: !Ref DatabasePassword
         ECSLogGroup: !Ref ECSLogGroup
         ECSRoleArn:
           Fn::GetAtt: ECSRole.Arn
-        QSS3BucketName: !Ref QSS3BucketName
-        QSS3KeyPrefix: !Ref QSS3KeyPrefix
+        QsS3BucketName: !Ref QsS3BucketName
+        QsS3KeyPrefix: !Ref QsS3KeyPrefix
 
   SecondaryStack:
     DependsOn: PrimaryStack
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: !Sub 'https://${QSS3BucketName}.s3.amazonaws.com/${QSS3KeyPrefix}templates/jfrog-artifactory-ecs.template.yaml'
+      TemplateURL: !Sub 'https://${QsS3BucketName}.s3.amazonaws.com/${QsS3KeyPrefix}templates/jfrog-artifactory-ecs.template.yaml'
       Parameters:
         ECSCluster: !Ref ClusterName # In case we do not build the cluster we still require the Name of the cluster built.
         ServiceName: ArtifactorySecondary
         ArtifactoryTargetGroupArn: !Ref ArtifactoryTargetGroupArn
-        DBPlugin: !Ref DBPlugin
-        DBPluginURL: !Ref DBPluginURL
+        DatabasePlugin: !Ref DatabasePlugin
+        DatabasePluginURL: !Ref DatabasePluginURL
         MasterKey: !Ref MasterKey
         ExtraJavaOptions: !Ref ExtraJavaOptions
         NumberNodes: !Ref NumberOfSecondary
         ArtifactoryPrimary: "false" # If this is false then the entrypoint-artifactory script will get stuck in a forever waiting loop
-        DBURL: !Ref DBURL
-        DBDriver: !Ref DBDriver
+        DatabaseURL: !Ref DatabaseURL
+        DatabaseDriver: !Ref DatabaseDriver
         ProDockerRepoURL: !Sub "${ProDockerRepo}:${ArtifactoryVersion}"
         NginxDockerRepoURL: !Sub "${NginxDockerRepo}:${ArtifactoryVersion}"
-        DBType: !Ref DBType
+        DatabaseType: !Ref DatabaseType
         DatabaseUser: !Ref DatabaseUser
         DatabasePassword: !Ref DatabasePassword
         ECSLogGroup: !Ref ECSLogGroup
         ECSRoleArn:
           Fn::GetAtt: ECSRole.Arn
-        QSS3BucketName: !Ref QSS3BucketName
-        QSS3KeyPrefix: !Ref QSS3KeyPrefix
+        QsS3BucketName: !Ref QsS3BucketName
+        QsS3KeyPrefix: !Ref QsS3KeyPrefix

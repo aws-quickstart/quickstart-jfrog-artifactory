@@ -1,0 +1,9 @@
+---
+# defaults file for artifactory-ami
+
+jfrog_ami_user: centos
+jfrog_product: jfrog-artifactory-pro
+jfrog_ami_version: 7.0.0 #6.17.0
+jfrog_ami_java_version: java-1.8.0
+
+jfrog_ami_repo_url: https://earlyaccess.jfrog.io/artifactory/enterprise-rpms # https://jfrog.bintray.com/artifactory-pro-rpms

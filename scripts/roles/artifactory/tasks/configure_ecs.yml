@@ -71,7 +71,6 @@
     - src: inactiveServerCleaner.groovy
       dest: /data/jfrog/artifactory/tmp/plugins/inactiveServerCleaner.groovy
       mode: '0777'
-  when: artifactory_major_verion|int == 6
 
 
 
