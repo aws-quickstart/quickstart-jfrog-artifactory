@@ -16,19 +16,19 @@ Parameters:
     Type: String
   NumberNodes:
     Type: Number
-  DBURL:
+  DatabaseURL:
     Type: String
-  DBDriver:
+  DatabaseDriver:
     Type: String
-  DBPluginURL:
+  DatabasePluginURL:
     Type: String
-  DBPlugin:
+  DatabasePlugin:
     Type: String
   ProDockerRepoURL:
     Type: String
   NginxDockerRepoURL:
     Type: String
-  DBType:
+  DatabaseType:
     Type: String
   DatabaseUser:
     Type: String
@@ -42,9 +42,9 @@ Parameters:
   YQVersion:
     Default: "3.0.1"
     Type: String
-  QSS3BucketName:
+  QsS3BucketName:
     Type: String
-  QSS3KeyPrefix:
+  QsS3KeyPrefix:
     Type: String
 
 Resources:
@@ -93,10 +93,11 @@ Resources:
             - "-c"
           Command:
             - !Sub |
-                wget https://${QSS3BucketName}.s3.amazonaws.com/${QSS3KeyPrefix}scripts/configure_ecs_container.sh -O /tmp/source;
+                wget https://${QsS3BucketName}.s3.amazonaws.com/${QsS3KeyPrefix}scripts/configure_ecs_container.sh -O /tmp/source;
                 echo '' >> /tmp/source;
                 echo export HA_HOST_IP=`wget -q -O - http://169.254.169.254/latest/meta-data/local-ipv4` >> /tmp/source;
-                echo wget -O /var/opt/jfrog/artifactory/bootstrap/artifactory/tomcat/lib/${DBPlugin} ${DBPluginURL} >> /tmp/source;
+                echo wget -O /var/opt/jfrog/artifactory/bootstrap/artifactory/tomcat/lib/${DatabasePlugin} ${DatabasePluginURL} >> /tmp/source;
+                echo cp /tmp/plugins/inactiveServerCleaner.groovy /var/opt/jfrog/artifactory/etc/artifactory/plugins/ >> /tmp/source;
                 echo /entrypoint-artifactory.sh >> /tmp/source;
                 chmod +x /tmp/source;
                 /tmp/source
@@ -141,15 +142,15 @@ Resources:
             - Name: HA_IS_PRIMARY
               Value: !Ref ArtifactoryPrimary
             - Name: DB_URL
-              Value: !Ref DBURL
+              Value: !Ref DatabaseURL
             - Name: DB_TYPE
-              Value: !Ref DBType
+              Value: !Ref DatabaseType
             - Name: DB_USER
               Value: !Ref DatabaseUser
             - Name: DB_PASSWORD
               Value: !Ref DatabasePassword
             - Name: DB_DRIVER
-              Value: !Ref DBDriver
+              Value: !Ref DatabaseDriver
             - Name: YQ_VERSION
               Value: !Ref YQVersion
           LogConfiguration:

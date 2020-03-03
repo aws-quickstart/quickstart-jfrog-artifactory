@@ -9,7 +9,7 @@ db_url: jdbc:mysql://127.0.0.1:3306/artdb?characterEncoding=UTF-8&elideSetAutoCo
 db_user: artuser
 db_password: badpassword
 
-s3_endpoint: needs_to_be_passed
+s3_region: needs_to_be_passed
 s3_access_key: needs_to_be_passed
 s3_access_secret_key: needs_to_be_passed
 s3_bucket: needs_to_be_passed

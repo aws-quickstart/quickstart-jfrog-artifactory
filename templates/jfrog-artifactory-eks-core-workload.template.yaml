@@ -13,7 +13,7 @@ Parameters:
     Type: String
   NumberOfSecondary:
     Type: Number
-  AccessCIDR:
+  AccessCidr:
     Type: String
   ArtifactoryLicense1:
     Type: String
@@ -23,7 +23,7 @@ Parameters:
     Type: String
   ArtifactoryLicense4:
     Type: String
-  ArtifactoryIAMAcessKey:
+  ArtifactoryIamAcessKey:
     Type: String
     NoEcho: 'true'
   SecretAccessKey:
@@ -42,15 +42,15 @@ Parameters:
   DatabasePassword:
     Type: String
     NoEcho: 'true'
-  DBURL:
+  DatabaseURL:
     Type: String
-  DBDriver:
+  DatabaseDriver:
     Type: String
-  DBPluginURL:
+  DatabasePluginURL:
     Type: String
-  DBPlugin:
+  DatabasePlugin:
     Type: String
-  DBType:
+  DatabaseType:
     Type: String
   MasterKey:
     Type: String
@@ -73,7 +73,7 @@ Mappings:
       HelmChartVersion: 2.0.11
     GA:
       RepoUrl: https://charts.jfrog.io/
-      HelmChartVersion: 2.0.11
+      HelmChartVersion: 2.0.18
   DeploymentSize:
     Large:
       requestsMem: "6Gi"
@@ -171,7 +171,7 @@ Resources:
 
             ${ArtifactoryLicense4}
 
-  SecureStoreDB:
+  SecureStoreDatabase:
     DependsOn: NameSpace
     Type: "Custom::KubeManifest"
     Version: '1.0'
@@ -198,7 +198,8 @@ Resources:
               !Sub ${DatabasePassword}
           db-url:
             Fn::Base64:
-              !Sub ${DBURL}
+              !Sub ${DatabaseURL}
+
 
   ArtifactoryDeployment:
     Type: "Custom::Helm"
@@ -214,7 +215,7 @@ Resources:
       Name: quickstart-artifactory-ha
       Chart: jfrog/artifactory-ha
       RepoUrl: !FindInMap [HelmRepoMap, !Ref ReleaseStage, RepoUrl]
-      # If we want to test specific version of the Helm chart, we can pass it herefjq
+      # If we want to test specific version of the Helm chart, we can pass it here
       Version: !FindInMap [HelmRepoMap, !Ref ReleaseStage, HelmChartVersion]
       ValueYaml: !Sub
         - |
@@ -229,16 +230,66 @@ Resources:
               secret: artifactory-cluster-license
               dataKey: art.lic
             masterKey: ${MasterKey}
-            preStartCommand: "mkdir -p /var/opt/jfrog/artifactory/bootstrap/artifactory/tomcat/lib/; wget -O  /var/opt/jfrog/artifactory/bootstrap/artifactory/tomcat/lib/${DBPlugin} ${DBPluginURL}"
+            preStartCommand: "mkdir -p /var/opt/jfrog/artifactory/bootstrap/artifactory/tomcat/lib/; wget -O  /var/opt/jfrog/artifactory/bootstrap/artifactory/tomcat/lib/${DatabasePlugin} ${DatabasePluginURL}"
             persistence:
-              enabled: false
-              type: aws-s3
-              awsS3:
-                endpoint: s3.${AWS::Region}.amazonaws.com
-                region: ${AWS::Region}
-                identity: ${ArtifactoryIAMAcessKey}
-                credential: ${SecretAccessKey}
-                bucketName: ${ArtifactoryS3Bucket}
+              enabled: true
+              local: false
+              type: aws-s3-v3
+              binarystoreXml: |
+                <!-- AWS S3 V3 -->
+                <config version="2">
+                    <chain> <!--template="cluster-s3-storage-v3"-->
+                        <provider id="cache-fs-eventual-s3" type="cache-fs">
+                            <provider id="sharding-cluster-eventual-s3" type="sharding-cluster">
+                                <sub-provider id="eventual-cluster-s3" type="eventual-cluster">
+                                    <provider id="retry-s3" type="retry">
+                                        <provider id="s3-storage-v3" type="s3-storage-v3"/>
+                                    </provider>
+                                </sub-provider>
+                                <dynamic-provider id="remote-s3" type="remote"/>
+                            </provider>
+                        </provider>
+                    </chain>
+
+                    <provider id="sharding-cluster-eventual-s3" type="sharding-cluster">
+                        <readBehavior>crossNetworkStrategy</readBehavior>
+                        <writeBehavior>crossNetworkStrategy</writeBehavior>
+                        <redundancy>3</redundancy>
+                        <property name="zones" value="local,remote"/>
+                    </provider>
+
+                    <provider id="remote-s3" type="remote">
+                        <zone>remote</zone>
+                    </provider>
+
+                    <provider id="eventual-cluster-s3" type="eventual-cluster">
+                        <zone>local</zone>
+                    </provider>
+
+                    <!-- Set max cache-fs size -->
+                    <provider id="cache-fs-eventual-s3" type="cache-fs">
+                        <maxCacheSize>5e+10</maxCacheSize>
+                        <cacheProviderDir>cache</cacheProviderDir>
+                    </provider>
+                    <provider id="s3-storage-v3" type="s3-storage-v3">
+                        <testConnection>false</testConnection>
+                        <identity>${ArtifactoryIamAcessKey}</identity>
+                        <credential>${SecretAccessKey}</credential>
+                        <region>${AWS::Region}</region>
+                        <bucketName>${ArtifactoryS3Bucket}</bucketName>
+                        <path>artifactory/filestore</path>
+                        <endpoint></endpoint>
+                        <useInstanceCredentials>false</useInstanceCredentials>
+                        <usePresigning>false</usePresigning>
+                        <signatureExpirySeconds>300</signatureExpirySeconds>
+                    </provider>
+                </config>
+              #awsS3V3:
+              #  region: ${AWS::Region}
+              #  identity: ${ArtifactoryIamAcessKey}
+              #  credential: ${SecretAccessKey}
+              #  bucketName: ${ArtifactoryS3Bucket}
+              #  useInstanceCredentials: false
             service:
               pool: all
             primary:
@@ -276,8 +327,8 @@ Resources:
           postgresql:
             enabled: false
           database:
-            type: ${DBType}
-            driver: ${DBDriver}
+            type: ${DatabaseType}
+            driver: ${DatabaseDriver}
             secrets:
               user:
                 name: artifactory-cluster-db
@@ -295,7 +346,7 @@ Resources:
               version: ${ArtifactoryVersion}
             replicaCount: 3
             service:
-              loadBalancerSourceRanges:  [ "${AccessCIDR}" ]
+              loadBalancerSourceRanges:  [ "${AccessCidr}" ]
             tlsSecretName: artifactory-nginx-tls
         - {
            requests_memory: !FindInMap [DeploymentSize, !Ref ArtifactoryDeploymentSize, requestsMem],
