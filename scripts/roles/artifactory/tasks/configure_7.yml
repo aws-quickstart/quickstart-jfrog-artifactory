@@ -26,6 +26,16 @@
     - restart artifactory
     - restart nginx
 
+- name: All File/Folders required for Artifactory configuration
+  file:
+    path: "{{ item.path }}"
+    state: "{{ item.state }}"
+    owner: artifactory
+    group: artifactory
+  loop:
+    - path: /var/opt/jfrog/artifactory/etc/info
+      state: directory
+
 - name: Copy all static files required for Artifactory
   copy:
     src: "{{ item.src }}"
@@ -37,8 +47,12 @@
     - src: inactiveServerCleaner.groovy
       dest: /var/opt/jfrog/artifactory/etc/artifactory/plugins/inactiveServerCleaner.groovy
       mode: '0660'
+    - src: installer-info.json
+      dest: /var/opt/jfrog/artifactory/etc/info/installer-info.json
+      mode: '0660'
 
 - name: Cleanup AMI from original Artifactory start
   file:
     path: /var/opt/jfrog/artifactory/etc/security/join.key
     state: absent
+

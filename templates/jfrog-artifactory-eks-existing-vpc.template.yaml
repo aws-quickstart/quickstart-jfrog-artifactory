@@ -616,6 +616,8 @@ Resources:
         ArtifactoryVersion: !Ref ArtifactoryVersion
         ArtifactoryDeploymentSize: !Ref ArtifactoryDeploymentSize
         ReleaseStage: !Ref ReleaseStage
+        QsS3BucketName: !Ref QsS3BucketName
+        QsS3KeyPrefix: !Ref QsS3KeyPrefix
 Outputs:
   ArtifactoryUrl:
     Value: !GetAtt ArtifactoryCoreStack.Outputs.ArtifactoryUrl

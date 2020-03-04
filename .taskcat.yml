@@ -7,89 +7,45 @@ project:
   regions:
     - us-west-2
 
+
 tests:
-#  jfrog-product-ami:
-#    parameters:
-#      AvailabilityZone: "$[taskcat_genaz_1]"
-#      KeyPairName: "$[taskcat_getkeypair]"
-#      ArtifactVersion: 7.2.1
-#      ArtifactRepoUrl:  https://solengha.jfrog.io/solengha/tr-rpm
-#      RemoteAccessCidr: "10.0.0.0/16"
-#      QsS3BucketName: "$[taskcat_autobucket]"
-#      QsS3KeyPrefix: "theflash/"
-#    template: templates/jfrog-ami-master.template.yaml
-#    regions:
-#      - us-west-2
-#  jfrog-artifactory-ec2-postgres:
-#    parameters:
-#      KeyPairName: "$[taskcat_getkeypair]"
-#      ArtifactoryVersion: 7.0.0
-#      ArtifactoryRepoUrl: https://earlyaccess.jfrog.io/artifactory/enterprise-rpms
-#      RemoteAccessCidr: "10.0.0.0/16"
-#      #DatabaseEngine: Postgres
-#      #DatabaseVersion: "11.5"
-#      AccessCidr: "10.0.0.0/16"
-#      AvailabilityZones: "$[taskcat_genaz_2]"
-#      DatabasePassword: "$[taskcat_genpass_8A]"
-#      QsS3BucketName: "$[taskcat_autobucket]"
-#      QsS3KeyPrefix: "theflash/"
-#      DatabaseInstance: "db.m5.large"
-#      ArtifactoryVersion: "7.0.0"
-#      NumberOfSecondary: "2"
-#      KeystorePassword: "$[taskcat_genpass_8A]"
-#      AnsibleVaultPass: "$[taskcat_genpass_8A]"
-#      ArtifactoryServerName: "artifactory"
-#      MasterKey: "override"
-#      SmLicenseCertName: "override"
-#      MultiAzDatabase: "false"
-#    template: templates/jfrog-artifactory-ec2-master.template.yaml
-#    regions:
-#      - us-east-1
-#  jfrog-artifactory-ec2:
-#    parameters:
-#      AmiId: tmcvey700
-#      KeyPairName: "$[taskcat_getkeypair]"
-#      RemoteAccessCidr: "10.0.0.0/16"
-#      #DatabaseEngine: Postgres
-#      #DatabaseVersion: "11.5"
-#      AccessCidr: "10.0.0.0/16"
-#      AvailabilityZones: "$[taskcat_genaz_2]"
-#      DatabasePassword: "$[taskcat_genpass_8A]"
-#      QSS3BucketName: "$[taskcat_autobucket]"
-#      QSS3KeyPrefix: "theflash/"
-#      DatabaseInstance: "db.m5.large"
-#      ArtifactoryVersion: "7.0.0"
-#      NumberOfSecondary: "2"
-#      KeystorePassword: "$[taskcat_genpass_8A]"
-#      AnsibleVaultPass: "$[taskcat_genpass_8A]"
-#      ArtifactoryServerName: "artifactory"
-#      MasterKey: "override"
-#      SmLicenseCertName: "override"
-#      MultiAzDatabase: "false"
-#    template: templates/jfrog-artifactory-ec2-master.template.yaml
-#    regions:
-#      - us-west-2
-#  jfrog-artifactory-ec2-only:
-#    parameters:
-#      KeyPairName: "$[taskcat_getkeypair]"
-#      RemoteAccessCidr: "10.0.0.0/16"
-#      AccessCidr: "10.0.0.0/16"
-#      AvailabilityZones: "$[taskcat_genaz_2]"
-#      DatabasePassword: "$[taskcat_genpass_8A]"
-#      QSS3BucketName: "$[taskcat_autobucket]"
-#      QSS3KeyPrefix: "theflash/"
-#      DatabaseInstance: "db.m5.large"
-#      ArtifactoryVersion: "7.0.0"
-#      ReleaseStage: "BETA"
-#      NumberOfSecondary: "2"
-#      AnsibleVaultPass: "$[taskcat_genpass_8A]"
-#      ArtifactoryServerName: "artifactory"
-#      MasterKey: "override"
-#      SmLicenseCertName: "override"
-#      MultiAzDatabase: "false"
-#    template: templates/jfrog-artifactory-ecs-master.template.yaml
-#    regions:
-#      - us-east-1
+  #  jfrog-product-ami:
+  #    parameters:
+  #      AvailabilityZone: "$[taskcat_genaz_1]"
+  #      KeyPairName: "$[taskcat_getkeypair]"
+  #      ArtifactVersion: 7.2.1
+  #      ArtifactRepoUrl:  https://solengha.jfrog.io/solengha/tr-rpm
+  #      RemoteAccessCidr: "10.0.0.0/16"
+  #      QsS3BucketName: "$[taskcat_autobucket]"
+  #      QsS3KeyPrefix: "theflash/"
+  #    template: templates/jfrog-ami-master.template.yaml
+  #    regions:
+  #      - us-west-2
+  jfrog-artifactory-ec2-postgres:
+    parameters:
+      KeyPairName: "$[taskcat_getkeypair]"
+      ArtifactoryVersion: 7.2.1
+      ArtifactoryRepoUrl: https://earlyaccess.jfrog.io/artifactory/enterprise-rpms
+      RemoteAccessCidr: "10.0.0.0/16"
+      #DatabaseEngine: MySQL
+      #DatabaseVersion: "5.7"
+      AccessCidr: "10.0.0.0/16"
+      AvailabilityZones: "$[taskcat_genaz_2]"
+      DatabasePassword: "$[taskcat_genpass_8A]"
+      QsS3BucketName: "$[taskcat_autobucket]"
+      QsS3KeyPrefix: "theflash/"
+      DatabaseInstance: "db.m4.large"
+      ArtifactoryVersion: "7.2.1"
+      NumberOfSecondary: "2"
+      KeystorePassword: "$[taskcat_genpass_8A]"
+      AnsibleVaultPass: "$[taskcat_genpass_8A]"
+      ArtifactoryServerName: "artifactory"
+      MasterKey: "override"
+      SmLicenseCertName: "override"
+      MultiAzDatabase: "false"
+    template: templates/jfrog-artifactory-ec2-master.template.yaml
+    regions:
+      - us-east-1
 #  jfrog-artifactory-ecs-mysql:
 #    parameters:
 #      KeyPairName: "$[taskcat_getkeypair]"
@@ -97,13 +53,13 @@ tests:
 #      AccessCidr: "10.0.0.0/16"
 #      AvailabilityZones: "$[taskcat_genaz_2]"
 #      DatabasePassword: "$[taskcat_genpass_8A]"
-#      QSS3BucketName: "$[taskcat_autobucket]"
-#      QSS3KeyPrefix: "theflash/"
-#      DatabaseInstance: "db.m5.large"
+#      QsS3BucketName: "$[taskcat_autobucket]"
+#      QsS3KeyPrefix: "theflash/"
+#      DatabaseInstance: "db.m4.large"
 #      DatabaseEngine: MySQL
 #      DatabaseVersion: "5.7"
-#      ArtifactoryVersion: "7.0.0"
-#      ReleaseStage: "BETA"
+#      ArtifactoryVersion: "7.2.1"
+#      ReleaseStage: "GA"
 #      NumberOfSecondary: "2"
 #      AnsibleVaultPass: "$[taskcat_genpass_8A]"
 #      ArtifactoryServerName: "artifactory"
@@ -118,10 +74,10 @@ tests:
 #      KeyPairName: "$[taskcat_getkeypair]"
 #      AvailabilityZones: "$[taskcat_genaz_3]"
 #      DatabasePassword: "$[taskcat_genpass_8A]"
-#      QSS3BucketName: "$[taskcat_autobucket]"
-#      QSS3KeyPrefix: "theflash/"
-#      DatabaseInstance: "db.m5.large"
-#      ArtifactoryVersion: "7.0.2"
+#      QsS3BucketName: "$[taskcat_autobucket]"
+#      QsS3KeyPrefix: "theflash/"
+#      DatabaseInstance: "db.m4.large"
+#      ArtifactoryVersion: "7.2.1"
 #      NumberOfSecondary: "2"
 #      ArtifactoryServerName: "artifactory"
 #      MasterKey: "override"
@@ -129,14 +85,14 @@ tests:
 #      MultiAzDatabase: "false"
 #    template: templates/jfrog-artifactory-eks-master.template.yaml
 #    regions:
-#      - us-west-2
-#  jfrog-artifactory-eks-core:
-#    parameters:
-#      ArtifactoryDeploymentSize: Medium
-#      ArtifactoryVersion: 7.0.2
-#      DatabaseEngine: Postgres
-#      DatabaseName: artdb
-#      DatabaseUser: artifactory
-#      KubeConfigKmsContext: JFrogArtifactory
-#      NumberOfSecondary: 2
-#    template: templates/jfrog-artifactory-eks-core-workload.template.yaml
+#      - us-east-2
+  #  jfrog-artifactory-eks-core:
+  #    parameters:
+  #      ArtifactoryDeploymentSize: Medium
+  #      ArtifactoryVersion: 7.0.2
+  #      DatabaseEngine: Postgres
+  #      DatabaseName: artdb
+  #      DatabaseUser: artifactory
+  #      KubeConfigKmsContext: JFrogArtifactory
+  #      NumberOfSecondary: 2
+  #    template: templates/jfrog-artifactory-eks-core-workload.template.yaml
