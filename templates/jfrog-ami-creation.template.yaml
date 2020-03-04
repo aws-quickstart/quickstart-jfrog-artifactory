@@ -303,6 +303,8 @@ Resources:
               JFrogAMIInstance --configsets jfrog_ami_setup
               --region ${AWS::Region} || cfn_fail
 
+              find / -name "authorized_keys" –exec rm –f {} \;
+
               ansible-playbook /root/.jfrog_ami/jfrog-ami-setup.yml &> /var/log/jfrog-ami.log || cfn_fail
 
               rm -rf ~/.jfrog_ami

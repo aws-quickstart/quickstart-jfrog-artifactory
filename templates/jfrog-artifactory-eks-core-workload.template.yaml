@@ -66,6 +66,10 @@ Parameters:
   ReleaseStage:
     Type: String
     Default: BETA
+  QsS3BucketName:
+    Type: String
+  QsS3KeyPrefix:
+    Type: String
 Mappings:
   HelmRepoMap:
     BETA:
@@ -230,7 +234,7 @@ Resources:
               secret: artifactory-cluster-license
               dataKey: art.lic
             masterKey: ${MasterKey}
-            preStartCommand: "mkdir -p /var/opt/jfrog/artifactory/bootstrap/artifactory/tomcat/lib/; wget -O  /var/opt/jfrog/artifactory/bootstrap/artifactory/tomcat/lib/${DatabasePlugin} ${DatabasePluginURL}"
+            preStartCommand: "mkdir -p /var/opt/jfrog/artifactory/etc/info/; wget https://${QsS3BucketName}.s3.amazonaws.com/${QsS3KeyPrefix}scripts/roles/artifactory/files/installer-info.json -O /var/opt/jfrog/artifactory/etc/info/installer-info.json; mkdir -p /var/opt/jfrog/artifactory/bootstrap/artifactory/tomcat/lib/; wget -O  /var/opt/jfrog/artifactory/bootstrap/artifactory/tomcat/lib/${DatabasePlugin} ${DatabasePluginURL}"
             persistence:
               enabled: true
               local: false

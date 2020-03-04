@@ -50,7 +50,7 @@ artifactory_java_db_certs:
     owner: root
     group: root
     cert_alias: rds_root
-artifactory_ami_import_rds: true
+artifactory_import_rds: true
 
 
 
