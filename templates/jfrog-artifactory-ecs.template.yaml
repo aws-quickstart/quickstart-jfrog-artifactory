@@ -97,6 +97,8 @@ Resources:
                 echo '' >> /tmp/source;
                 echo export HA_HOST_IP=`wget -q -O - http://169.254.169.254/latest/meta-data/local-ipv4` >> /tmp/source;
                 echo wget -O /var/opt/jfrog/artifactory/bootstrap/artifactory/tomcat/lib/${DatabasePlugin} ${DatabasePluginURL} >> /tmp/source;
+                echo mkdir /var/opt/jfrog/artifactory/etc/info/ >> /tmp/source;
+                echo wget https://${QsS3BucketName}.s3.amazonaws.com/${QsS3KeyPrefix}scripts/roles/artifactory/files/installer-info.json -O /var/opt/jfrog/artifactory/etc/info/installer-info.json >> /tmp/source;
                 echo cp /tmp/plugins/inactiveServerCleaner.groovy /var/opt/jfrog/artifactory/etc/artifactory/plugins/ >> /tmp/source;
                 echo /entrypoint-artifactory.sh >> /tmp/source;
                 chmod +x /tmp/source;
