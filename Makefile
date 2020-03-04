@@ -1,12 +1,20 @@
 .PHONY: help run submodules
+USEVENV ?= true
 VENV=$${PWD}/venv
 VENVBIN=${VENV}/bin
+SHELL ?= /bin/bash
 
-test: lint submodules venv
+test: lint submodules
+ifeq ($(USEVENV), true)
+	$(MAKE) venv
 	${VENVBIN}/taskcat test run -n -l
+else
+	taskcat test run -n -l
+endif
+
 
 venv/bin/python3:
-	python3 -m venv ${VENV}
+		python3 -m venv ${VENV}
 
 venv/bin/taskcat: venv/bin/python3
 	${VENVBIN}/pip3 install taskcat
@@ -15,7 +23,7 @@ venv/bin/aws: venv/bin/python3
 	${VENVBIN}/pip3 install awscli
 
 venv: venv/bin/taskcat venv/bin/aws
-	
+
 submodules:
 	git submodule init
 	git submodule update
@@ -24,6 +32,7 @@ submodules:
 
 help:
 	@echo   "make test  : executes ${VENVBIN}/taskcat"
+	@echo   "if running in a container without venv please set USEVENV to false"
 
 
 create: venv
@@ -34,8 +43,13 @@ delete: venv
 
 .ONESHELL:
 
-lint: venv
+lint:
+ifeq ($(USEVENV), true)
+	$(MAKE) venv
 	time ${VENVBIN}/taskcat lint
+else
+	time taskcat lint
+endif
 
 public_repo: venv
 	${VENVBIN}/taskcat -c theflash/ci/config.yml -u

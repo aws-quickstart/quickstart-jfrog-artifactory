@@ -27,14 +27,14 @@
     - restart nginx
 
 - name: All File/Folders required for Artifactory configuration
-file:
+  file:
     path: "{{ item.path }}"
     state: "{{ item.state }}"
     owner: artifactory
     group: artifactory
-loop:
-  - path: /var/opt/jfrog/artifactory/etc/info
-    state: directory
+  loop:
+    - path: /var/opt/jfrog/artifactory/etc/info
+      state: directory
 
 - name: Copy all static files required for Artifactory
   copy:
