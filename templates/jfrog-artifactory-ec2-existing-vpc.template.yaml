@@ -39,6 +39,7 @@ Metadata:
       - Label:
           default: JFrog Artifactory configuration
         Parameters:
+          - ArtifactoryProduct
           - ArtifactoryVersion
           - NumberOfSecondary
           - SmLicenseCertName
@@ -52,7 +53,6 @@ Metadata:
         Parameters:
           - DatabaseName
           - DatabaseEngine
-          - DatabaseVersion
           - DatabaseUser
           - DatabasePassword
           - DatabaseInstance
@@ -108,6 +108,8 @@ Metadata:
         default: EC2 instance type
       NumberOfSecondary:
         default: Number of secondary instances
+      ArtifactoryProduct:
+        default: Artifactory product to install
       ArtifactoryVersion:
         default: Artifactory version
       SmLicenseCertName:
@@ -126,8 +128,6 @@ Metadata:
         default: Database name
       DatabaseEngine:
         default: Database engine
-      DatabaseVersion:
-        default: Database version
       DatabaseUser:
         default: Database user
       DatabasePassword:
@@ -296,6 +296,13 @@ Parameters:
       - 7
     Default: 2
     Type: Number
+  ArtifactoryProduct:
+    Description: The Jfrog Artifactory product you wish to install into an AMI.
+    AllowedValues:
+      - JFrog-Artifactory-Pro
+      - JFrog-Container-Registry
+    Default: JFrog-Artifactory-Pro
+    Type: String
   ArtifactoryVersion:
     Description: The version of Artifactory that you want to deploy into the Quick Start.
       Please see the release notes to select the version you want to deploy.
@@ -351,18 +358,6 @@ Parameters:
       - MySQL
       - Postgres
     Default: Postgres
-    Type: String
-  DatabaseVersion:
-    Description: The major version of the MySQL database engine you want to run. This is currently locked to MySQL versions
-      supported by Artifactory and RDS.
-    AllowedValues:
-      - 5.5
-      - 5.6
-      - 5.7
-      - 10.10
-      - 11.4
-      - 11.5
-    Default: 11.5
     Type: String
   DatabaseUser:
     Description: The login ID for the master user of your Database instance.
@@ -439,6 +434,8 @@ Parameters:
 
 Conditions:
   EnableBastion: !Equals [!Ref 'ProvisionBastionHost', 'Enabled']
+  ArtifactoryHa: !Equals [!Ref ArtifactoryProduct, 'JFrog-Artifactory-Pro']
+
 Resources:
   BastionRole:
     Condition: EnableBastion
@@ -515,21 +512,18 @@ Resources:
         DatabaseInstance: !Ref DatabaseInstance
         DatabaseName: !Ref DatabaseName
 
-  ArtifactoryELB:
+  ArtifactoryElb:
     Type: AWS::ElasticLoadBalancingV2::LoadBalancer
     Properties:
       IpAddressType: ipv4
-      Name: ArtifactoryELB
+      Name: !Sub ${ArtifactoryProduct}-ELB
       Scheme: !Ref ELBScheme
       Subnets:
         - !Ref PublicSubnet1Id
         - !Ref PublicSubnet2Id
-      Tags:
-        - Key: Name
-          Value: artifactory-ELB
       Type: network
 
-  ArtifactorySSLTargetGroup:
+  ArtifactorySslTargetGroup:
     Type: AWS::ElasticLoadBalancingV2::TargetGroup
     Properties:
       HealthCheckEnabled: True
@@ -538,7 +532,7 @@ Resources:
       HealthCheckTimeoutSeconds: 10
       HealthyThresholdCount: 3
       HealthCheckPort: "8082"
-      Name: ArtifactorySSL
+      Name: !Sub ${ArtifactoryProduct}-https
       Port: 443
       Protocol: TCP
       TargetType: instance
@@ -554,34 +548,34 @@ Resources:
       HealthCheckTimeoutSeconds: 10
       HealthyThresholdCount: 3
       HealthCheckPort: "8082"
-      Name: Artifactory
+      Name: !Sub ${ArtifactoryProduct}-http
       Port: 80
       Protocol: TCP
       TargetType: instance
       UnhealthyThresholdCount: 3
       VpcId: !Ref VpcId
 
-  ArtifactorySSLELBListener:
+  ArtifactorySslElbListener:
     Type: AWS::ElasticLoadBalancingV2::Listener
     Properties:
       DefaultActions:
-        - TargetGroupArn: !Ref ArtifactorySSLTargetGroup
+        - TargetGroupArn: !Ref ArtifactorySslTargetGroup
           Type: forward
-      LoadBalancerArn: !Ref ArtifactoryELB
+      LoadBalancerArn: !Ref ArtifactoryElb
       Port: 443
       Protocol: TCP
 
-  ArtifactoryELBListener:
+  ArtifactoryElbListener:
     Type: AWS::ElasticLoadBalancingV2::Listener
     Properties:
       DefaultActions:
         - TargetGroupArn: !Ref ArtifactoryTargetGroup
           Type: forward
-      LoadBalancerArn: !Ref ArtifactoryELB
+      LoadBalancerArn: !Ref ArtifactoryElb
       Port: 80
       Protocol: TCP
 
-  ArtifactoryEC2SG:
+  ArtifactoryEc2Sg:
     Type: AWS::EC2::SecurityGroup
     Properties:
       Tags:
@@ -649,15 +643,16 @@ Resources:
         PrivateSubnet2Id: !Ref PrivateSubnet2Id
         MinScalingNodes: '1' # Always have 1 MasterNode
         MaxScalingNodes: '1' # Always have 1 MasterNode
-        DeploymentTag: ArtifactoryMaster
+        DeploymentTag:  !If [ArtifactoryHa, ArtifactoryMaster, JcrMaster]
         HostRole: !Ref ArtifactoryHostRole
         QsS3BucketName: !Ref QsS3BucketName
         QsS3KeyPrefix: !Ref QsS3KeyPrefix
         AmiId: !Join [ '', !Split [".", !Ref ArtifactoryVersion] ]
-        ArtifactoryLicense1: !Sub '{{resolve:secretsmanager:${SmLicenseCertName}:SecretString:ArtifactoryLicense1}}'
-        ArtifactoryLicense2: !Sub '{{resolve:secretsmanager:${SmLicenseCertName}:SecretString:ArtifactoryLicense2}}'
-        ArtifactoryLicense3: !Sub '{{resolve:secretsmanager:${SmLicenseCertName}:SecretString:ArtifactoryLicense3}}'
-        ArtifactoryLicense4: !Sub '{{resolve:secretsmanager:${SmLicenseCertName}:SecretString:ArtifactoryLicense4}}'
+        ArtifactoryProduct: !Ref ArtifactoryProduct
+        ArtifactoryLicense1: !If [ArtifactoryHa, !Sub '{{resolve:secretsmanager:${SmLicenseCertName}:SecretString:ArtifactoryLicense1}}', '']
+        ArtifactoryLicense2: !If [ArtifactoryHa, !Sub '{{resolve:secretsmanager:${SmLicenseCertName}:SecretString:ArtifactoryLicense2}}', '']
+        ArtifactoryLicense3: !If [ArtifactoryHa, !Sub '{{resolve:secretsmanager:${SmLicenseCertName}:SecretString:ArtifactoryLicense3}}', '']
+        ArtifactoryLicense4: !If [ArtifactoryHa, !Sub '{{resolve:secretsmanager:${SmLicenseCertName}:SecretString:ArtifactoryLicense4}}', '']
         ArtifactoryServerName: !Ref ArtifactoryServerName
         Certificate: !Sub '{{resolve:secretsmanager:${SmLicenseCertName}:SecretString:Certificate}}'
         CertificateKey: !Sub '{{resolve:secretsmanager:${SmLicenseCertName}:SecretString:CertificateKey}}'
@@ -679,14 +674,15 @@ Resources:
         ArtifactoryVersion: !Ref ArtifactoryVersion
         KeyPairName: !Ref KeyPairName
         HostProfile: !Ref ArtifactoryHostProfile
-        SecurityGroups: !Ref ArtifactoryEC2SG
+        SecurityGroups: !Ref ArtifactoryEc2Sg
         InstanceType: !Ref InstanceType
         VolumeSize: !Ref VolumeSize
         TargetGroupARN: !Ref ArtifactoryTargetGroup
-        SSLTargetGroupARN: !Ref ArtifactorySSLTargetGroup
+        SSLTargetGroupARN: !Ref ArtifactorySslTargetGroup
         AnsibleVaultPass: !Ref AnsibleVaultPass
 
   ArtifactorySecondary:
+    Condition: ArtifactoryHa
     DependsOn: ArtifactoryMaster
     Type: AWS::CloudFormation::Stack
     Properties:
@@ -699,6 +695,7 @@ Resources:
         DeploymentTag: ArtifactorySecondary
         HostRole: !Ref ArtifactoryHostRole
         AmiId: !Join [ '', !Split [".", !Ref ArtifactoryVersion] ]
+        ArtifactoryProduct: !Ref ArtifactoryProduct
         ArtifactoryLicense1: !Sub '{{resolve:secretsmanager:${SmLicenseCertName}:SecretString:ArtifactoryLicense1}}'
         ArtifactoryLicense2: !Sub '{{resolve:secretsmanager:${SmLicenseCertName}:SecretString:ArtifactoryLicense2}}'
         ArtifactoryLicense3: !Sub '{{resolve:secretsmanager:${SmLicenseCertName}:SecretString:ArtifactoryLicense3}}'
@@ -724,11 +721,11 @@ Resources:
         ArtifactoryVersion: !Ref ArtifactoryVersion
         KeyPairName: !Ref KeyPairName
         HostProfile: !Ref ArtifactoryHostProfile
-        SecurityGroups: !Ref ArtifactoryEC2SG
+        SecurityGroups: !Ref ArtifactoryEc2Sg
         InstanceType: !Ref InstanceType
         VolumeSize: !Ref VolumeSize
         TargetGroupARN: !Ref ArtifactoryTargetGroup
-        SSLTargetGroupARN: !Ref ArtifactorySSLTargetGroup
+        SSLTargetGroupARN: !Ref ArtifactorySslTargetGroup
         AnsibleVaultPass: !Ref AnsibleVaultPass
         QsS3BucketName: !Ref QsS3BucketName
         QsS3KeyPrefix: !Ref QsS3KeyPrefix
@@ -736,7 +733,7 @@ Resources:
 Outputs:
   ArtifactoryUrl:
     Description: URL of the ELB to access Artifactory
-    Value: !Sub "https://${ArtifactoryELB.DNSName}"
+    Value: !Sub "https://${ArtifactoryElb.DNSName}"
   BastionIP:
     Value: !If
       - EnableBastion
