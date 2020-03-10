@@ -492,6 +492,6 @@ Outputs:
   ArtifactoryUrl:
     Description: URL of the ELB to access Artifactory
     Value: !Sub ${ArtifactoryExistingVpcStack.Outputs.ArtifactoryUrl}
-  BastionIP:
-    Value: !Sub ${ArtifactoryExistingVpcStack.Outputs.BastionIP}
+  BastionIp:
+    Value: !Sub ${ArtifactoryExistingVpcStack.Outputs.BastionIp}
     Description: Bastion host IP, for admin access via SSH

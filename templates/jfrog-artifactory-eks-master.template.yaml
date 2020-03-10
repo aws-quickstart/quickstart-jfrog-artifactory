@@ -316,6 +316,7 @@ Parameters:
       Minimum number of 2 to fit the Artifactory best practices. Do not select more than
       you license for.
     AllowedValues:
+      - 1
       - 2
       - 3
       - 4
@@ -559,7 +560,7 @@ Outputs:
     Value: !GetAtt ArtifactoryEksExistingVpcStack.Outputs.ArtifactoryUrl
     Description: Public Artifactory URL
   BastionIp:
-    Value: !GetAtt ArtifactoryEksExistingVpcStack.Outputs.BastionIP
+    Value: !GetAtt ArtifactoryEksExistingVpcStack.Outputs.BastionIp
     Description: Bastion host IP, for admin access via SSH
   KubeConfigPath:
     Value: !GetAtt ArtifactoryEksExistingVpcStack.Outputs.KubeConfigPath
