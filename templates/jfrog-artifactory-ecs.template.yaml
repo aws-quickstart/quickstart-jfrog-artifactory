@@ -21,11 +21,11 @@ Parameters:
     Type: String
   NumberNodes:
     Type: Number
-  DatabaseURL:
+  DatabaseUrl:
     Type: String
   DatabaseDriver:
     Type: String
-  DatabasePluginURL:
+  DatabasePluginUrl:
     Type: String
   DatabasePlugin:
     Type: String
@@ -111,7 +111,7 @@ Resources:
                 wget https://${QsS3BucketName}.s3.amazonaws.com/${QsS3KeyPrefix}scripts/configure_ecs_container.sh -O /tmp/source;
                 echo '' >> /tmp/source;
                 echo export HA_HOST_IP=`wget -q -O - http://169.254.169.254/latest/meta-data/local-ipv4` >> /tmp/source;
-                echo wget -O /var/opt/jfrog/artifactory/bootstrap/artifactory/tomcat/lib/${DatabasePlugin} ${DatabasePluginURL} >> /tmp/source;
+                echo wget -O /var/opt/jfrog/artifactory/bootstrap/artifactory/tomcat/lib/${DatabasePlugin} ${DatabasePluginUrl} >> /tmp/source;
                 echo mkdir /var/opt/jfrog/artifactory/etc/info/ >> /tmp/source;
                 echo wget https://${QsS3BucketName}.s3.amazonaws.com/${QsS3KeyPrefix}scripts/roles/artifactory/files/${info_file} -O /var/opt/jfrog/artifactory/etc/artifactory/info/installer-info.json >> /tmp/source;
                 echo cp /tmp/plugins/inactiveServerCleaner.groovy /var/opt/jfrog/artifactory/etc/artifactory/plugins/ >> /tmp/source;
@@ -162,7 +162,7 @@ Resources:
             - Name: HA_IS_PRIMARY
               Value: !Ref ArtifactoryPrimary
             - Name: DB_URL
-              Value: !Ref DatabaseURL
+              Value: !Ref DatabaseUrl
             - Name: DB_TYPE
               Value: !Ref DatabaseType
             - Name: DB_USER

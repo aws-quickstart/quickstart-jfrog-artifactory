@@ -62,13 +62,13 @@ Parameters:
     NoEcho: 'true'
   ArtifactoryS3Bucket:
     Type: String
-  DatabaseURL:
+  DatabaseUrl:
     Type: String
   DatabaseDriver:
     Type: String
   DatabasePlugin:
     Type: String
-  DatabasePluginURL:
+  DatabasePluginUrl:
     Type: String
   ProDockerRepo:
     Type: String
@@ -396,12 +396,12 @@ Resources:
         ArtifactoryTargetGroupArn: !Ref ArtifactoryTargetGroupArn
         ArtifactorySslTargetGroupArn: !Ref ArtifactorySslTargetGroupArn
         DatabasePlugin: !Ref DatabasePlugin
-        DatabasePluginURL: !Ref DatabasePluginURL
+        DatabasePluginUrl: !Ref DatabasePluginUrl
         MasterKey: !Ref MasterKey
         ExtraJavaOptions: !Ref ExtraJavaOptions
         NumberNodes: "1"
         ArtifactoryPrimary: "true"
-        DatabaseURL: !Ref DatabaseURL
+        DatabaseUrl: !Ref DatabaseUrl
         DatabaseDriver: !Ref DatabaseDriver
         ProDockerRepoURL: !Sub "${ProDockerRepo}:${ArtifactoryVersion}"
         NginxDockerRepoURL: !Sub "${NginxDockerRepo}:${ArtifactoryVersion}"
@@ -425,12 +425,12 @@ Resources:
         ArtifactoryTargetGroupArn: !Ref ArtifactoryTargetGroupArn
         ArtifactorySslTargetGroupArn: !Ref ArtifactorySslTargetGroupArn
         DatabasePlugin: !Ref DatabasePlugin
-        DatabasePluginURL: !Ref DatabasePluginURL
+        DatabasePluginUrl: !Ref DatabasePluginUrl
         MasterKey: !Ref MasterKey
         ExtraJavaOptions: !Ref ExtraJavaOptions
         NumberNodes: !Ref NumberOfSecondary
         ArtifactoryPrimary: "false" # If this is false then the entrypoint-artifactory script will get stuck in a forever waiting loop
-        DatabaseURL: !Ref DatabaseURL
+        DatabaseUrl: !Ref DatabaseUrl
         DatabaseDriver: !Ref DatabaseDriver
         ProDockerRepoURL: !Sub "${ProDockerRepo}:${ArtifactoryVersion}"
         NginxDockerRepoURL: !Sub "${NginxDockerRepo}:${ArtifactoryVersion}"
