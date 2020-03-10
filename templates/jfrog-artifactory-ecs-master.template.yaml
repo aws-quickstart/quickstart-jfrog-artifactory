@@ -37,6 +37,7 @@ Metadata:
       - Label:
           default: JFrog Artifactory configuration
         Parameters:
+          - ArtifactoryProduct
           - ArtifactoryVersion
           - ReleaseStage
           - NumberOfSecondary
@@ -94,6 +95,8 @@ Metadata:
         default: Bastion operating system
       NumBastionHosts:
         default: Number of bastion instances
+      ArtifactoryProduct:
+        default: Artifactory product to install
       ArtifactoryVersion:
         default: Artifactory version
       ReleaseStage:
@@ -301,6 +304,13 @@ Parameters:
       - 7
     Default: 2
     Type: Number
+  ArtifactoryProduct:
+    Description: The Jfrog Artifactory product you wish to install into an AMI.
+    AllowedValues:
+      - JFrog-Artifactory-Pro
+      - JFrog-Container-Registry
+    Default: JFrog-Artifactory-Pro
+    Type: String
   ArtifactoryVersion:
     Description: The version of Artifactory that you want to deploy into the Quick Start.
       Please see the release notes to select the version you want to deploy.
@@ -483,6 +493,7 @@ Resources:
         VolumeSize: !Ref VolumeSize
         NumberOfSecondary: !Ref NumberOfSecondary
         NumberOfEC2Nodes: !Ref NumberOfEC2Nodes
+        ArtifactoryProduct: !Ref ArtifactoryProduct
         ArtifactoryVersion: !Ref ArtifactoryVersion
         ReleaseStage: !Ref ReleaseStage
         SmLicenseCertName: !Ref SmLicenseCertName
