@@ -696,7 +696,7 @@ Outputs:
   ArtifactoryUrl:
     Description: URL of the ELB to access Artifactory
     Value: !Sub "https://${ArtifactoryElb.DNSName}"
-  BastionIP:
+  BastionIp:
     Value: !If
       - EnableBastion
       - !GetAtt BastionStack.Outputs.EIP1

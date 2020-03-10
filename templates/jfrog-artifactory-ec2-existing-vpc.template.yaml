@@ -580,7 +580,7 @@ Resources:
     Properties:
       Tags:
         - Key: Name
-          Value: artifactory-ec2-instances-sg
+          Value: !Sub ${ArtifactoryProduct}-ec2-instances-sg
       GroupDescription: SG for EC2 instances (also permits SSH access from the bastion host)
       VpcId: !Ref VpcId
       SecurityGroupIngress:
@@ -734,7 +734,7 @@ Outputs:
   ArtifactoryUrl:
     Description: URL of the ELB to access Artifactory
     Value: !Sub "https://${ArtifactoryElb.DNSName}"
-  BastionIP:
+  BastionIp:
     Value: !If
       - EnableBastion
       - !GetAtt BastionStack.Outputs.EIP1

@@ -648,7 +648,7 @@ Outputs:
   ArtifactoryUrl:
     Value: !GetAtt ArtifactoryCoreStack.Outputs.ArtifactoryUrl
     Description: Public Artifactory URL
-  BastionIP:
+  BastionIp:
     Value: !GetAtt EksStack.Outputs.BastionIP
     Description: Bastion host IP, for admin access via SSH
   KubeConfigPath:

@@ -282,6 +282,8 @@ Parameters:
     Description: The number of EC2 nodes to create for the ECS cluster. There must be
       enough nodes to run the number of secondaries plus the primary task.
     AllowedValues:
+      - 1
+      - 2
       - 3
       - 4
       - 5
@@ -296,6 +298,7 @@ Parameters:
       is two; the maximum is seven. Do not select more than instances than you
       have licenses for.
     AllowedValues:
+      - 1
       - 2
       - 3
       - 4
@@ -515,6 +518,6 @@ Outputs:
   ArtifactoryUrl:
     Description: URL of the ELB to access Artifactory
     Value: !Sub ${ArtifactoryExistingVpcStack.Outputs.ArtifactoryUrl}
-  BastionIP:
-    Value: !Sub ${ArtifactoryExistingVpcStack.Outputs.BastionIP}
+  BastionIp:
+    Value: !Sub ${ArtifactoryExistingVpcStack.Outputs.BastionIp}
     Description: Bastion host IP, for admin access via SSH
