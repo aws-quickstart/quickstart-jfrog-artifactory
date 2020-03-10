@@ -20,7 +20,7 @@ Metadata:
           - PrivateSubnet2Id
           - PrivateSubnet1Cidr
           - PrivateSubnet2Cidr
-          - ELBScheme
+          - ElbScheme
       - Label:
           default: Bastion Configuration
         Parameters:
@@ -92,7 +92,7 @@ Metadata:
         default: Private subnet 1 CIDR
       PrivateSubnet2Cidr:
         default: Private subnet 2 CIDR
-      ELBScheme:
+      ElbScheme:
         default: Elastic Load Balancer scheme
       ProvisionBastionHost:
         default: Bastion instance
@@ -324,6 +324,8 @@ Parameters:
     Description: The number of EC2 nodes to create for the ECS cluster. There must be
       enough nodes to run the number of secondaries plus the primary task.
     AllowedValues:
+      - 1
+      - 2
       - 3
       - 4
       - 5
@@ -338,6 +340,7 @@ Parameters:
       is two; the maximum is seven. Do not select more than instances than you
       have licenses for.
     AllowedValues:
+      - 1
       - 2
       - 3
       - 4
@@ -347,7 +350,7 @@ Parameters:
     Default: 2
     Type: Number
   ArtifactoryProduct:
-    Description: The Jfrog Artifactory product you wish to install into an AMI.
+    Description: The Jfrog Artifactory product you wish to install.
     AllowedValues:
       - JFrog-Artifactory-Pro
       - JFrog-Container-Registry
@@ -464,7 +467,7 @@ Parameters:
       - "false"
     Default: "true"
     Type: String
-  ELBScheme:
+  ElbScheme:
     Description: Choose whether this will be internet facing or internal.
     AllowedValues:
       - internal
@@ -542,7 +545,7 @@ Resources:
     Properties:
       IpAddressType: ipv4
       Name: !Sub ${ArtifactoryProduct}-ELB
-      Scheme: !Ref ELBScheme
+      Scheme: !Ref ElbScheme
       Subnets:
         - !Ref PublicSubnet1Id
         - !Ref PublicSubnet2Id
@@ -670,12 +673,12 @@ Resources:
         ArtifactoryIamAcessKey: !GetAtt ArtifactoryCoreInfraStack.Outputs.ArtifactoryIamAcessKey
         SecretAccessKey: !GetAtt ArtifactoryCoreInfraStack.Outputs.SecretAccessKey
         ArtifactoryS3Bucket: !GetAtt ArtifactoryCoreInfraStack.Outputs.S3Bucket
-        DatabaseURL: !GetAtt ArtifactoryCoreInfraStack.Outputs.DatabaseURL
+        DatabaseUrl: !GetAtt ArtifactoryCoreInfraStack.Outputs.DatabaseUrl
         DatabaseDriver: !GetAtt ArtifactoryCoreInfraStack.Outputs.DatabaseDriver
         ProDockerRepo: !GetAtt ArtifactoryCoreInfraStack.Outputs.ProDockerRepo
         NginxDockerRepo: !GetAtt ArtifactoryCoreInfraStack.Outputs.NginxDockerRepo
         DatabasePlugin:  !GetAtt ArtifactoryCoreInfraStack.Outputs.DatabasePlugin
-        DatabasePluginURL:  !GetAtt ArtifactoryCoreInfraStack.Outputs.DatabasePluginURL
+        DatabasePluginUrl:  !GetAtt ArtifactoryCoreInfraStack.Outputs.DatabasePluginUrl
         DatabaseType: !GetAtt ArtifactoryCoreInfraStack.Outputs.DatabaseType
         DatabaseUser: !Ref DatabaseUser
         DatabasePassword: !Ref DatabasePassword

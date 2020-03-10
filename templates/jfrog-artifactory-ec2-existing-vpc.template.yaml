@@ -660,10 +660,10 @@ Resources:
         ArtifactoryIamAcessKey: !GetAtt ArtifactoryCoreInfraStack.Outputs.ArtifactoryIamAcessKey
         SecretAccessKey: !GetAtt ArtifactoryCoreInfraStack.Outputs.SecretAccessKey
         ArtifactoryS3Bucket: !GetAtt ArtifactoryCoreInfraStack.Outputs.S3Bucket
-        DatabaseURL: !GetAtt ArtifactoryCoreInfraStack.Outputs.DatabaseURL
+        DatabaseUrl: !GetAtt ArtifactoryCoreInfraStack.Outputs.DatabaseUrl
         DatabaseDriver: !GetAtt ArtifactoryCoreInfraStack.Outputs.DatabaseDriver
         DatabasePlugin:  !GetAtt ArtifactoryCoreInfraStack.Outputs.DatabasePlugin
-        DatabasePluginURL:  !GetAtt ArtifactoryCoreInfraStack.Outputs.DatabasePluginURL
+        DatabasePluginUrl:  !GetAtt ArtifactoryCoreInfraStack.Outputs.DatabasePluginUrl
         DatabaseType: !GetAtt ArtifactoryCoreInfraStack.Outputs.DatabaseType
         DatabaseUser: !Ref DatabaseUser
         DatabasePassword: !Ref DatabasePassword
@@ -707,10 +707,10 @@ Resources:
         ArtifactoryIamAcessKey: !GetAtt ArtifactoryCoreInfraStack.Outputs.ArtifactoryIamAcessKey
         SecretAccessKey: !GetAtt ArtifactoryCoreInfraStack.Outputs.SecretAccessKey
         ArtifactoryS3Bucket: !GetAtt ArtifactoryCoreInfraStack.Outputs.S3Bucket
-        DatabaseURL: !GetAtt ArtifactoryCoreInfraStack.Outputs.DatabaseURL
+        DatabaseUrl: !GetAtt ArtifactoryCoreInfraStack.Outputs.DatabaseUrl
         DatabaseDriver: !GetAtt ArtifactoryCoreInfraStack.Outputs.DatabaseDriver
         DatabasePlugin:  !GetAtt ArtifactoryCoreInfraStack.Outputs.DatabasePlugin
-        DatabasePluginURL:  !GetAtt ArtifactoryCoreInfraStack.Outputs.DatabasePluginURL
+        DatabasePluginUrl:  !GetAtt ArtifactoryCoreInfraStack.Outputs.DatabasePluginUrl
         DatabaseType: !GetAtt ArtifactoryCoreInfraStack.Outputs.DatabaseType
         DatabaseUser: !Ref DatabaseUser
         DatabasePassword: !Ref DatabasePassword

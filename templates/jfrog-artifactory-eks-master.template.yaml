@@ -522,7 +522,7 @@ Resources:
         PrivateSubnet3Id: !GetAtt 'ArtifactoryVpcStack.Outputs.PrivateSubnet3AID'
         PublicSubnet1Id: !GetAtt 'ArtifactoryVpcStack.Outputs.PublicSubnet1ID'
         PublicSubnet2Id: !GetAtt 'ArtifactoryVpcStack.Outputs.PublicSubnet2ID'
-        PublicSubnet3id: !GetAtt 'ArtifactoryVpcStack.Outputs.PublicSubnet3ID'
+        PublicSubnet3Id: !GetAtt 'ArtifactoryVpcStack.Outputs.PublicSubnet3ID'
         PrivateSubnet1Cidr: !Ref PrivateSubnet1Cidr
         PrivateSubnet2Cidr: !Ref PrivateSubnet2Cidr
         PrivateSubnet3Cidr: !Ref PrivateSubnet3Cidr

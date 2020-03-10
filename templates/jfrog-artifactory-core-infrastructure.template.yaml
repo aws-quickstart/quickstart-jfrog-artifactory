@@ -210,7 +210,7 @@ Outputs:
     Value: !FindInMap [DatabaseMap, !Ref DatabaseEngine, Driver]
   DatabasePlugin:
     Value: !FindInMap [DatabaseMap, !Ref DatabaseEngine, Plugin]
-  DatabasePluginURL:
+  DatabasePluginUrl:
     Value: !Sub
       - "${MainURL}${PluginVersion}"
       - {
@@ -219,7 +219,7 @@ Outputs:
         }
   DatabaseType:
     Value: !FindInMap [DatabaseMap, !Ref DatabaseEngine, Name]
-  DatabaseURL:
+  DatabaseUrl:
     Value: !Sub
       - "jdbc:${DatabaseType}://${ArtifactoryDatabaseEndpointAddress}:${port}/${DatabaseName}${extraDatabaseOps}"
       - {

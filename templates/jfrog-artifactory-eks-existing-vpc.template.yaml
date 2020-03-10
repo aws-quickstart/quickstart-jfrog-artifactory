@@ -21,7 +21,7 @@ Metadata:
           - PrivateSubnet3Id
           - PublicSubnet1Id
           - PublicSubnet2Id
-          - PublicSubnet3id
+          - PublicSubnet3Id
           - PrivateSubnet1Cidr
           - PrivateSubnet2Cidr
           - PrivateSubnet3Cidr
@@ -86,7 +86,7 @@ Metadata:
         default: Public subnet 1 ID
       PublicSubnet2Id:
         default: Public subnet 2 ID
-      PublicSubnet3id:
+      PublicSubnet3Id:
         default: Public subnet 3 ID
       PrivateSubnet1Id:
         default: Private subnet 1 ID
@@ -196,7 +196,7 @@ Parameters:
   PublicSubnet2Id:
     Description: The ID of the public subnet in Availability Zone 2 in your existing VPC (e.g., subnet-a29c3d84).
     Type: "AWS::EC2::Subnet::Id"
-  PublicSubnet3id:
+  PublicSubnet3Id:
     Description: The ID of the public subnet in Availability Zone 3 in your existing VPC (e.g., subnet-a29c3d84).
     Type: "AWS::EC2::Subnet::Id"
   PrivateSubnet1Id:
@@ -510,7 +510,7 @@ Resources:
         PrivateSubnet3ID: !Ref PrivateSubnet3Id
         PublicSubnet1ID: !Ref PublicSubnet1Id
         PublicSubnet2ID: !Ref PublicSubnet2Id
-        PublicSubnet3ID: !Ref PublicSubnet3id
+        PublicSubnet3ID: !Ref PublicSubnet3Id
         KubernetesVersion: !Ref KubernetesVersion
         NodeInstanceType: !Ref NodeInstanceType
         NumberOfNodes: !If [ArtifactoryHa, '1', !Ref NumberOfSecondary ]
