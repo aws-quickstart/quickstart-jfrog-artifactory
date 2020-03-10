@@ -41,6 +41,9 @@ Parameters:
     Type: String
   DatabaseName:
     Type: String
+  ArtifactoryProduct:
+    Default: JFrog-Artifactory-Pro
+    Type: String
   ReleaseStage:
     Default: GA
     Type: String
@@ -66,10 +69,17 @@ Mappings:
   ReleaseStageMap:
     BETA:
       ProDockerRepo: "earlyaccess-docker.jfrog.io/jfrog/artifactory-pro"
+      JcrDockerRepo: "earlyaccess-docker.jfrog.io/jfrog/artifactory-jcr"
       NginxDockerRepo: "earlyaccess-docker.jfrog.io/jfrog/nginx-artifactory-pro"
     GA:
       ProDockerRepo: "docker.bintray.io/jfrog/artifactory-pro"
+      JcrDockerRepo: "earlyaccess-docker.jfrog.io/jfrog/artifactory-jcr"
       NginxDockerRepo: "docker.bintray.io/jfrog/nginx-artifactory-pro"
+  ProductMap:
+    JFrog-Container-Registry:
+      RepoName: JcrDockerRepo
+    JFrog-Artifactory-Pro:
+      RepoName: ProDockerRepo
 Resources:
   ArtifactoryDatabaseSubnetGroup:
     Type: AWS::RDS::DBSubnetGroup
@@ -219,6 +229,12 @@ Outputs:
         extraDatabaseOps: !FindInMap [DatabaseMap, !Ref DatabaseEngine, extraDatabaseOps],
         }
   ProDockerRepo:
-    Value: !FindInMap [ReleaseStageMap, !Ref ReleaseStage, ProDockerRepo]
+    Value: !FindInMap
+      - ReleaseStageMap
+      - !Ref ReleaseStage
+      - !FindInMap
+        - ProductMap
+        - !Ref ArtifactoryProduct
+        - RepoName
   NginxDockerRepo:
     Value: !FindInMap [ReleaseStageMap, !Ref ReleaseStage, NginxDockerRepo]

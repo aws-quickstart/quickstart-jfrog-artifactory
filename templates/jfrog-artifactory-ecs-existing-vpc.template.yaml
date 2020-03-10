@@ -35,12 +35,16 @@ Metadata:
           default: ECS Configuration
         Parameters:
           - ClusterName
-          - CreateNewECSCluster
+          - CreateNewEcsCluster
+          - CreateNewEcsRole
+          - RoleName
+          - RoleArn
           - InstanceType
           - VolumeSize
       - Label:
           default: JFrog Artifactory Configuration
         Parameters:
+          - ArtifactoryProduct
           - ArtifactoryVersion
           - ReleaseStage
           - NumberOfSecondary
@@ -106,12 +110,20 @@ Metadata:
         default: Number of bastion instances
       ClusterName:
         default: ECS cluster name
-      CreateNewECSCluster:
+      CreateNewEcsCluster:
         default: Create new ECS cluster
+      CreateNewEcsRole:
+        default: Create new ECS Role
+      RoleName:
+        default: ECS Role Name
+      RoleArn:
+        default: ECS Role Arn
       InstanceType:
         default: EC2 instance type
       VolumeSize:
         default: EBS root volume size
+      ArtifactoryProduct:
+        default: Artifactory product to install
       ArtifactoryVersion:
         default: Artifactory version
       ReleaseStage:
@@ -269,13 +281,29 @@ Parameters:
     Description: The name for your ECS cluster.
     Default: JFrog
     Type: String
-  CreateNewECSCluster:
+  CreateNewEcsCluster:
     Description: Choose whether to create a new ECS cluster with the name specified in the 'ClusterName' parameter.
       If you choose Disabled, an ECS cluster with the name specified in the 'CluserName' parameter must already exist.
     AllowedValues:
       - "Enabled"
       - "Disabled"
     Default: "Enabled"
+    Type: String
+  CreateNewEcsRole:
+    Description: Choose Whether to create a new ECS role or not. If you choose Disabled, the role
+      must exist, and have the proper permissions for the ECS tasks
+    AllowedValues:
+      - "Enabled"
+      - "Disabled"
+    Default: Enabled
+    Type: String
+  RoleName:
+    Description: Role Name for customized role if you choose Disabled for CreateNewEcsRole.
+    Default: MyOwnecsInstanceRole
+    Type: String
+  RoleArn:
+    Description: Role Arn for customized role if you choose Disabled for CreateNewEcsRole.
+    Default: arn:aws:iam::1234567890112:role/MyOwnecsInstanceRole
     Type: String
   InstanceType:
     Description: The EC2 instance type for the Artifactory Docker hosts.
@@ -318,6 +346,13 @@ Parameters:
       - 7
     Default: 2
     Type: Number
+  ArtifactoryProduct:
+    Description: The Jfrog Artifactory product you wish to install into an AMI.
+    AllowedValues:
+      - JFrog-Artifactory-Pro
+      - JFrog-Container-Registry
+    Default: JFrog-Artifactory-Pro
+    Type: String
   ArtifactoryVersion:
     Description: The version of Artifactory that you want to deploy into the Quick Start.
       Please see the release notes to select the version you want to deploy.
@@ -458,6 +493,7 @@ Parameters:
 
 Conditions:
   EnableBastion: !Equals [!Ref 'ProvisionBastionHost', 'Enabled']
+  ArtifactoryHa: !Equals [!Ref ArtifactoryProduct, 'JFrog-Artifactory-Pro']
 
 Resources:
   BastionStack:
@@ -498,21 +534,34 @@ Resources:
         DatabasePassword: !Ref DatabasePassword
         DatabaseInstance: !Ref DatabaseInstance
         DatabaseName: !Ref DatabaseName
+        ArtifactoryProduct: !Ref ArtifactoryProduct
         ReleaseStage: !Ref ReleaseStage
 
-  ArtifactoryELB:
+  ArtifactoryElb:
     Type: AWS::ElasticLoadBalancingV2::LoadBalancer
     Properties:
       IpAddressType: ipv4
-      Name: ArtifactoryELB
+      Name: !Sub ${ArtifactoryProduct}-ELB
       Scheme: !Ref ELBScheme
       Subnets:
         - !Ref PublicSubnet1Id
         - !Ref PublicSubnet2Id
-      Tags:
-        - Key: Name
-          Value: artifactory-ELB
       Type: network
+
+  ArtifactorySslTargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      HealthCheckEnabled: True
+      HealthCheckIntervalSeconds: 30
+      HealthCheckProtocol: TCP
+      HealthCheckTimeoutSeconds: 10
+      HealthyThresholdCount: 3
+      Name: !Sub ${ArtifactoryProduct}-https
+      Port: 443
+      Protocol: TCP
+      TargetType: instance
+      UnhealthyThresholdCount: 3
+      VpcId: !Ref VpcId
 
   ArtifactoryTargetGroup:
     Type: AWS::ElasticLoadBalancingV2::TargetGroup
@@ -522,29 +571,39 @@ Resources:
       HealthCheckProtocol: TCP
       HealthCheckTimeoutSeconds: 10
       HealthyThresholdCount: 3
-      Name: Artifactory
-      Port: 443
+      Name: !Sub ${ArtifactoryProduct}-http
+      Port: 80
       Protocol: TCP
       TargetType: instance
       UnhealthyThresholdCount: 3
       VpcId: !Ref VpcId
 
-  ArtifactoryELBListener:
+  ArtifactorySslElbListener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      DefaultActions:
+        - TargetGroupArn: !Ref ArtifactorySslTargetGroup
+          Type: forward
+      LoadBalancerArn: !Ref ArtifactoryElb
+      Port: 443
+      Protocol: TCP
+
+  ArtifactoryElbListener:
     Type: AWS::ElasticLoadBalancingV2::Listener
     Properties:
       DefaultActions:
         - TargetGroupArn: !Ref ArtifactoryTargetGroup
           Type: forward
-      LoadBalancerArn: !Ref ArtifactoryELB
-      Port: 443
+      LoadBalancerArn: !Ref ArtifactoryElb
+      Port: 80
       Protocol: TCP
 
-  ArtifactoryEC2SG:
+  ArtifactoryEc2Sg:
     Type: AWS::EC2::SecurityGroup
     Properties:
       Tags:
         - Key: Name
-          Value: artifactory-ec2-instances-sg
+          Value: !Sub ${ArtifactoryProduct}-ec2-instances-sg
       GroupDescription: SG for EC2 instances (also permits SSH access from the bastion host)
       VpcId: !Ref VpcId
       SecurityGroupIngress:
@@ -588,18 +647,22 @@ Resources:
         PrivateSubnet1Id: !Ref PrivateSubnet1Id
         PrivateSubnet2Id: !Ref PrivateSubnet2Id
         ClusterName: !Ref ClusterName
-        CreateNewECSCluster: !Ref CreateNewECSCluster
+        CreateNewEcsCluster: !Ref CreateNewEcsCluster
+        CreateNewEcsRole: !Ref CreateNewEcsRole
+        RoleName: !Ref RoleName
+        RoleArn: !Ref RoleArn
         MinScalingNodes: !Ref NumberOfEC2Nodes
         MaxScalingNodes: !Ref NumberOfEC2Nodes
         KeyPairName: !Ref KeyPairName
         InstanceType: !Ref InstanceType
         VolumeSize: !Ref VolumeSize
-        DeploymentTag: Artifactory
+        DeploymentTag:  !If [ArtifactoryHa, ArtifactoryEcs-Node, JcrEcs-Node]
         NumberOfSecondary: !Ref NumberOfSecondary
-        ArtifactoryLicense1: !Sub '{{resolve:secretsmanager:${SmLicenseCertName}:SecretString:ArtifactoryLicense1}}'
-        ArtifactoryLicense2: !Sub '{{resolve:secretsmanager:${SmLicenseCertName}:SecretString:ArtifactoryLicense2}}'
-        ArtifactoryLicense3: !Sub '{{resolve:secretsmanager:${SmLicenseCertName}:SecretString:ArtifactoryLicense3}}'
-        ArtifactoryLicense4: !Sub '{{resolve:secretsmanager:${SmLicenseCertName}:SecretString:ArtifactoryLicense4}}'
+        ArtifactoryProduct: !Ref ArtifactoryProduct
+        ArtifactoryLicense1: !If [ArtifactoryHa, !Sub '{{resolve:secretsmanager:${SmLicenseCertName}:SecretString:ArtifactoryLicense1}}', '']
+        ArtifactoryLicense2: !If [ArtifactoryHa, !Sub '{{resolve:secretsmanager:${SmLicenseCertName}:SecretString:ArtifactoryLicense2}}', '']
+        ArtifactoryLicense3: !If [ArtifactoryHa, !Sub '{{resolve:secretsmanager:${SmLicenseCertName}:SecretString:ArtifactoryLicense3}}', '']
+        ArtifactoryLicense4: !If [ArtifactoryHa, !Sub '{{resolve:secretsmanager:${SmLicenseCertName}:SecretString:ArtifactoryLicense4}}', '']
         Certificate: !Sub '{{resolve:secretsmanager:${SmLicenseCertName}:SecretString:Certificate}}'
         CertificateKey: !Sub '{{resolve:secretsmanager:${SmLicenseCertName}:SecretString:CertificateKey}}'
         CertificateDomain: !Sub '{{resolve:secretsmanager:${SmLicenseCertName}:SecretString:CertificateDomain}}'
@@ -619,8 +682,9 @@ Resources:
         MasterKey: !Ref MasterKey
         ExtraJavaOptions: !Ref ExtraJavaOptions
         ArtifactoryVersion: !Ref ArtifactoryVersion
-        SecurityGroups: !Ref ArtifactoryEC2SG
+        SecurityGroups: !Ref ArtifactoryEc2Sg
         ArtifactoryTargetGroupArn: !Ref ArtifactoryTargetGroup
+        ArtifactorySslTargetGroupArn: !Ref ArtifactorySslTargetGroup
         AnsibleVaultPass: !Ref AnsibleVaultPass
         QsS3BucketName: !Ref QsS3BucketName
         QsS3KeyPrefix: !Ref QsS3KeyPrefix
@@ -628,7 +692,7 @@ Resources:
 Outputs:
   ArtifactoryUrl:
     Description: URL of the ELB to access Artifactory
-    Value: !Sub "https://${ArtifactoryELB.DNSName}"
+    Value: !Sub "https://${ArtifactoryElb.DNSName}"
   BastionIP:
     Value: !If
       - EnableBastion
