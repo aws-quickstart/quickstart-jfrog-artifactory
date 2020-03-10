@@ -34,6 +34,7 @@ Metadata:
       - Label:
           default: JFrog Artifactory configuration
         Parameters:
+          - ArtifactoryProduct
           - ArtifactoryVersion
           - ReleaseStage
           - ArtifactoryDeploymentSize
@@ -104,6 +105,8 @@ Metadata:
         default: Bastion operating system
       NumberOfSecondary:
         default: Number of secondary pods
+      ArtifactoryProduct:
+        default: Artifactory product to install
       ArtifactoryVersion:
         default: Artifactory version
       ReleaseStage:
@@ -237,6 +240,7 @@ Parameters:
     Description: The initial number of secondary node instances to create.
       If you do not have large enough instances to boot the number of secondary pods, the deployment will fail.
     AllowedValues:
+      - 1
       - 2
       - 3
       - 4
@@ -320,6 +324,13 @@ Parameters:
       - 7
     Default: 2
     Type: Number
+  ArtifactoryProduct:
+    Description: The Jfrog Artifactory product you wish to install.
+    AllowedValues:
+      - JFrog-Artifactory-Pro
+      - JFrog-Container-Registry
+    Default: JFrog-Artifactory-Pro
+    Type: String
   ArtifactoryVersion:
     Description: The version of Artifactory that you want to deploy into the Quick Start.
       Please see the release notes to select the version you want to deploy.
@@ -494,7 +505,7 @@ Resources:
         PublicSubnet3CIDR: !Ref 'PublicSubnet3Cidr'
         PublicSubnetTag2: "kubernetes.io/role/elb="
 
-  ArtifactoryEKSExistingVpcStack:
+  ArtifactoryEksExistingVpcStack:
     Type: AWS::CloudFormation::Stack
     Properties:
       TemplateURL: !Sub 'https://${QsS3BucketName}.s3.amazonaws.com/${QsS3KeyPrefix}templates/jfrog-artifactory-eks-existing-vpc.template.yaml'
@@ -514,12 +525,14 @@ Resources:
         PublicSubnet3id: !GetAtt 'ArtifactoryVpcStack.Outputs.PublicSubnet3ID'
         PrivateSubnet1Cidr: !Ref PrivateSubnet1Cidr
         PrivateSubnet2Cidr: !Ref PrivateSubnet2Cidr
+        PrivateSubnet3Cidr: !Ref PrivateSubnet3Cidr
         ProvisionBastionHost: !Ref ProvisionBastionHost
         BastionInstanceType: !Ref BastionInstanceType
         BastionOs: !Ref BastionOs
         BastionRootVolumeSize: !Ref BastionRootVolumeSize
         BastionEnableTcpForwarding: !Ref BastionEnableTcpForwarding
         BastionEnableX11Forwarding: !Ref BastionEnableX11Forwarding
+        ArtifactoryProduct: !Ref ArtifactoryProduct
         ArtifactoryVersion: !Ref ArtifactoryVersion
         ReleaseStage: !Ref ReleaseStage
         ArtifactoryDeploymentSize: !Ref ArtifactoryDeploymentSize
@@ -543,11 +556,11 @@ Resources:
 
 Outputs:
   ArtifactoryUrl:
-    Value: !GetAtt ArtifactoryEKSExistingVpcStack.Outputs.ArtifactoryUrl
+    Value: !GetAtt ArtifactoryEksExistingVpcStack.Outputs.ArtifactoryUrl
     Description: Public Artifactory URL
-  BastionIP:
-    Value: !GetAtt ArtifactoryEKSExistingVpcStack.Outputs.BastionIP
+  BastionIp:
+    Value: !GetAtt ArtifactoryEksExistingVpcStack.Outputs.BastionIP
     Description: Bastion host IP, for admin access via SSH
   KubeConfigPath:
-    Value: !GetAtt ArtifactoryEKSExistingVpcStack.Outputs.KubeConfigPath
+    Value: !GetAtt ArtifactoryEksExistingVpcStack.Outputs.KubeConfigPath
     Description: (Advanced) Amazon S3 bucket containing encrypted Kubernetes config which can be used to access the Kubernetes API.
