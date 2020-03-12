@@ -41,8 +41,14 @@ Parameters:
     Type: String
   DatabaseName:
     Type: String
+  ArtifactoryProduct:
+    Default: JFrog-Artifactory-Pro
+    Type: String
   ReleaseStage:
     Default: GA
+    Type: String
+  InstanceType:
+    Default: m4.xlarge
     Type: String
 
 Mappings:
@@ -66,10 +72,170 @@ Mappings:
   ReleaseStageMap:
     BETA:
       ProDockerRepo: "earlyaccess-docker.jfrog.io/jfrog/artifactory-pro"
+      JcrDockerRepo: "earlyaccess-docker.jfrog.io/jfrog/artifactory-jcr"
       NginxDockerRepo: "earlyaccess-docker.jfrog.io/jfrog/nginx-artifactory-pro"
     GA:
       ProDockerRepo: "docker.bintray.io/jfrog/artifactory-pro"
+      JcrDockerRepo: "earlyaccess-docker.jfrog.io/jfrog/artifactory-jcr"
       NginxDockerRepo: "docker.bintray.io/jfrog/nginx-artifactory-pro"
+  ProductMap:
+    JFrog-Container-Registry:
+      RepoName: JcrDockerRepo
+    JFrog-Artifactory-Pro:
+      RepoName: ProDockerRepo
+  JavaOptionstoInstance:
+    m4.large:
+      Min: 4
+      Max: 4
+      DeploymentSize: xxSmall
+    m4.xlarge:
+      Min: 8
+      Max: 12
+      DeploymentSize: xSmall
+    m4.2xlarge:
+      Min: 16
+      Max: 24
+      DeploymentSize: Small
+    m4.4xlarge:
+      Min: 32
+      Max: 48
+      DeploymentSize: Medium
+    m4.10xlarge:
+      Min: 80
+      Max: 120
+      DeploymentSize: Large
+    m4.16xlarge:
+      Min: 128
+      Max: 192
+      DeploymentSize: xxLarge
+    m5.large:
+      Min: 4
+      Max: 4
+      DeploymentSize: xxSmall
+    m5.xlarge:
+      Min: 8
+      Max: 12
+      DeploymentSize: xSmall
+    m5.2xlarge:
+      Min: 16
+      Max: 24
+      DeploymentSize: Small
+    m5.4xlarge:
+      Min: 32
+      Max: 48
+      DeploymentSize: Medium
+    m5.8xlarge:
+      Min: 64
+      Max: 96
+      DeploymentSize: Large
+    m5.12xlarge:
+      Min: 96
+      Max: 144
+      DeploymentSize: xLarge
+    m5.16xlarge:
+      Min: 128
+      Max: 192
+      DeploymentSize: xxLarge
+    m5.24xlarge:
+      Min: 192
+      Max: 288
+      DeploymentSize: xxxLarge
+    m5.metal:
+      Min: 192
+      Max: 288
+      DeploymentSize: xxxLarge
+    m5d.large:
+      Min: 4
+      Max: 4
+      DeploymentSize: xxSmall
+    m5d.xlarge:
+      Min: 8
+      Max: 12
+      DeploymentSize: xSmall
+    m5d.2xlarge:
+      Min: 16
+      Max: 24
+      DeploymentSize: Small
+    m5d.4xlarge:
+      Min: 32
+      Max: 48
+      DeploymentSize: Medium
+    m5d.8xlarge:
+      Min: 64
+      Max: 96
+      DeploymentSize: Large
+    m5d.12xlarge:
+      Min: 96
+      Max: 144
+      DeploymentSize: xLarge
+    m5d.16xlarge:
+      Min: 128
+      Max: 192
+      DeploymentSize: xxLarge
+    m5d.24xlarge:
+      Min: 192
+      Max: 288
+      DeploymentSize: xxxLarge
+    m5d.metal:
+      Min: 192
+      Max: 288
+      DeploymentSize: xxxLarge
+    m5a.large:
+      Min: 4
+      Max: 4
+      DeploymentSize: xxSmall
+    m5a.xlarge:
+      Min: 8
+      Max: 12
+      DeploymentSize: xSmall
+    m5a.2xlarge:
+      Min: 16
+      Max: 24
+      DeploymentSize: Small
+    m5a.4xlarge:
+      Min: 32
+      Max: 48
+      DeploymentSize: Medium
+    m5a.8xlarge:
+      Min: 64
+      Max: 96
+      DeploymentSize: Large
+    m5a.12xlarge:
+      Min: 96
+      Max: 144
+      DeploymentSize: xLarge
+    m5a.16xlarge:
+      Min: 128
+      Max: 192
+      DeploymentSize: xxLarge
+    m5a.24xlarge:
+      Min: 192
+      Max: 288
+      DeploymentSize: xxxLarge
+    m5ad.large:
+      Min: 4
+      Max: 4
+      DeploymentSize: xxSmall
+    m5ad.xlarge:
+      Min: 8
+      Max: 12
+      DeploymentSize: xSmall
+    m5ad.2xlarge:
+      Min: 16
+      Max: 24
+      DeploymentSize: Small
+    m5ad.4xlarge:
+      Min: 32
+      Max: 48
+      DeploymentSize: Medium
+    m5ad.12xlarge:
+      Min: 96
+      Max: 144
+      DeploymentSize: xLarge
+    m5ad.24xlarge:
+      Min: 192
+      Max: 288
+      DeploymentSize: xxxLarge
 Resources:
   ArtifactoryDatabaseSubnetGroup:
     Type: AWS::RDS::DBSubnetGroup
@@ -200,7 +366,7 @@ Outputs:
     Value: !FindInMap [DatabaseMap, !Ref DatabaseEngine, Driver]
   DatabasePlugin:
     Value: !FindInMap [DatabaseMap, !Ref DatabaseEngine, Plugin]
-  DatabasePluginURL:
+  DatabasePluginUrl:
     Value: !Sub
       - "${MainURL}${PluginVersion}"
       - {
@@ -209,7 +375,7 @@ Outputs:
         }
   DatabaseType:
     Value: !FindInMap [DatabaseMap, !Ref DatabaseEngine, Name]
-  DatabaseURL:
+  DatabaseUrl:
     Value: !Sub
       - "jdbc:${DatabaseType}://${ArtifactoryDatabaseEndpointAddress}:${port}/${DatabaseName}${extraDatabaseOps}"
       - {
@@ -219,6 +385,21 @@ Outputs:
         extraDatabaseOps: !FindInMap [DatabaseMap, !Ref DatabaseEngine, extraDatabaseOps],
         }
   ProDockerRepo:
-    Value: !FindInMap [ReleaseStageMap, !Ref ReleaseStage, ProDockerRepo]
+    Value: !FindInMap
+      - ReleaseStageMap
+      - !Ref ReleaseStage
+      - !FindInMap
+        - ProductMap
+        - !Ref ArtifactoryProduct
+        - RepoName
   NginxDockerRepo:
     Value: !FindInMap [ReleaseStageMap, !Ref ReleaseStage, NginxDockerRepo]
+  JavaOpts:
+    Value: !Sub
+      - "-Xms${min}g -Xmx${max}g"
+      - {
+         min: !FindInMap [ JavaOptionstoInstance, !Ref InstanceType, Min],
+         max: !FindInMap [ JavaOptionstoInstance, !Ref InstanceType, Max]
+        }
+  DeploymentSize:
+    Value: !FindInMap [ JavaOptionstoInstance, !Ref InstanceType, DeploymentSize]

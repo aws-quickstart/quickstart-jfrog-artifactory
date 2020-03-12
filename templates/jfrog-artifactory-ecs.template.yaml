@@ -1,11 +1,13 @@
 AWSTemplateFormatVersion: "2010-09-09"
 Description: "Deploys the ECS Artifactory Service and Task"
 Parameters:
-  ECSCluster:
+  EcsCluster:
     Type: String
   ServiceName:
     Type: String
   ArtifactoryTargetGroupArn:
+    Type: String
+  ArtifactorySslTargetGroupArn:
     Type: String
   MasterKey:
     Type: String
@@ -16,17 +18,21 @@ Parameters:
     Type: String
   NumberNodes:
     Type: Number
-  DatabaseURL:
+  DeploymentSize:
+    Type: String
+  DatabaseUrl:
     Type: String
   DatabaseDriver:
     Type: String
-  DatabasePluginURL:
+  DatabasePluginUrl:
     Type: String
   DatabasePlugin:
     Type: String
   ProDockerRepoURL:
     Type: String
   NginxDockerRepoURL:
+    Type: String
+  InfoFile:
     Type: String
   DatabaseType:
     Type: String
@@ -35,9 +41,9 @@ Parameters:
   DatabasePassword:
     Type: String
     NoEcho: 'true'
-  ECSRoleArn:
+  EcsRoleArn:
     Type: String
-  ECSLogGroup:
+  EcsLogGroup:
     Type: String
   YQVersion:
     Default: "3.0.1"
@@ -47,18 +53,48 @@ Parameters:
   QsS3KeyPrefix:
     Type: String
 
+Mappings:
+  DeploymentSize:
+    xxxLarge:
+      Memory: "294912"
+      Cpu: "10240"
+    xxLarge:
+      Memory: "196608"
+      Cpu: "10240"
+    xLarge:
+      Memory: "147456"
+      Cpu: "10240"
+    Large:
+      Memory: "98304"
+      Cpu: "10240"
+    Medium:
+      Memory: "49152"
+      Cpu: "10240"
+    Small:
+      Memory: "24576"
+      Cpu: "8192"
+    xSmall:
+      Memory: "12288"
+      Cpu: "4096"
+    xxSmall:
+      Memory: "4096"
+      Cpu: "2048"
+
 Resources:
   ECSService:
     Type: AWS::ECS::Service
     Properties:
-      Cluster: !Ref ECSCluster
+      Cluster: !Ref EcsCluster
       ServiceName: !Ref ServiceName
       LaunchType: EC2
       DesiredCount: !Ref NumberNodes
       LoadBalancers:
         - ContainerName: nginx
-          ContainerPort: 443
+          ContainerPort: 80
           TargetGroupArn: !Ref ArtifactoryTargetGroupArn
+        - ContainerName: nginx
+          ContainerPort: 443
+          TargetGroupArn: !Ref ArtifactorySslTargetGroupArn
       TaskDefinition:
         Ref: ArtifactoryTaskDefinition
       HealthCheckGracePeriodSeconds: 300
@@ -66,13 +102,13 @@ Resources:
   ArtifactoryTaskDefinition:
     Type: AWS::ECS::TaskDefinition
     Properties:
-      Cpu: "2048"
+      Cpu: !FindInMap [DeploymentSize, !Ref DeploymentSize, Cpu]
       Family: !Sub ${ServiceName}-Task
-      Memory: "4096"
+      Memory: !FindInMap [DeploymentSize, !Ref DeploymentSize, Memory]
       NetworkMode: bridge
       RequiresCompatibilities:
         - EC2
-      ExecutionRoleArn: !Ref ECSRoleArn
+      ExecutionRoleArn: !Ref EcsRoleArn
       Volumes:
         - Name: etc
           Host:
@@ -93,16 +129,16 @@ Resources:
             - "-c"
           Command:
             - !Sub |
-                wget https://${QsS3BucketName}.s3.amazonaws.com/${QsS3KeyPrefix}scripts/configure_ecs_container.sh -O /tmp/source;
-                echo '' >> /tmp/source;
-                echo export HA_HOST_IP=`wget -q -O - http://169.254.169.254/latest/meta-data/local-ipv4` >> /tmp/source;
-                echo wget -O /var/opt/jfrog/artifactory/bootstrap/artifactory/tomcat/lib/${DatabasePlugin} ${DatabasePluginURL} >> /tmp/source;
-                echo mkdir /var/opt/jfrog/artifactory/etc/info/ >> /tmp/source;
-                echo wget https://${QsS3BucketName}.s3.amazonaws.com/${QsS3KeyPrefix}scripts/roles/artifactory/files/installer-info.json -O /var/opt/jfrog/artifactory/etc/info/installer-info.json >> /tmp/source;
-                echo cp /tmp/plugins/inactiveServerCleaner.groovy /var/opt/jfrog/artifactory/etc/artifactory/plugins/ >> /tmp/source;
-                echo /entrypoint-artifactory.sh >> /tmp/source;
-                chmod +x /tmp/source;
-                /tmp/source
+              wget https://${QsS3BucketName}.s3.amazonaws.com/${QsS3KeyPrefix}scripts/configure_ecs_container.sh -O /tmp/source;
+              echo '' >> /tmp/source;
+              echo export HA_HOST_IP=`wget -q -O - http://169.254.169.254/latest/meta-data/local-ipv4` >> /tmp/source;
+              echo wget -O /var/opt/jfrog/artifactory/bootstrap/artifactory/tomcat/lib/${DatabasePlugin} ${DatabasePluginUrl} >> /tmp/source;
+              echo mkdir /var/opt/jfrog/artifactory/etc/artifactory/info/ >> /tmp/source;
+              echo wget https://${QsS3BucketName}.s3.amazonaws.com/${QsS3KeyPrefix}scripts/roles/artifactory/files/${InfoFile} -O /var/opt/jfrog/artifactory/etc/artifactory/info/installer-info.json >> /tmp/source;
+              echo cp /tmp/plugins/inactiveServerCleaner.groovy /var/opt/jfrog/artifactory/etc/artifactory/plugins/ >> /tmp/source;
+              echo /entrypoint-artifactory.sh >> /tmp/source;
+              chmod +x /tmp/source;
+              /tmp/source
           Image: !Sub ${ProDockerRepoURL}
           PortMappings:
             - ContainerPort: 8081
@@ -144,7 +180,7 @@ Resources:
             - Name: HA_IS_PRIMARY
               Value: !Ref ArtifactoryPrimary
             - Name: DB_URL
-              Value: !Ref DatabaseURL
+              Value: !Ref DatabaseUrl
             - Name: DB_TYPE
               Value: !Ref DatabaseType
             - Name: DB_USER
@@ -158,7 +194,7 @@ Resources:
           LogConfiguration:
             LogDriver: awslogs
             Options:
-              awslogs-group: !Ref ECSLogGroup
+              awslogs-group: !Ref EcsLogGroup
               awslogs-region: !Ref AWS::Region
               awslogs-stream-prefix: artifactory
         - Name: nginx
@@ -196,7 +232,7 @@ Resources:
             LogDriver: awslogs
             Options:
               awslogs-group:
-                Ref: ECSLogGroup
+                Ref: EcsLogGroup
               awslogs-region:
                 Ref: AWS::Region
               awslogs-stream-prefix: nginx

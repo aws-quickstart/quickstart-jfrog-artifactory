@@ -33,7 +33,7 @@
     owner: artifactory
     group: artifactory
   loop:
-    - path: /var/opt/jfrog/artifactory/etc/info
+    - path: /var/opt/jfrog/artifactory/etc/artifactory/info/
       state: directory
 
 - name: Copy all static files required for Artifactory
@@ -47,8 +47,8 @@
     - src: inactiveServerCleaner.groovy
       dest: /var/opt/jfrog/artifactory/etc/artifactory/plugins/inactiveServerCleaner.groovy
       mode: '0660'
-    - src: installer-info.json
-      dest: /var/opt/jfrog/artifactory/etc/info/installer-info.json
+    - src: "{{ artifactory_installer_file }}"
+      dest: "/var/opt/jfrog/artifactory/etc/artifactory/info/installer-info.json"
       mode: '0660'
 
 - name: Cleanup AMI from original Artifactory start

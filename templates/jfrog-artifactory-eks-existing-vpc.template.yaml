@@ -21,7 +21,7 @@ Metadata:
           - PrivateSubnet3Id
           - PublicSubnet1Id
           - PublicSubnet2Id
-          - PublicSubnet3id
+          - PublicSubnet3Id
           - PrivateSubnet1Cidr
           - PrivateSubnet2Cidr
           - PrivateSubnet3Cidr
@@ -37,8 +37,10 @@ Metadata:
       - Label:
           default: JFrog Artifactory configuration
         Parameters:
+          - ArtifactoryProduct
           - ArtifactoryVersion
           - ReleaseStage
+          - DefaultDeploymentSize
           - ArtifactoryDeploymentSize
           - NumberOfSecondary
           - SmLicenseCertName
@@ -85,7 +87,7 @@ Metadata:
         default: Public subnet 1 ID
       PublicSubnet2Id:
         default: Public subnet 2 ID
-      PublicSubnet3id:
+      PublicSubnet3Id:
         default: Public subnet 3 ID
       PrivateSubnet1Id:
         default: Private subnet 1 ID
@@ -111,10 +113,14 @@ Metadata:
         default: Bastion enable X11 forwarding
       BastionOs:
         default: Bastion operating system
+      ArtifactoryProduct:
+        default: Artifactory product to install
       ArtifactoryVersion:
         default: Artifactory version
       ReleaseStage:
         default: Release stage of the product to deploy
+      DefaultDeploymentSize:
+        default: Default Artifactory deployment size
       ArtifactoryDeploymentSize:
         default: Artifactory deployment size
       NumberOfSecondary:
@@ -193,7 +199,7 @@ Parameters:
   PublicSubnet2Id:
     Description: The ID of the public subnet in Availability Zone 2 in your existing VPC (e.g., subnet-a29c3d84).
     Type: "AWS::EC2::Subnet::Id"
-  PublicSubnet3id:
+  PublicSubnet3Id:
     Description: The ID of the public subnet in Availability Zone 3 in your existing VPC (e.g., subnet-a29c3d84).
     Type: "AWS::EC2::Subnet::Id"
   PrivateSubnet1Id:
@@ -226,10 +232,17 @@ Parameters:
   NodeInstanceType:
     Description: The Amazon EC2 instance type for the nodes hosting the Kubernetes pods.
     AllowedValues:
+      - m4.large
       - m4.xlarge
       - m4.2xlarge
       - m4.4xlarge
       - m4.10xlarge
+      - m5.large
+      - m5.xlarge
+      - m5.2xlarge
+      - m5.4xlarge
+      - m5.12xlarge
+      - m5.24xlarge
     ConstraintDescription: Must be a valid EC2 instance type
     Default: m4.xlarge
     Type: String
@@ -241,6 +254,7 @@ Parameters:
     Description: The initial number of secondary node instances to create.
       If you do not have large enough instances to boot the number of secondary pods, the deployment will fail.
     AllowedValues:
+      - 1
       - 2
       - 3
       - 4
@@ -314,8 +328,10 @@ Parameters:
   NumberOfSecondary:
     Description: Number of secondary Artifactory pods to complete your HA deployment.
       Minimum number of 2 to fit the Artifactory best practices. Do not select more than
-      you license for.
+      you license for. If you are doing a JFrog Container Registry Deployment, this will
+      create the number of underlying nodes and NGINX containers.
     AllowedValues:
+      - 1
       - 2
       - 3
       - 4
@@ -324,6 +340,13 @@ Parameters:
       - 7
     Default: 2
     Type: Number
+  ArtifactoryProduct:
+    Description: The Jfrog Artifactory product you wish to install.
+    AllowedValues:
+      - JFrog-Artifactory-Pro
+      - JFrog-Container-Registry
+    Default: JFrog-Artifactory-Pro
+    Type: String
   ArtifactoryVersion:
     Description: The version of Artifactory that you want to deploy into the Quick Start.
       Please see the release notes to select the version you want to deploy.
@@ -339,16 +362,36 @@ Parameters:
       - "BETA"
     Default: "GA"
     Type: String
-  ArtifactoryDeploymentSize:
-    Description: Configuration settings implemented by the Helm chart. There are currently three supported sizes.
-      'Large:' Memory request of 6 GiB, memory limit of 10GiB; CPU request of 4, CPU limit of 8; Java heap size minimum of 6 GB, maximum of 8 GB.
-      'Medium:' Memory request of 4 GiB, memory limit of 8 GiB; CPU request of 2, CPU limit of 6; Java heap size minimum of 4 GB, maximum of 6 GB.
-      'Small:' Memory request of 4 GiB, memory limit of 6 GiB; CPU request of 2, CPU limit of 4; Java heap size of 4 GB.
+  DefaultDeploymentSize:
+    Description: Choose false to overwrite the standard calculations of memory options to pass Java Options for the deployment
+      If overwriting them, not to over provision the nodes.
+    ConstraintDescription: True or False
     AllowedValues:
+      - "true"
+      - "false"
+    Default: "true"
+    Type: String
+  ArtifactoryDeploymentSize:
+    Description: Configuration settings implemented by the Helm chart. There are currently eight supported sizes. This value is only
+      taken into account if you choose 'false' for DefaultDeploymentSize.
+      'xxxLarge:' Only applicable to node InstanceType m5.24xlarge or larger - Memory request of 240 GiB, memory limit of 384GiB; CPU request of 64, CPU limit of 96; Java heap size minimum of 192 GB, maximum of 288 GB.
+      'xxLarge:' Only applicable to node InstanceType m5.16xlarge or larger - Memory request of 160 GiB, memory limit of 256GiB; CPU request of 48, CPU limit of 64; Java heap size minimum of 128 GB, maximum of 192 GB.
+      'xLarge:' Only applicable to node InstanceType m5.12xlarge or larger - Memory request of 120 GiB, memory limit of 192GiB; CPU request of 32, CPU limit of 48; Java heap size minimum of 96 GB, maximum of 144 GB.
+      'Large:' Only applicable to node InstanceType m5.8xlarge or larger - Memory request of 80 GiB, memory limit of 128GiB; CPU request of 16, CPU limit of 32; Java heap size minimum of 64 GB, maximum of 96 GB.
+      'Medium:' Only applicable to node InstanceType m5.4xlarge or larger - Memory request of 42 GiB, memory limit of 64 GiB; CPU request of 8, CPU limit of 16; Java heap size minimum of 32 GB, maximum of 48 GB.
+      'Small:' Only applicable to node InstanceType m5.2xlarge or larger - Memory request of 20 GiB, memory limit of 32 GiB; CPU request of 4, CPU limit of 8; Java heap size minimum of 16 GB, maximum of 24 GB.
+      'xSmall:' Only applicable to node InstanceType m5.xlarge or larger - Memory request of 6 GiB, memory limit of 16 GiB; CPU request of 2, CPU limit of 4; Java heap size minimum of 8 GB, maximum of 12 GB.
+      'xxSmall:' Applicable to all node Instance Types - Memory request of 4 GiB, memory limit of 6 GiB; CPU request of 2, CPU limit of 2; Java heap size of 4 GB.
+    AllowedValues:
+      - xxSmall
+      - xSmall
       - Small
       - Medium
       - Large
-    Default: Medium
+      - xLarge
+      - xxLarge
+      - xxxLarge
+    Default: xSmall
     Type: String
   SmLicenseCertName:
     Description: The secret name created in AWS Secrets Manager which contains the SSL certificate, certificate key, and Artifactory licenses.
@@ -478,8 +521,13 @@ Rules:
              - ap-northeast-2
              - ap-south-1
           - !Ref 'AWS::Region'
+Conditions:
+  ArtifactoryHa: !Equals [!Ref ArtifactoryProduct, 'JFrog-Artifactory-Pro']
+  BastionSecurityGroup: !And [!Equals [!Ref ArtifactoryProduct, 'JFrog-Artifactory-Pro'], !Equals [!Ref 'ProvisionBastionHost', 'Enabled'] ]
+  DefaultSize: !Equals [!Ref DefaultDeploymentSize, "true" ]
+
 Resources:
-  EKSStack:
+  EksStack:
     Type: AWS::CloudFormation::Stack
     Properties:
       TemplateURL: !Sub "https://${QsS3BucketName}.s3.amazonaws.com/${QsS3KeyPrefix}submodules/quickstart-amazon-eks/templates/amazon-eks.template.yaml"
@@ -493,14 +541,14 @@ Resources:
         PrivateSubnet3ID: !Ref PrivateSubnet3Id
         PublicSubnet1ID: !Ref PublicSubnet1Id
         PublicSubnet2ID: !Ref PublicSubnet2Id
-        PublicSubnet3ID: !Ref PublicSubnet3id
+        PublicSubnet3ID: !Ref PublicSubnet3Id
         KubernetesVersion: !Ref KubernetesVersion
         NodeInstanceType: !Ref NodeInstanceType
-        NumberOfNodes: '1'  # 1 for the Artifactory master?
-        NodeGroupName: "artifactory-primary"
+        NumberOfNodes: !If [ArtifactoryHa, '1', !Ref NumberOfSecondary ]
+        NodeGroupName: !Sub ${ArtifactoryProduct}
         NodeVolumeSize: !Ref NodeVolumeSize
         KubeConfigKmsContext: !Ref KubeConfigKmsContext
-        BootstrapArguments: "--kubelet-extra-args '--node-labels=partition=artifactory-primary'"
+        BootstrapArguments: !Sub "--kubelet-extra-args '--node-labels=partition=${ArtifactoryProduct}'"
         ProvisionBastionHost: !Ref ProvisionBastionHost
         BastionInstanceType: !Ref BastionInstanceType
         BastionOS: !Ref BastionOs
@@ -512,6 +560,7 @@ Resources:
         LambdaZipsBucketName: !Ref LambdaZipsBucketName
 
   ArtifactorySecondaryNodesStack:
+    Condition: ArtifactoryHa
     Type: "AWS::CloudFormation::Stack"
     Properties:
       TemplateURL: !Sub 'https://${QsS3BucketName}.s3.amazonaws.com/${QsS3KeyPrefix}submodules/quickstart-amazon-eks/templates/amazon-eks-nodegroup.template.yaml'
@@ -523,45 +572,52 @@ Resources:
         VPCID: !Ref VpcId
         NodeInstanceType: !Ref NodeInstanceType
         NumberOfNodes: !Ref NumofSecondaryNodes
-        NodeGroupName: "artifactory-secondary"
+        NodeGroupName: !Sub "${ArtifactoryProduct}-secondary"
         NodeVolumeSize: !Ref NodeVolumeSize
-        EKSControlPlane: !GetAtt EKSStack.Outputs.EKSClusterName
-        ControlPlaneSecurityGroup: !GetAtt EKSStack.Outputs.ControlPlaneSecurityGroup
-        NodeInstanceProfile: !GetAtt EKSStack.Outputs.NodeInstanceProfile
-        NodeInstanceRoleName: !GetAtt EKSStack.Outputs.NodeInstanceRoleName
+        EKSControlPlane: !GetAtt EksStack.Outputs.EKSClusterName
+        ControlPlaneSecurityGroup: !GetAtt EksStack.Outputs.ControlPlaneSecurityGroup
+        NodeInstanceProfile: !GetAtt EksStack.Outputs.NodeInstanceProfile
+        NodeInstanceRoleName: !GetAtt EksStack.Outputs.NodeInstanceRoleName
         KubernetesVersion: !Ref KubernetesVersion
-        BootstrapArguments: "--kubelet-extra-args '--node-labels=partition=artifactory-secondary'"
+        BootstrapArguments: !Sub "--kubelet-extra-args '--node-labels=partition=${ArtifactoryProduct}-secondary'"
+
   # Allow the bastion host to SSH into the secondary node pools
   BastionToRegularIngress:
+    Condition: BastionSecurityGroup
     Type: "AWS::EC2::SecurityGroupIngress"
     Properties:
       Description: Allow SSH from Bastion server to Regular Nodes
       GroupId: !GetAtt ArtifactorySecondaryNodesStack.Outputs.EKSNodeSecurityGroup
-      SourceSecurityGroupId: !GetAtt EKSStack.Outputs.BastionSecurityGroup
+      SourceSecurityGroupId: !GetAtt EksStack.Outputs.BastionSecurityGroup
       IpProtocol: tcp
       ToPort: 22
       FromPort: 22
+
   # Allow the secondary node pools to bidirectionally communicate with "initial" (master) nodes
   RegularToMasterIngress:
+    Condition: ArtifactoryHa
     Type: AWS::EC2::SecurityGroupIngress
     Properties:
       Description: Allows regular nodes to communicate with master nodes
-      GroupId: !GetAtt EKSStack.Outputs.NodeGroupSecurityGroup
+      GroupId: !GetAtt EksStack.Outputs.NodeGroupSecurityGroup
       SourceSecurityGroupId: !GetAtt ArtifactorySecondaryNodesStack.Outputs.EKSNodeSecurityGroup
       IpProtocol: '-1'
       FromPort: 0
       ToPort: 65535
+
   MasterToRegularIngress:
+    Condition: ArtifactoryHa
     Type: AWS::EC2::SecurityGroupIngress
     Properties:
       Description: Allows master nodes to communicate with regular agent nodes
       GroupId: !GetAtt ArtifactorySecondaryNodesStack.Outputs.EKSNodeSecurityGroup
-      SourceSecurityGroupId: !GetAtt EKSStack.Outputs.NodeGroupSecurityGroup
+      SourceSecurityGroupId: !GetAtt EksStack.Outputs.NodeGroupSecurityGroup
       IpProtocol: '-1'
       FromPort: 0
       ToPort: 65535
 
   ArtifactoryCoreInfraStack:
+    DependsOn: EksStack
     Type: AWS::CloudFormation::Stack
     Properties:
       TemplateURL: !Sub "https://${QsS3BucketName}.s3.amazonaws.com/${QsS3KeyPrefix}templates/jfrog-artifactory-core-infrastructure.template.yaml"
@@ -579,25 +635,27 @@ Resources:
         DatabasePassword: !Ref DatabasePassword
         DatabaseInstance: !Ref DatabaseInstance
         DatabaseName: !Ref DatabaseName
+        ArtifactoryProduct: !Ref ArtifactoryProduct
         ReleaseStage: !Ref ReleaseStage
+        InstanceType: !Ref NodeInstanceType
 
   ArtifactoryCoreStack:
-    DependsOn: ArtifactorySecondaryNodesStack
     Type: AWS::CloudFormation::Stack
     Properties:
       TemplateURL: !Sub "https://${QsS3BucketName}.s3.amazonaws.com/${QsS3KeyPrefix}templates/jfrog-artifactory-eks-core-workload.template.yaml"
       Parameters:
-        KubeManifestLambdaArn: !GetAtt EKSStack.Outputs.KubeManifestLambdaArn
-        HelmLambdaArn: !GetAtt EKSStack.Outputs.HelmLambdaArn
-        KubeConfigPath: !GetAtt EKSStack.Outputs.KubeConfigPath
+        KubeManifestLambdaArn: !GetAtt EksStack.Outputs.KubeManifestLambdaArn
+        HelmLambdaArn: !GetAtt EksStack.Outputs.HelmLambdaArn
+        KubeConfigPath: !GetAtt EksStack.Outputs.KubeConfigPath
         KubeConfigKmsContext: !Ref KubeConfigKmsContext
-        KubeGetLambdaArn: !GetAtt EKSStack.Outputs.KubeGetLambdaArn
+        KubeGetLambdaArn: !GetAtt EksStack.Outputs.KubeGetLambdaArn
         NumberOfSecondary: !Ref NumberOfSecondary
         AccessCidr: !Ref AccessCidr
-        ArtifactoryLicense1: !Sub '{{resolve:secretsmanager:${SmLicenseCertName}:SecretString:ArtifactoryLicense1}}'
-        ArtifactoryLicense2: !Sub '{{resolve:secretsmanager:${SmLicenseCertName}:SecretString:ArtifactoryLicense2}}'
-        ArtifactoryLicense3: !Sub '{{resolve:secretsmanager:${SmLicenseCertName}:SecretString:ArtifactoryLicense3}}'
-        ArtifactoryLicense4: !Sub '{{resolve:secretsmanager:${SmLicenseCertName}:SecretString:ArtifactoryLicense4}}'
+        ArtifactoryProduct: !Ref ArtifactoryProduct
+        ArtifactoryLicense1: !If [ArtifactoryHa, !Sub '{{resolve:secretsmanager:${SmLicenseCertName}:SecretString:ArtifactoryLicense1}}', '']
+        ArtifactoryLicense2: !If [ArtifactoryHa, !Sub '{{resolve:secretsmanager:${SmLicenseCertName}:SecretString:ArtifactoryLicense2}}', '']
+        ArtifactoryLicense3: !If [ArtifactoryHa, !Sub '{{resolve:secretsmanager:${SmLicenseCertName}:SecretString:ArtifactoryLicense3}}', '']
+        ArtifactoryLicense4: !If [ArtifactoryHa, !Sub '{{resolve:secretsmanager:${SmLicenseCertName}:SecretString:ArtifactoryLicense4}}', '']
         Certificate: !Sub '{{resolve:secretsmanager:${SmLicenseCertName}:SecretString:Certificate}}'
         CertificateKey: !Sub '{{resolve:secretsmanager:${SmLicenseCertName}:SecretString:CertificateKey}}'
         ArtifactoryIamAcessKey: !GetAtt ArtifactoryCoreInfraStack.Outputs.ArtifactoryIamAcessKey
@@ -609,12 +667,12 @@ Resources:
         DatabasePassword: !Ref DatabasePassword
         DatabaseDriver: !GetAtt ArtifactoryCoreInfraStack.Outputs.DatabaseDriver
         DatabasePlugin: !GetAtt ArtifactoryCoreInfraStack.Outputs.DatabasePlugin
-        DatabasePluginURL: !GetAtt ArtifactoryCoreInfraStack.Outputs.DatabasePluginURL
+        DatabasePluginUrl: !GetAtt ArtifactoryCoreInfraStack.Outputs.DatabasePluginUrl
         DatabaseType: !GetAtt ArtifactoryCoreInfraStack.Outputs.DatabaseType
-        DatabaseURL: !GetAtt ArtifactoryCoreInfraStack.Outputs.DatabaseURL
+        DatabaseUrl: !GetAtt ArtifactoryCoreInfraStack.Outputs.DatabaseUrl
         MasterKey: !Ref MasterKey
         ArtifactoryVersion: !Ref ArtifactoryVersion
-        ArtifactoryDeploymentSize: !Ref ArtifactoryDeploymentSize
+        ArtifactoryDeploymentSize: !If [DefaultSize, !GetAtt ArtifactoryCoreInfraStack.Outputs.DeploymentSize, !Ref ArtifactoryDeploymentSize]
         ReleaseStage: !Ref ReleaseStage
         QsS3BucketName: !Ref QsS3BucketName
         QsS3KeyPrefix: !Ref QsS3KeyPrefix
@@ -622,9 +680,9 @@ Outputs:
   ArtifactoryUrl:
     Value: !GetAtt ArtifactoryCoreStack.Outputs.ArtifactoryUrl
     Description: Public Artifactory URL
-  BastionIP:
-    Value: !GetAtt EKSStack.Outputs.BastionIP
+  BastionIp:
+    Value: !GetAtt EksStack.Outputs.BastionIP
     Description: Bastion host IP, for admin access via SSH
   KubeConfigPath:
-    Value: !GetAtt EKSStack.Outputs.KubeConfigPath
+    Value: !GetAtt EksStack.Outputs.KubeConfigPath
     Description: (Advanced) Amazon S3 bucket containing encrypted Kubernetes config which can be used to access the Kubernetes API.

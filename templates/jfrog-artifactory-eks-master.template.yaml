@@ -34,8 +34,10 @@ Metadata:
       - Label:
           default: JFrog Artifactory configuration
         Parameters:
+          - ArtifactoryProduct
           - ArtifactoryVersion
           - ReleaseStage
+          - DefaultDeploymentSize
           - ArtifactoryDeploymentSize
           - NumberOfSecondary
           - SmLicenseCertName
@@ -104,10 +106,14 @@ Metadata:
         default: Bastion operating system
       NumberOfSecondary:
         default: Number of secondary pods
+      ArtifactoryProduct:
+        default: Artifactory product to install
       ArtifactoryVersion:
         default: Artifactory version
       ReleaseStage:
         default: Release stage of the product to deploy
+      DefaultDeploymentSize:
+        default: Default Artifactory deployment size
       ArtifactoryDeploymentSize:
         default: Artifactory deployment size
       SmLicenseCertName:
@@ -222,10 +228,17 @@ Parameters:
   NodeInstanceType:
     Description: The Amazon EC2 instance type for the nodes hosting the Kubernetes pods.
     AllowedValues:
+      - m4.large
       - m4.xlarge
       - m4.2xlarge
       - m4.4xlarge
       - m4.10xlarge
+      - m5.large
+      - m5.xlarge
+      - m5.2xlarge
+      - m5.4xlarge
+      - m5.12xlarge
+      - m5.24xlarge
     ConstraintDescription: Must be a valid EC2 instance type.
     Default: m4.xlarge
     Type: String
@@ -237,6 +250,7 @@ Parameters:
     Description: The initial number of secondary node instances to create.
       If you do not have large enough instances to boot the number of secondary pods, the deployment will fail.
     AllowedValues:
+      - 1
       - 2
       - 3
       - 4
@@ -312,6 +326,7 @@ Parameters:
       Minimum number of 2 to fit the Artifactory best practices. Do not select more than
       you license for.
     AllowedValues:
+      - 1
       - 2
       - 3
       - 4
@@ -320,6 +335,13 @@ Parameters:
       - 7
     Default: 2
     Type: Number
+  ArtifactoryProduct:
+    Description: The Jfrog Artifactory product you wish to install.
+    AllowedValues:
+      - JFrog-Artifactory-Pro
+      - JFrog-Container-Registry
+    Default: JFrog-Artifactory-Pro
+    Type: String
   ArtifactoryVersion:
     Description: The version of Artifactory that you want to deploy into the Quick Start.
       Please see the release notes to select the version you want to deploy.
@@ -335,16 +357,36 @@ Parameters:
       - "BETA"
     Default: "GA"
     Type: String
-  ArtifactoryDeploymentSize:
-    Description: Configuration settings implemented by the Helm chart. There are currently three supported sizes.
-      'Large:' Memory request of 6 GiB, memory limit of 10GiB; CPU request of 4, CPU limit of 8; Java heap size minimum of 6 GB, maximum of 8 GB.
-      'Medium:' Memory request of 4 GiB, memory limit of 8 GiB; CPU request of 2, CPU limit of 6; Java heap size minimum of 4 GB, maximum of 6 GB.
-      'Small:' Memory request of 4 GiB, memory limit of 6 GiB; CPU request of 2, CPU limit of 4; Java heap size of 4 GB.
+  DefaultDeploymentSize:
+    Description: Choose false to overwrite the standard calculations of memory options to pass Java Options for the deployment
+      If overwriting them, not to over provision the nodes.
+    ConstraintDescription: True or False
     AllowedValues:
+      - "true"
+      - "false"
+    Default: "true"
+    Type: String
+  ArtifactoryDeploymentSize:
+    Description: Configuration settings implemented by the Helm chart. There are currently eight supported sizes. This value is only
+      taken into account if you choose 'false' for DefaultDeploymentSize.
+      'xxxLarge:' Only applicable to node InstanceType m5.24xlarge or larger - Memory request of 240 GiB, memory limit of 384GiB; CPU request of 64, CPU limit of 96; Java heap size minimum of 192 GB, maximum of 288 GB.
+      'xxLarge:' Only applicable to node InstanceType m5.16xlarge or larger - Memory request of 160 GiB, memory limit of 256GiB; CPU request of 48, CPU limit of 64; Java heap size minimum of 128 GB, maximum of 192 GB.
+      'xLarge:' Only applicable to node InstanceType m5.12xlarge or larger - Memory request of 120 GiB, memory limit of 192GiB; CPU request of 32, CPU limit of 48; Java heap size minimum of 96 GB, maximum of 144 GB.
+      'Large:' Only applicable to node InstanceType m5.8xlarge or larger - Memory request of 80 GiB, memory limit of 128GiB; CPU request of 16, CPU limit of 32; Java heap size minimum of 64 GB, maximum of 96 GB.
+      'Medium:' Only applicable to node InstanceType m5.4xlarge or larger - Memory request of 42 GiB, memory limit of 64 GiB; CPU request of 8, CPU limit of 16; Java heap size minimum of 32 GB, maximum of 48 GB.
+      'Small:' Only applicable to node InstanceType m5.2xlarge or larger - Memory request of 20 GiB, memory limit of 32 GiB; CPU request of 4, CPU limit of 8; Java heap size minimum of 16 GB, maximum of 24 GB.
+      'xSmall:' Only applicable to node InstanceType m5.xlarge or larger - Memory request of 6 GiB, memory limit of 16 GiB; CPU request of 2, CPU limit of 4; Java heap size minimum of 8 GB, maximum of 12 GB.
+      'xxSmall:' Applicable to all node Instance Types - Memory request of 4 GiB, memory limit of 6 GiB; CPU request of 2, CPU limit of 2; Java heap size of 4 GB.
+    AllowedValues:
+      - xxSmall
+      - xSmall
       - Small
       - Medium
       - Large
-    Default: Medium
+      - xLarge
+      - xxLarge
+      - xxxLarge
+    Default: xSmall
     Type: String
   SmLicenseCertName:
     Description: The secret name created in AWS Secrets Manager which contains the SSL certificate, certificate key, and Artifactory licenses.
@@ -494,7 +536,7 @@ Resources:
         PublicSubnet3CIDR: !Ref 'PublicSubnet3Cidr'
         PublicSubnetTag2: "kubernetes.io/role/elb="
 
-  ArtifactoryEKSExistingVpcStack:
+  ArtifactoryEksExistingVpcStack:
     Type: AWS::CloudFormation::Stack
     Properties:
       TemplateURL: !Sub 'https://${QsS3BucketName}.s3.amazonaws.com/${QsS3KeyPrefix}templates/jfrog-artifactory-eks-existing-vpc.template.yaml'
@@ -511,17 +553,20 @@ Resources:
         PrivateSubnet3Id: !GetAtt 'ArtifactoryVpcStack.Outputs.PrivateSubnet3AID'
         PublicSubnet1Id: !GetAtt 'ArtifactoryVpcStack.Outputs.PublicSubnet1ID'
         PublicSubnet2Id: !GetAtt 'ArtifactoryVpcStack.Outputs.PublicSubnet2ID'
-        PublicSubnet3id: !GetAtt 'ArtifactoryVpcStack.Outputs.PublicSubnet3ID'
+        PublicSubnet3Id: !GetAtt 'ArtifactoryVpcStack.Outputs.PublicSubnet3ID'
         PrivateSubnet1Cidr: !Ref PrivateSubnet1Cidr
         PrivateSubnet2Cidr: !Ref PrivateSubnet2Cidr
+        PrivateSubnet3Cidr: !Ref PrivateSubnet3Cidr
         ProvisionBastionHost: !Ref ProvisionBastionHost
         BastionInstanceType: !Ref BastionInstanceType
         BastionOs: !Ref BastionOs
         BastionRootVolumeSize: !Ref BastionRootVolumeSize
         BastionEnableTcpForwarding: !Ref BastionEnableTcpForwarding
         BastionEnableX11Forwarding: !Ref BastionEnableX11Forwarding
+        ArtifactoryProduct: !Ref ArtifactoryProduct
         ArtifactoryVersion: !Ref ArtifactoryVersion
         ReleaseStage: !Ref ReleaseStage
+        DefaultDeploymentSize: !Ref DefaultDeploymentSize
         ArtifactoryDeploymentSize: !Ref ArtifactoryDeploymentSize
         NumberOfSecondary: !Ref NumberOfSecondary
         SmLicenseCertName: !Ref SmLicenseCertName
@@ -543,11 +588,11 @@ Resources:
 
 Outputs:
   ArtifactoryUrl:
-    Value: !GetAtt ArtifactoryEKSExistingVpcStack.Outputs.ArtifactoryUrl
+    Value: !GetAtt ArtifactoryEksExistingVpcStack.Outputs.ArtifactoryUrl
     Description: Public Artifactory URL
-  BastionIP:
-    Value: !GetAtt ArtifactoryEKSExistingVpcStack.Outputs.BastionIP
+  BastionIp:
+    Value: !GetAtt ArtifactoryEksExistingVpcStack.Outputs.BastionIp
     Description: Bastion host IP, for admin access via SSH
   KubeConfigPath:
-    Value: !GetAtt ArtifactoryEKSExistingVpcStack.Outputs.KubeConfigPath
+    Value: !GetAtt ArtifactoryEksExistingVpcStack.Outputs.KubeConfigPath
     Description: (Advanced) Amazon S3 bucket containing encrypted Kubernetes config which can be used to access the Kubernetes API.

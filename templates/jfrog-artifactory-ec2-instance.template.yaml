@@ -15,6 +15,8 @@ Parameters:
     Type: String
   AmiId:
     Type: String
+  ArtifactoryProduct:
+    Type: String
   QsS3BucketName:
     Type: String
   QsS3KeyPrefix:
@@ -44,11 +46,11 @@ Parameters:
     NoEcho: 'true'
   ArtifactoryS3Bucket:
     Type: String
-  DatabaseURL:
+  DatabaseUrl:
     Type: String
   DatabaseDriver:
     Type: String
-  DatabasePluginURL:
+  DatabasePluginUrl:
     Type: String
   DatabasePlugin:
     Type: String
@@ -116,9 +118,11 @@ Mappings:
       AMZNLINUXHVM: ami-04b202bf877b5027b
     us-east-1:
       AMZNLINUXHVM: ami-09d069a04349dc3cb
-      "700": ami-06baee01fb2ef01d2
-      "702": ami-085b1acc8e8b5b039
-      "721": ami-0ddf97d5a821c030f
+      "Artifactory700": ami-06baee01fb2ef01d2
+      "Artifactory702": ami-085b1acc8e8b5b039
+      "Artifactory721": ami-0ddf97d5a821c030f
+      "Jcr720": ami-05aa02eddf5f692b7
+      "Jcr721": ami-03b26427d1e6b3a66
     us-east-2:
       AMZNLINUXHVM: ami-0d542ef84ec55d71c
     us-west-1:
@@ -126,6 +130,16 @@ Mappings:
     us-west-2:
       AMZNLINUXHVM: ami-01460aa81365561fe
       "700": ami-000937e944ea194bf
+  ArtifactoryProductMap:
+    JFrog-Container-Registry:
+      "720": "Jcr720"
+      "721": "Jcr721"
+      product: "jcr"
+    JFrog-Artifactory-Pro:
+      "700": "Artifactory700"
+      "702": "Artifactory702"
+      "721": "Artifactory721"
+      product: "artifactory"
 Conditions:
   GovCloudCondition: !Equals
     - !Ref 'AWS::Region'
@@ -174,7 +188,8 @@ Resources:
           config-artifactory-master:
             files:
               /root/.artifactory_ansible/artifactory.yml:
-                content: !Sub |
+                content: !Sub
+                  - |
                     # Base install for Artifactory
                     - import_playbook: site-artifactory.yml
                       vars:
@@ -182,6 +197,7 @@ Resources:
                         artifactory_license2: ${ArtifactoryLicense2}
                         artifactory_license3: ${ArtifactoryLicense3}
                         artifactory_license4: ${ArtifactoryLicense4}
+                        artifactory_product: ${product}
                         artifactory_server_name: ${ArtifactoryServerName}
                         s3_region: ${AWS::Region}
                         s3_access_key: ${ArtifactoryIamAcessKey}
@@ -193,7 +209,7 @@ Resources:
                         ssl_dir: /etc/pki/tls/certs
                         db_type: ${DatabaseType}
                         db_driver: ${DatabaseDriver}
-                        db_url: ${DatabaseURL}
+                        db_url: ${DatabaseUrl}
                         db_user: ${DatabaseUser}
                         db_password: ${DatabasePassword}
                         art_primary: ${ArtifactoryPrimary}
@@ -206,9 +222,12 @@ Resources:
                           new_keystore_pass: ${KeystorePassword}
                         artifactory_java_db_drivers:
                           - name: ${DatabasePlugin}
-                            url: ${DatabasePluginURL}
+                            url: ${DatabasePluginUrl}
                             owner: artifactory
                             group: artifactory
+                  - {
+                    product: !FindInMap [ArtifactoryProductMap, !Ref ArtifactoryProduct, product]
+                    }
                 mode: "0400"
               /root/.vault_pass.txt:
                 content: !Sub |
@@ -230,7 +249,10 @@ Resources:
         ImageId: !FindInMap
           - AWSAMIRegionMap
           - !Ref 'AWS::Region'
-          - !Ref AmiId
+          - !FindInMap
+            - ArtifactoryProductMap
+            - !Ref ArtifactoryProduct
+            - !Ref AmiId
         SecurityGroups:
           - !Ref SecurityGroups
         InstanceType: !Ref InstanceType

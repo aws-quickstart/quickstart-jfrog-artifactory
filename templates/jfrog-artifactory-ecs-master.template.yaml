@@ -37,6 +37,7 @@ Metadata:
       - Label:
           default: JFrog Artifactory configuration
         Parameters:
+          - ArtifactoryProduct
           - ArtifactoryVersion
           - ReleaseStage
           - NumberOfSecondary
@@ -45,6 +46,7 @@ Metadata:
           - ArtifactoryServerName
           - MasterKey
           - ExtraJavaOptions
+          - DefaultJavaMemSettings
           - AnsibleVaultPass
       - Label:
           default: Amazon RDS Configuration
@@ -94,6 +96,8 @@ Metadata:
         default: Bastion operating system
       NumBastionHosts:
         default: Number of bastion instances
+      ArtifactoryProduct:
+        default: Artifactory product to install
       ArtifactoryVersion:
         default: Artifactory version
       ReleaseStage:
@@ -116,6 +120,8 @@ Metadata:
         default: Master server key
       ExtraJavaOptions:
         default: Extra Java options
+      DefaultJavaMemSettings:
+        default: Default Java memory settings
       AnsibleVaultPass:
         default: Ansible Vault password
       DatabaseName:
@@ -263,10 +269,44 @@ Parameters:
   InstanceType:
     Description: The EC2 instance type for the Artifactory Docker hosts.
     AllowedValues:
+      - m4.large
       - m4.xlarge
       - m4.2xlarge
       - m4.4xlarge
       - m4.10xlarge
+      - m4.16xlarge
+      - m5.large
+      - m5.xlarge
+      - m5.2xlarge
+      - m5.4xlarge
+      - m5.8xlarge
+      - m5.12xlarge
+      - m5.16xlarge
+      - m5.24xlarge
+      - m5.metal
+      - m5d.large
+      - m5d.xlarge
+      - m5d.2xlarge
+      - m5d.4xlarge
+      - m5d.8xlarge
+      - m5d.12xlarge
+      - m5d.16xlarge
+      - m5d.24xlarge
+      - m5d.metal
+      - m5a.large
+      - m5a.xlarge
+      - m5a.2xlarge
+      - m5a.4xlarge
+      - m5a.8xlarge
+      - m5a.12xlarge
+      - m5a.16xlarge
+      - m5a.24xlarge
+      - m5ad.large
+      - m5ad.xlarge
+      - m5ad.2xlarge
+      - m5ad.4xlarge
+      - m5ad.12xlarge
+      - m5ad.24xlarge
     ConstraintDescription: Must contain valid instance type
     Default: m4.xlarge
     Type: String
@@ -279,6 +319,8 @@ Parameters:
     Description: The number of EC2 nodes to create for the ECS cluster. There must be
       enough nodes to run the number of secondaries plus the primary task.
     AllowedValues:
+      - 1
+      - 2
       - 3
       - 4
       - 5
@@ -293,6 +335,7 @@ Parameters:
       is two; the maximum is seven. Do not select more than instances than you
       have licenses for.
     AllowedValues:
+      - 1
       - 2
       - 3
       - 4
@@ -301,6 +344,13 @@ Parameters:
       - 7
     Default: 2
     Type: Number
+  ArtifactoryProduct:
+    Description: The Jfrog Artifactory product you wish to install into an AMI.
+    AllowedValues:
+      - JFrog-Artifactory-Pro
+      - JFrog-Container-Registry
+    Default: JFrog-Artifactory-Pro
+    Type: String
   ArtifactoryVersion:
     Description: The version of Artifactory that you want to deploy into the Quick Start.
       Please see the release notes to select the version you want to deploy.
@@ -334,7 +384,16 @@ Parameters:
     Description: Setting Java memory parameters for Artifactory. For more information, see the Artifactory
       system requirements.
       https://www.jfrog.com/confluence/display/RTF/System+Requirements#SystemRequirements-RecommendedHardware.
-    Default: -Xmx4g
+    Default: -Xss256k -XX:+UseG1GC
+    Type: String
+  DefaultJavaMemSettings:
+    Description: Choose false to overwrite the standard calculations of memory options to pass to the JVM for Artifactory.
+      If overwriting them, ensure they are added to the ExtraJavaOptions to avoid the stack failing to provision.
+    ConstraintDescription: True or False
+    AllowedValues:
+      - "true"
+      - "false"
+    Default: "true"
     Type: String
   AnsibleVaultPass:
     Description: The Ansible Vault password to protect the Artifactory YAML configuration file
@@ -483,12 +542,14 @@ Resources:
         VolumeSize: !Ref VolumeSize
         NumberOfSecondary: !Ref NumberOfSecondary
         NumberOfEC2Nodes: !Ref NumberOfEC2Nodes
+        ArtifactoryProduct: !Ref ArtifactoryProduct
         ArtifactoryVersion: !Ref ArtifactoryVersion
         ReleaseStage: !Ref ReleaseStage
         SmLicenseCertName: !Ref SmLicenseCertName
         ArtifactoryServerName: !Ref ArtifactoryServerName
         MasterKey: !Ref MasterKey
         ExtraJavaOptions: !Ref ExtraJavaOptions
+        DefaultJavaMemSettings: !Ref DefaultJavaMemSettings
         AnsibleVaultPass: !Ref AnsibleVaultPass
         DatabaseName: !Ref DatabaseName
         DatabaseEngine: !Ref DatabaseEngine
@@ -504,6 +565,6 @@ Outputs:
   ArtifactoryUrl:
     Description: URL of the ELB to access Artifactory
     Value: !Sub ${ArtifactoryExistingVpcStack.Outputs.ArtifactoryUrl}
-  BastionIP:
-    Value: !Sub ${ArtifactoryExistingVpcStack.Outputs.BastionIP}
+  BastionIp:
+    Value: !Sub ${ArtifactoryExistingVpcStack.Outputs.BastionIp}
     Description: Bastion host IP, for admin access via SSH
