@@ -27,7 +27,6 @@ tests:
 #      ArtifactoryVersion: 7.2.1
 #      RemoteAccessCidr: "10.0.0.0/16"
 #      #DatabaseEngine: MySQL
-#      #DatabaseVersion: "5.7"
 #      AccessCidr: "10.0.0.0/16"
 #      AvailabilityZones: "$[taskcat_genaz_2]"
 #      DatabasePassword: "$[taskcat_genpass_8A]"
@@ -55,7 +54,6 @@ tests:
 #      QsS3KeyPrefix: "quickstart-jfrog-artifactory/"
 #      DatabaseInstance: "db.m4.large"
 #      DatabaseEngine: MySQL
-#      DatabaseVersion: "5.7"
 #      ArtifactoryVersion: "7.2.1"
 #      ReleaseStage: "GA"
 #      NumberOfSecondary: "2"
