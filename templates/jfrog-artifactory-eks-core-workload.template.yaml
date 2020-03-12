@@ -100,25 +100,60 @@ Mappings:
       RepoUrl: https://charts.jfrog.io/
       HelmChartVersion: 2.0.8
   DeploymentSize:
+    xxxLarge:
+      requestsMem: "240Gi"
+      requestsCpu: "64"
+      limitsMem: "384Gi"
+      limitsCpu: "96"
+      javaOptsXms: "192g"
+      javaOptsXmx: "288g"
+    xxLarge:
+      requestsMem: "160Gi"
+      requestsCpu: "48"
+      limitsMem: "256Gi"
+      limitsCpu: "64"
+      javaOptsXms: "128g"
+      javaOptsXmx: "192g"
+    xLarge:
+      requestsMem: "120Gi"
+      requestsCpu: "32"
+      limitsMem: "192Gi"
+      limitsCpu: "48"
+      javaOptsXms: "96g"
+      javaOptsXmx: "144g"
     Large:
-      requestsMem: "6Gi"
-      requestsCpu: "4"
-      limitsMem: "10Gi"
-      limitsCpu: "8"
-      javaOptsXms: "6g"
-      javaOptsXmx: "8g"
+      requestsMem: "80Gi"
+      requestsCpu: "16"
+      limitsMem: "128Gi"
+      limitsCpu: "32"
+      javaOptsXms: "64g"
+      javaOptsXmx: "96g"
     Medium:
-      requestsMem: "4Gi"
-      requestsCpu: "2"
-      limitsMem: "8Gi"
-      limitsCpu: "6"
-      javaOptsXms: "4g"
-      javaOptsXmx: "6g"
+      requestsMem: "42Gi"
+      requestsCpu: "8"
+      limitsMem: "64Gi"
+      limitsCpu: "16"
+      javaOptsXms: "32g"
+      javaOptsXmx: "48g"
     Small:
+      requestsMem: "20Gi"
+      requestsCpu: "4"
+      limitsMem: "32Gi"
+      limitsCpu: "8"
+      javaOptsXms: "16g"
+      javaOptsXmx: "24g"
+    xSmall:
+      requestsMem: "6Gi"
+      requestsCpu: "2"
+      limitsMem: "16Gi"
+      limitsCpu: "4"
+      javaOptsXms: "8g"
+      javaOptsXmx: "12g"
+    xxSmall:
       requestsMem: "4Gi"
       requestsCpu: "2"
       limitsMem: "6Gi"
-      limitsCpu: "4"
+      limitsCpu: "2"
       javaOptsXms: "4g"
       javaOptsXmx: "4g"
 
@@ -425,7 +460,7 @@ Resources:
                 pullPolicy: Always
               deleteDBPropertiesOnStartup: true
               masterKey: ${MasterKey}
-              preStartCommand: mkdir -p /var/opt/jfrog/artifactory/etc/artifactory/info/; wget https://${QsS3BucketName}.s3.amazonaws.com/${QsS3KeyPrefix}scripts/roles/artifactory/files/${info_file} -O /var/opt/jfrog/artifactory/etc/artifactory/info/installer-info.json; mkdir -p /var/opt/jfrog/artifactory/bootstrap/artifactory/tomcat/lib/; wget -O  /var/opt/jfrog/artifactory/bootstrap/artifactory/tomcat/lib/${DatabasePlugin} ${DatabasePluginUrl}; mkdir /var/opt/jfrog/artifactory/etc/artifactory; cp /bootstrap/artifactory/binarystore.xml /var/opt/jfrog/artifactory/etc/artifactory/binarystore.xml
+              preStartCommand: mkdir -p /var/opt/jfrog/artifactory/etc/artifactory/info/; wget https://${QsS3BucketName}.s3.amazonaws.com/${QsS3KeyPrefix}scripts/roles/artifactory/files/${info_file} -O /var/opt/jfrog/artifactory/etc/artifactory/info/installer-info.json; mkdir -p /var/opt/jfrog/artifactory/bootstrap/artifactory/tomcat/lib/; wget -O  /var/opt/jfrog/artifactory/bootstrap/artifactory/tomcat/lib/${DatabasePlugin} ${DatabasePluginUrl}; cp /bootstrap/artifactory/binarystore.xml /var/opt/jfrog/artifactory/etc/artifactory/binarystore.xml
               persistence:
                 enabled: false
                 type: aws-s3-v3

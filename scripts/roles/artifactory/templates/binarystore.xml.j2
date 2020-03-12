@@ -1,3 +1,34 @@
+{% if artifactory_product == "jcr" %}
+<config version="2">
+    <chain>
+        <provider id="cache-fs" type="cache-fs">
+            <provider id="eventual" type="eventual">
+                <provider id="retry" type="retry">
+                    <provider id="s3-storage-v3" type="s3-storage-v3"/>
+                </provider>
+            </provider>
+        </provider>
+    </chain>
+
+    <!-- Set max cache-fs size -->
+    <provider id="cache-fs" type="cache-fs">
+        <maxCacheSize>5e+10</maxCacheSize>
+        <cacheProviderDir>cache</cacheProviderDir>
+    </provider>
+    <provider id="s3-storage-v3" type="s3-storage-v3">
+        <testConnection>false</testConnection>
+        <identity>{{ s3_access_key }}</identity>
+        <credential>{{ s3_access_secret_key }}</credential>
+        <region>{{ s3_region }}</region>
+        <bucketName>{{ s3_bucket }}</bucketName>
+        <path>artifactory/filestore</path>
+        <endpoint></endpoint>
+        <useInstanceCredentials>false</useInstanceCredentials>
+        <usePresigning>false</usePresigning>
+        <signatureExpirySeconds>300</signatureExpirySeconds>
+    </provider>
+</config>
+{% else %}
 {% if artifactory_major_verion|int == 7 %}
 <!-- AWS S3 V3 -->
 <config version="2">
@@ -95,5 +126,6 @@
         <signatureExpirySeconds>300</signatureExpirySeconds>
     </provider>
 </config>
+{% endif %}
 {% endif %}
 

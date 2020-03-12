@@ -35,6 +35,8 @@ Parameters:
     Type: String
   NumberOfSecondary:
     Type: Number
+  DeploymentSize:
+    Type: String
   ArtifactoryProduct:
     Type: String
   ArtifactoryLicense1:
@@ -138,6 +140,13 @@ Mappings:
       AMZNLINUXHVM: ami-005136f1190a5c6b7
     sa-east-1:
       AMZNLINUXHVM: ami-0c16a6e54a2f933f0
+  ArtifactoryProductMap:
+    JFrog-Container-Registry:
+      infoFile: "installer-info-jcr.json"
+      product: "jcr"
+    JFrog-Artifactory-Pro:
+      infoFile: "installer-info.json"
+      product: "artifactory"
 Conditions:
   CreateEcsCluster: !Equals [!Ref 'CreateNewEcsCluster', 'Enabled']
   ArtifactoryHa: !Equals [!Ref ArtifactoryProduct, 'JFrog-Artifactory-Pro']
@@ -244,27 +253,32 @@ Resources:
         config-artifactory-master:
           files:
             /root/.artifactory_ansible/artifactory.yml:
-              content: !Sub |
-                # Base install for Artifactory
-                - import_playbook: site-artifactory.yml
-                  vars:
-                    ecs_deployment: true
-                    artifactory_version: ${ArtifactoryVersion}
-                    artifactory_hostname: artifactory
-                    ssl_dir: /data/jfrog/nginx/ssl/
-                    key_dir: /data/jfrog/nginx/ssl/
-                    artifactory_license1: ${ArtifactoryLicense1}
-                    artifactory_license2: ${ArtifactoryLicense2}
-                    artifactory_license3: ${ArtifactoryLicense3}
-                    artifactory_license4: ${ArtifactoryLicense4}
-                    s3_region: ${AWS::Region}
-                    s3_access_key: ${ArtifactoryIamAcessKey}
-                    s3_access_secret_key: ${SecretAccessKey}
-                    s3_bucket: ${ArtifactoryS3Bucket}
-                    artifactory_server_name: ${ArtifactoryServerName}
-                    certificate: ${Certificate}
-                    certificate_key: ${CertificateKey}
-                    certificate_domain: ${CertificateDomain}
+              content: !Sub
+                - |
+                  # Base install for Artifactory
+                  - import_playbook: site-artifactory.yml
+                    vars:
+                      ecs_deployment: true
+                      artifactory_version: ${ArtifactoryVersion}
+                      artifactory_hostname: artifactory
+                      artifactory_product: ${product}
+                      ssl_dir: /data/jfrog/nginx/ssl/
+                      key_dir: /data/jfrog/nginx/ssl/
+                      artifactory_license1: ${ArtifactoryLicense1}
+                      artifactory_license2: ${ArtifactoryLicense2}
+                      artifactory_license3: ${ArtifactoryLicense3}
+                      artifactory_license4: ${ArtifactoryLicense4}
+                      s3_region: ${AWS::Region}
+                      s3_access_key: ${ArtifactoryIamAcessKey}
+                      s3_access_secret_key: ${SecretAccessKey}
+                      s3_bucket: ${ArtifactoryS3Bucket}
+                      artifactory_server_name: ${ArtifactoryServerName}
+                      certificate: ${Certificate}
+                      certificate_key: ${CertificateKey}
+                      certificate_domain: ${CertificateDomain}
+                - {
+                   product: !FindInMap [ArtifactoryProductMap, !Ref ArtifactoryProduct, product]
+                  }
               mode: "0400"
             /root/.vault_pass.txt:
               content: !Sub |
@@ -392,7 +406,6 @@ Resources:
       Parameters:
         EcsCluster: !Ref ClusterName # In case we do not build the cluster we still require the Name of the cluster built.
         ServiceName: !If [ArtifactoryHa, ArtifactoryPrimary, JFrogContainerRegistry]
-        ArtifactoryProduct: !Ref ArtifactoryProduct
         ArtifactoryTargetGroupArn: !Ref ArtifactoryTargetGroupArn
         ArtifactorySslTargetGroupArn: !Ref ArtifactorySslTargetGroupArn
         DatabasePlugin: !Ref DatabasePlugin
@@ -400,11 +413,13 @@ Resources:
         MasterKey: !Ref MasterKey
         ExtraJavaOptions: !Ref ExtraJavaOptions
         NumberNodes: "1"
+        DeploymentSize: !Ref DeploymentSize
         ArtifactoryPrimary: "true"
         DatabaseUrl: !Ref DatabaseUrl
         DatabaseDriver: !Ref DatabaseDriver
         ProDockerRepoURL: !Sub "${ProDockerRepo}:${ArtifactoryVersion}"
         NginxDockerRepoURL: !Sub "${NginxDockerRepo}:${ArtifactoryVersion}"
+        InfoFile: !FindInMap [ArtifactoryProductMap, !Ref ArtifactoryProduct, infoFile]
         DatabaseType: !Ref DatabaseType
         DatabaseUser: !Ref DatabaseUser
         DatabasePassword: !Ref DatabasePassword
@@ -429,11 +444,13 @@ Resources:
         MasterKey: !Ref MasterKey
         ExtraJavaOptions: !Ref ExtraJavaOptions
         NumberNodes: !Ref NumberOfSecondary
-        ArtifactoryPrimary: "false" # If this is false then the entrypoint-artifactory script will get stuck in a forever waiting loop
+        DeploymentSize: !Ref DeploymentSize
+        ArtifactoryPrimary: "false"
         DatabaseUrl: !Ref DatabaseUrl
         DatabaseDriver: !Ref DatabaseDriver
         ProDockerRepoURL: !Sub "${ProDockerRepo}:${ArtifactoryVersion}"
         NginxDockerRepoURL: !Sub "${NginxDockerRepo}:${ArtifactoryVersion}"
+        InfoFile: !FindInMap [ArtifactoryProductMap, !Ref ArtifactoryProduct, infoFile]
         DatabaseType: !Ref DatabaseType
         DatabaseUser: !Ref DatabaseUser
         DatabasePassword: !Ref DatabasePassword

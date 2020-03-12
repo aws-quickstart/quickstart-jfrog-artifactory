@@ -134,12 +134,12 @@ Mappings:
     JFrog-Container-Registry:
       "720": "Jcr720"
       "721": "Jcr721"
-      infoFile: "installer-info-jcr.json"
+      product: "jcr"
     JFrog-Artifactory-Pro:
       "700": "Artifactory700"
       "702": "Artifactory702"
       "721": "Artifactory721"
-      infoFile: "installer-info.json"
+      product: "artifactory"
 Conditions:
   GovCloudCondition: !Equals
     - !Ref 'AWS::Region'
@@ -197,7 +197,7 @@ Resources:
                         artifactory_license2: ${ArtifactoryLicense2}
                         artifactory_license3: ${ArtifactoryLicense3}
                         artifactory_license4: ${ArtifactoryLicense4}
-                        artifactory_installer_file: ${info_file}
+                        artifactory_product: ${product}
                         artifactory_server_name: ${ArtifactoryServerName}
                         s3_region: ${AWS::Region}
                         s3_access_key: ${ArtifactoryIamAcessKey}
@@ -226,7 +226,7 @@ Resources:
                             owner: artifactory
                             group: artifactory
                   - {
-                    info_file: !FindInMap [ArtifactoryProductMap, !Ref ArtifactoryProduct, infoFile]
+                    product: !FindInMap [ArtifactoryProductMap, !Ref ArtifactoryProduct, product]
                     }
                 mode: "0400"
               /root/.vault_pass.txt:
