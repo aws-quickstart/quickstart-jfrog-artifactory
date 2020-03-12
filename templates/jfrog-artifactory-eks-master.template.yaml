@@ -37,6 +37,7 @@ Metadata:
           - ArtifactoryProduct
           - ArtifactoryVersion
           - ReleaseStage
+          - DefaultDeploymentSize
           - ArtifactoryDeploymentSize
           - NumberOfSecondary
           - SmLicenseCertName
@@ -111,6 +112,8 @@ Metadata:
         default: Artifactory version
       ReleaseStage:
         default: Release stage of the product to deploy
+      DefaultDeploymentSize:
+        default: Default Artifactory deployment size
       ArtifactoryDeploymentSize:
         default: Artifactory deployment size
       SmLicenseCertName:
@@ -225,10 +228,17 @@ Parameters:
   NodeInstanceType:
     Description: The Amazon EC2 instance type for the nodes hosting the Kubernetes pods.
     AllowedValues:
+      - m4.large
       - m4.xlarge
       - m4.2xlarge
       - m4.4xlarge
       - m4.10xlarge
+      - m5.large
+      - m5.xlarge
+      - m5.2xlarge
+      - m5.4xlarge
+      - m5.12xlarge
+      - m5.24xlarge
     ConstraintDescription: Must be a valid EC2 instance type.
     Default: m4.xlarge
     Type: String
@@ -347,16 +357,36 @@ Parameters:
       - "BETA"
     Default: "GA"
     Type: String
-  ArtifactoryDeploymentSize:
-    Description: Configuration settings implemented by the Helm chart. There are currently three supported sizes.
-      'Large:' Memory request of 6 GiB, memory limit of 10GiB; CPU request of 4, CPU limit of 8; Java heap size minimum of 6 GB, maximum of 8 GB.
-      'Medium:' Memory request of 4 GiB, memory limit of 8 GiB; CPU request of 2, CPU limit of 6; Java heap size minimum of 4 GB, maximum of 6 GB.
-      'Small:' Memory request of 4 GiB, memory limit of 6 GiB; CPU request of 2, CPU limit of 4; Java heap size of 4 GB.
+  DefaultDeploymentSize:
+    Description: Choose false to overwrite the standard calculations of memory options to pass Java Options for the deployment
+      If overwriting them, not to over provision the nodes.
+    ConstraintDescription: True or False
     AllowedValues:
+      - "true"
+      - "false"
+    Default: "true"
+    Type: String
+  ArtifactoryDeploymentSize:
+    Description: Configuration settings implemented by the Helm chart. There are currently eight supported sizes. This value is only
+      taken into account if you choose 'false' for DefaultDeploymentSize.
+      'xxxLarge:' Only applicable to node InstanceType m5.24xlarge or larger - Memory request of 240 GiB, memory limit of 384GiB; CPU request of 64, CPU limit of 96; Java heap size minimum of 192 GB, maximum of 288 GB.
+      'xxLarge:' Only applicable to node InstanceType m5.16xlarge or larger - Memory request of 160 GiB, memory limit of 256GiB; CPU request of 48, CPU limit of 64; Java heap size minimum of 128 GB, maximum of 192 GB.
+      'xLarge:' Only applicable to node InstanceType m5.12xlarge or larger - Memory request of 120 GiB, memory limit of 192GiB; CPU request of 32, CPU limit of 48; Java heap size minimum of 96 GB, maximum of 144 GB.
+      'Large:' Only applicable to node InstanceType m5.8xlarge or larger - Memory request of 80 GiB, memory limit of 128GiB; CPU request of 16, CPU limit of 32; Java heap size minimum of 64 GB, maximum of 96 GB.
+      'Medium:' Only applicable to node InstanceType m5.4xlarge or larger - Memory request of 42 GiB, memory limit of 64 GiB; CPU request of 8, CPU limit of 16; Java heap size minimum of 32 GB, maximum of 48 GB.
+      'Small:' Only applicable to node InstanceType m5.2xlarge or larger - Memory request of 20 GiB, memory limit of 32 GiB; CPU request of 4, CPU limit of 8; Java heap size minimum of 16 GB, maximum of 24 GB.
+      'xSmall:' Only applicable to node InstanceType m5.xlarge or larger - Memory request of 6 GiB, memory limit of 16 GiB; CPU request of 2, CPU limit of 4; Java heap size minimum of 8 GB, maximum of 12 GB.
+      'xxSmall:' Applicable to all node Instance Types - Memory request of 4 GiB, memory limit of 6 GiB; CPU request of 2, CPU limit of 2; Java heap size of 4 GB.
+    AllowedValues:
+      - xxSmall
+      - xSmall
       - Small
       - Medium
       - Large
-    Default: Medium
+      - xLarge
+      - xxLarge
+      - xxxLarge
+    Default: xSmall
     Type: String
   SmLicenseCertName:
     Description: The secret name created in AWS Secrets Manager which contains the SSL certificate, certificate key, and Artifactory licenses.
@@ -536,6 +566,7 @@ Resources:
         ArtifactoryProduct: !Ref ArtifactoryProduct
         ArtifactoryVersion: !Ref ArtifactoryVersion
         ReleaseStage: !Ref ReleaseStage
+        DefaultDeploymentSize: !Ref DefaultDeploymentSize
         ArtifactoryDeploymentSize: !Ref ArtifactoryDeploymentSize
         NumberOfSecondary: !Ref NumberOfSecondary
         SmLicenseCertName: !Ref SmLicenseCertName

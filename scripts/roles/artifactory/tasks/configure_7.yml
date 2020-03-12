@@ -33,7 +33,7 @@
     owner: artifactory
     group: artifactory
   loop:
-    - path: /var/opt/jfrog/artifactory/etc/info
+    - path: /var/opt/jfrog/artifactory/etc/artifactory/info/
       state: directory
 
 - name: Copy all static files required for Artifactory

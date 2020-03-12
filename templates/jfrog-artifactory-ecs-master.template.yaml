@@ -46,6 +46,7 @@ Metadata:
           - ArtifactoryServerName
           - MasterKey
           - ExtraJavaOptions
+          - DefaultJavaMemSettings
           - AnsibleVaultPass
       - Label:
           default: Amazon RDS Configuration
@@ -119,6 +120,8 @@ Metadata:
         default: Master server key
       ExtraJavaOptions:
         default: Extra Java options
+      DefaultJavaMemSettings:
+        default: Default Java memory settings
       AnsibleVaultPass:
         default: Ansible Vault password
       DatabaseName:
@@ -266,10 +269,44 @@ Parameters:
   InstanceType:
     Description: The EC2 instance type for the Artifactory Docker hosts.
     AllowedValues:
+      - m4.large
       - m4.xlarge
       - m4.2xlarge
       - m4.4xlarge
       - m4.10xlarge
+      - m4.16xlarge
+      - m5.large
+      - m5.xlarge
+      - m5.2xlarge
+      - m5.4xlarge
+      - m5.8xlarge
+      - m5.12xlarge
+      - m5.16xlarge
+      - m5.24xlarge
+      - m5.metal
+      - m5d.large
+      - m5d.xlarge
+      - m5d.2xlarge
+      - m5d.4xlarge
+      - m5d.8xlarge
+      - m5d.12xlarge
+      - m5d.16xlarge
+      - m5d.24xlarge
+      - m5d.metal
+      - m5a.large
+      - m5a.xlarge
+      - m5a.2xlarge
+      - m5a.4xlarge
+      - m5a.8xlarge
+      - m5a.12xlarge
+      - m5a.16xlarge
+      - m5a.24xlarge
+      - m5ad.large
+      - m5ad.xlarge
+      - m5ad.2xlarge
+      - m5ad.4xlarge
+      - m5ad.12xlarge
+      - m5ad.24xlarge
     ConstraintDescription: Must contain valid instance type
     Default: m4.xlarge
     Type: String
@@ -347,7 +384,16 @@ Parameters:
     Description: Setting Java memory parameters for Artifactory. For more information, see the Artifactory
       system requirements.
       https://www.jfrog.com/confluence/display/RTF/System+Requirements#SystemRequirements-RecommendedHardware.
-    Default: -Xmx4g
+    Default: -Xss256k -XX:+UseG1GC
+    Type: String
+  DefaultJavaMemSettings:
+    Description: Choose false to overwrite the standard calculations of memory options to pass to the JVM for Artifactory.
+      If overwriting them, ensure they are added to the ExtraJavaOptions to avoid the stack failing to provision.
+    ConstraintDescription: True or False
+    AllowedValues:
+      - "true"
+      - "false"
+    Default: "true"
     Type: String
   AnsibleVaultPass:
     Description: The Ansible Vault password to protect the Artifactory YAML configuration file
@@ -503,6 +549,7 @@ Resources:
         ArtifactoryServerName: !Ref ArtifactoryServerName
         MasterKey: !Ref MasterKey
         ExtraJavaOptions: !Ref ExtraJavaOptions
+        DefaultJavaMemSettings: !Ref DefaultJavaMemSettings
         AnsibleVaultPass: !Ref AnsibleVaultPass
         DatabaseName: !Ref DatabaseName
         DatabaseEngine: !Ref DatabaseEngine

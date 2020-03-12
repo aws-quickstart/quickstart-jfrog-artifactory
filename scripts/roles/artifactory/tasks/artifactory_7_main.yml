@@ -4,6 +4,11 @@
   set_fact:
     artifactory_tomcat_loc: /var/opt/jfrog/artifactory/bootstrap/artifactory/tomcat/lib
 
+- name: Set JCR Specifics
+  set_fact:
+    artifactory_installer_file: installer-info-jcr.json
+  when:  artifactory_product == "jcr"
+
 - name: Configure an Instance to host Artifactory
   include: "{{ my_tasks.name }}"
   when: ecs_deployment == false
