@@ -25,10 +25,10 @@ venv/bin/aws: venv/bin/python3
 venv: venv/bin/taskcat venv/bin/aws
 
 submodules:
-	git submodule init
-	git submodule update
-	cd submodules/quickstart-linux-bastion && git submodule init && git submodule update
-	cd submodules/quickstart-amazon-eks && git submodule init && git submodule update
+        git submodule init
+        git submodule update --remote --recursive
+        git submodule foreach --recursive 'git submodule init'
+        git submodule foreach --recursive 'git submodule update --remote --recursive'
 
 help:
 	@echo   "make test  : executes ${VENVBIN}/taskcat"
