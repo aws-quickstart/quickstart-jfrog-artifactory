@@ -2,7 +2,9 @@ project:
   name: quickstart-jfrog-artifactory
   owner: quickstart-eng@amazon.com
   s3_object_acl: public-read
-  #s3_bucket: tcat-quickstart-jfrog-artifactory-kfcwx4t8
+  #s3_bucket: tcat-theflash-kfcwx4t8
+  lambda_source_path: submodules/quickstart-amazon-eks/functions/source
+  lambda_zip_path: submodules/quickstart-amazon-eks/functions/packages
   s3_enable_sig_v2: True # When v2 signature is enabled, the bastion bootstrap fails to GET THE SCRIPT!
   regions:
     - us-west-2
