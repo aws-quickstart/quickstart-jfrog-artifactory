@@ -575,6 +575,7 @@ Resources:
         NodeGroupName: !Sub "${ArtifactoryProduct}-secondary"
         NodeVolumeSize: !Ref NodeVolumeSize
         EKSControlPlane: !GetAtt EksStack.Outputs.EKSClusterName
+        EKSClusterName: !GetAtt EksStack.Outputs.EKSClusterName
         ControlPlaneSecurityGroup: !GetAtt EksStack.Outputs.ControlPlaneSecurityGroup
         NodeInstanceProfile: !GetAtt EksStack.Outputs.NodeInstanceProfile
         NodeInstanceRoleName: !GetAtt EksStack.Outputs.NodeInstanceRoleName
