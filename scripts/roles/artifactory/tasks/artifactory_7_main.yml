@@ -3,6 +3,13 @@
 - name: Set tomcat location
   set_fact:
     artifactory_tomcat_loc: /var/opt/jfrog/artifactory/bootstrap/artifactory/tomcat/lib
+    binarystore_file: binarystore.xml.j2
+
+- name: Set JCR Specifics
+  set_fact:
+    artifactory_installer_file: installer-info-jcr.json
+    binarystore_file: jcr_binarystore.xml.j2
+  when: artifactory_product == "jcr"
 
 - name: Set JCR Specifics
   set_fact:

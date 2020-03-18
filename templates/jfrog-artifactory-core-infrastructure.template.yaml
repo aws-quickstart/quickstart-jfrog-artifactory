@@ -398,8 +398,8 @@ Outputs:
     Value: !Sub
       - "-Xms${min}g -Xmx${max}g"
       - {
-         min: !FindInMap [ JavaOptionstoInstance, !Ref InstanceType, Min],
-         max: !FindInMap [ JavaOptionstoInstance, !Ref InstanceType, Max]
-        }
+        min: !FindInMap [JavaOptionstoInstance, !Ref InstanceType, Min],
+        max: !FindInMap [JavaOptionstoInstance, !Ref InstanceType, Max]
+      }
   DeploymentSize:
-    Value: !FindInMap [ JavaOptionstoInstance, !Ref InstanceType, DeploymentSize]
+    Value: !FindInMap [JavaOptionstoInstance, !Ref InstanceType, DeploymentSize]
