@@ -28,7 +28,7 @@
     group: root
     mode: '0664'
   loop:
-    - src: binarystore.xml.j2
+    - src: "{{ binarystore_file }}"
       dest: /data/jfrog/artifactory/etc/binarystore.xml
     - src: artifactory.cluster.license.j2
       dest: /data/jfrog/artifactory/etc/artifactory.cluster.license

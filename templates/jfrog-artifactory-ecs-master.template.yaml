@@ -34,6 +34,7 @@ Metadata:
           - ClusterName
           - InstanceType
           - VolumeSize
+          - EnableFargate
       - Label:
           default: JFrog Artifactory configuration
         Parameters:
@@ -112,6 +113,8 @@ Metadata:
         default: EC2 instance type
       VolumeSize:
         default: EBS Root volume size
+      EnableFargate:
+        default: Use Fargate with ECS
       SmLicenseCertName:
         default: Artifactory licenses and certificate secret name
       ArtifactoryServerName:
@@ -315,6 +318,11 @@ Parameters:
       Amazon Elastic Block Store (Amazon EBS) volumes of this size.
     Default: 200
     Type: Number
+  EnableFargate:
+    Description: AWS Fargate is a technology that you can use with Amazon ECS to run containers without having to manage servers or clusters of Amazon EC2 instances.
+    Default: "Disabled"
+    Type: String
+    AllowedValues: ["Enabled", "Disabled"]
   NumberOfEC2Nodes:
     Description: The number of EC2 nodes to create for the ECS cluster. There must be
       enough nodes to run the number of secondaries plus the primary task.
@@ -542,6 +550,7 @@ Resources:
         VolumeSize: !Ref VolumeSize
         NumberOfSecondary: !Ref NumberOfSecondary
         NumberOfEC2Nodes: !Ref NumberOfEC2Nodes
+        EnableFargate: !Ref EnableFargate
         ArtifactoryProduct: !Ref ArtifactoryProduct
         ArtifactoryVersion: !Ref ArtifactoryVersion
         ReleaseStage: !Ref ReleaseStage

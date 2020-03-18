@@ -1,6 +1,10 @@
 AWSTemplateFormatVersion: "2010-09-09"
-Description: "Deploys the ECS Artifactory Service and Task"
+Description: "Deploys the ECS Container Registry Service and Task using Fargate"
 Parameters:
+  PrivateSubnet1Id:
+    Type: 'AWS::EC2::Subnet::Id'
+  PrivateSubnet2Id:
+    Type: 'AWS::EC2::Subnet::Id'
   EcsCluster:
     Type: String
   ServiceName:
@@ -13,8 +17,6 @@ Parameters:
     Type: String
     NoEcho: 'true'
   ExtraJavaOptions:
-    Type: String
-  ArtifactoryPrimary:
     Type: String
   NumberNodes:
     Type: Number
@@ -32,8 +34,6 @@ Parameters:
     Type: String
   NginxDockerRepoUrl:
     Type: String
-  InfoFile:
-    Type: String
   DatabaseType:
     Type: String
   DatabaseUser:
@@ -45,12 +45,31 @@ Parameters:
     Type: String
   EcsLogGroup:
     Type: String
+  SecurityGroups:
+    Type: String
   YQVersion:
     Default: "3.0.1"
     Type: String
   QsS3BucketName:
     Type: String
   QsS3KeyPrefix:
+    Type: String
+  JcrIamAcessKey:
+    Type: String
+    NoEcho: 'true'
+  SecretAccessKey:
+    Type: String
+    NoEcho: 'true'
+  JcrS3Bucket:
+    Type: String
+  JcrServerName:
+    Type: String
+  Certificate:
+    Type: String
+  CertificateKey:
+    Type: String
+    NoEcho: 'true'
+  CertificateDomain:
     Type: String
 
 Mappings:
@@ -86,7 +105,10 @@ Resources:
     Properties:
       Cluster: !Ref EcsCluster
       ServiceName: !Ref ServiceName
-      LaunchType: EC2
+      LaunchType: FARGATE
+      DeploymentConfiguration:
+        MaximumPercent: 200
+        MinimumHealthyPercent: 75
       DesiredCount: !Ref NumberNodes
       LoadBalancers:
         - ContainerName: nginx
@@ -95,50 +117,43 @@ Resources:
         - ContainerName: nginx
           ContainerPort: 443
           TargetGroupArn: !Ref ArtifactorySslTargetGroupArn
+      NetworkConfiguration:
+        AwsvpcConfiguration:
+          AssignPublicIp: DISABLED
+          SecurityGroups:
+            - !Ref SecurityGroups
+          Subnets:
+            - !Ref PrivateSubnet1Id
+            - !Ref PrivateSubnet2Id
       TaskDefinition:
-        Ref: ArtifactoryTaskDefinition
+        Ref: JcrTaskDefinition
       HealthCheckGracePeriodSeconds: 300
 
-  ArtifactoryTaskDefinition:
+  JcrTaskDefinition:
     Type: AWS::ECS::TaskDefinition
     Properties:
       Cpu: !FindInMap [DeploymentSize, !Ref DeploymentSize, Cpu]
       Family: !Sub ${ServiceName}-Task
       Memory: !FindInMap [DeploymentSize, !Ref DeploymentSize, Memory]
-      NetworkMode: bridge
+      NetworkMode: awsvpc
       RequiresCompatibilities:
         - EC2
       ExecutionRoleArn: !Ref EcsRoleArn
-      Volumes:
-        - Name: etc
-          Host:
-            SourcePath: /data/jfrog/artifactory/etc/
-        - Name: temp-plugins
-          Host:
-            SourcePath: /data/jfrog/artifactory/tmp/plugins
-        - Name: java-certs
-          Host:
-            SourcePath: /data/jfrog/artifactory/java_certs
-        - Name: nginx
-          Host:
-            SourcePath: /data/jfrog/nginx
       ContainerDefinitions:
-        - Name: artifactory
+        - Name: jcr
           EntryPoint:
             - /bin/bash
             - "-c"
           Command:
             - !Sub |
-              wget https://${QsS3BucketName}.s3.amazonaws.com/${QsS3KeyPrefix}scripts/configure_ecs_container.sh -O /tmp/source;
-              echo '' >> /tmp/source;
-              echo export HA_HOST_IP=`wget -q -O - http://169.254.169.254/latest/meta-data/local-ipv4` >> /tmp/source;
-              echo wget -O /var/opt/jfrog/artifactory/bootstrap/artifactory/tomcat/lib/${DatabasePlugin} ${DatabasePluginUrl} >> /tmp/source;
-              echo mkdir /var/opt/jfrog/artifactory/etc/artifactory/info/ >> /tmp/source;
-              echo wget https://${QsS3BucketName}.s3.amazonaws.com/${QsS3KeyPrefix}scripts/roles/artifactory/files/${InfoFile} -O /var/opt/jfrog/artifactory/etc/artifactory/info/installer-info.json >> /tmp/source;
-              echo cp /tmp/plugins/inactiveServerCleaner.groovy /var/opt/jfrog/artifactory/etc/artifactory/plugins/ >> /tmp/source;
-              echo /entrypoint-artifactory.sh >> /tmp/source;
-              chmod +x /tmp/source;
-              /tmp/source
+                wget https://${QsS3BucketName}.s3.amazonaws.com/${QsS3KeyPrefix}scripts/configure_jcr_fargate_container.sh -O /tmp/source;
+                echo '' >> /tmp/source;
+                wget https://${QsS3BucketName}.s3.amazonaws.com/${QsS3KeyPrefix}scripts/roles/artifactory/templates/jcr_binarystore.xml.j2 -O /tmp/binarystore.xml;
+                echo export HA_HOST_IP=`wget -q -O - http://169.254.169.254/latest/meta-data/local-ipv4` >> /tmp/source;
+                echo wget -O /var/opt/jfrog/artifactory/bootstrap/artifactory/tomcat/lib/${DatabasePlugin} ${DatabasePluginUrl} >> /tmp/source;
+                echo /entrypoint-artifactory.sh >> /tmp/source;
+                chmod +x /tmp/source;
+                /tmp/source
           Image: !Sub ${ProDockerRepoUrl}
           PortMappings:
             - ContainerPort: 8081
@@ -147,16 +162,6 @@ Resources:
             - ContainerPort: 8082
               HostPort: 8082
               Protocol: tcp
-          MountPoints:
-            - ContainerPath: /artifactory_extra_conf
-              ReadOnly: False
-              SourceVolume: etc
-            - ContainerPath: /tmp/plugins
-              ReadOnly: False
-              SourceVolume: temp-plugins
-            - ContainerPath: /artifactory_extra_certs
-              ReadOnly: False
-              SourceVolume: java-certs
           Ulimits:
             - Name: nproc
               SoftLimit: 65535
@@ -173,12 +178,14 @@ Resources:
             StartPeriod: 60
             Timeout: 10
           Environment:
+            - Name: HA_IS_PRIMARY
+              Value: "True"
+            - Name: HA_ENABLED
+              Value: "False"
             - Name: EXTRA_JAVA_OPTIONS
               Value: !Ref ExtraJavaOptions
             - Name: ARTIFACTORY_MASTER_KEY
               Value: !Ref MasterKey
-            - Name: HA_IS_PRIMARY
-              Value: !Ref ArtifactoryPrimary
             - Name: DB_URL
               Value: !Ref DatabaseUrl
             - Name: DB_TYPE
@@ -191,13 +198,32 @@ Resources:
               Value: !Ref DatabaseDriver
             - Name: YQ_VERSION
               Value: !Ref YQVersion
+            - Name: S3_ACCESS_KEY
+              Value: !Ref JcrIamAcessKey
+            - Name: S3_ACCESS_SECRET_KEY
+              Value: !Ref SecretAccessKey
+            - Name: S3_REGION
+              Value: !Sub ${AWS::Region}
+            - Name: S3_BUCKET
+              Value: !Ref JcrS3Bucket
           LogConfiguration:
             LogDriver: awslogs
             Options:
               awslogs-group: !Ref EcsLogGroup
               awslogs-region: !Ref AWS::Region
-              awslogs-stream-prefix: artifactory
+              awslogs-stream-prefix: jcr
         - Name: nginx
+          EntryPoint:
+            - /bin/bash
+            - "-c"
+          Command:
+            - !Sub |
+                curl https://${QsS3BucketName}.s3.amazonaws.com/${QsS3KeyPrefix}scripts/configure_nginx_fargate_container.sh -o /tmp/source;
+                curl https://${QsS3BucketName}.s3.amazonaws.com/${QsS3KeyPrefix}scripts/roles/artifactory/templates/artifactory.conf.j2 -o /tmp/artifactory.conf;
+                echo '' >> /tmp/source;
+                chmod +x /tmp/source;
+                echo /entrypoint-nginx.sh >> /tmp/source;
+                /tmp/source
           Image: !Sub ${NginxDockerRepoUrl}
           PortMappings:
             - ContainerPort: 80
@@ -209,13 +235,7 @@ Resources:
           Essential: false
           DependsOn:
             - Condition: HEALTHY
-              ContainerName: artifactory
-          Links:
-            - artifactory:artifactory
-          MountPoints:
-            - ContainerPath: /var/opt/jfrog/nginx
-              ReadOnly: False
-              SourceVolume: nginx
+              ContainerName: jcr
           Ulimits:
             - Name: nproc
               SoftLimit: 65535
@@ -225,9 +245,22 @@ Resources:
               HardLimit: 40000
           Environment:
             - Name: ART_BASE_URL
-              Value: http://artifactory:8081/artifactory
+              Value: http://jcr:8081/artifactory
             - Name: SSL
               Value: "true"
+            - Name: CERTIFICATE
+              Value:
+                Fn::Base64:
+                  !Join ["\n", "Fn::Split": ["|", !Ref Certificate]]
+            - Name: CERTIFICATE_KEY
+              Value:
+                Fn::Base64:
+                  !Join ["\n", "Fn::Split": ["|", !Ref CertificateKey]]
+            - Name: CERTIFICATE_DOMAIN
+              Value: !Ref CertificateDomain
+            - Name: JCR_SERVER_NAME
+              Value: !Ref JcrServerName
+
           LogConfiguration:
             LogDriver: awslogs
             Options:
