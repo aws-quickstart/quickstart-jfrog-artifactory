@@ -41,6 +41,8 @@ Metadata:
           - RoleArn
           - InstanceType
           - VolumeSize
+          - EnableFargate
+
       - Label:
           default: JFrog Artifactory Configuration
         Parameters:
@@ -123,6 +125,8 @@ Metadata:
         default: EC2 instance type
       VolumeSize:
         default: EBS root volume size
+      EnableFargate:
+        default: Use Fargate with ECS
       ArtifactoryProduct:
         default: Artifactory product to install
       ArtifactoryVersion:
@@ -357,6 +361,11 @@ Parameters:
       Amazon Elastic Block Store (Amazon EBS) volumes of this size.
     Default: 200
     Type: Number
+  EnableFargate:
+    Description: AWS Fargate is a technology that you can use with Amazon ECS to run containers without having to manage servers or clusters of Amazon EC2 instances.
+    Default: "Disabled"
+    Type: String
+    AllowedValues: ["Enabled", "Disabled"]
   NumberOfEC2Nodes:
     Description: The number of EC2 nodes to create for the ECS cluster. There must be
       enough nodes to run the number of secondaries plus the primary task.
@@ -543,7 +552,8 @@ Parameters:
 Conditions:
   EnableBastion: !Equals [!Ref 'ProvisionBastionHost', 'Enabled']
   ArtifactoryHa: !Equals [!Ref ArtifactoryProduct, 'JFrog-Artifactory-Pro']
-  DefaultJava: !Equals [!Ref DefaultJavaMemSettings, "true" ]
+  DefaultJava: !Equals [!Ref DefaultJavaMemSettings, "true"]
+  FargateEnabled: !Equals [!Ref EnableFargate, "Enabled"]
 
 Resources:
   BastionStack:
@@ -576,7 +586,7 @@ Resources:
         PrivateSubnet1Cidr: !Ref PrivateSubnet1Cidr
         PrivateSubnet2Cidr: !Ref PrivateSubnet2Cidr
         PrivateSubnet3Cidr: !Ref PrivateSubnet2Cidr # This should end up in no new rule but required for EKS
-        SubnetIds: !Join [ ",", [ !Ref PrivateSubnet1Id, !Ref PrivateSubnet2Id ]]
+        SubnetIds: !Join [",", [!Ref PrivateSubnet1Id, !Ref PrivateSubnet2Id]]
         DatabaseAllocatedStorage: !Ref DatabaseAllocatedStorage
         MultiAzDatabase: !Ref MultiAzDatabase
         DatabaseEngine: !Ref DatabaseEngine
@@ -610,7 +620,7 @@ Resources:
       Name: !Sub ${ArtifactoryProduct}-https
       Port: 443
       Protocol: TCP
-      TargetType: instance
+      TargetType: !If [FargateEnabled, "ip", "instance"]
       UnhealthyThresholdCount: 3
       VpcId: !Ref VpcId
 
@@ -625,7 +635,7 @@ Resources:
       Name: !Sub ${ArtifactoryProduct}-http
       Port: 80
       Protocol: TCP
-      TargetType: instance
+      TargetType: !If [FargateEnabled, "ip", "instance"]
       UnhealthyThresholdCount: 3
       VpcId: !Ref VpcId
 
@@ -707,7 +717,8 @@ Resources:
         KeyPairName: !Ref KeyPairName
         InstanceType: !Ref InstanceType
         VolumeSize: !Ref VolumeSize
-        DeploymentTag:  !If [ArtifactoryHa, ArtifactoryEcs-Node, JcrEcs-Node]
+        EnableFargate: !Ref EnableFargate
+        DeploymentTag: !If [ArtifactoryHa, ArtifactoryEcs-Node, JcrEcs-Node]
         NumberOfSecondary: !Ref NumberOfSecondary
         DeploymentSize: !GetAtt ArtifactoryCoreInfraStack.Outputs.DeploymentSize
         ArtifactoryProduct: !Ref ArtifactoryProduct
@@ -726,8 +737,8 @@ Resources:
         DatabaseDriver: !GetAtt ArtifactoryCoreInfraStack.Outputs.DatabaseDriver
         ProDockerRepo: !GetAtt ArtifactoryCoreInfraStack.Outputs.ProDockerRepo
         NginxDockerRepo: !GetAtt ArtifactoryCoreInfraStack.Outputs.NginxDockerRepo
-        DatabasePlugin:  !GetAtt ArtifactoryCoreInfraStack.Outputs.DatabasePlugin
-        DatabasePluginUrl:  !GetAtt ArtifactoryCoreInfraStack.Outputs.DatabasePluginUrl
+        DatabasePlugin: !GetAtt ArtifactoryCoreInfraStack.Outputs.DatabasePlugin
+        DatabasePluginUrl: !GetAtt ArtifactoryCoreInfraStack.Outputs.DatabasePluginUrl
         DatabaseType: !GetAtt ArtifactoryCoreInfraStack.Outputs.DatabaseType
         DatabaseUser: !Ref DatabaseUser
         DatabasePassword: !Ref DatabasePassword

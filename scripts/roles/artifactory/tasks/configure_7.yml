@@ -9,7 +9,7 @@
     group: artifactory
     mode: '0664'
   loop:
-    - src: binarystore.xml.j2
+    - src: "{{ binarystore_file }}"
       dest: /var/opt/jfrog/artifactory/etc/artifactory/binarystore.xml
     - src: artifactory.cluster.license.j2
       dest: /var/opt/jfrog/artifactory/etc/artifactory/artifactory.cluster.license
@@ -55,4 +55,3 @@
   file:
     path: /var/opt/jfrog/artifactory/etc/security/join.key
     state: absent
-
