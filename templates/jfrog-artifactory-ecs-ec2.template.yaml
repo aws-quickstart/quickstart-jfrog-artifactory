@@ -19,10 +19,6 @@ Parameters:
     Description: Desired name for your cluster.
     Default: JFrog
     Type: String
-  CreateNewEcsCluster:
-    Description: Whether to create the ECS Cluster with given name or not.
-    Default: Enabled
-    Type: String
   CreateNewEcsRole:
     Description: Whether to create the ECS Cluster with given name or not.
     Default: Enabled
@@ -150,7 +146,6 @@ Mappings:
       infoFile: "installer-info.json"
       product: "artifactory"
 Conditions:
-  CreateEcsCluster: !Equals [!Ref 'CreateNewEcsCluster', 'Enabled']
   ArtifactoryHa: !Equals [!Ref ArtifactoryProduct, 'JFrog-Artifactory-Pro']
   EcsOnEc2: !Equals [!Ref EnableFargate, 'Disabled']
   CreateEcsRole: !Equals [!Ref 'CreateNewEcsRole', 'Enabled']
@@ -212,12 +207,6 @@ Resources:
       Path: /
       Roles:
         - !If [CreateEcsRole, !Ref EcsRole, !Ref RoleName]
-
-  EcsCluster:
-    Condition: CreateEcsCluster
-    Type: AWS::ECS::Cluster
-    Properties:
-      ClusterName: !Ref ClusterName
 
   ArtifactoryScalingGroup:
     Type: 'AWS::AutoScaling::AutoScalingGroup'

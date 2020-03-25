@@ -550,6 +550,7 @@ Parameters:
     Type: String
 
 Conditions:
+  CreateEcsCluster: !Equals [!Ref 'CreateNewEcsCluster', 'Enabled']
   EnableBastion: !Equals [!Ref 'ProvisionBastionHost', 'Enabled']
   ArtifactoryHa: !Equals [!Ref ArtifactoryProduct, 'JFrog-Artifactory-Pro']
   DefaultJava: !Equals [!Ref DefaultJavaMemSettings, "true"]
@@ -700,6 +701,12 @@ Resources:
         - IpProtocol: "-1"
           CidrIp: 0.0.0.0/0
 
+  EcsCluster:
+    Condition: CreateEcsCluster
+    Type: AWS::ECS::Cluster
+    Properties:
+      ClusterName: !Ref ClusterName
+
   ArtifactoryECSBuild:
     Type: AWS::CloudFormation::Stack
     Properties:
@@ -707,8 +714,7 @@ Resources:
       Parameters:
         PrivateSubnet1Id: !Ref PrivateSubnet1Id
         PrivateSubnet2Id: !Ref PrivateSubnet2Id
-        ClusterName: !Ref ClusterName
-        CreateNewEcsCluster: !Ref CreateNewEcsCluster
+        ClusterName: !If [CreateEcsCluster, !Ref EcsCluster, !Ref ClusterName]
         CreateNewEcsRole: !Ref CreateNewEcsRole
         RoleName: !Ref RoleName
         RoleArn: !Ref RoleArn
