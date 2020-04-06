@@ -100,36 +100,48 @@ Mappings:
       AMZNLINUXHVM: amzn-ami-hvm-2018.03.0.20181129-x86_64-gp2
     ap-northeast-1:
       AMZNLINUXHVM: ami-079e6fb1e856e80c1
+      "Artifactory721": ami-09dfb20a591375d09
     ap-northeast-2:
       AMZNLINUXHVM: ami-0e4a253fb5f082688
+      "Artifactory721": ami-0eb86b82de93a34fb
     ap-south-1:
       AMZNLINUXHVM: ami-01e074f40dfb9999d
+      "Artifactory721": ami-01b828aa6cc99a322
     ap-southeast-1:
       AMZNLINUXHVM: ami-0d9233e8ce73df7b2
+      "Artifactory721": ami-04a94cc4dc0d08c98
     ap-southeast-2:
       AMZNLINUXHVM: ami-0c91f97cadcc8499e
+      "Artifactory721": ami-030871aa8d1f0689e
     ca-central-1:
       AMZNLINUXHVM: ami-003a0ba7ea76b2785
+      "Artifactory721": ami-0148cebea7bea4aaf
     eu-central-1:
       AMZNLINUXHVM: ami-0ab838eeee7f316eb
+      "Artifactory721": ami-07961f7c210143a42
     eu-west-1:
       AMZNLINUXHVM: ami-071f4ce599deff521
+      "Artifactory721": ami-0171b8d46941b4ca1
     sa-east-1:
       AMZNLINUXHVM: ami-04b202bf877b5027b
+      "Artifactory721": ami-0596f196b273bb8a6
     us-east-1:
       AMZNLINUXHVM: ami-09d069a04349dc3cb
       "Artifactory700": ami-06baee01fb2ef01d2
       "Artifactory702": ami-085b1acc8e8b5b039
-      "Artifactory721": ami-0ddf97d5a821c030f
+      "Artifactory721": ami-0d4d4252cdc2b6f11
       "Jcr720": ami-05aa02eddf5f692b7
       "Jcr721": ami-03b26427d1e6b3a66
     us-east-2:
       AMZNLINUXHVM: ami-0d542ef84ec55d71c
+      "Artifactory721": ami-0a913af05ccdaa522
     us-west-1:
       AMZNLINUXHVM: ami-04bc3da8f14823e88
+      "Artifactory721": ami-068cd684b4d3a3a86
     us-west-2:
       AMZNLINUXHVM: ami-01460aa81365561fe
       "700": ami-000937e944ea194bf
+      "Artifactory721": ami-0c132dd3640519a35
   ArtifactoryProductMap:
     JFrog-Container-Registry:
       "720": "Jcr720"
