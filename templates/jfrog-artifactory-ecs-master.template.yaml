@@ -64,6 +64,7 @@ Metadata:
         Parameters:
           - QsS3BucketName
           - QsS3KeyPrefix
+          - QsS3BucketRegion
     ParameterLabels:
       KeyPairName:
         default: SSH key name
@@ -145,6 +146,8 @@ Metadata:
         default: Quick Start S3 bucket name
       QsS3KeyPrefix:
         default: Quick Start S3 key prefix
+      QsS3BucketRegion:
+        default: Quick Start S3 bucket region
 Parameters:
   KeyPairName:
     Description: The name of an existing public/private key pair, which allows you
@@ -498,16 +501,31 @@ Parameters:
       uppercase letters, hyphens (-), and forward slash (/).
     Default: quickstart-jfrog-artifactory/
     Type: String
+  QsS3BucketRegion:
+    Default: 'us-east-1'
+    Description: The AWS Region where the Quick Start S3 bucket (QSS3BucketName) is hosted. When using your own bucket, you must specify this value.
+    Type: String
+Conditions:
+  UsingDefaultBucket: !Equals [!Ref QsS3BucketName, 'aws-quickstart']
 Resources:
   ArtifactoryVpcStack:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: !Sub https://${QsS3BucketName}.s3.amazonaws.com/${QsS3KeyPrefix}submodules/quickstart-aws-vpc/templates/aws-vpc.template
+      TemplateURL: !Sub
+        - https://${S3Bucket}.s3.${S3Region}.${AWS::URLSuffix}/${QsS3KeyPrefix}submodules/quickstart-aws-vpc/templates/aws-vpc.template
+        - S3Bucket: !If
+            - UsingDefaultBucket
+            - !Sub 'aws-quickstart-${AWS::Region}'
+            - !Ref 'QsS3BucketName'
+          S3Region: !If
+            - UsingDefaultBucket
+            - !Ref 'AWS::Region'
+            - !Ref 'QsS3BucketRegion'
       Parameters:
         AvailabilityZones:
           Fn::Join:
-          - ','
-          - Ref: AvailabilityZones
+            - ','
+            - Ref: AvailabilityZones
         KeyPairName:
           Ref: KeyPairName
         NumberOfAZs: '2'
@@ -525,7 +543,16 @@ Resources:
   ArtifactoryExistingVpcStack:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: !Sub 'https://${QsS3BucketName}.s3.amazonaws.com/${QsS3KeyPrefix}templates/jfrog-artifactory-ecs-existing-vpc.template.yaml'
+      TemplateURL: !Sub
+        - https://${S3Bucket}.s3.${S3Region}.${AWS::URLSuffix}/${QsS3KeyPrefix}templates/jfrog-artifactory-ecs-existing-vpc.template.yaml
+        - S3Bucket: !If
+            - UsingDefaultBucket
+            - !Sub 'aws-quickstart-${AWS::Region}'
+            - !Ref 'QsS3BucketName'
+          S3Region: !If
+            - UsingDefaultBucket
+            - !Ref 'AWS::Region'
+            - !Ref 'QsS3BucketRegion'
       Parameters:
         KeyPairName: !Ref KeyPairName
         VpcId: !GetAtt ArtifactoryVpcStack.Outputs.VPCID
@@ -567,9 +594,25 @@ Resources:
         DatabaseInstance: !Ref DatabaseInstance
         DatabaseAllocatedStorage: !Ref DatabaseAllocatedStorage
         MultiAzDatabase: !Ref MultiAzDatabase
-        QsS3BucketName: !Ref QsS3BucketName
+        QsS3BucketName: !If
+          - UsingDefaultBucket
+          - !Sub 'aws-quickstart-${AWS::Region}'
+          - !Ref 'QsS3BucketName'
         QsS3KeyPrefix: !Ref QsS3KeyPrefix
-
+        QsS3BucketRegion: !If
+          - UsingDefaultBucket
+          - !Ref 'AWS::Region'
+          - !Ref 'QsS3BucketRegion'
+        QsS3Uri: !Sub
+          - https://${S3Bucket}.s3.${S3Region}.${AWS::URLSuffix}/${QsS3KeyPrefix}
+          - S3Bucket: !If
+              - UsingDefaultBucket
+              - !Sub 'aws-quickstart-${AWS::Region}'
+              - !Ref 'QsS3BucketName'
+            S3Region: !If
+              - UsingDefaultBucket
+              - !Ref 'AWS::Region'
+              - !Ref 'QsS3BucketRegion'
 Outputs:
   ArtifactoryUrl:
     Description: URL of the ELB to access Artifactory
