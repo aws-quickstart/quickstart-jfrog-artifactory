@@ -51,15 +51,15 @@ Parameters:
     Type: String
   CertificateKey:
     Type: String
-    NoEcho: 'false'
+    NoEcho: 'true'
   CertificateDomain:
     Type: String
   ArtifactoryIamAcessKey:
     Type: String
-    NoEcho: 'false'
+    NoEcho: 'true'
   SecretAccessKey:
     Type: String
-    NoEcho: 'false'
+    NoEcho: 'true'
   ArtifactoryS3Bucket:
     Type: String
   DatabaseUrl:
@@ -79,11 +79,11 @@ Parameters:
   DatabaseUser:
     Type: String
   DatabasePassword:
-    NoEcho: 'false'
+    NoEcho: 'true'
     Type: String
   MasterKey:
     Type: String
-    NoEcho: 'false'
+    NoEcho: 'true'
   ExtraJavaOptions:
     Type: String
   ArtifactoryVersion:
@@ -98,7 +98,7 @@ Parameters:
     Type: String
   AnsibleVaultPass:
     Description: Ansiblevault Password to secure the artifactory.yml
-    NoEcho: 'false'
+    NoEcho: 'true'
     Type: String
   QsS3BucketName:
     Type: String

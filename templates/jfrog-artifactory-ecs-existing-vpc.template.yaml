@@ -567,8 +567,6 @@ Conditions:
   ArtifactoryHa: !Equals [!Ref ArtifactoryProduct, 'JFrog-Artifactory-Pro']
   DefaultJava: !Equals [!Ref DefaultJavaMemSettings, "true"]
   FargateEnabled: !Equals [!Ref EnableFargate, "Enabled"]
-  UsingDefaultBucket: !Equals [!Ref QsS3BucketName, 'aws-quickstart']
-
 Resources:
   BastionStack:
     Condition: EnableBastion
@@ -580,15 +578,9 @@ Resources:
         PublicSubnet1ID: !Ref PublicSubnet1Id
         PublicSubnet2ID: !Ref PublicSubnet2Id
         KeyPairName: !Ref KeyPairName
-        QSS3BucketName: !If
-          - UsingDefaultBucket
-          - !Sub 'aws-quickstart-${AWS::Region}'
-          - !Ref 'QsS3BucketName'
+        QSS3BucketName: !Ref QsS3BucketName
         QSS3KeyPrefix: !Sub '${QsS3KeyPrefix}submodules/quickstart-linux-bastion/'
-        QSS3BucketRegion: !If
-          - UsingDefaultBucket
-          - !Ref 'AWS::Region'
-          - !Ref 'QsS3BucketRegion'
+        QSS3BucketRegion: !Ref QsS3BucketRegion
         RemoteAccessCIDR: !Ref RemoteAccessCidr
         BastionInstanceType: !Ref BastionInstanceType
         RootVolumeSize: !Ref BastionRootVolumeSize
@@ -606,7 +598,7 @@ Resources:
         VpcCidr: !Ref VpcCidr
         PrivateSubnet1Cidr: !Ref PrivateSubnet1Cidr
         PrivateSubnet2Cidr: !Ref PrivateSubnet2Cidr
-        PrivateSubnet3Cidr: !Ref PrivateSubnet2Cidr # This should end up in no new rule but required for EKS
+        PrivateSubnet3Cidr: !Ref PrivateSubnet2Cidr  # This should end up in no new rule but required for EKS
         SubnetIds: !Join [",", [!Ref PrivateSubnet1Id, !Ref PrivateSubnet2Id]]
         DatabaseAllocatedStorage: !Ref DatabaseAllocatedStorage
         MultiAzDatabase: !Ref MultiAzDatabase
