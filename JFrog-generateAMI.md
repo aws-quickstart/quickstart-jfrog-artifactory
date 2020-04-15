@@ -12,7 +12,7 @@ Once that is compelete you will need to modify the .taskcat.yml with the followi
        parameters:
          KeyPairName: "$[taskcat_getkeypair]"
          ArtifactoryVersion: 7.0.0
-         ArtifactoryRepoUrl: https://earlyaccess.jfrog.io   artifactory/enterprise-rpms 
+         ArtifactoryRepoUrl: https://earlyaccess.jfrog.io/artifactory/enterprise-rpms 
          RemoteAccessCidr: "10.0.0.0/16"
          VpcId: `VPCID`
          PublicSubnet1Id: `PublicSubnet1ID`
