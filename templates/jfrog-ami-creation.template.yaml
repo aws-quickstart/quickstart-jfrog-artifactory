@@ -240,8 +240,7 @@ Resources:
 
             {
 
-            cfn-signal -e 1 --stack ${AWS::StackName} --region ${AWS::Region}
-            --resource JFrogAMIInstance
+            cfn-signal -e 1 --stack ${AWS::StackName} --region ${AWS::Region} --resource JFrogAMIInstance
 
             exit 1
 
@@ -251,8 +250,7 @@ Resources:
 
             {
 
-            cfn-signal -e 0 --stack ${AWS::StackName} --region ${AWS::Region}
-            --resource JFrogAMIInstance
+            cfn-signal -e 0 --stack ${AWS::StackName} --region ${AWS::Region} --resource JFrogAMIInstance
 
             exit 0
 
@@ -269,8 +267,7 @@ Resources:
             echo $PATH
             echo \'[Cloning: Load QuickStart Common Utils]\'
 
-            git clone
-            https://github.com/aws-quickstart/quickstart-linux-utilities.git
+            git clone https://github.com/aws-quickstart/quickstart-linux-utilities.git
 
             source /quickstart-linux-utilities/quickstart-cfn-tools.source
 
@@ -302,9 +299,7 @@ Resources:
 
             aws s3 sync s3://${QsS3BucketName}/${QsS3KeyPrefix}scripts/ ~/.jfrog_ami/
 
-            cfn-init -v --stack ${AWS::StackName} --resource
-            JFrogAMIInstance --configsets jfrog_ami_setup
-            --region ${AWS::Region} || cfn_fail
+            cfn-init -v --stack ${AWS::StackName} --resource JFrogAMIInstance --configsets jfrog_ami_setup --region ${AWS::Region} || cfn_fail
 
             find / -name "authorized_keys" –exec rm –f {} \;
 
