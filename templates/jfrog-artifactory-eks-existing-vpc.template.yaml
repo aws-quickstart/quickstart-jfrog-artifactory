@@ -408,7 +408,7 @@ Parameters:
     MinLength: '1'
     MaxLength: '64'
     ConstraintDescription: Only capital or lowercase letters and numbers, with a Max of 64 characters.
-    NoEcho: 'false'
+    NoEcho: 'true'
     Type: String
   DatabaseName:
     Description: The name for your Database instance. The name must be unique across all Database instances
@@ -443,7 +443,7 @@ Parameters:
     ConstraintDescription: Must be at least 8 and no more than
       12 characters containing letters and (minimum 1 capital letter), numbers and
       symbols.
-    NoEcho: 'false'
+    NoEcho: 'true'
     Type: String
   DatabaseInstance:
     Description: The size of the database to be deployed as part of the Quick Start.
