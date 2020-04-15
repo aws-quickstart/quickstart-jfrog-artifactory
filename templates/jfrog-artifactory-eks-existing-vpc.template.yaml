@@ -67,6 +67,8 @@ Metadata:
         Parameters:
           - QsS3BucketName
           - QsS3KeyPrefix
+          - QsS3BucketRegion
+          - QsS3Uri
           - LambdaZipsBucketName
     ParameterLabels:
       KeyPairName:
@@ -155,6 +157,10 @@ Metadata:
         default: Quick Start S3 bucket name
       QsS3KeyPrefix:
         default: Quick Start S3 key prefix
+      QsS3BucketRegion:
+        default: Quick Start S3 bucket region
+      QsS3Uri:
+        default: Quick Start S3 URI
       LambdaZipsBucketName:
         default: Lambda zips bucket name
 Parameters:
@@ -497,6 +503,14 @@ Parameters:
       can include numbers, lowercase letters, uppercase letters, hyphens (-), and
       forward slash (/).
     Type: String
+  QsS3BucketRegion:
+    Default: 'us-east-1'
+    Description: The AWS Region where the Quick Start S3 bucket (QSS3BucketName) is hosted. When using your own bucket, you must specify this value.
+    Type: String
+  QsS3Uri:
+    Default: https://aws-quickstart.s3.us-east-1.amazonaws.com/quickstart-jfrog-artifactory/
+    Description: The S3 bucket URI for the Quick Start assets.
+    Type: String
   LambdaZipsBucketName:
     Description: '[OPTIONAL] The name of the S3 bucket where the Lambda .zip
       files should be placed. If you leave this parameter blank, an S3 bucket will be created.'
@@ -523,14 +537,13 @@ Rules:
           - !Ref 'AWS::Region'
 Conditions:
   ArtifactoryHa: !Equals [!Ref ArtifactoryProduct, 'JFrog-Artifactory-Pro']
-  BastionSecurityGroup: !And [!Equals [!Ref ArtifactoryProduct, 'JFrog-Artifactory-Pro'], !Equals [!Ref 'ProvisionBastionHost', 'Enabled'] ]
-  DefaultSize: !Equals [!Ref DefaultDeploymentSize, "true" ]
-
+  BastionSecurityGroup: !And [!Equals [!Ref ArtifactoryProduct, 'JFrog-Artifactory-Pro'], !Equals [!Ref 'ProvisionBastionHost', 'Enabled']]
+  DefaultSize: !Equals [!Ref DefaultDeploymentSize, "true"]
 Resources:
   EksStack:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: !Sub "https://${QsS3BucketName}.s3.amazonaws.com/${QsS3KeyPrefix}submodules/quickstart-amazon-eks/templates/amazon-eks.template.yaml"
+      TemplateURL: !Sub ${QsS3Uri}submodules/quickstart-amazon-eks/templates/amazon-eks.template.yaml
       Parameters:
         KeyPairName: !Ref KeyPairName
         RemoteAccessCIDR: !Ref RemoteAccessCidr
@@ -544,7 +557,7 @@ Resources:
         PublicSubnet3ID: !Ref PublicSubnet3Id
         KubernetesVersion: !Ref KubernetesVersion
         NodeInstanceType: !Ref NodeInstanceType
-        NumberOfNodes: !If [ArtifactoryHa, '1', !Ref NumberOfSecondary ]
+        NumberOfNodes: !If [ArtifactoryHa, '1', !Ref NumberOfSecondary]
         NodeGroupName: !Sub ${ArtifactoryProduct}
         NodeVolumeSize: !Ref NodeVolumeSize
         KubeConfigKmsContext: !Ref KubeConfigKmsContext
@@ -557,13 +570,14 @@ Resources:
         BastionEnableX11Forwarding: !Ref BastionEnableX11Forwarding
         QSS3BucketName: !Ref QsS3BucketName
         QSS3KeyPrefix: !Sub "${QsS3KeyPrefix}submodules/quickstart-amazon-eks/"
+        QSS3BucketRegion: !Ref QsS3BucketRegion
         LambdaZipsBucketName: !Ref LambdaZipsBucketName
 
   ArtifactorySecondaryNodesStack:
     Condition: ArtifactoryHa
     Type: "AWS::CloudFormation::Stack"
     Properties:
-      TemplateURL: !Sub 'https://${QsS3BucketName}.s3.amazonaws.com/${QsS3KeyPrefix}submodules/quickstart-amazon-eks/templates/amazon-eks-nodegroup.template.yaml'
+      TemplateURL: !Sub ${QsS3Uri}submodules/quickstart-amazon-eks/templates/amazon-eks-nodegroup.template.yaml
       Parameters:
         KeyPairName: !Ref KeyPairName
         PrivateSubnet1ID: !Ref PrivateSubnet1Id
@@ -575,10 +589,10 @@ Resources:
         NodeGroupName: !Sub "${ArtifactoryProduct}-secondary"
         NodeVolumeSize: !Ref NodeVolumeSize
         EKSControlPlane: !GetAtt EksStack.Outputs.EKSClusterName
-        EKSClusterName: !GetAtt EksStack.Outputs.EKSClusterName
         ControlPlaneSecurityGroup: !GetAtt EksStack.Outputs.ControlPlaneSecurityGroup
         NodeInstanceProfile: !GetAtt EksStack.Outputs.NodeInstanceProfile
         NodeInstanceRoleName: !GetAtt EksStack.Outputs.NodeInstanceRoleName
+        NodeInstanceRoleArn: !GetAtt EksStack.Outputs.NodeInstanceRoleArn
         KubernetesVersion: !Ref KubernetesVersion
         BootstrapArguments: !Sub "--kubelet-extra-args '--node-labels=partition=${ArtifactoryProduct}-secondary'"
 
@@ -621,7 +635,7 @@ Resources:
     DependsOn: EksStack
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: !Sub "https://${QsS3BucketName}.s3.amazonaws.com/${QsS3KeyPrefix}templates/jfrog-artifactory-core-infrastructure.template.yaml"
+      TemplateURL: !Sub ${QsS3Uri}templates/jfrog-artifactory-core-infrastructure.template.yaml
       Parameters:
         VpcId: !Ref VpcId
         VpcCidr: !Ref VpcCidr
@@ -643,7 +657,7 @@ Resources:
   ArtifactoryCoreStack:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: !Sub "https://${QsS3BucketName}.s3.amazonaws.com/${QsS3KeyPrefix}templates/jfrog-artifactory-eks-core-workload.template.yaml"
+      TemplateURL: !Sub ${QsS3Uri}templates/jfrog-artifactory-eks-core-workload.template.yaml
       Parameters:
         KubeManifestLambdaArn: !GetAtt EksStack.Outputs.KubeManifestLambdaArn
         HelmLambdaArn: !GetAtt EksStack.Outputs.HelmLambdaArn
@@ -675,8 +689,7 @@ Resources:
         ArtifactoryVersion: !Ref ArtifactoryVersion
         ArtifactoryDeploymentSize: !If [DefaultSize, !GetAtt ArtifactoryCoreInfraStack.Outputs.DeploymentSize, !Ref ArtifactoryDeploymentSize]
         ReleaseStage: !Ref ReleaseStage
-        QsS3BucketName: !Ref QsS3BucketName
-        QsS3KeyPrefix: !Ref QsS3KeyPrefix
+        QsS3Uri: !Ref QsS3Uri
 Outputs:
   ArtifactoryUrl:
     Value: !GetAtt ArtifactoryCoreStack.Outputs.ArtifactoryUrl

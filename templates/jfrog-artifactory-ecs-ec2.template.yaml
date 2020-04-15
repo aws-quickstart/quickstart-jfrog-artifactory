@@ -104,6 +104,8 @@ Parameters:
     Type: String
   QsS3KeyPrefix:
     Type: String
+  QsS3Uri:
+    Type: String
 Mappings:
   AWSAMIRegionMap:
     us-east-2:
@@ -152,9 +154,6 @@ Conditions:
   JcrWithFargate: !And
     - !Equals [!Ref EnableFargate, 'Enabled']
     - !Equals [!Ref ArtifactoryProduct, 'JFrog-Container-Registry']
-  GovCloudCondition: !Equals
-    - !Ref 'AWS::Region'
-    - us-gov-west-1
 Resources:
   EcsRole:
     Condition: CreateEcsRole
@@ -307,9 +306,9 @@ Resources:
             VolumeSize: !Ref VolumeSize
             VolumeType: gp2
             DeleteOnTermination: true
-      UserData: !Base64
-        'Fn::Sub':
-          - >
+      UserData:
+        'Fn::Base64':
+          !Sub |
             #!/bin/bash -x
 
             #CFN Functions
@@ -318,8 +317,7 @@ Resources:
 
             {
 
-            cfn-signal -e 1 --stack ${AWS::StackName} --region ${AWS::Region}
-            --resource ArtifactoryScalingGroup
+            cfn-signal -e 1 --stack ${AWS::StackName} --region ${AWS::Region} --resource ArtifactoryScalingGroup
 
             exit 1
 
@@ -329,8 +327,7 @@ Resources:
 
             {
 
-            cfn-signal -e 0 --stack ${AWS::StackName} --region ${AWS::Region}
-            --resource ArtifactoryScalingGroup
+            cfn-signal -e 0 --stack ${AWS::StackName} --region ${AWS::Region} --resource ArtifactoryScalingGroup
 
             exit 0
 
@@ -338,7 +335,7 @@ Resources:
 
             echo ECS_CLUSTER=${ClusterName} >> /etc/ecs/ecs.config
 
-            S3URI=https://${QsS3BucketName}.${S3Region}.amazonaws.com/${QsS3KeyPrefix}
+            S3URI=${QsS3Uri}
 
             yum install -y git https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-latest.amzn1.noarch.rpm python3-pip
 
@@ -373,9 +370,7 @@ Resources:
 
             aws s3 sync s3://${QsS3BucketName}/${QsS3KeyPrefix}scripts/ ~/.artifactory_ansible/
 
-            cfn-init -v --stack ${AWS::StackName} --resource
-            ArtifactoryLaunchConfiguration --configsets artifactory_install
-            --region ${AWS::Region} || cfn_fail
+            cfn-init -v --stack ${AWS::StackName} --resource ArtifactoryLaunchConfiguration --configsets artifactory_install --region ${AWS::Region} || cfn_fail
 
             export ANSIBLE_VAULT_PASSWORD_FILE="/root/.vault_pass.txt"
 
@@ -384,23 +379,18 @@ Resources:
             rm -rf /root/.secureit.sh
 
             [ $(qs_status) == 0 ] && cfn_success || cfn_fail
-          - S3Region: !If
-              - GovCloudCondition
-              - s3-us-gov-west-1
-              - s3
 
   EcsLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
       LogGroupName: !Sub ${ArtifactoryProduct}-EcsLogs
       RetentionInDays: 7
-
   PrimaryStack:
     DependsOn: ArtifactoryScalingGroup
     Condition: EcsOnEc2
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: !Sub 'https://${QsS3BucketName}.s3.amazonaws.com/${QsS3KeyPrefix}templates/jfrog-artifactory-ecs.template.yaml'
+      TemplateURL: !Sub ${QsS3Uri}templates/jfrog-artifactory-ecs.template.yaml
       Parameters:
         EcsCluster: !Ref ClusterName  # In case we do not build the cluster we still require the Name of the cluster built.
         ServiceName: !If [ArtifactoryHa, ArtifactoryPrimary, JFrogContainerRegistry]
@@ -423,9 +413,7 @@ Resources:
         DatabasePassword: !Ref DatabasePassword
         EcsLogGroup: !Ref EcsLogGroup
         EcsRoleArn: !If [CreateEcsRole, !GetAtt EcsRole.Arn, !Ref RoleArn]
-        QsS3BucketName: !Ref QsS3BucketName
-        QsS3KeyPrefix: !Ref QsS3KeyPrefix
-
+        QsS3Uri: !Ref QsS3Uri
   SecondaryStack:
     Condition: ArtifactoryHa
     DependsOn: PrimaryStack
@@ -454,9 +442,7 @@ Resources:
         DatabasePassword: !Ref DatabasePassword
         EcsLogGroup: !Ref EcsLogGroup
         EcsRoleArn: !If [CreateEcsRole, !GetAtt EcsRole.Arn, !Ref RoleArn]
-        QsS3BucketName: !Ref QsS3BucketName
-        QsS3KeyPrefix: !Ref QsS3KeyPrefix
-
+        QsS3Uri: !Ref QsS3Uri
   JcrFargateStack:
     Condition: JcrWithFargate
     Type: AWS::CloudFormation::Stack

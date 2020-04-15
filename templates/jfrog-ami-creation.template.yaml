@@ -27,6 +27,7 @@ Metadata:
         Parameters:
           - QsS3BucketName
           - QsS3KeyPrefix
+          - QsS3Uri
     ParameterLabels:
       KeyPairName:
         default: SSH key name
@@ -52,7 +53,8 @@ Metadata:
         default: Quick Start S3 bucket name
       QsS3KeyPrefix:
         default: Quick Start S3 key prefix
-
+      QsS3Uri:
+        default: Quick Start S3 URI
 Parameters:
   KeyPairName:
     Description: The name of an existing public/private key pair, which allows you
@@ -129,6 +131,10 @@ Parameters:
       uppercase letters, hyphens (-), and forward slash (/).
     Default: quickstart-jfrog-artifactory/
     Type: String
+  QsS3Uri:
+    Default: https://aws-quickstart.s3.us-east-1.amazonaws.com/quickstart-jfrog-artifactory/
+    Description: The S3 bucket URI for the Quick Start assets.
+    Type: String
 Mappings:
   AWSAMIRegionMap:
     us-west-2:
@@ -142,50 +148,48 @@ Resources:
       AssumeRolePolicyDocument:
         Version: "2012-10-17"
         Statement:
-        - Effect: "Allow"
-          Principal:
-            Service:
-            - "ec2.amazonaws.com"
-          Action:
-          - "sts:AssumeRole"
+          - Effect: "Allow"
+            Principal:
+              Service:
+                - "ec2.amazonaws.com"
+            Action:
+              - "sts:AssumeRole"
       Path: "/"
       Policies:
-      - PolicyName: "JFrogAMI-policy"
-        PolicyDocument:
-          Version: "2012-10-17"
-          Statement:
-          - Effect: "Allow"
-            Action: "ec2:Describe*"
-            Resource: "*"
-          - Effect: "Allow"
-            Action: "ec2:AttachVolume"
-            Resource: "*"
-          - Effect: "Allow"
-            Action: "ec2:DetachVolume"
-            Resource: "*"
-          - Effect: "Allow"
-            Action:
-              - "s3:GetObject"
-              - "s3:ListObject"
-              - "s3:ListBucket"
-            Resource: "*"
-
+        - PolicyName: "JFrogAMI-policy"
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: "Allow"
+                Action: "ec2:Describe*"
+                Resource: "*"
+              - Effect: "Allow"
+                Action: "ec2:AttachVolume"
+                Resource: "*"
+              - Effect: "Allow"
+                Action: "ec2:DetachVolume"
+                Resource: "*"
+              - Effect: "Allow"
+                Action:
+                  - "s3:GetObject"
+                  - "s3:ListObject"
+                  - "s3:ListBucket"
+                Resource: "*"
   JFrogAMIInstanceProfile:
     Type: "AWS::IAM::InstanceProfile"
     Properties:
       Path: "/"
       Roles:
-      - Ref: "JFrogAMIIamRole"
-
+        - Ref: "JFrogAMIIamRole"
   JFrogAMISecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
       GroupDescription: AMI Bootstrap Security Group
       SecurityGroupIngress:
-      - IpProtocol: tcp
-        FromPort: 22
-        ToPort: 22
-        CidrIp: !Ref RemoteAccessCidr
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: !Ref RemoteAccessCidr
       VpcId: !Ref VpcId
 
   JFrogAMIInstance:
@@ -209,9 +213,9 @@ Resources:
     Properties:
       KeyName: !Ref KeyPairName
       ImageId: !FindInMap
-          - AWSAMIRegionMap
-          - !Ref AWS::Region
-          - !Ref InstanceOs
+        - AWSAMIRegionMap
+        - !Ref AWS::Region
+        - !Ref InstanceOs
       IamInstanceProfile: !Ref JFrogAMIInstanceProfile
       InstanceType: !Ref InstanceType
       BlockDeviceMappings:
@@ -221,96 +225,89 @@ Resources:
             VolumeType: gp2
             DeleteOnTermination: true
       NetworkInterfaces:
-      - AssociatePublicIpAddress: True
-        DeviceIndex: "0"
-        GroupSet:
-        - !Ref "JFrogAMISecurityGroup"
-        SubnetId: !Ref "PublicSubnet1Id"
+        - AssociatePublicIpAddress: True
+          DeviceIndex: "0"
+          GroupSet:
+            - !Ref "JFrogAMISecurityGroup"
+          SubnetId: !Ref "PublicSubnet1Id"
       UserData: !Base64
-          'Fn::Sub':
-            - >
-              #!/bin/bash -x
+        'Fn::Sub': |
+            #!/bin/bash -x
 
-              #CFN Functions
+            #CFN Functions
 
-              function cfn_fail
+            function cfn_fail
 
-              {
+            {
 
-              cfn-signal -e 1 --stack ${AWS::StackName} --region ${AWS::Region}
-              --resource JFrogAMIInstance
+            cfn-signal -e 1 --stack ${AWS::StackName} --region ${AWS::Region} --resource JFrogAMIInstance
 
-              exit 1
+            exit 1
 
-              }
+            }
 
-              function cfn_success
+            function cfn_success
 
-              {
+            {
 
-              cfn-signal -e 0 --stack ${AWS::StackName} --region ${AWS::Region}
-              --resource JFrogAMIInstance
+            cfn-signal -e 0 --stack ${AWS::StackName} --region ${AWS::Region} --resource JFrogAMIInstance
 
-              exit 0
+            exit 0
 
-              }
+            }
 
-              S3URI=https://${QsS3BucketName}.${S3Region}.amazonaws.com/${QsS3KeyPrefix}
+            S3URI=${QsS3Uri}
 
-              yum install -y git
+            yum install -y git
 
-              echo $PATH
+            echo $PATH
 
-              PATH=/opt/aws/bin:$PATH
+            PATH=/opt/aws/bin:$PATH
 
-              echo $PATH
-              echo \'[Cloning: Load QuickStart Common Utils]\'
+            echo $PATH
+            echo \'[Cloning: Load QuickStart Common Utils]\'
 
-              git clone
-              https://github.com/aws-quickstart/quickstart-linux-utilities.git
+            git clone https://github.com/aws-quickstart/quickstart-linux-utilities.git
 
-              source /quickstart-linux-utilities/quickstart-cfn-tools.source
+            source /quickstart-linux-utilities/quickstart-cfn-tools.source
 
-              echo \'[Loaded: Load QuickStart Common Utils]\'
+            echo \'[Loaded: Load QuickStart Common Utils]\'
 
-              echo \'[Update Operating System]\'
+            echo \'[Update Operating System]\'
 
-              qs_update-os || qs_err
+            qs_update-os || qs_err
 
-              qs_bootstrap_pip || qs_err
+            qs_bootstrap_pip || qs_err
 
-              qs_aws-cfn-bootstrap || qs_err
+            qs_aws-cfn-bootstrap || qs_err
 
-              pip install virtualenv &> /var/log/userdata.virtualenv_install.log || qs_err " virtualenv install failed "
+            pip install virtualenv &> /var/log/userdata.virtualenv_install.log || qs_err " virtualenv install failed "
 
-              virtualenv ~/venv &> /var/log/userdata.create_venv.log || qs_err " creating venv failed "
+            virtualenv ~/venv &> /var/log/userdata.create_venv.log || qs_err " creating venv failed "
 
-              source ~/venv/bin/activate &> /var/log/userdata.activate_venv.log || qs_err " activate venv failed "
+            source ~/venv/bin/activate &> /var/log/userdata.activate_venv.log || qs_err " activate venv failed "
 
-              pip install awscli &> /var/log/userdata.awscli_install.log || qs_err " awscli install failed "
+            pip install awscli &> /var/log/userdata.awscli_install.log || qs_err " awscli install failed "
 
-              pip install ansible &> /var/log/userdata.ansible_install.log || qs_err " ansible install failed "
+            pip install ansible &> /var/log/userdata.ansible_install.log || qs_err " ansible install failed "
 
-              pip install selinux &> /var/log/userdata.selinux_install.log || qs_err " selinux install failed "
+            pip install selinux &> /var/log/userdata.selinux_install.log || qs_err " selinux install failed "
 
-              yum update --security -y &> /var/log/userdata.yum_security_update.log || qs_err " ansible install failed "
+            yum update --security -y &> /var/log/userdata.yum_security_update.log || qs_err " ansible install failed "
 
-              mkdir ~/.jfrog_ami
+            mkdir ~/.jfrog_ami
 
-              aws s3 sync s3://${QsS3BucketName}/${QsS3KeyPrefix}scripts/ ~/.jfrog_ami/
+            aws s3 sync s3://${QsS3BucketName}/${QsS3KeyPrefix}scripts/ ~/.jfrog_ami/
 
-              cfn-init -v --stack ${AWS::StackName} --resource
-              JFrogAMIInstance --configsets jfrog_ami_setup
-              --region ${AWS::Region} || cfn_fail
+            cfn-init -v --stack ${AWS::StackName} --resource JFrogAMIInstance --configsets jfrog_ami_setup --region ${AWS::Region} || cfn_fail
 
-              find / -name "authorized_keys" –exec rm –f {} \;
+            find / -name "authorized_keys" –exec rm –f {} \;
 
-              ansible-playbook /root/.jfrog_ami/jfrog-ami-setup.yml &> /var/log/jfrog-ami.log || cfn_fail
+            ansible-playbook /root/.jfrog_ami/jfrog-ami-setup.yml &> /var/log/jfrog-ami.log || cfn_fail
 
-              rm -rf ~/.jfrog_ami
+            rm -rf ~/.jfrog_ami
 
-              [ $(qs_status) == 0 ] && cfn_success || cfn_fail
-            - S3Region: s3
+            [ $(qs_status) == 0 ] && cfn_success || cfn_fail
       Tags:
-      - Key: Name
-        Value: !Sub ${AWS::StackName}-${JFrogProduct}-${ArtifactVersion}
+        - Key: Name
+          Value: !Sub ${AWS::StackName}-${JFrogProduct}-${ArtifactVersion}

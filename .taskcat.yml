@@ -1,25 +1,23 @@
 project:
   name: quickstart-jfrog-artifactory
   owner: quickstart-eng@amazon.com
-  s3_object_acl: public-read
-  #s3_bucket: tcat-theflash-kfcwx4t8
   lambda_source_path: submodules/quickstart-amazon-eks/functions/source
   lambda_zip_path: submodules/quickstart-amazon-eks/functions/packages
-  s3_enable_sig_v2: True # When v2 signature is enabled, the bastion bootstrap fails to GET THE SCRIPT!
+  s3_object_acl: public-read
+  s3_regional_buckets: True
   regions:
-    - us-west-2
-
-
+    - us-east-2
 tests:
 #  jfrog-product-ami:
 #    parameters:
 #      AvailabilityZone: "$[taskcat_genaz_1]"
 #      KeyPairName: "$[taskcat_getkeypair]"
 #      ArtifactVersion: 7.2.1
-#      ArtifactRepoUrl:  https://jfrog.bintray.com/artifactory-pro-rpms
+#      ArtifactRepoUrl: https://jfrog.bintray.com/artifactory-pro-rpms
 #      RemoteAccessCidr: "10.0.0.0/16"
 #      QsS3BucketName: "$[taskcat_autobucket]"
-#      QsS3KeyPrefix: "quickstart-jfrog-artifactory/"
+#      QsS3KeyPrefix: "theflash/"
+#      QsS3BucketRegion: "$[taskcat_current_region]"
 #    template: templates/jfrog-ami-master.template.yaml
 #    regions:
 #      - us-west-2
@@ -33,7 +31,8 @@ tests:
 #      AvailabilityZones: "$[taskcat_genaz_2]"
 #      DatabasePassword: "$[taskcat_genpass_8A]"
 #      QsS3BucketName: "$[taskcat_autobucket]"
-#      QsS3KeyPrefix: "quickstart-jfrog-artifactory/"
+#      QsS3KeyPrefix: "theflash/"
+#      QsS3BucketRegion: "$[taskcat_current_region]"
 #      DatabaseInstance: "db.m4.large"
 #      NumberOfSecondary: "2"
 #      KeystorePassword: "$[taskcat_genpass_8A]"
@@ -44,7 +43,7 @@ tests:
 #      MultiAzDatabase: "false"
 #    template: templates/jfrog-artifactory-ec2-master.template.yaml
 #    regions:
-#      - us-east-1
+#      - us-west-2
 #  jfrog-artifactory-ecs-mysql:
 #    parameters:
 #      KeyPairName: "$[taskcat_getkeypair]"
@@ -53,7 +52,8 @@ tests:
 #      AvailabilityZones: "$[taskcat_genaz_2]"
 #      DatabasePassword: "$[taskcat_genpass_8A]"
 #      QsS3BucketName: "$[taskcat_autobucket]"
-#      QsS3KeyPrefix: "quickstart-jfrog-artifactory/"
+#      QsS3KeyPrefix: "theflash/"
+#      QsS3BucketRegion: "$[taskcat_current_region]"
 #      DatabaseInstance: "db.m4.large"
 #      DatabaseEngine: MySQL
 #      ArtifactoryVersion: "7.2.1"
@@ -75,7 +75,8 @@ tests:
 #      AvailabilityZones: "$[taskcat_genaz_3]"
 #      DatabasePassword: "$[taskcat_genpass_8A]"
 #      QsS3BucketName: "$[taskcat_autobucket]"
-#      QsS3KeyPrefix: "quickstart-jfrog-artifactory/"
+#      QsS3KeyPrefix: "theflash/"
+#      QsS3BucketRegion: "$[taskcat_current_region]"
 #      DatabaseInstance: "db.m4.large"
 #      ArtifactoryVersion: "7.2.1"
 #      NumberOfSecondary: "2"
