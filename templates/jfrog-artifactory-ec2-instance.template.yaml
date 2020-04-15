@@ -37,15 +37,15 @@ Parameters:
     Type: String
   CertificateKey:
     Type: String
-    NoEcho: 'false'
+    NoEcho: 'true'
   CertificateDomain:
     Type: String
   ArtifactoryIamAcessKey:
     Type: String
-    NoEcho: 'false'
+    NoEcho: 'true'
   SecretAccessKey:
     Type: String
-    NoEcho: 'false'
+    NoEcho: 'true'
   ArtifactoryS3Bucket:
     Type: String
   DatabaseUrl:
@@ -62,12 +62,12 @@ Parameters:
     Type: String
   DatabasePassword:
     Type: String
-    NoEcho: 'false'
+    NoEcho: 'true'
   ArtifactoryPrimary:
     Type: String
   MasterKey:
     Type: String
-    NoEcho: 'false'
+    NoEcho: 'true'
   ExtraJavaOptions:
     Type: String
   ArtifactoryVersion:
@@ -89,11 +89,11 @@ Parameters:
   KeystorePassword:
     Description: Default Keystore from Java in which we upgrade.
     Type: String
-    NoEcho: 'false'
+    NoEcho: 'true'
   AnsibleVaultPass:
     Description: Ansiblevault Password to secure the artifactory.yml
     Type: String
-    NoEcho: 'false'
+    NoEcho: 'true'
 # To populate additional mappings use the following with the desired --region
 # aws --region us-west-2 ec2 describe-images --owners amazon --filters 'Name=name,Values=amzn-ami-hvm-2018.03.0.20181129-x86_64-gp2' 'Name=state,Values=available' --output json | jq -r '.Images | sort_by(.CreationDate) | last(.[]).ImageId'
 Mappings:
