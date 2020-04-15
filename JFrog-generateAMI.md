@@ -13,11 +13,11 @@ Once that is compelete you will need to modify the .taskcat.yml with the followi
          KeyPairName: "$[taskcat_getkeypair]"
          ArtifactoryVersion: 7.0.0
          ArtifactoryRepoUrl: https://earlyaccess.jfrog.io   artifactory/enterprise-rpms 
-         RemoteAccessCIDR: "10.0.0.0/16"
-         VPCID: `VPCID`
-         PublicSubnet1ID: `PublicSubnet1ID`
-         QSS3BucketName: "$[taskcat_autobucket]"
-         QSS3KeyPrefix: "theflash/"
+         RemoteAccessCidr: "10.0.0.0/16"
+         VpcId: `VPCID`
+         PublicSubnet1Id: `PublicSubnet1ID`
+         QsS3BucketName: "$[taskcat_autobucket]"
+         QsS3KeyPrefix: "theflash/"
        template: templates/jfrog-ami-creation.template.yaml
        regions:
          - us-east-1

@@ -72,6 +72,8 @@ Metadata:
         Parameters:
           - QsS3BucketName
           - QsS3KeyPrefix
+          - QsS3BucketRegion
+          - QsS3Uri
     ParameterLabels:
       KeyPairName:
         default: SSH key name
@@ -167,7 +169,10 @@ Metadata:
         default: Quick Start S3 bucket name
       QsS3KeyPrefix:
         default: Quick Start S3 key prefix
-
+      QsS3BucketRegion:
+        default: Quick Start S3 bucket region
+      QsS3Uri:
+        default: Quick Start S3 URI
 Parameters:
   KeyPairName:
     Description: The name of an existing public/private key pair, which allows you
@@ -548,20 +553,26 @@ Parameters:
       uppercase letters, hyphens (-), and forward slash (/).
     Default: quickstart-jfrog-artifactory/
     Type: String
-
+  QsS3BucketRegion:
+    Default: 'us-east-1'
+    Description: The AWS Region where the Quick Start S3 bucket (QSS3BucketName) is hosted. When using your own bucket, you must specify this value.
+    Type: String
+  QsS3Uri:
+    Default: https://aws-quickstart.s3.us-east-1.amazonaws.com/quickstart-jfrog-artifactory/
+    Description: The S3 bucket URI for the Quick Start assets.
+    Type: String
 Conditions:
   CreateEcsCluster: !Equals [!Ref 'CreateNewEcsCluster', 'Enabled']
   EnableBastion: !Equals [!Ref 'ProvisionBastionHost', 'Enabled']
   ArtifactoryHa: !Equals [!Ref ArtifactoryProduct, 'JFrog-Artifactory-Pro']
   DefaultJava: !Equals [!Ref DefaultJavaMemSettings, "true"]
   FargateEnabled: !Equals [!Ref EnableFargate, "Enabled"]
-
 Resources:
   BastionStack:
     Condition: EnableBastion
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: !Sub 'https://${QsS3BucketName}.s3.amazonaws.com/${QsS3KeyPrefix}submodules/quickstart-linux-bastion/templates/linux-bastion.template'
+      TemplateURL: !Sub ${QsS3Uri}submodules/quickstart-linux-bastion/templates/linux-bastion.template
       Parameters:
         VPCID: !Ref VpcId
         PublicSubnet1ID: !Ref PublicSubnet1Id
@@ -569,6 +580,7 @@ Resources:
         KeyPairName: !Ref KeyPairName
         QSS3BucketName: !Ref QsS3BucketName
         QSS3KeyPrefix: !Sub '${QsS3KeyPrefix}submodules/quickstart-linux-bastion/'
+        QSS3BucketRegion: !Ref QsS3BucketRegion
         RemoteAccessCIDR: !Ref RemoteAccessCidr
         BastionInstanceType: !Ref BastionInstanceType
         RootVolumeSize: !Ref BastionRootVolumeSize
@@ -580,13 +592,13 @@ Resources:
   ArtifactoryCoreInfraStack:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: !Sub "https://${QsS3BucketName}.s3.amazonaws.com/${QsS3KeyPrefix}templates/jfrog-artifactory-core-infrastructure.template.yaml"
+      TemplateURL: !Sub ${QsS3Uri}templates/jfrog-artifactory-core-infrastructure.template.yaml
       Parameters:
         VpcId: !Ref VpcId
         VpcCidr: !Ref VpcCidr
         PrivateSubnet1Cidr: !Ref PrivateSubnet1Cidr
         PrivateSubnet2Cidr: !Ref PrivateSubnet2Cidr
-        PrivateSubnet3Cidr: !Ref PrivateSubnet2Cidr # This should end up in no new rule but required for EKS
+        PrivateSubnet3Cidr: !Ref PrivateSubnet2Cidr  # This should end up in no new rule but required for EKS
         SubnetIds: !Join [",", [!Ref PrivateSubnet1Id, !Ref PrivateSubnet2Id]]
         DatabaseAllocatedStorage: !Ref DatabaseAllocatedStorage
         MultiAzDatabase: !Ref MultiAzDatabase
@@ -710,7 +722,7 @@ Resources:
   ArtifactoryECSBuild:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: !Sub 'https://${QsS3BucketName}.s3.amazonaws.com/${QsS3KeyPrefix}templates/jfrog-artifactory-ecs-ec2.template.yaml'
+      TemplateURL: !Sub ${QsS3Uri}templates/jfrog-artifactory-ecs-ec2.template.yaml
       Parameters:
         PrivateSubnet1Id: !Ref PrivateSubnet1Id
         PrivateSubnet2Id: !Ref PrivateSubnet2Id
@@ -757,6 +769,7 @@ Resources:
         AnsibleVaultPass: !Ref AnsibleVaultPass
         QsS3BucketName: !Ref QsS3BucketName
         QsS3KeyPrefix: !Ref QsS3KeyPrefix
+        QsS3Uri: !Ref QsS3Uri
 
 Outputs:
   ArtifactoryUrl:
