@@ -15,4 +15,19 @@
     releasever: "{{ artifactory_version }}"
     enablerepo: bintray--jfrog-artifactory-pro-rpms
     disablerepo: "epel,amzn-main,amzn-updates"
-  notify: Enable Artifactory
+  notify: enable artifactory
+
+- name: Update Java
+  package:
+   name:
+    - "{{ java_version }}"
+    - nginx
+    - libselinux-python
+    - libsemanage-python
+   state: present
+
+- name: Configure Java
+  alternatives:
+    name: java
+    path: /usr/lib/jvm/jre-1.8.0-openjdk.x86_64/bin/java
+  when: ansible_distribution == "Amazon"

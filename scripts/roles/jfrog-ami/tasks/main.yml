@@ -1,0 +1,14 @@
+---
+# tasks file for artifactory-ami
+
+- name: Save previous python exec
+  set_fact:
+    orig_python_interpreter: "{{ ansible_python_interpreter }}"
+
+- name: Configure an AMI for Artifactory
+  include: "{{ my_tasks.name }}"
+  loop:
+    - name: install.yml
+    - name: cleanup.yml
+  loop_control:
+    loop_var: my_tasks

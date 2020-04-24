@@ -1,9 +1,9 @@
 AWSTemplateFormatVersion: "2010-09-09"
 Description: "Deploys the EC2 Autoscaling, LaunchConfig and Instance for Artifactory"
 Parameters:
-  PrivateSubnet1ID:
+  PrivateSubnet1Id:
     Type: 'AWS::EC2::Subnet::Id'
-  PrivateSubnet2ID:
+  PrivateSubnet2Id:
     Type: 'AWS::EC2::Subnet::Id'
   MinScalingNodes:
     Type: Number
@@ -15,9 +15,13 @@ Parameters:
     Type: String
   AmiId:
     Type: String
-  QSS3BucketName:
+  ArtifactoryProduct:
     Type: String
-  QSS3KeyPrefix:
+  QsS3BucketName:
+    Type: String
+  QsS3KeyPrefix:
+    Type: String
+  QsS3Uri:
     Type: String
   ArtifactoryLicense1:
     Type: String
@@ -29,9 +33,14 @@ Parameters:
     Type: String
   ArtifactoryServerName:
     Type: String
+  Certificate:
+    Type: String
+  CertificateKey:
+    Type: String
+    NoEcho: 'true'
   CertificateDomain:
     Type: String
-  ArtifactoryIAMAcessKey:
+  ArtifactoryIamAcessKey:
     Type: String
     NoEcho: 'true'
   SecretAccessKey:
@@ -39,16 +48,15 @@ Parameters:
     NoEcho: 'true'
   ArtifactoryS3Bucket:
     Type: String
-  Certificate:
+  DatabaseUrl:
     Type: String
-  CertificateKey: 
+  DatabaseDriver:
     Type: String
-    NoEcho: 'true'
-  DBType:
+  DatabasePluginUrl:
     Type: String
-  ArtifactoryDBEndpointAddress:
+  DatabasePlugin:
     Type: String
-  DatabaseName:
+  DatabaseType:
     Type: String
   DatabaseUser:
     Type: String
@@ -66,7 +74,9 @@ Parameters:
     Type: String
   KeyPairName:
     Type: AWS::EC2::KeyPair::KeyName
-  ArtifactoryELB:
+  TargetGroupARN:
+    Type: String
+  SSLTargetGroupARN:
     Type: String
   HostProfile:
     Type: String
@@ -91,53 +101,88 @@ Mappings:
     AMI:
       AMZNLINUXHVM: amzn-ami-hvm-2018.03.0.20181129-x86_64-gp2
     ap-northeast-1:
-      AMZNLINUXHVM: ami-02ddf94e5edc8e904
+      AMZNLINUXHVM: ami-079e6fb1e856e80c1
+      "Artifactory721": ami-09dfb20a591375d09
+      "Jcr721": ami-0d87bf5404e186c90
     ap-northeast-2:
-      AMZNLINUXHVM: ami-0ecd78c22823e02ef 
+      AMZNLINUXHVM: ami-0e4a253fb5f082688
+      "Artifactory721": ami-0eb86b82de93a34fb
+      "Jcr721": ami-047275320dc0101df
     ap-south-1:
-      AMZNLINUXHVM: ami-05695932c5299858a
+      AMZNLINUXHVM: ami-01e074f40dfb9999d
+      "Artifactory721": ami-01b828aa6cc99a322
+      "Jcr721": ami-003e20ccb4b8b1efc
     ap-southeast-1:
-      AMZNLINUXHVM: ami-043afc2b8b6cfba5c
+      AMZNLINUXHVM: ami-0d9233e8ce73df7b2
+      "Artifactory721": ami-04a94cc4dc0d08c98
+      "Jcr721": ami-016d81f9a055d84f7
     ap-southeast-2:
-      AMZNLINUXHVM: ami-01393ce9a3ca55d67
+      AMZNLINUXHVM: ami-0c91f97cadcc8499e
+      "Artifactory721": ami-030871aa8d1f0689e
+      "Jcr721": ami-0a257f38f4e17b489
     ca-central-1:
-      AMZNLINUXHVM: ami-0fa94ecf2fef3420b
+      AMZNLINUXHVM: ami-003a0ba7ea76b2785
+      "Artifactory721": ami-0148cebea7bea4aaf
+      "Jcr721": ami-0366fde97d0c9c63c
     eu-central-1:
-      AMZNLINUXHVM: ami-0ba441bdd9e494102
+      AMZNLINUXHVM: ami-0ab838eeee7f316eb
+      "Artifactory721": ami-07961f7c210143a42
+      "Jcr721": ami-025ce18f43dbbee65
     eu-west-1:
-      AMZNLINUXHVM: ami-0e61341fa75fcaa18
+      AMZNLINUXHVM: ami-071f4ce599deff521
+      "Artifactory721": ami-0171b8d46941b4ca1
+      "Jcr721": ami-0a0c02357d264c397
     sa-east-1:
-      AMZNLINUXHVM: ami-05b7dbc290217250d
+      AMZNLINUXHVM: ami-04b202bf877b5027b
+      "Artifactory721": ami-0596f196b273bb8a6
+      "Jcr721": ami-0f5f29385fc7cf6a9
     us-east-1:
-      AMZNLINUXHVM: ami-0e2ff28bfb72a4e45
+      AMZNLINUXHVM: ami-09d069a04349dc3cb
+      "Artifactory700": ami-06baee01fb2ef01d2
+      "Artifactory702": ami-085b1acc8e8b5b039
+      "Artifactory721": ami-0d4d4252cdc2b6f11
+      "Jcr720": ami-05aa02eddf5f692b7
+      "Jcr721": ami-04fed5fc210272dfe
     us-east-2:
-      AMZNLINUXHVM: ami-0998bf58313ab53da
+      AMZNLINUXHVM: ami-0d542ef84ec55d71c
+      "Artifactory721": ami-0a913af05ccdaa522
+      "Jcr721": ami-0d50790b8fb747584
     us-west-1:
-      AMZNLINUXHVM: ami-021bb9f371690f97a
+      AMZNLINUXHVM: ami-04bc3da8f14823e88
+      "Artifactory721": ami-068cd684b4d3a3a86
+      "Jcr721": ami-0e1cef33ea2778bd5
     us-west-2:
-      AMZNLINUXHVM: ami-079f731edfe27c29c
-  # Stubbed for future if Debian is wanted.
-  #LinuxAMINameMap:
-  #  Amazon-Linux-HVM:
-  #    Code: AMZNLINUXHVM
-Conditions:
-  GovCloudCondition: !Equals 
-    - !Ref 'AWS::Region'
-    - us-gov-west-1
+      AMZNLINUXHVM: ami-01460aa81365561fe
+      "700": ami-000937e944ea194bf
+      # TODO: JB - Remove debugging AMI
+      # "Artifactory721": ami-0c132dd3640519a35
+      "Artifactory721": ami-0d860e3089e588fd1
+      "Jcr721": ami-083542bb4f8afa3db
+  ArtifactoryProductMap:
+    JFrog-Container-Registry:
+      "720": "Jcr720"
+      "721": "Jcr721"
+      product: "jcr"
+    JFrog-Artifactory-Pro:
+      "700": "Artifactory700"
+      "702": "Artifactory702"
+      "721": "Artifactory721"
+      product: "artifactory"
 Resources:
   ArtifactoryScalingGroup:
     Type: 'AWS::AutoScaling::AutoScalingGroup'
     Properties:
       LaunchConfigurationName: !Ref ArtifactoryLaunchConfiguration
       VPCZoneIdentifier:
-        - !Ref PrivateSubnet1ID
-        - !Ref PrivateSubnet2ID
+        - !Ref PrivateSubnet1Id
+        - !Ref PrivateSubnet2Id
       MinSize: !Ref MinScalingNodes
       MaxSize: !Ref MaxScalingNodes
       Cooldown: '300'
       DesiredCapacity: !Ref MinScalingNodes
-      LoadBalancerNames: 
-        - !Ref ArtifactoryELB
+      TargetGroupARNs:
+        - !Ref TargetGroupARN
+        - !Ref SSLTargetGroupARN
       HealthCheckType: ELB
       HealthCheckGracePeriod: 600
       Tags:
@@ -148,157 +193,167 @@ Resources:
       ResourceSignal:
         Count: 1
         Timeout: PT30M
+
   ArtifactoryLaunchConfiguration:
-      Type: 'AWS::AutoScaling::LaunchConfiguration'
-      Metadata:
-        'AWS::CloudFormation::Authentication':
-          S3AccessCreds:
-            type: S3
-            roleName: 
-              - !Ref HostRole #!Ref ArtifactoryHostRole
-            buckets:
-              - !Ref QSS3BucketName
-        'AWS::CloudFormation::Init':
-          configSets:
-            artifactory_install:
-              - "config-artifactory-master"
-              - "secure-artifactory"
-          config-artifactory-master:
-            files:
-              /root/.artifactory_ansible/artifactory.yml:
-                content: !Sub |
-                    # Base install for Artifactory
-                    - import_playbook: site-artifactory.yml
-                      vars:
-                        artifactory_license1: ${ArtifactoryLicense1}
-                        artifactory_license2: ${ArtifactoryLicense2}
-                        artifactory_license3: ${ArtifactoryLicense3}
-                        artifactory_license4: ${ArtifactoryLicense4}
-                        artifactory_server_name: ${ArtifactoryServerName}
-                        certificate_domain: ${CertificateDomain}
-                        s3_endpoint: s3.${AWS::Region}.amazonaws.com
-                        s3_access_key: ${ArtifactoryIAMAcessKey}
-                        s3_access_secret_key: ${SecretAccessKey}
-                        s3_bucket: ${ArtifactoryS3Bucket}
-                        certificate: ${Certificate}
-                        certificate_key: ${CertificateKey}
-                        ssl_dir: /etc/pki/tls/certs/
-                        db_type: ${DBType}
-                        db_ipaddr: ${ArtifactoryDBEndpointAddress}
-                        db_name: ${DatabaseName}
-                        db_user: ${DatabaseUser}
-                        db_password: ${DatabasePassword}
-                        art_primary: ${ArtifactoryPrimary}
-                        artifactory_keystore_pass: ${KeystorePassword}
-                        master_key: ${MasterKey}
-                        extra_java_opts: ${ExtraJavaOptions}
-                        artifactory_version: ${ArtifactoryVersion}
-                mode: "0400"
-              /root/.vault_pass.txt:
-                content: !Sub |
-                  ${AnsibleVaultPass}
-                mode: "0400"
-              /root/.secureit.sh:
-                content:
-                  /usr/local/bin/ansible-vault encrypt /root/.artifactory_ansible/artifactory.yml --vault-id /root/.vault_pass.txt
-                mode: "0770"
-          secure-artifactory:
-            commands:
-              'secure ansible playbook':
-                command: '/root/.secureit.sh'
-                ignoreErrors: 'false'
-      Properties:
-        AssociatePublicIpAddress: false
-        KeyName: !Ref KeyPairName
-        IamInstanceProfile: !Ref HostProfile
-        ImageId: !FindInMap 
-          - AWSAMIRegionMap
-          - !Ref 'AWS::Region'
+    Type: 'AWS::AutoScaling::LaunchConfiguration'
+    Metadata:
+      'AWS::CloudFormation::Authentication':
+        S3AccessCreds:
+          type: S3
+          roleName:
+            - !Ref HostRole  # !Ref ArtifactoryHostRole
+          buckets:
+            - !Ref QsS3BucketName
+      'AWS::CloudFormation::Init':
+        configSets:
+          artifactory_install:
+            - "config-artifactory-master"
+            - "secure-artifactory"
+        config-artifactory-master:
+          files:
+            /root/.artifactory_ansible/artifactory.yml:
+              content: !Sub
+                - |
+                  # Base install for Artifactory
+                  - import_playbook: site-artifactory.yml
+                    vars:
+                      artifactory_license1: ${ArtifactoryLicense1}
+                      artifactory_license2: ${ArtifactoryLicense2}
+                      artifactory_license3: ${ArtifactoryLicense3}
+                      artifactory_license4: ${ArtifactoryLicense4}
+                      artifactory_product: ${product}
+                      artifactory_server_name: ${ArtifactoryServerName}
+                      s3_region: ${AWS::Region}
+                      s3_access_key: ${ArtifactoryIamAcessKey}
+                      s3_access_secret_key: ${SecretAccessKey}
+                      s3_bucket: ${ArtifactoryS3Bucket}
+                      certificate: ${Certificate}
+                      certificate_key: ${CertificateKey}
+                      certificate_domain: ${CertificateDomain}
+                      ssl_dir: /etc/pki/tls/certs
+                      db_type: ${DatabaseType}
+                      db_driver: ${DatabaseDriver}
+                      db_url: ${DatabaseUrl}
+                      db_user: ${DatabaseUser}
+                      db_password: ${DatabasePassword}
+                      art_primary: ${ArtifactoryPrimary}
+                      master_key: ${MasterKey}
+                      extra_java_opts: ${ExtraJavaOptions}
+                      artifactory_version: ${ArtifactoryVersion}
+                      artifactory_keystore:
+                        path: /opt/jfrog/artifactory/app/third-party/java/lib/security/cacerts
+                        default_password: changeit
+                        new_keystore_pass: ${KeystorePassword}
+                      artifactory_java_db_drivers:
+                        - name: ${DatabasePlugin}
+                          url: ${DatabasePluginUrl}
+                          owner: artifactory
+                          group: artifactory
+                - {
+                  product: !FindInMap [ArtifactoryProductMap, !Ref ArtifactoryProduct, product]
+                }
+              mode: "0400"
+            /root/.vault_pass.txt:
+              content: !Sub |
+                ${AnsibleVaultPass}
+              mode: "0400"
+            /root/.secureit.sh:
+              content:
+                ansible-vault encrypt /root/.artifactory_ansible/artifactory.yml --vault-id /root/.vault_pass.txt
+              mode: "0770"
+        secure-artifactory:
+          commands:
+            'secure ansible playbook':
+              command: '/root/.secureit.sh'
+              ignoreErrors: 'false'
+    Properties:
+      AssociatePublicIpAddress: false
+      KeyName: !Ref KeyPairName
+      IamInstanceProfile: !Ref HostProfile
+      ImageId: !FindInMap
+        - AWSAMIRegionMap
+        - !Ref 'AWS::Region'
+        - !FindInMap
+          - ArtifactoryProductMap
+          - !Ref ArtifactoryProduct
           - !Ref AmiId
-        SecurityGroups:
-          - !Ref SecurityGroups
-        InstanceType: !Ref InstanceType
-        BlockDeviceMappings:
-          - DeviceName: /dev/xvda
-            Ebs:
-              VolumeSize: !Ref VolumeSize
-              VolumeType: gp2
-              DeleteOnTermination: true
-        UserData: !Base64 
-          'Fn::Sub':
-            - >
-              #!/bin/bash -x
+      SecurityGroups:
+        - !Ref SecurityGroups
+      InstanceType: !Ref InstanceType
+      BlockDeviceMappings:
+        - DeviceName: /dev/xvda
+          Ebs:
+            VolumeSize: !Ref VolumeSize
+            VolumeType: gp2
+            DeleteOnTermination: true
+      UserData:
+        'Fn::Base64':
+          !Sub |
+            #!/bin/bash -x
 
-              #CFN Functions
+            #CFN Functions
 
-              function cfn_fail
+            function cfn_fail
 
-              {
+            {
 
-              cfn-signal -e 1 --stack ${AWS::StackName} --region ${AWS::Region}
-              --resource ArtifactoryScalingGroup
+            cfn-signal -e 1 --stack ${AWS::StackName} --region ${AWS::Region} --resource ArtifactoryScalingGroup
 
-              exit 1
+            exit 1
 
-              }
+            }
 
-              function cfn_success
+            function cfn_success
 
-              {
+            {
 
-              cfn-signal -e 0 --stack ${AWS::StackName} --region ${AWS::Region}
-              --resource ArtifactoryScalingGroup
+            cfn-signal -e 0 --stack ${AWS::StackName} --region ${AWS::Region} --resource ArtifactoryScalingGroup
 
-              exit 0
+            exit 0
 
-              }
+            }
 
-              S3URI=https://${QSS3BucketName}.${S3Region}.amazonaws.com/${QSS3KeyPrefix}
+            S3URI=${QsS3Uri}
 
-              yum install -y git
+            yum install -y git
 
-              echo $PATH
+            echo $PATH
 
-              PATH=/opt/aws/bin:$PATH
+            PATH=/opt/aws/bin:$PATH
 
-              echo $PATH
-              echo \'[Cloning: Load QuickStart Common Utils]\'
+            echo $PATH
+            echo \'[Cloning: Load QuickStart Common Utils]\'
 
-              git clone
-              https://github.com/aws-quickstart/quickstart-linux-utilities.git
+            git clone https://github.com/aws-quickstart/quickstart-linux-utilities.git
 
-              source /quickstart-linux-utilities/quickstart-cfn-tools.source
+            source /quickstart-linux-utilities/quickstart-cfn-tools.source
 
-              echo \'[Loaded: Load QuickStart Common Utils]\'
+            echo \'[Loaded: Load QuickStart Common Utils]\'
 
-              echo \'[Update Operating System]\'
+            echo \'[Update Operating System]\'
 
-              qs_update-os || qs_err
+            qs_update-os || qs_err
 
-              qs_bootstrap_pip || qs_err
+            qs_bootstrap_pip || qs_err
 
-              qs_aws-cfn-bootstrap || qs_err
+            qs_aws-cfn-bootstrap || qs_err
 
-              pip install awscli &> /var/log/userdata.awscli_install.log || qs_err " awscli install failed "
-              
-              pip install ansible &> /var/log/userdata.ansible_install.log || qs_err " ansible install failed "
+            source ~/venv/bin/activate &> /var/log/userdata.activate_venv.log || qs_err " activate venv failed "
 
-              mkdir ~/.artifactory_ansible
+            #pip install awscli &> /var/log/userdata.awscli_install.log || qs_err " awscli install failed "
 
-              aws s3 sync s3://${QSS3BucketName}/${QSS3KeyPrefix}scripts/ ~/.artifactory_ansible/ 
+            #pip install ansible &> /var/log/userdata.ansible_install.log || qs_err " ansible install failed "
 
-              cfn-init -v --stack ${AWS::StackName} --resource
-              ArtifactoryLaunchConfiguration --configsets artifactory_install
-              --region ${AWS::Region} || cfn_fail
+            mkdir ~/.artifactory_ansible
 
-              export ANSIBLE_VAULT_PASSWORD_FILE="/root/.vault_pass.txt"
+            aws s3 sync s3://${QsS3BucketName}/${QsS3KeyPrefix}scripts/ ~/.artifactory_ansible/
 
-              /usr/local/bin/ansible-playbook /root/.artifactory_ansible/artifactory.yml || qs_err " ansible execution failed "
+            cfn-init -v --stack ${AWS::StackName} --resource ArtifactoryLaunchConfiguration --configsets artifactory_install --region ${AWS::Region} || cfn_fail
 
-              rm -rf /root/.secureit.sh
+            export ANSIBLE_VAULT_PASSWORD_FILE="/root/.vault_pass.txt"
 
-              [ $(qs_status) == 0 ] && cfn_success || cfn_fail
-            - S3Region: !If 
-              - GovCloudCondition
-              - s3-us-gov-west-1
-              - s3
+            ansible-playbook /root/.artifactory_ansible/artifactory.yml || qs_err " ansible execution failed "
+
+            rm -rf /root/.secureit.sh
+
+            [ $(qs_status) == 0 ] && cfn_success || cfn_fail
