@@ -1,11 +1,6 @@
 ---
 
 # Tasks for configuring NGINX for Artifactory
-- name: Ensure latest nginx is installed
-  package:
-    name: nginx
-    state: latest
-
 - name: Configure main NGINX conf file.
   copy:
     src: nginx.conf
@@ -15,7 +10,6 @@
     mode: '0755'
   notify: restart nginx
 
-
 - name: Configure the Artifactory NGINX conf
   template:
     src: artifactory.conf.j2
@@ -24,3 +18,21 @@
     group: root
     mode: '0755'
   notify: restart nginx
+
+- name: Change to host python for selinux
+  set_fact:
+    orig_python_interpreter: "{{ ansible_python_interpreter }}"
+    ansible_python_interpreter: /usr/bin/python
+  when: artifactory_major_verion|int == 7
+
+- name: Configure selinux for nginx
+  seboolean:
+    name: httpd_can_network_connect
+    state: yes
+    persistent: yes
+  when: ansible_selinux.status == 'enabled'
+
+- name: Set ansible python back
+  set_fact:
+    ansible_python_interpreter: "{{ orig_python_interpreter }}"
+  when: artifactory_major_verion|int == 7

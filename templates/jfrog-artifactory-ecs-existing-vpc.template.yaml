@@ -7,91 +7,97 @@ Metadata:
           default: Security configuration
         Parameters:
           - KeyPairName
-          - AccessCIDR
-          - RemoteAccessCIDR    
+          - AccessCidr
+          - RemoteAccessCidr
       - Label:
           default: Network Configuration
         Parameters:
-          - VPCID
-          - VPCCIDR
-          - PublicSubnet1ID
-          - PublicSubnet2ID
-          - PrivateSubnet1ID
-          - PrivateSubnet2ID
-          - PrivateSubnet1CIDR
-          - PrivateSubnet2CIDR
-          - ELBScheme
+          - VpcId
+          - VpcCidr
+          - PublicSubnet1Id
+          - PublicSubnet2Id
+          - PrivateSubnet1Id
+          - PrivateSubnet2Id
+          - PrivateSubnet1Cidr
+          - PrivateSubnet2Cidr
+          - ElbScheme
       - Label:
           default: Bastion Configuration
         Parameters:
           - ProvisionBastionHost
           - BastionInstanceType
-          - BastionOS
+          - BastionOs
           - BastionRootVolumeSize
-          - BastionEnableTCPForwarding
+          - BastionEnableTcpForwarding
           - NumBastionHosts
           - BastionEnableX11Forwarding
       - Label:
           default: ECS Configuration
         Parameters:
           - ClusterName
-          - CreateNewECSCluster
+          - CreateNewEcsCluster
+          - CreateNewEcsRole
+          - RoleName
+          - RoleArn
           - InstanceType
           - VolumeSize
+          - EnableFargate
+
       - Label:
           default: JFrog Artifactory Configuration
         Parameters:
+          - ArtifactoryProduct
           - ArtifactoryVersion
+          - ReleaseStage
           - NumberOfSecondary
           - NumberOfEC2Nodes
-          - SMLicensesName
-          - Certificate
-          - CertificateKey
-          - CertificateDomain
+          - SmLicenseCertName
           - ArtifactoryServerName
           - MasterKey
           - ExtraJavaOptions
+          - DefaultJavaMemSettings
           - AnsibleVaultPass
       - Label:
           default: Amazon RDS Configuration
         Parameters:
           - DatabaseName
           - DatabaseEngine
-          - DatabaseVersion
           - DatabaseUser
           - DatabasePassword
           - DatabaseInstance
-          - DBAllocatedStorage
-          - MultiAZDatabase
+          - DatabaseAllocatedStorage
+          - MultiAzDatabase
       - Label:
           default: AWS Quick Start Configuration
         Parameters:
-          - QSS3BucketName
-          - QSS3KeyPrefix
+          - QsS3BucketName
+          - QsS3KeyPrefix
+          - QsS3BucketRegion
+          - QsS3Uri
     ParameterLabels:
       KeyPairName:
         default: SSH key name
-      AccessCIDR:
+      AccessCidr:
         default: Permitted IP range
-      RemoteAccessCIDR:
-        default: Remote access CIDR        
-      VPCID:
+      RemoteAccessCidr:
+        default: Remote access CIDR
+      VpcId:
         default: VPC ID
-      VPCCIDR:
-        default: VPC CIDR
-      PublicSubnet1ID:
+      VpcCidr:
+        default: Vpc CIDR
+      PublicSubnet1Id:
         default: Public subnet 1 ID
-      PublicSubnet2ID:
+      PublicSubnet2Id:
         default: Public subnet 2 ID
-      PrivateSubnet1ID:
+      PrivateSubnet1Id:
         default: Private subnet 1 ID
-      PrivateSubnet2ID:
+      PrivateSubnet2Id:
         default: Private subnet 2 ID
-      PrivateSubnet1CIDR:
+      PrivateSubnet1Cidr:
         default: Private subnet 1 CIDR
-      PrivateSubnet2CIDR:
+      PrivateSubnet2Cidr:
         default: Private subnet 2 CIDR
-      ELBScheme:
+      ElbScheme:
         default: Elastic Load Balancer scheme
       ProvisionBastionHost:
         default: Bastion instance
@@ -99,111 +105,120 @@ Metadata:
         default: Bastion instance type
       BastionRootVolumeSize:
         default: Bastion root volume size
-      BastionEnableTCPForwarding:
+      BastionEnableTcpForwarding:
         default: Bastion enable TCP forwarding
       BastionEnableX11Forwarding:
         default: Bastion enable X11 forwarding
-      BastionOS:
+      BastionOs:
         default: Bastion operating system
       NumBastionHosts:
         default: Number of bastion instances
       ClusterName:
         default: ECS cluster name
-      CreateNewECSCluster:
+      CreateNewEcsCluster:
         default: Create new ECS cluster
+      CreateNewEcsRole:
+        default: Create new ECS Role
+      RoleName:
+        default: ECS Role Name
+      RoleArn:
+        default: ECS Role Arn
       InstanceType:
         default: EC2 instance type
       VolumeSize:
         default: EBS root volume size
+      EnableFargate:
+        default: Use Fargate with ECS
+      ArtifactoryProduct:
+        default: Artifactory product to install
       ArtifactoryVersion:
         default: Artifactory version
+      ReleaseStage:
+        default: Release stage of the product to deploy
       NumberOfSecondary:
         default: Number of secondary instances
       NumberOfEC2Nodes:
-        default: Number of EC2 nodes     
-      SMLicensesName:
-        default: Artifactory licenses secret name
-      Certificate:
-        default: Certificate
-      CertificateKey:
-        default: Certificate key
-      CertificateDomain:
-        default: Certificate domain
+        default: Number of EC2 nodes
+      SmLicenseCertName:
+        default: Artifactory licenses and certificate secret name
       ArtifactoryServerName:
         default: Artifactory server name
       MasterKey:
         default: Master server key
       ExtraJavaOptions:
         default: Extra Java options
+      DefaultJavaMemSettings:
+        default: Default Java memory settings
       AnsibleVaultPass:
         default: Ansible Vault password
       DatabaseName:
         default: Database name
       DatabaseEngine:
         default: Database engine
-      DatabaseVersion:
-        default: Database version
       DatabaseUser:
         default: Database user
       DatabasePassword:
         default: Database password
       DatabaseInstance:
         default: Database instance type
-      DBAllocatedStorage:
+      DatabaseAllocatedStorage:
         default: Database allocated storage
-      MultiAZDatabase:
+      MultiAzDatabase:
         default: High available database
-      QSS3BucketName:
+      QsS3BucketName:
         default: Quick Start S3 bucket name
-      QSS3KeyPrefix:
+      QsS3KeyPrefix:
         default: Quick Start S3 key prefix
-
+      QsS3BucketRegion:
+        default: Quick Start S3 bucket region
+      QsS3Uri:
+        default: Quick Start S3 URI
 Parameters:
   KeyPairName:
     Description: The name of an existing public/private key pair, which allows you
       to securely connect to your instance after it launches.
     Type: AWS::EC2::KeyPair::KeyName
-  AccessCIDR:
-    Description: The CIDR IP range that is permitted to access Artifactory. 
-      We recommend that you set this value to a trusted IP range. 
-      For example, you might want to grant only your corporate network access to the software. 
+  AccessCidr:
+    Description: The CIDR IP range that is permitted to access Artifactory.
+      We recommend that you set this value to a trusted IP range.
+      For example, you might want to grant only your corporate network access to the software.
     AllowedPattern: ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/([0-9]|[1-2][0-9]|3[0-2]))$
     Type: String
-  RemoteAccessCIDR:
-    Description: The remote CIDR range for allowing SSH into the Bastion instance. 
-      We recommend that you set this value to a trusted IP range. 
-      For example, you might want to grant specific ranges inside your corporate network SSH access. 
+  RemoteAccessCidr:
+    Description: The remote CIDR range for allowing SSH into the Bastion instance.
+      We recommend that you set this value to a trusted IP range.
+      For example, you might want to grant specific ranges inside your corporate network SSH access.
     AllowedPattern: ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/([0-9]|[1-2][0-9]|3[0-2]))$
     Type: String
-  VPCID:
+  VpcId:
     Description: The ID of your existing VPC (e.g., vpc-0343606e).
     Type: "AWS::EC2::VPC::Id"
-  VPCCIDR:
+  VpcCidr:
     Description: The CIDR block for the VPC.
     AllowedPattern: ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/(1[6-9]|2[0-8]))$
     ConstraintDescription: CIDR block parameter must be in the form x.x.x.x/16-28
     Default: 10.0.0.0/16
     Type: String
-  PublicSubnet1ID:
+  PublicSubnet1Id:
     Description: The ID of the public subnet in Availability Zone 1 in your existing VPC (e.g., subnet-z0376dab).
     Type: "AWS::EC2::Subnet::Id"
-  PublicSubnet2ID:
+  PublicSubnet2Id:
     Description: The ID of the public subnet in Availability Zone 2 in your existing VPC (e.g., subnet-a29c3d84).
     Type: "AWS::EC2::Subnet::Id"
-  PrivateSubnet1ID:
+  PrivateSubnet1Id:
     Description: The ID of the private subnet in Availability Zone 1 in your existing VPC (e.g., subnet-a0246dcd).
     Type: "AWS::EC2::Subnet::Id"
-  PrivateSubnet2ID: 
+  PrivateSubnet2Id:
     Description: The ID of the private subnet in Availability Zone 2 in your existing VPC (e.g., subnet-b58c3d67).
     Type: "AWS::EC2::Subnet::Id"
-  PrivateSubnet1CIDR:
+  PrivateSubnet1Cidr:
     Description: The CIDR of the private subnet in Availability Zone 1 in your existing VPC (e.g., 10.0.0.0/19).
     AllowedPattern: ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/(1[6-9]|2[0-8]))$
     ConstraintDescription: CIDR block parameter must be in the form x.x.x.x/16-28
     Default: 10.0.0.0/19
     Type: String
-  PrivateSubnet2CIDR:
-    Description: The CIDR of the private subnet in Availability Zone 2 in your existing VPC (e.g., 10.0.32.0/19).
+  PrivateSubnet2Cidr:
+    Description: The Cidr of the private subnet in Availability Zone 2 in your existing VPC (e.g., 10.0.32.0/19).
     AllowedPattern: ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/(1[6-9]|2[0-8]))$
     ConstraintDescription: CIDR block parameter must be in the form x.x.x.x/16-28
     Default: 10.0.32.0/19
@@ -237,25 +252,25 @@ Parameters:
     Description: The size of the root volume on the bastion instances.
     Default: 10
     Type: Number
-  BastionEnableTCPForwarding:
+  BastionEnableTcpForwarding:
     Description: Choose whether to enable TCPForwarding via the bootstrapping of the bastion instance
       or not.
-    AllowedValues: 
+    AllowedValues:
       - "true"
       - "false"
     Default: "true"
     Type: String
   BastionEnableX11Forwarding:
-    Description: Choose true to enable X11 via the bootstrapping of the bastion host. 
-      Setting this value to true will enable X Windows over SSH. 
-      X11 forwarding can be very useful but it is also a security risk, so we recommend 
+    Description: Choose true to enable X11 via the bootstrapping of the bastion host.
+      Setting this value to true will enable X Windows over SSH.
+      X11 forwarding can be very useful but it is also a security risk, so we recommend
       that you keep the default (false) setting unless required.
     AllowedValues:
       - "true"
       - "false"
     Default: "false"
     Type: String
-  BastionOS:
+  BastionOs:
     Description: The Linux distribution for the Amazon Machine Image (AMI) to be used for the bastion instances.
     AllowedValues:
       - "Amazon-Linux-HVM"
@@ -273,38 +288,95 @@ Parameters:
       - '3'
       - '4'
     Default: '1'
-    Type: String 
+    Type: String
   ClusterName:
     Description: The name for your ECS cluster.
-    Default: JFrog  
+    Default: JFrog
     Type: String
-  CreateNewECSCluster:
-    Description: Choose whether to create a new ECS cluster with the name specified in the 'ClusterName' parameter. 
+  CreateNewEcsCluster:
+    Description: Choose whether to create a new ECS cluster with the name specified in the 'ClusterName' parameter.
       If you choose Disabled, an ECS cluster with the name specified in the 'CluserName' parameter must already exist.
     AllowedValues:
       - "Enabled"
       - "Disabled"
     Default: "Enabled"
     Type: String
+  CreateNewEcsRole:
+    Description: Choose Whether to create a new ECS role or not. If you choose Disabled, the role
+      must exist, and have the proper permissions for the ECS tasks
+    AllowedValues:
+      - "Enabled"
+      - "Disabled"
+    Default: Enabled
+    Type: String
+  RoleName:
+    Description: Role Name for customized role if you choose Disabled for CreateNewEcsRole.
+    Default: MyOwnecsInstanceRole
+    Type: String
+  RoleArn:
+    Description: Role Arn for customized role if you choose Disabled for CreateNewEcsRole.
+    Default: arn:aws:iam::1234567890112:role/MyOwnecsInstanceRole
+    Type: String
   InstanceType:
     Description: The EC2 instance type for the Artifactory Docker hosts.
     AllowedValues:
+      - m4.large
       - m4.xlarge
       - m4.2xlarge
       - m4.4xlarge
       - m4.10xlarge
+      - m4.16xlarge
+      - m5.large
+      - m5.xlarge
+      - m5.2xlarge
+      - m5.4xlarge
+      - m5.8xlarge
+      - m5.12xlarge
+      - m5.16xlarge
+      - m5.24xlarge
+      - m5.metal
+      - m5d.large
+      - m5d.xlarge
+      - m5d.2xlarge
+      - m5d.4xlarge
+      - m5d.8xlarge
+      - m5d.12xlarge
+      - m5d.16xlarge
+      - m5d.24xlarge
+      - m5d.metal
+      - m5a.large
+      - m5a.xlarge
+      - m5a.2xlarge
+      - m5a.4xlarge
+      - m5a.8xlarge
+      - m5a.12xlarge
+      - m5a.16xlarge
+      - m5a.24xlarge
+      - m5ad.large
+      - m5ad.xlarge
+      - m5ad.2xlarge
+      - m5ad.4xlarge
+      - m5ad.12xlarge
+      - m5ad.24xlarge
     ConstraintDescription: Must contain valid instance type.
     Default: m4.xlarge
     Type: String
   VolumeSize:
-    Description: The size in GB of the available storage; the Quick Start will create an 
+    Description: The size in GB of the available storage; the Quick Start will create an
       Amazon Elastic Block Store (Amazon EBS) volumes of this size.
     Default: 200
     Type: Number
+  EnableFargate:
+    Description: AWS Fargate is a technology that you can use with Amazon ECS to run containers without having to manage servers or clusters of Amazon EC2 instances.
+    Default: "Disabled"
+    Type: String
+    AllowedValues: ["Enabled", "Disabled"]
   NumberOfEC2Nodes:
     Description: The number of EC2 nodes to create for the ECS cluster. There must be
       enough nodes to run the number of secondaries plus the primary task.
     AllowedValues:
+      - 1
+      - 2
       - 3
       - 4
       - 5
@@ -312,13 +384,14 @@ Parameters:
       - 7
       - 8
     Default: 3
-    Type: Number 
+    Type: Number
   NumberOfSecondary:
     Description: The number of secondary Artifactory servers to complete your
       HA deployment. To fit the Artifactory best practices, the minimum number
-      is two; the maximum is seven. Do not select more than instances than you 
+      is two; the maximum is seven. Do not select more than instances than you
       have licenses for.
     AllowedValues:
+      - 1
       - 2
       - 3
       - 4
@@ -327,32 +400,30 @@ Parameters:
       - 7
     Default: 2
     Type: Number
+  ArtifactoryProduct:
+    Description: The Jfrog Artifactory product you wish to install.
+    AllowedValues:
+      - JFrog-Artifactory-Pro
+      - JFrog-Container-Registry
+    Default: JFrog-Artifactory-Pro
+    Type: String
   ArtifactoryVersion:
     Description: The version of Artifactory that you want to deploy into the Quick Start.
       Please see the release notes to select the version you want to deploy.
       https://www.jfrog.com/confluence/display/RTF/Release+Notes
     AllowedPattern: ^(([0-9]|[1-9][0-9])\.){2}([1-9][0-9]|[0-9])$
     ConstraintDescription: A version that matches X.X.X per Artifactory releases.
-    Default: 6.11.1
+    Default: 7.2.1
     Type: String
-  SMLicensesName:
-    Description: The secret name created in AWS Secrets Manager which contains the Artifactory licenses.
+  ReleaseStage:
+    Description: Whether to use the upstream repository that is pre-GA.
+    AllowedValues:
+      - "GA"
+      - "BETA"
+    Default: "GA"
     Type: String
-  Certificate:
-    Description: The certificate file to be used to terminate SSL.
-    AllowedPattern: ^(-----BEGIN CERTIFICATE-----)(.*?)+(-----END CERTIFICATE-----)$
-    ConstraintDescription: A Certificate that begins with "-----BEGIN CERTIFICATE----- " and ends with "-----END CERTIFICATE----- ".
-    Type: String
-  CertificateKey: 
-    Description: The private key for the certificate.     
-    AllowedPattern: ^(-----BEGIN [A-Za-z ]+ KEY-----)(.*?)+(-----END [A-Za-z ]+ KEY-----)$
-    ConstraintDescription: A Private key that begins with "-----BEGIN PRIVATE KEY-----" and ends with "-----END PRIVATE KEY-----".
-    NoEcho: 'true'
-    Type: String
-  CertificateDomain:
-    Description: The domain matching that of the certificate. Ensure that it matches your certificate.
-    AllowedPattern: ^[A-Za-z0-9]+[.A-Za-z0-9]+[A-Za-z0-9]$
-    ConstraintDescription: The domain must not start or end with a '.'
+  SmLicenseCertName:
+    Description: The secret name created in AWS Secrets Manager which contains the SSL certificate, certificate key, and Artifactory licenses.
     Type: String
   ArtifactoryServerName:
     Description: The name of your Artifactory server. Ensure that this matches your certificate.
@@ -366,44 +437,45 @@ Parameters:
     NoEcho: 'true'
     Type: String
   ExtraJavaOptions:
-    Description: Setting Java memory parameters for Artifactory. For more information, see the Artifactory 
-      system requirements. 
+    Description: Setting Java memory parameters for Artifactory. For more information, see the Artifactory
+      system requirements.
       https://www.jfrog.com/confluence/display/RTF/System+Requirements#SystemRequirements-RecommendedHardware.
-    Default: -Xmx4g
-    Type: String      
+    Default: -Xss256k -XX:+UseG1GC
+    Type: String
+  DefaultJavaMemSettings:
+    Description: Choose false to overwrite the standard calculations of memory options to pass to the JVM for Artifactory.
+      If overwriting them, ensure they are added to the ExtraJavaOptions to avoid the stack failing to provision.
+    ConstraintDescription: True or False
+    AllowedValues:
+      - "true"
+      - "false"
+    Default: "true"
+    Type: String
   AnsibleVaultPass:
     Description: The Ansible Vault password to protect the Artifactory YAML configuration file
-      generated during the Artifactory deployment. This YAML file is stored on the EC2 nodes 
+      generated during the Artifactory deployment. This YAML file is stored on the EC2 nodes
       and secured with this password.
     NoEcho: 'true'
-    Type: String    
+    Type: String
   DatabaseName:
-    Description: The name for your DB instance. The name must be unique across all DB instances 
-      owned by your AWS account in the current AWS Region. The DB instance identifier is case-insensitive, 
+    Description: The name for your DB instance. The name must be unique across all Database instances
+      owned by your AWS account in the current AWS Region. The Database instance identifier is case-insensitive,
       but is stored as all lowercase (as in "mydbinstance").
     AllowedPattern: ^[a-zA-Z]([a-zA-Z0-9])+$
     MinLength: '1'
     MaxLength: '60'
-    ConstraintDescription: 1 to 60 alphanumeric characters First character must be a letter.   
+    ConstraintDescription: 1 to 60 alphanumeric characters First character must be a letter.
     Default: artdb
     Type: String
   DatabaseEngine:
     Description: The database engine that you want to run, currently locked to MySQL.
     AllowedValues:
       - MySQL
-    Default: MySQL
-    Type: String
-  DatabaseVersion:
-    Description: The major version of the MySQL database engine you want to run. This is currently locked to MySQL versions
-      supported by Artifactory and RDS.
-    AllowedValues:
-    - 5.5
-    - 5.6
-    - 5.7
-    Default: 5.7
+      - Postgres
+    Default: Postgres
     Type: String
   DatabaseUser:
-    Description: The login ID for the master user of your DB instance.
+    Description: The login ID for the master user of your Database instance.
     MinLength: '1'
     MaxLength: '16'
     AllowedPattern: ^[a-zA-Z]([a-zA-Z0-9])+$
@@ -441,13 +513,13 @@ Parameters:
     ConstraintDescription: Must be a valid database Instance Type.
     Default: db.m4.large
     Type: String
-  DBAllocatedStorage:
+  DatabaseAllocatedStorage:
     Description: The size in GB of the available storage for the database instance.
     MinValue: 5
     MaxValue: 1024
     Default: 10
     Type: Number
-  MultiAZDatabase:
+  MultiAzDatabase:
     Description: Choose false to create an Amazon RDS instance in a single Availability Zone.
     ConstraintDescription: True or False
     AllowedValues:
@@ -455,14 +527,14 @@ Parameters:
       - "false"
     Default: "true"
     Type: String
-  ELBScheme:
+  ElbScheme:
     Description: Choose whether this will be internet facing or internal.
     AllowedValues:
       - internal
       - internet-facing
     Default: internet-facing
     Type: String
-  QSS3BucketName:
+  QsS3BucketName:
     Description: S3 bucket name for the Quick Start assets. This string can include
       numbers, lowercase letters, uppercase letters, and hyphens (-). It cannot start
       or end with a hyphen (-).
@@ -471,8 +543,8 @@ Parameters:
       letters, uppercase letters, and hyphens (-). It cannot start or end with a hyphen
       (-).
     Default: aws-quickstart
-    Type: String  
-  QSS3KeyPrefix:
+    Type: String
+  QsS3KeyPrefix:
     Description: S3 key prefix for the Quick Start assets. Quick Start key prefix
       can include numbers, lowercase letters, uppercase letters, hyphens (-), and
       forward slash (/).
@@ -481,223 +553,229 @@ Parameters:
       uppercase letters, hyphens (-), and forward slash (/).
     Default: quickstart-jfrog-artifactory/
     Type: String
+  QsS3BucketRegion:
+    Default: 'us-east-1'
+    Description: The AWS Region where the Quick Start S3 bucket (QSS3BucketName) is hosted. When using your own bucket, you must specify this value.
+    Type: String
+  QsS3Uri:
+    Default: https://aws-quickstart.s3.us-east-1.amazonaws.com/quickstart-jfrog-artifactory/
+    Description: The S3 bucket URI for the Quick Start assets.
+    Type: String
 Conditions:
+  CreateEcsCluster: !Equals [!Ref 'CreateNewEcsCluster', 'Enabled']
   EnableBastion: !Equals [!Ref 'ProvisionBastionHost', 'Enabled']
+  ArtifactoryHa: !Equals [!Ref ArtifactoryProduct, 'JFrog-Artifactory-Pro']
+  DefaultJava: !Equals [!Ref DefaultJavaMemSettings, "true"]
+  FargateEnabled: !Equals [!Ref EnableFargate, "Enabled"]
 Resources:
   BastionStack:
     Condition: EnableBastion
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: !Sub 'https://${QSS3BucketName}.s3.amazonaws.com/${QSS3KeyPrefix}submodules/quickstart-linux-bastion/templates/linux-bastion.template'
+      TemplateURL: !Sub ${QsS3Uri}submodules/quickstart-linux-bastion/templates/linux-bastion.template
       Parameters:
-        VPCID: !Ref VPCID
-        PublicSubnet1ID: !Ref PublicSubnet1ID
-        PublicSubnet2ID: !Ref PublicSubnet2ID
+        VPCID: !Ref VpcId
+        PublicSubnet1ID: !Ref PublicSubnet1Id
+        PublicSubnet2ID: !Ref PublicSubnet2Id
         KeyPairName: !Ref KeyPairName
-        QSS3BucketName: !Ref QSS3BucketName
-        QSS3KeyPrefix: !Sub '${QSS3KeyPrefix}submodules/quickstart-linux-bastion/'
-        RemoteAccessCIDR: !Ref RemoteAccessCIDR
+        QSS3BucketName: !Ref QsS3BucketName
+        QSS3KeyPrefix: !Sub '${QsS3KeyPrefix}submodules/quickstart-linux-bastion/'
+        QSS3BucketRegion: !Ref QsS3BucketRegion
+        RemoteAccessCIDR: !Ref RemoteAccessCidr
         BastionInstanceType: !Ref BastionInstanceType
         RootVolumeSize: !Ref BastionRootVolumeSize
-        BastionAMIOS: !Ref BastionOS
-        EnableTCPForwarding: !Ref BastionEnableTCPForwarding
+        BastionAMIOS: !Ref BastionOs
+        EnableTCPForwarding: !Ref BastionEnableTcpForwarding
         EnableX11Forwarding: !Ref BastionEnableX11Forwarding
         NumBastionHosts: !Ref NumBastionHosts
+
   ArtifactoryCoreInfraStack:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: !Sub "https://${QSS3BucketName}.s3.amazonaws.com/${QSS3KeyPrefix}templates/jfrog-artifactory-core-infrastructure.template.yaml"
+      TemplateURL: !Sub ${QsS3Uri}templates/jfrog-artifactory-core-infrastructure.template.yaml
       Parameters:
-        VPCID: !Ref VPCID
-        VPCCIDR: !Ref VPCCIDR
-        PrivateSubnet1CIDR: !Ref PrivateSubnet1CIDR
-        PrivateSubnet2CIDR: !Ref PrivateSubnet2CIDR
-        PrivateSubnet3CIDR: !Ref PrivateSubnet2CIDR # This should end up in no new rule but required for EKS
-        SubnetIds: !Join [ ",", [ !Ref PrivateSubnet1ID, !Ref PrivateSubnet2ID ]]
-        DBAllocatedStorage: !Ref DBAllocatedStorage
-        MultiAZDatabase: !Ref MultiAZDatabase
+        VpcId: !Ref VpcId
+        VpcCidr: !Ref VpcCidr
+        PrivateSubnet1Cidr: !Ref PrivateSubnet1Cidr
+        PrivateSubnet2Cidr: !Ref PrivateSubnet2Cidr
+        PrivateSubnet3Cidr: !Ref PrivateSubnet2Cidr  # This should end up in no new rule but required for EKS
+        SubnetIds: !Join [",", [!Ref PrivateSubnet1Id, !Ref PrivateSubnet2Id]]
+        DatabaseAllocatedStorage: !Ref DatabaseAllocatedStorage
+        MultiAzDatabase: !Ref MultiAzDatabase
         DatabaseEngine: !Ref DatabaseEngine
-        DatabaseVersion: !Ref DatabaseVersion
         DatabaseUser: !Ref DatabaseUser
         DatabasePassword: !Ref DatabasePassword
         DatabaseInstance: !Ref DatabaseInstance
         DatabaseName: !Ref DatabaseName
-  ArtifactoryELB:
+        ArtifactoryProduct: !Ref ArtifactoryProduct
+        ReleaseStage: !Ref ReleaseStage
+        InstanceType: !Ref InstanceType
+
+  ArtifactoryElb:
     Type: AWS::ElasticLoadBalancingV2::LoadBalancer
     Properties:
       IpAddressType: ipv4
-      Name: ArtifactoryELB
-      Scheme: !Ref ELBScheme
-      Subnets: 
-        - !Ref PublicSubnet1ID
-        - !Ref PublicSubnet2ID
-      Tags: 
-        - Key: Name
-          Value: artifactory-ELB
+      Name: !Sub ${ArtifactoryProduct}-ELB
+      Scheme: !Ref ElbScheme
+      Subnets:
+        - !Ref PublicSubnet1Id
+        - !Ref PublicSubnet2Id
       Type: network
-  ArtifactoryTargetGroup:
+
+  ArtifactorySslTargetGroup:
     Type: AWS::ElasticLoadBalancingV2::TargetGroup
-    Properties: 
+    Properties:
       HealthCheckEnabled: True
       HealthCheckIntervalSeconds: 30
       HealthCheckProtocol: TCP
       HealthCheckTimeoutSeconds: 10
       HealthyThresholdCount: 3
-      Name: Artifactory
+      Name: !Sub ${ArtifactoryProduct}-https
       Port: 443
       Protocol: TCP
-      #Tags: 
-      #  - !Ref DeploymentTag
-      TargetType: instance
+      TargetType: !If [FargateEnabled, "ip", "instance"]
       UnhealthyThresholdCount: 3
-      VpcId: !Ref VPCID
-  ArtifactoryELBListener:
+      VpcId: !Ref VpcId
+
+  ArtifactoryTargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      HealthCheckEnabled: True
+      HealthCheckIntervalSeconds: 30
+      HealthCheckProtocol: TCP
+      HealthCheckTimeoutSeconds: 10
+      HealthyThresholdCount: 3
+      Name: !Sub ${ArtifactoryProduct}-http
+      Port: 80
+      Protocol: TCP
+      TargetType: !If [FargateEnabled, "ip", "instance"]
+      UnhealthyThresholdCount: 3
+      VpcId: !Ref VpcId
+
+  ArtifactorySslElbListener:
     Type: AWS::ElasticLoadBalancingV2::Listener
-    Properties: 
-      DefaultActions: 
+    Properties:
+      DefaultActions:
+        - TargetGroupArn: !Ref ArtifactorySslTargetGroup
+          Type: forward
+      LoadBalancerArn: !Ref ArtifactoryElb
+      Port: 443
+      Protocol: TCP
+
+  ArtifactoryElbListener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      DefaultActions:
         - TargetGroupArn: !Ref ArtifactoryTargetGroup
           Type: forward
-      LoadBalancerArn: !Ref ArtifactoryELB
-      Port: 443
-      Protocol: TCP      
-  ArtifactoryELBSG:
+      LoadBalancerArn: !Ref ArtifactoryElb
+      Port: 80
+      Protocol: TCP
+
+  ArtifactoryEc2Sg:
     Type: AWS::EC2::SecurityGroup
     Properties:
       Tags:
         - Key: Name
-          Value: artifactory-ELB-sg
-      GroupDescription: SG for ELB Ingress from outside and egress to instances
-      VpcId: !Ref VPCID
-      SecurityGroupIngress:   
-        - IpProtocol: tcp
-          FromPort: 80
-          ToPort: 80
-          CidrIp: !Ref AccessCIDR
-        - IpProtocol: tcp
-          FromPort: 443
-          ToPort: 443
-          CidrIp: !Ref AccessCIDR
-        - IpProtocol: tcp
-          FromPort: 8081
-          ToPort: 8081
-          CidrIp: !Ref AccessCIDR          
-      SecurityGroupEgress:
-        - IpProtocol: tcp
-          FromPort: 80
-          ToPort: 80
-          CidrIp: 0.0.0.0/0
-        - IpProtocol: tcp
-          FromPort: 443
-          ToPort: 443
-          CidrIp: 0.0.0.0/0
-        - IpProtocol: tcp
-          FromPort: 8081
-          ToPort: 8081
-          CidrIp: 0.0.0.0/0          
-  ArtifactoryEC2SG:
-    Type: AWS::EC2::SecurityGroup
-    Properties:
-      Tags:
-        - Key: Name
-          Value: artifactory-ec2-instances-sg
+          Value: !Sub ${ArtifactoryProduct}-ec2-instances-sg
       GroupDescription: SG for EC2 instances (also permits SSH access from the bastion host)
-      VpcId: !Ref VPCID
-      SecurityGroupIngress:   
+      VpcId: !Ref VpcId
+      SecurityGroupIngress:
         - IpProtocol: tcp
           FromPort: 22
           ToPort: 22
-          CidrIp: !Ref VPCCIDR
+          CidrIp: !Ref VpcCidr
         - IpProtocol: tcp
           FromPort: 80
           ToPort: 80
-          CidrIp: !Ref VPCCIDR   
+          CidrIp: !Ref VpcCidr
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: !Ref AccessCidr
         - IpProtocol: tcp
           FromPort: 443
           ToPort: 443
-          CidrIp: 0.0.0.0/0
+          CidrIp: !Ref VpcCidr
+        - IpProtocol: tcp
+          FromPort: 443
+          ToPort: 443
+          CidrIp: !Ref AccessCidr
         - IpProtocol: tcp
           FromPort: 8081
-          ToPort: 8081
-          CidrIp: !Ref PrivateSubnet1CIDR
+          ToPort: 8082
+          CidrIp: !Ref PrivateSubnet1Cidr
         - IpProtocol: tcp
           FromPort: 8081
-          ToPort: 8081
-          CidrIp: !Ref PrivateSubnet2CIDR                                
+          ToPort: 8082
+          CidrIp: !Ref PrivateSubnet2Cidr
       SecurityGroupEgress:
-        - IpProtocol: tcp
-          FromPort: 22
-          ToPort: 22
+        - IpProtocol: "-1"
           CidrIp: 0.0.0.0/0
-        - IpProtocol: tcp
-          FromPort: 80
-          ToPort: 80
-          CidrIp: 0.0.0.0/0
-        - IpProtocol: tcp
-          FromPort: 443
-          ToPort: 443
-          CidrIp: 0.0.0.0/0
-        - IpProtocol: tcp
-          FromPort: 3306
-          ToPort: 3306
-          CidrIp: !Ref PrivateSubnet1CIDR
-        - IpProtocol: tcp
-          FromPort: 3306
-          ToPort: 3306
-          CidrIp: !Ref PrivateSubnet2CIDR            
-        - IpProtocol: tcp
-          FromPort: 8081
-          ToPort: 8081
-          CidrIp: !Ref PrivateSubnet1CIDR
-        - IpProtocol: tcp
-          FromPort: 8081
-          ToPort: 8081
-          CidrIp: !Ref PrivateSubnet2CIDR           
+
+  EcsCluster:
+    Condition: CreateEcsCluster
+    Type: AWS::ECS::Cluster
+    Properties:
+      ClusterName: !Ref ClusterName
+
   ArtifactoryECSBuild:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: !Sub 'https://${QSS3BucketName}.s3.amazonaws.com/${QSS3KeyPrefix}templates/jfrog-artifactory-ecs-ec2.template.yaml'
+      TemplateURL: !Sub ${QsS3Uri}templates/jfrog-artifactory-ecs-ec2.template.yaml
       Parameters:
-        PrivateSubnet1ID: !Ref PrivateSubnet1ID
-        PrivateSubnet2ID: !Ref PrivateSubnet2ID
-        ClusterName: !Ref ClusterName
-        CreateNewECSCluster: !Ref CreateNewECSCluster
+        PrivateSubnet1Id: !Ref PrivateSubnet1Id
+        PrivateSubnet2Id: !Ref PrivateSubnet2Id
+        ClusterName: !If [CreateEcsCluster, !Ref EcsCluster, !Ref ClusterName]
+        CreateNewEcsRole: !Ref CreateNewEcsRole
+        RoleName: !Ref RoleName
+        RoleArn: !Ref RoleArn
         MinScalingNodes: !Ref NumberOfEC2Nodes
         MaxScalingNodes: !Ref NumberOfEC2Nodes
         KeyPairName: !Ref KeyPairName
         InstanceType: !Ref InstanceType
         VolumeSize: !Ref VolumeSize
-        DeploymentTag: Artifactory
+        EnableFargate: !Ref EnableFargate
+        DeploymentTag: !If [ArtifactoryHa, ArtifactoryEcs-Node, JcrEcs-Node]
         NumberOfSecondary: !Ref NumberOfSecondary
-        ArtifactoryLicense1: !Sub '{{resolve:secretsmanager:${SMLicensesName}:SecretString:ArtifactoryLicense1}}'
-        ArtifactoryLicense2: !Sub '{{resolve:secretsmanager:${SMLicensesName}:SecretString:ArtifactoryLicense2}}'
-        ArtifactoryLicense3: !Sub '{{resolve:secretsmanager:${SMLicensesName}:SecretString:ArtifactoryLicense3}}'
-        ArtifactoryLicense4: !Sub '{{resolve:secretsmanager:${SMLicensesName}:SecretString:ArtifactoryLicense4}}'
-        CertificateDomain: !Ref CertificateDomain
+        DeploymentSize: !GetAtt ArtifactoryCoreInfraStack.Outputs.DeploymentSize
+        ArtifactoryProduct: !Ref ArtifactoryProduct
+        ArtifactoryLicense1: !If [ArtifactoryHa, !Sub '{{resolve:secretsmanager:${SmLicenseCertName}:SecretString:ArtifactoryLicense1}}', '']
+        ArtifactoryLicense2: !If [ArtifactoryHa, !Sub '{{resolve:secretsmanager:${SmLicenseCertName}:SecretString:ArtifactoryLicense2}}', '']
+        ArtifactoryLicense3: !If [ArtifactoryHa, !Sub '{{resolve:secretsmanager:${SmLicenseCertName}:SecretString:ArtifactoryLicense3}}', '']
+        ArtifactoryLicense4: !If [ArtifactoryHa, !Sub '{{resolve:secretsmanager:${SmLicenseCertName}:SecretString:ArtifactoryLicense4}}', '']
+        Certificate: !Sub '{{resolve:secretsmanager:${SmLicenseCertName}:SecretString:Certificate}}'
+        CertificateKey: !Sub '{{resolve:secretsmanager:${SmLicenseCertName}:SecretString:CertificateKey}}'
+        CertificateDomain: !Sub '{{resolve:secretsmanager:${SmLicenseCertName}:SecretString:CertificateDomain}}'
         ArtifactoryServerName: !Ref ArtifactoryServerName
-        ArtifactoryIAMAcessKey: !GetAtt ArtifactoryCoreInfraStack.Outputs.IAMAcessKey
+        ArtifactoryIamAcessKey: !GetAtt ArtifactoryCoreInfraStack.Outputs.ArtifactoryIamAcessKey
         SecretAccessKey: !GetAtt ArtifactoryCoreInfraStack.Outputs.SecretAccessKey
         ArtifactoryS3Bucket: !GetAtt ArtifactoryCoreInfraStack.Outputs.S3Bucket
-        ArtifactoryDBEndpointAddress: !GetAtt ArtifactoryCoreInfraStack.Outputs.ArtifactoryDBEndpointAddress
-        CertificateKey: !Ref CertificateKey
-        Certificate: !Ref Certificate
-        DBType: mysql
-        DatabaseName: !Ref DatabaseName
+        DatabaseUrl: !GetAtt ArtifactoryCoreInfraStack.Outputs.DatabaseUrl
+        DatabaseDriver: !GetAtt ArtifactoryCoreInfraStack.Outputs.DatabaseDriver
+        ProDockerRepo: !GetAtt ArtifactoryCoreInfraStack.Outputs.ProDockerRepo
+        NginxDockerRepo: !GetAtt ArtifactoryCoreInfraStack.Outputs.NginxDockerRepo
+        DatabasePlugin: !GetAtt ArtifactoryCoreInfraStack.Outputs.DatabasePlugin
+        DatabasePluginUrl: !GetAtt ArtifactoryCoreInfraStack.Outputs.DatabasePluginUrl
+        DatabaseType: !GetAtt ArtifactoryCoreInfraStack.Outputs.DatabaseType
         DatabaseUser: !Ref DatabaseUser
         DatabasePassword: !Ref DatabasePassword
         MasterKey: !Ref MasterKey
-        ExtraJavaOptions: !Ref ExtraJavaOptions
+        ExtraJavaOptions: !If [DefaultJava, !Sub "${ArtifactoryCoreInfraStack.Outputs.JavaOpts} ${ExtraJavaOptions}", !Ref ExtraJavaOptions]
         ArtifactoryVersion: !Ref ArtifactoryVersion
-        SecurityGroups: !Ref ArtifactoryEC2SG
+        SecurityGroups: !Ref ArtifactoryEc2Sg
         ArtifactoryTargetGroupArn: !Ref ArtifactoryTargetGroup
+        ArtifactorySslTargetGroupArn: !Ref ArtifactorySslTargetGroup
         AnsibleVaultPass: !Ref AnsibleVaultPass
-        QSS3BucketName: !Ref QSS3BucketName
-        QSS3KeyPrefix: !Ref QSS3KeyPrefix
+        QsS3BucketName: !Ref QsS3BucketName
+        QsS3KeyPrefix: !Ref QsS3KeyPrefix
+        QsS3Uri: !Ref QsS3Uri
 
 Outputs:
   ArtifactoryUrl:
     Description: URL of the ELB to access Artifactory
-    Value: !Sub "https://${ArtifactoryELB.DNSName}"
-  BastionIP:
+    Value: !Sub "https://${ArtifactoryElb.DNSName}"
+  BastionIp:
     Value: !If
       - EnableBastion
       - !GetAtt BastionStack.Outputs.EIP1

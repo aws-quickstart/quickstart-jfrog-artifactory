@@ -43,4 +43,3 @@ public class ArtifactoryInactiveServersCleaner {
         log.info "No inactive servers found"
     }
 }
-                  
