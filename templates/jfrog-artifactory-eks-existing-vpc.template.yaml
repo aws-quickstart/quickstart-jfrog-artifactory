@@ -573,6 +573,7 @@ Rules:
              - ap-south-1
           - !Ref 'AWS::Region'
 Conditions:
+  UsingDefaultBucket: !Equals [!Ref QsS3BucketName, 'aws-quickstart']
   ArtifactoryHa: !Equals [!Ref ArtifactoryProduct, 'JFrog-Artifactory-Pro']
   BastionSecurityGroup: !And [!Equals [!Ref ArtifactoryProduct, 'JFrog-Artifactory-Pro'], !Equals [!Ref 'ProvisionBastionHost', 'Enabled']]
   DefaultSize: !Equals [!Ref DefaultDeploymentSize, "true"]
@@ -580,7 +581,17 @@ Resources:
   EksStack:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: !Sub ${QsS3Uri}submodules/quickstart-amazon-eks/templates/amazon-eks.template.yaml
+      TemplateURL: !Sub
+        - https://${S3Bucket}.s3.${S3Region}.${AWS::URLSuffix}/${QsS3KeyPrefix}submodules/quickstart-amazon-eks/templates/amazon-eks.template.yaml
+        - S3Bucket: !If
+            - UsingDefaultBucket
+            - !Sub 'aws-quickstart-${AWS::Region}'
+            - !Ref 'QsS3BucketName'
+          S3Region: !If
+            - UsingDefaultBucket
+            - !Ref 'AWS::Region'
+            - !Ref 'QsS3BucketRegion'
+            # !Sub ${QsS3Uri}submodules/quickstart-amazon-eks/templates/amazon-eks.template.yaml
       Parameters:
         KeyPairName: !Ref KeyPairName
         RemoteAccessCIDR: !Ref RemoteAccessCidr
@@ -614,7 +625,17 @@ Resources:
     Condition: ArtifactoryHa
     Type: "AWS::CloudFormation::Stack"
     Properties:
-      TemplateURL: !Sub ${QsS3Uri}submodules/quickstart-amazon-eks/templates/amazon-eks-nodegroup.template.yaml
+      TemplateURL: !Sub
+        - https://${S3Bucket}.s3.${S3Region}.${AWS::URLSuffix}/${QsS3KeyPrefix}submodules/quickstart-amazon-eks/templates/amazon-eks-nodegroup.template.yaml
+        - S3Bucket: !If
+            - UsingDefaultBucket
+            - !Sub 'aws-quickstart-${AWS::Region}'
+            - !Ref 'QsS3BucketName'
+          S3Region: !If
+            - UsingDefaultBucket
+            - !Ref 'AWS::Region'
+            - !Ref 'QsS3BucketRegion'
+            # !Sub ${QsS3Uri}submodules/quickstart-amazon-eks/templates/amazon-eks-nodegroup.template.yaml
       Parameters:
         KeyPairName: !Ref KeyPairName
         PrivateSubnet1ID: !Ref PrivateSubnet1Id
@@ -672,7 +693,17 @@ Resources:
     DependsOn: EksStack
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: !Sub ${QsS3Uri}templates/jfrog-artifactory-core-infrastructure.template.yaml
+      TemplateURL: !Sub
+        - https://${S3Bucket}.s3.${S3Region}.${AWS::URLSuffix}/${QsS3KeyPrefix}templates/jfrog-artifactory-core-infrastructure.template.yaml
+        - S3Bucket: !If
+            - UsingDefaultBucket
+            - !Sub 'aws-quickstart-${AWS::Region}'
+            - !Ref 'QsS3BucketName'
+          S3Region: !If
+            - UsingDefaultBucket
+            - !Ref 'AWS::Region'
+            - !Ref 'QsS3BucketRegion'
+            # !Sub ${QsS3Uri}templates/jfrog-artifactory-core-infrastructure.template.yaml
       Parameters:
         VpcId: !Ref VpcId
         VpcCidr: !Ref VpcCidr
@@ -694,7 +725,17 @@ Resources:
   ArtifactoryCoreStack:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: !Sub ${QsS3Uri}templates/jfrog-artifactory-eks-core-workload.template.yaml
+      TemplateURL: !Sub
+        - https://${S3Bucket}.s3.${S3Region}.${AWS::URLSuffix}/${QsS3KeyPrefix}templates/jfrog-artifactory-eks-core-workload.template.yaml
+        - S3Bucket: !If
+            - UsingDefaultBucket
+            - !Sub 'aws-quickstart-${AWS::Region}'
+            - !Ref 'QsS3BucketName'
+          S3Region: !If
+            - UsingDefaultBucket
+            - !Ref 'AWS::Region'
+            - !Ref 'QsS3BucketRegion'
+            # !Sub ${QsS3Uri}templates/jfrog-artifactory-eks-core-workload.template.yaml
       Parameters:
         KubeManifestLambdaArn: !GetAtt EksStack.Outputs.KubeManifestLambdaArn
         HelmLambdaArn: !GetAtt EksStack.Outputs.HelmLambdaArn
@@ -726,7 +767,16 @@ Resources:
         ArtifactoryVersion: !Ref ArtifactoryVersion
         ArtifactoryDeploymentSize: !If [DefaultSize, !GetAtt ArtifactoryCoreInfraStack.Outputs.DeploymentSize, !Ref ArtifactoryDeploymentSize]
         ReleaseStage: !Ref ReleaseStage
-        QsS3Uri: !Ref QsS3Uri
+        QsS3Uri: !Sub
+          - https://${S3Bucket}.s3.${S3Region}.${AWS::URLSuffix}/${QsS3KeyPrefix}
+          - S3Bucket: !If
+              - UsingDefaultBucket
+              - !Sub 'aws-quickstart-${AWS::Region}'
+              - !Ref 'QsS3BucketName'
+            S3Region: !If
+              - UsingDefaultBucket
+              - !Ref 'AWS::Region'
+              - !Ref 'QsS3BucketRegion'
 Outputs:
   ArtifactoryUrl:
     Value: !GetAtt ArtifactoryCoreStack.Outputs.ArtifactoryUrl
