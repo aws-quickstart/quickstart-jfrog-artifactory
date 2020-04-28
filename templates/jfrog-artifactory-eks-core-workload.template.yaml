@@ -5,10 +5,10 @@ Parameters:
     Type: String
   HelmLambdaArn:
     Type: String
-  KubeConfigPath:
-    Type: String
-  KubeConfigKmsContext:
-    Type: String
+  # KubeConfigPath:
+  #   Type: String
+  # KubeConfigKmsContext:
+  #   Type: String
   KubeGetLambdaArn:
     Type: String
   NumberOfSecondary:
@@ -164,8 +164,8 @@ Resources:
     Version: '1.0'
     Properties:
       ServiceToken: !Ref KubeManifestLambdaArn
-      KubeConfigPath: !Ref KubeConfigPath
-      KubeConfigKmsContext: !Ref KubeConfigKmsContext
+      # KubeConfigPath: !Ref KubeConfigPath
+      # KubeConfigKmsContext: !Ref KubeConfigKmsContext
       Manifest:
         kind: Namespace
         apiVersion: v1
@@ -180,8 +180,8 @@ Resources:
     Version: '1.0'
     Properties:
       ServiceToken: !Ref KubeManifestLambdaArn
-      KubeConfigPath: !Ref KubeConfigPath
-      KubeConfigKmsContext: !Ref KubeConfigKmsContext
+      # KubeConfigPath: !Ref KubeConfigPath
+      # KubeConfigKmsContext: !Ref KubeConfigKmsContext
       Manifest:
         kind: Secret
         apiVersion: v1
@@ -207,8 +207,8 @@ Resources:
     Version: '1.0'
     Properties:
       ServiceToken: !Ref KubeManifestLambdaArn
-      KubeConfigPath: !Ref KubeConfigPath
-      KubeConfigKmsContext: !Ref KubeConfigKmsContext
+      # KubeConfigPath: !Ref KubeConfigPath
+      # KubeConfigKmsContext: !Ref KubeConfigKmsContext
       Manifest:
         kind: Secret
         apiVersion: v1
@@ -239,8 +239,8 @@ Resources:
     Version: '1.0'
     Properties:
       ServiceToken: !Ref KubeManifestLambdaArn
-      KubeConfigPath: !Ref KubeConfigPath
-      KubeConfigKmsContext: !Ref KubeConfigKmsContext
+      # KubeConfigPath: !Ref KubeConfigPath
+      # KubeConfigKmsContext: !Ref KubeConfigKmsContext
       Manifest:
         kind: Secret
         apiVersion: v1
@@ -271,8 +271,8 @@ Resources:
     Version: '1.0'
     Properties:
       ServiceToken: !Ref HelmLambdaArn
-      KubeConfigPath: !Ref KubeConfigPath
-      KubeConfigKmsContext: !Ref KubeConfigKmsContext
+      # KubeConfigPath: !Ref KubeConfigPath
+      # KubeConfigKmsContext: !Ref KubeConfigKmsContext
       Namespace: !FindInMap [ArtifactoryProductMap, !Ref ArtifactoryProduct, namespace]
       Name: quickstart-artifactory-ha
       Chart: jfrog/artifactory-ha
@@ -427,8 +427,8 @@ Resources:
     Version: '1.0'
     Properties:
       ServiceToken: !Ref KubeGetLambdaArn
-      KubeConfigPath: !Ref KubeConfigPath
-      KubeConfigKmsContext: !Ref KubeConfigKmsContext
+      # KubeConfigPath: !Ref KubeConfigPath
+      # KubeConfigKmsContext: !Ref KubeConfigKmsContext
       Namespace: !FindInMap [ArtifactoryProductMap, !Ref ArtifactoryProduct, namespace]
       Name: svc/quickstart-artifactory-ha-nginx
       JsonPath: '{.status.loadBalancer.ingress[0].hostname}'
@@ -440,8 +440,8 @@ Resources:
     Version: '1.0'
     Properties:
       ServiceToken: !Ref HelmLambdaArn
-      KubeConfigPath: !Ref KubeConfigPath
-      KubeConfigKmsContext: !Ref KubeConfigKmsContext
+      # KubeConfigPath: !Ref KubeConfigPath
+      # KubeConfigKmsContext: !Ref KubeConfigKmsContext
       Namespace: !FindInMap [ArtifactoryProductMap, !Ref ArtifactoryProduct, namespace]
       Name: quickstart-jcr
       Chart: jfrog/artifactory-jcr
@@ -546,8 +546,8 @@ Resources:
     Version: '1.0'
     Properties:
       ServiceToken: !Ref KubeGetLambdaArn
-      KubeConfigPath: !Ref KubeConfigPath
-      KubeConfigKmsContext: !Ref KubeConfigKmsContext
+      # KubeConfigPath: !Ref KubeConfigPath
+      # KubeConfigKmsContext: !Ref KubeConfigKmsContext
       Namespace: !FindInMap [ArtifactoryProductMap, !Ref ArtifactoryProduct, namespace]
       Name: svc/quickstart-jcr-artifactory-nginx
       JsonPath: '{.status.loadBalancer.ingress[0].hostname}'

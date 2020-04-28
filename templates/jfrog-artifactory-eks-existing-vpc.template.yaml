@@ -238,19 +238,56 @@ Parameters:
   NodeInstanceType:
     Description: The Amazon EC2 instance type for the nodes hosting the Kubernetes pods.
     AllowedValues:
-      - m4.large
-      - m4.xlarge
-      - m4.2xlarge
-      - m4.4xlarge
-      - m4.10xlarge
+      - t3.nano
+      - t3.micro
+      - t3.small
+      - t3.medium
+      - t3.large
+      - t3.xlarge
+      - t3.2xlarge
       - m5.large
       - m5.xlarge
       - m5.2xlarge
       - m5.4xlarge
       - m5.12xlarge
       - m5.24xlarge
+      - c5.large
+      - c5.xlarge
+      - c5.2xlarge
+      - c5.4xlarge
+      - c5.9xlarge
+      - c5.18xlarge
+      - i3.large
+      - i3.xlarge
+      - i3.2xlarge
+      - i3.4xlarge
+      - i3.8xlarge
+      - i3.16xlarge
+      - x1.16xlarge
+      - x1.32xlarge
+      - p3.2xlarge
+      - p3.8xlarge
+      - p3.16xlarge
+      - r5.large
+      - r5.xlarge
+      - r5.2xlarge
+      - r5.4xlarge
+      - r5.12xlarge
+      - r5.24xlarge
+      - r5d.large
+      - r5d.xlarge
+      - r5d.2xlarge
+      - r5d.4xlarge
+      - r5d.12xlarge
+      - r5d.24xlarge
+      - z1d.large
+      - z1d.xlarge
+      - z1d.2xlarge
+      - z1d.3xlarge
+      - z1d.6xlarge
+      - z1d.12xlarge
     ConstraintDescription: Must be a valid EC2 instance type
-    Default: m4.xlarge
+    Default: m5.xlarge
     Type: String
   NodeVolumeSize:
     Description: The size of EBS volumes for master node instances, in GB.
@@ -547,7 +584,7 @@ Resources:
       Parameters:
         KeyPairName: !Ref KeyPairName
         RemoteAccessCIDR: !Ref RemoteAccessCidr
-        AdditionalEKSAdminArns: !Join [",", !Ref AdditionalEKSAdminArns]
+        # AdditionalEKSAdminArns: !Join [",", !Ref AdditionalEKSAdminArns]
         VPCID: !Ref VpcId
         PrivateSubnet1ID: !Ref PrivateSubnet1Id
         PrivateSubnet2ID: !Ref PrivateSubnet2Id
@@ -560,7 +597,7 @@ Resources:
         NumberOfNodes: !If [ArtifactoryHa, '1', !Ref NumberOfSecondary]
         NodeGroupName: !Sub ${ArtifactoryProduct}
         NodeVolumeSize: !Ref NodeVolumeSize
-        KubeConfigKmsContext: !Ref KubeConfigKmsContext
+        # KubeConfigKmsContext: !Ref KubeConfigKmsContext
         BootstrapArguments: !Sub "--kubelet-extra-args '--node-labels=partition=${ArtifactoryProduct}'"
         ProvisionBastionHost: !Ref ProvisionBastionHost
         BastionInstanceType: !Ref BastionInstanceType
@@ -661,8 +698,8 @@ Resources:
       Parameters:
         KubeManifestLambdaArn: !GetAtt EksStack.Outputs.KubeManifestLambdaArn
         HelmLambdaArn: !GetAtt EksStack.Outputs.HelmLambdaArn
-        KubeConfigPath: !GetAtt EksStack.Outputs.KubeConfigPath
-        KubeConfigKmsContext: !Ref KubeConfigKmsContext
+        # KubeConfigPath: !GetAtt EksStack.Outputs.KubeConfigPath
+        # KubeConfigKmsContext: !Ref KubeConfigKmsContext
         KubeGetLambdaArn: !GetAtt EksStack.Outputs.KubeGetLambdaArn
         NumberOfSecondary: !Ref NumberOfSecondary
         AccessCidr: !Ref AccessCidr
