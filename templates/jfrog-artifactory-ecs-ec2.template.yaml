@@ -102,6 +102,8 @@ Parameters:
     Type: String
   QsS3BucketName:
     Type: String
+  QsS3BucketRegion:
+    Type: String
   QsS3KeyPrefix:
     Type: String
   QsS3Uri:
@@ -148,6 +150,7 @@ Mappings:
       infoFile: "installer-info.json"
       product: "artifactory"
 Conditions:
+  UsingDefaultBucket: !Equals [!Ref QsS3BucketName, 'aws-quickstart']
   ArtifactoryHa: !Equals [!Ref ArtifactoryProduct, 'JFrog-Artifactory-Pro']
   EcsOnEc2: !Equals [!Ref EnableFargate, 'Disabled']
   CreateEcsRole: !Equals [!Ref 'CreateNewEcsRole', 'Enabled']
@@ -390,7 +393,17 @@ Resources:
     Condition: EcsOnEc2
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: !Sub ${QsS3Uri}templates/jfrog-artifactory-ecs.template.yaml
+      TemplateURL: !Sub
+        - https://${S3Bucket}.s3.${S3Region}.${AWS::URLSuffix}/${QsS3KeyPrefix}templates/jfrog-artifactory-ecs.template.yaml
+        - S3Bucket: !If
+            - UsingDefaultBucket
+            - !Sub 'aws-quickstart-${AWS::Region}'
+            - !Ref 'QsS3BucketName'
+          S3Region: !If
+            - UsingDefaultBucket
+            - !Ref 'AWS::Region'
+            - !Ref 'QsS3BucketRegion'
+            # !Sub ${QsS3Uri}templates/jfrog-artifactory-ecs.template.yaml
       Parameters:
         EcsCluster: !Ref ClusterName  # In case we do not build the cluster we still require the Name of the cluster built.
         ServiceName: !If [ArtifactoryHa, ArtifactoryPrimary, JFrogContainerRegistry]
@@ -447,7 +460,17 @@ Resources:
     Condition: JcrWithFargate
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: !Sub 'https://${QsS3BucketName}.s3.amazonaws.com/${QsS3KeyPrefix}templates/jfrog-container-registry-ecs-fargate.template.yaml'
+      TemplateURL: !Sub
+        - https://${S3Bucket}.s3.${S3Region}.${AWS::URLSuffix}/${QsS3KeyPrefix}templates/jfrog-container-registry-ecs-fargate.template.yaml
+        - S3Bucket: !If
+            - UsingDefaultBucket
+            - !Sub 'aws-quickstart-${AWS::Region}'
+            - !Ref 'QsS3BucketName'
+          S3Region: !If
+            - UsingDefaultBucket
+            - !Ref 'AWS::Region'
+            - !Ref 'QsS3BucketRegion'
+            # !Sub 'https://${QsS3BucketName}.s3.amazonaws.com/${QsS3KeyPrefix}templates/jfrog-container-registry-ecs-fargate.template.yaml'
       Parameters:
         EcsCluster: !Ref ClusterName  # In case we do not build the cluster we still require the Name of the cluster built.
         ServiceName: Jfrog-Container-Registry
@@ -468,8 +491,9 @@ Resources:
         DatabasePassword: !Ref DatabasePassword
         EcsLogGroup: !Ref EcsLogGroup
         EcsRoleArn: !If [CreateEcsRole, !GetAtt EcsRole.Arn, !Ref RoleArn]
-        QsS3BucketName: !Ref QsS3BucketName
-        QsS3KeyPrefix: !Ref QsS3KeyPrefix
+        # QsS3BucketName: !Ref QsS3BucketName
+        # QsS3KeyPrefix: !Ref QsS3KeyPrefix
+        QsS3Uri: !Ref QsS3Uri
         SecurityGroups: !Ref SecurityGroups
         PrivateSubnet1Id: !Ref PrivateSubnet1Id
         PrivateSubnet2Id: !Ref PrivateSubnet2Id

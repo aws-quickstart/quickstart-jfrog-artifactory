@@ -603,16 +603,16 @@ Resources:
           - UsingDefaultBucket
           - !Ref 'AWS::Region'
           - !Ref 'QsS3BucketRegion'
-        QsS3Uri: !Sub
-          - https://${S3Bucket}.s3.${S3Region}.${AWS::URLSuffix}/${QsS3KeyPrefix}
-          - S3Bucket: !If
-              - UsingDefaultBucket
-              - !Sub 'aws-quickstart-${AWS::Region}'
-              - !Ref 'QsS3BucketName'
-            S3Region: !If
-              - UsingDefaultBucket
-              - !Ref 'AWS::Region'
-              - !Ref 'QsS3BucketRegion'
+        # QsS3Uri: !Sub
+        #   - https://${S3Bucket}.s3.${S3Region}.${AWS::URLSuffix}/${QsS3KeyPrefix}
+        #   - S3Bucket: !If
+        #       - UsingDefaultBucket
+        #       - !Sub 'aws-quickstart-${AWS::Region}'
+        #       - !Ref 'QsS3BucketName'
+        #     S3Region: !If
+        #       - UsingDefaultBucket
+        #       - !Ref 'AWS::Region'
+        #       - !Ref 'QsS3BucketRegion'
 Outputs:
   ArtifactoryUrl:
     Description: URL of the ELB to access Artifactory
