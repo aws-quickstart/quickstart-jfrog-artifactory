@@ -21,8 +21,7 @@ Parameters:
     Type: String
   QsS3KeyPrefix:
     Type: String
-  QsS3BucketRegion:
-    Default: 'us-east-1'
+  QsS3Uri:
     Type: String
   ArtifactoryLicense1:
     Type: String
@@ -146,7 +145,7 @@ Mappings:
       "Jcr721": ami-04fed5fc210272dfe
     us-east-2:
       AMZNLINUXHVM: ami-0d542ef84ec55d71c
-      "Artifactory721": ami-04e7a7765e77a367d  # ami-0a913af05ccdaa522
+      "Artifactory721": ami-0a913af05ccdaa522
       "Jcr721": ami-0d50790b8fb747584
     us-west-1:
       AMZNLINUXHVM: ami-04bc3da8f14823e88
@@ -155,9 +154,7 @@ Mappings:
     us-west-2:
       AMZNLINUXHVM: ami-01460aa81365561fe
       "700": ami-000937e944ea194bf
-      # TODO: JB - Remove debugging AMI
-      # "Artifactory721": ami-0c132dd3640519a35
-      "Artifactory721": ami-0d860e3089e588fd1
+      "Artifactory721": ami-0c132dd3640519a35
       "Jcr721": ami-083542bb4f8afa3db
   ArtifactoryProductMap:
     JFrog-Container-Registry:
@@ -169,8 +166,6 @@ Mappings:
       "702": "Artifactory702"
       "721": "Artifactory721"
       product: "artifactory"
-Conditions:
-  UsingDefaultBucket: !Equals [!Ref QsS3BucketName, 'aws-quickstart']
 Resources:
   ArtifactoryScalingGroup:
     Type: 'AWS::AutoScaling::AutoScalingGroup'
@@ -206,7 +201,7 @@ Resources:
           roleName:
             - !Ref HostRole  # !Ref ArtifactoryHostRole
           buckets:
-            - !If [UsingDefaultBucket, !Sub '{QsS3BucketName}-${AWS::Region}', !Ref 'QsS3BucketName']
+            - !Ref QsS3BucketName
       'AWS::CloudFormation::Init':
         configSets:
           artifactory_install:
@@ -289,9 +284,9 @@ Resources:
             VolumeSize: !Ref VolumeSize
             VolumeType: gp2
             DeleteOnTermination: true
-      UserData: !Base64
-        'Fn::Sub':
-          - >
+      UserData:
+        'Fn::Base64':
+          !Sub |
             #!/bin/bash -x
 
             #CFN Functions
@@ -316,7 +311,7 @@ Resources:
 
             }
 
-            S3URI=https://${S3Bucket}.s3.${S3Region}.${AWS::URLSuffix}/${QsS3KeyPrefix}
+            S3URI=${QsS3Uri}
 
             yum install -y git
 
@@ -349,7 +344,7 @@ Resources:
 
             mkdir ~/.artifactory_ansible
 
-            aws s3 sync s3://${S3Bucket}/${S3Region}scripts/ ~/.artifactory_ansible/
+            aws s3 sync s3://${QsS3BucketName}/${QsS3KeyPrefix}scripts/ ~/.artifactory_ansible/
 
             cfn-init -v --stack ${AWS::StackName} --resource ArtifactoryLaunchConfiguration --configsets artifactory_install --region ${AWS::Region} || cfn_fail
 
@@ -360,5 +355,3 @@ Resources:
             rm -rf /root/.secureit.sh
 
             [ $(qs_status) == 0 ] && cfn_success || cfn_fail
-          - S3Bucket: !If [UsingDefaultBucket, !Sub '{QsS3BucketName}-${AWS::Region}', !Ref 'QsS3BucketName']
-            S3Region: !If [UsingDefaultBucket, !Ref 'AWS::Region', !Ref 'QsS3BucketRegion']

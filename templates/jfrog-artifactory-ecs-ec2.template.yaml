@@ -102,10 +102,11 @@ Parameters:
     Type: String
   QsS3BucketName:
     Type: String
+  QsS3BucketRegion:
+    Type: String
   QsS3KeyPrefix:
     Type: String
-  QsS3BucketRegion:
-    Default: 'us-east-1'
+  QsS3Uri:
     Type: String
 Mappings:
   AWSAMIRegionMap:
@@ -149,13 +150,13 @@ Mappings:
       infoFile: "installer-info.json"
       product: "artifactory"
 Conditions:
+  UsingDefaultBucket: !Equals [!Ref QsS3BucketName, 'aws-quickstart']
   ArtifactoryHa: !Equals [!Ref ArtifactoryProduct, 'JFrog-Artifactory-Pro']
   EcsOnEc2: !Equals [!Ref EnableFargate, 'Disabled']
   CreateEcsRole: !Equals [!Ref 'CreateNewEcsRole', 'Enabled']
   JcrWithFargate: !And
     - !Equals [!Ref EnableFargate, 'Enabled']
     - !Equals [!Ref ArtifactoryProduct, 'JFrog-Container-Registry']
-  UsingDefaultBucket: !Equals [!Ref QsS3BucketName, 'aws-quickstart']
 Resources:
   EcsRole:
     Condition: CreateEcsRole
@@ -308,9 +309,9 @@ Resources:
             VolumeSize: !Ref VolumeSize
             VolumeType: gp2
             DeleteOnTermination: true
-      UserData: !Base64
-        'Fn::Sub':
-          - >
+      UserData:
+        'Fn::Base64':
+          !Sub |
             #!/bin/bash -x
 
             #CFN Functions
@@ -337,7 +338,7 @@ Resources:
 
             echo ECS_CLUSTER=${ClusterName} >> /etc/ecs/ecs.config
 
-            S3URI=https://${S3Bucket}.s3.${S3Region}.${AWS::URLSuffix}/${QsS3KeyPrefix}
+            S3URI=${QsS3Uri}
 
             yum install -y git https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-latest.amzn1.noarch.rpm python3-pip
 
@@ -381,8 +382,6 @@ Resources:
             rm -rf /root/.secureit.sh
 
             [ $(qs_status) == 0 ] && cfn_success || cfn_fail
-          - S3Bucket: !If [UsingDefaultBucket, !Sub '{QsS3BucketName}-${AWS::Region}', !Ref 'QsS3BucketName']
-            S3Region: !If [UsingDefaultBucket, !Ref 'AWS::Region', !Ref 'QsS3BucketRegion']
   EcsLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
@@ -419,9 +418,7 @@ Resources:
         DatabasePassword: !Ref DatabasePassword
         EcsLogGroup: !Ref EcsLogGroup
         EcsRoleArn: !If [CreateEcsRole, !GetAtt EcsRole.Arn, !Ref RoleArn]
-        QsS3BucketName: !Ref QsS3BucketName
-        QsS3KeyPrefix: !Ref QsS3KeyPrefix
-        QsS3BucketRegion: !Ref QsS3BucketRegion
+        QsS3Uri: !Ref QsS3Uri
   SecondaryStack:
     Condition: ArtifactoryHa
     DependsOn: PrimaryStack
@@ -453,9 +450,7 @@ Resources:
         DatabasePassword: !Ref DatabasePassword
         EcsLogGroup: !Ref EcsLogGroup
         EcsRoleArn: !If [CreateEcsRole, !GetAtt EcsRole.Arn, !Ref RoleArn]
-        QsS3BucketName: !Ref QsS3BucketName
-        QsS3KeyPrefix: !Ref QsS3KeyPrefix
-        QsS3BucketRegion: !Ref QsS3BucketRegion
+        QsS3Uri: !Ref QsS3Uri
   JcrFargateStack:
     Condition: JcrWithFargate
     Type: AWS::CloudFormation::Stack
@@ -484,8 +479,9 @@ Resources:
         DatabasePassword: !Ref DatabasePassword
         EcsLogGroup: !Ref EcsLogGroup
         EcsRoleArn: !If [CreateEcsRole, !GetAtt EcsRole.Arn, !Ref RoleArn]
-        QsS3BucketName: !Ref QsS3BucketName
-        QsS3KeyPrefix: !Ref QsS3KeyPrefix
+        # QsS3BucketName: !Ref QsS3BucketName
+        # QsS3KeyPrefix: !Ref QsS3KeyPrefix
+        QsS3Uri: !Ref QsS3Uri
         SecurityGroups: !Ref SecurityGroups
         PrivateSubnet1Id: !Ref PrivateSubnet1Id
         PrivateSubnet2Id: !Ref PrivateSubnet2Id
