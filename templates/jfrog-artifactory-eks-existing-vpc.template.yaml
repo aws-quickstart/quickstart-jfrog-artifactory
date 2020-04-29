@@ -767,6 +767,7 @@ Resources:
         ArtifactoryVersion: !Ref ArtifactoryVersion
         ArtifactoryDeploymentSize: !If [DefaultSize, !GetAtt ArtifactoryCoreInfraStack.Outputs.DeploymentSize, !Ref ArtifactoryDeploymentSize]
         ReleaseStage: !Ref ReleaseStage
+        KubeClusterName: !GetAtt EksStack.Outputs.EKSClusterName
         QsS3Uri: !Sub
           - https://${S3Bucket}.s3.${S3Region}.${AWS::URLSuffix}/${QsS3KeyPrefix}
           - S3Bucket: !If

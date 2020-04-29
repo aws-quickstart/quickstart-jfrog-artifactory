@@ -68,6 +68,8 @@ Parameters:
   ReleaseStage:
     Type: String
     Default: BETA
+  KubeClusterName:
+    Type: String
   QsS3Uri:
     Type: String
 Mappings:
@@ -166,6 +168,7 @@ Resources:
       ServiceToken: !Ref KubeManifestLambdaArn
       # KubeConfigPath: !Ref KubeConfigPath
       # KubeConfigKmsContext: !Ref KubeConfigKmsContext
+      ClusterName: !Ref KubeClusterName
       Manifest:
         kind: Namespace
         apiVersion: v1
@@ -182,6 +185,7 @@ Resources:
       ServiceToken: !Ref KubeManifestLambdaArn
       # KubeConfigPath: !Ref KubeConfigPath
       # KubeConfigKmsContext: !Ref KubeConfigKmsContext
+      ClusterName: !Ref KubeClusterName
       Manifest:
         kind: Secret
         apiVersion: v1
@@ -209,6 +213,7 @@ Resources:
       ServiceToken: !Ref KubeManifestLambdaArn
       # KubeConfigPath: !Ref KubeConfigPath
       # KubeConfigKmsContext: !Ref KubeConfigKmsContext
+      ClusterName: !Ref KubeClusterName
       Manifest:
         kind: Secret
         apiVersion: v1
@@ -241,6 +246,7 @@ Resources:
       ServiceToken: !Ref KubeManifestLambdaArn
       # KubeConfigPath: !Ref KubeConfigPath
       # KubeConfigKmsContext: !Ref KubeConfigKmsContext
+      ClusterName: !Ref KubeClusterName
       Manifest:
         kind: Secret
         apiVersion: v1
@@ -273,6 +279,7 @@ Resources:
       ServiceToken: !Ref HelmLambdaArn
       # KubeConfigPath: !Ref KubeConfigPath
       # KubeConfigKmsContext: !Ref KubeConfigKmsContext
+      ClusterName: !Ref KubeClusterName
       Namespace: !FindInMap [ArtifactoryProductMap, !Ref ArtifactoryProduct, namespace]
       Name: quickstart-artifactory-ha
       Chart: jfrog/artifactory-ha
