@@ -48,9 +48,15 @@ Parameters:
   YQVersion:
     Default: "3.0.1"
     Type: String
-  QsS3Uri:
+  QsS3BucketName:
+    Default: aws-quickstart
     Type: String
-
+  QsS3KeyPrefix:
+    Default: quickstart-jfrog-artifactory/
+    Type: String
+  QsS3BucketRegion:
+    Default: 'us-east-1'
+    Type: String
 Mappings:
   DeploymentSize:
     xxxLarge:
@@ -77,7 +83,8 @@ Mappings:
     xxSmall:
       Memory: "4096"
       Cpu: "2048"
-
+Conditions:
+  UsingDefaultBucket: !Equals [!Ref QsS3BucketName, 'aws-quickstart']
 Resources:
   ECSService:
     Type: AWS::ECS::Service
@@ -96,7 +103,6 @@ Resources:
       TaskDefinition:
         Ref: ArtifactoryTaskDefinition
       HealthCheckGracePeriodSeconds: 300
-
   ArtifactoryTaskDefinition:
     Type: AWS::ECS::TaskDefinition
     Properties:
@@ -126,17 +132,20 @@ Resources:
             - /bin/bash
             - "-c"
           Command:
-            - !Sub |
-              wget ${QsS3Uri}scripts/configure_ecs_container.sh -O /tmp/source;
-              echo '' >> /tmp/source;
-              echo export HA_HOST_IP=`wget -q -O - http://169.254.169.254/latest/meta-data/local-ipv4` >> /tmp/source;
-              echo wget -O /var/opt/jfrog/artifactory/bootstrap/artifactory/tomcat/lib/${DatabasePlugin} ${DatabasePluginUrl} >> /tmp/source;
-              echo mkdir /var/opt/jfrog/artifactory/etc/artifactory/info/ >> /tmp/source;
-              echo wget ${QsS3Uri}scripts/roles/artifactory/files/${InfoFile} -O /var/opt/jfrog/artifactory/etc/artifactory/info/installer-info.json >> /tmp/source;
-              echo cp /tmp/plugins/inactiveServerCleaner.groovy /var/opt/jfrog/artifactory/etc/artifactory/plugins/ >> /tmp/source;
-              echo /entrypoint-artifactory.sh >> /tmp/source;
-              chmod +x /tmp/source;
-              /tmp/source
+            - !Sub
+              - >
+                wget https://${S3Bucket}.s3.${S3Region}.${AWS::URLSuffix}/${QsS3KeyPrefix}scripts/configure_ecs_container.sh -O /tmp/source;
+                echo '' >> /tmp/source;
+                echo export HA_HOST_IP=`wget -q -O - http://169.254.169.254/latest/meta-data/local-ipv4` >> /tmp/source;
+                echo wget -O /var/opt/jfrog/artifactory/bootstrap/artifactory/tomcat/lib/${DatabasePlugin} ${DatabasePluginUrl} >> /tmp/source;
+                echo mkdir /var/opt/jfrog/artifactory/etc/artifactory/info/ >> /tmp/source;
+                echo wget https://${S3Bucket}.s3.${S3Region}.${AWS::URLSuffix}/${QsS3KeyPrefix}scripts/roles/artifactory/files/${InfoFile} -O /var/opt/jfrog/artifactory/etc/artifactory/info/installer-info.json >> /tmp/source;
+                echo cp /tmp/plugins/inactiveServerCleaner.groovy /var/opt/jfrog/artifactory/etc/artifactory/plugins/ >> /tmp/source;
+                echo /entrypoint-artifactory.sh >> /tmp/source;
+                chmod +x /tmp/source;
+                /tmp/source
+              - S3Bucket: !If [UsingDefaultBucket, !Sub '{QsS3BucketName}-${AWS::Region}', !Ref 'QsS3BucketName']
+                S3Region: !If [UsingDefaultBucket, !Ref 'AWS::Region', !Ref 'QsS3BucketRegion']
           Image: !Sub ${ProDockerRepoUrl}
           PortMappings:
             - ContainerPort: 8081
