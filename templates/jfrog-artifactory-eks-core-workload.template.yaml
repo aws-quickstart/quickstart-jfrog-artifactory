@@ -5,9 +5,7 @@ Parameters:
     Type: String
   HelmLambdaArn:
     Type: String
-  KubeConfigPath:
-    Type: String
-  KubeConfigKmsContext:
+  EksClusterName:
     Type: String
   KubeGetLambdaArn:
     Type: String
@@ -68,7 +66,14 @@ Parameters:
   ReleaseStage:
     Type: String
     Default: BETA
-  QsS3Uri:
+  QsS3BucketName:
+    Default: aws-quickstart
+    Type: String
+  QsS3KeyPrefix:
+    Default: quickstart-jfrog-artifactory/
+    Type: String
+  QsS3BucketRegion:
+    Default: 'us-east-1'
     Type: String
 Mappings:
   ArtifactoryProductMap:
@@ -158,14 +163,14 @@ Mappings:
 Conditions:
   ArtifactoryHa: !Equals [!Ref ArtifactoryProduct, 'JFrog-Artifactory-Pro']
   JcrInstall: !Equals [!Ref ArtifactoryProduct, 'JFrog-Container-Registry']
+  UsingDefaultBucket: !Equals [!Ref QsS3BucketName, 'aws-quickstart']
 Resources:
   NameSpace:
     Type: "Custom::KubeManifest"
     Version: '1.0'
     Properties:
       ServiceToken: !Ref KubeManifestLambdaArn
-      KubeConfigPath: !Ref KubeConfigPath
-      KubeConfigKmsContext: !Ref KubeConfigKmsContext
+      ClusterName: !Ref EksClusterName
       Manifest:
         kind: Namespace
         apiVersion: v1
@@ -180,8 +185,7 @@ Resources:
     Version: '1.0'
     Properties:
       ServiceToken: !Ref KubeManifestLambdaArn
-      KubeConfigPath: !Ref KubeConfigPath
-      KubeConfigKmsContext: !Ref KubeConfigKmsContext
+      ClusterName: !Ref EksClusterName
       Manifest:
         kind: Secret
         apiVersion: v1
@@ -207,8 +211,7 @@ Resources:
     Version: '1.0'
     Properties:
       ServiceToken: !Ref KubeManifestLambdaArn
-      KubeConfigPath: !Ref KubeConfigPath
-      KubeConfigKmsContext: !Ref KubeConfigKmsContext
+      ClusterName: !Ref EksClusterName
       Manifest:
         kind: Secret
         apiVersion: v1
@@ -232,15 +235,13 @@ Resources:
 
 
             ${ArtifactoryLicense4}
-
   SecureStoreDatabase:
     DependsOn: NameSpace
     Type: "Custom::KubeManifest"
     Version: '1.0'
     Properties:
       ServiceToken: !Ref KubeManifestLambdaArn
-      KubeConfigPath: !Ref KubeConfigPath
-      KubeConfigKmsContext: !Ref KubeConfigKmsContext
+      ClusterName: !Ref EksClusterName
       Manifest:
         kind: Secret
         apiVersion: v1
@@ -261,7 +262,6 @@ Resources:
           db-url:
             Fn::Base64:
               !Sub ${DatabaseUrl}
-
   ArtifactoryDeployment:
     Condition: ArtifactoryHa
     Type: "Custom::Helm"
@@ -271,14 +271,13 @@ Resources:
     Version: '1.0'
     Properties:
       ServiceToken: !Ref HelmLambdaArn
-      KubeConfigPath: !Ref KubeConfigPath
-      KubeConfigKmsContext: !Ref KubeConfigKmsContext
+      ClusterName: !Ref EksClusterName
       Namespace: !FindInMap [ArtifactoryProductMap, !Ref ArtifactoryProduct, namespace]
       Name: quickstart-artifactory-ha
       Chart: jfrog/artifactory-ha
-      RepoUrl: !FindInMap [HelmRepoMap, !FindInMap [ArtifactoryProductMap, !Ref ArtifactoryProduct, !Ref ReleaseStage ], RepoUrl]
+      RepoUrl: !FindInMap [HelmRepoMap, !FindInMap [ArtifactoryProductMap, !Ref ArtifactoryProduct, !Ref ReleaseStage], RepoUrl]
       # If we want to test specific version of the Helm chart, we can pass it here
-      Version: !FindInMap [HelmRepoMap, !FindInMap [ArtifactoryProductMap, !Ref ArtifactoryProduct, !Ref ReleaseStage ], HelmChartVersion]
+      Version: !FindInMap [HelmRepoMap, !FindInMap [ArtifactoryProductMap, !Ref ArtifactoryProduct, !Ref ReleaseStage], HelmChartVersion]
       ValueYaml: !Sub
         - |
           artifactory:
@@ -292,7 +291,7 @@ Resources:
               secret: artifactory-cluster-license
               dataKey: art.lic
             masterKey: ${MasterKey}
-            preStartCommand: mkdir -p /var/opt/jfrog/artifactory/etc/artifactory/info/; wget ${QsS3Uri}scripts/roles/artifactory/files/${info_file} -O /var/opt/jfrog/artifactory/etc/artifactory/info/installer-info.json; mkdir -p /var/opt/jfrog/artifactory/bootstrap/artifactory/tomcat/lib/; wget -O  /var/opt/jfrog/artifactory/bootstrap/artifactory/tomcat/lib/${DatabasePlugin} ${DatabasePluginUrl}
+            preStartCommand: mkdir -p /var/opt/jfrog/artifactory/etc/artifactory/info/; wget https://${S3Bucket}.s3.${S3Region}.${AWS::URLSuffix}/${QsS3KeyPrefix}scripts/roles/artifactory/files/${info_file} -O /var/opt/jfrog/artifactory/etc/artifactory/info/installer-info.json; mkdir -p /var/opt/jfrog/artifactory/bootstrap/artifactory/tomcat/lib/; wget -O  /var/opt/jfrog/artifactory/bootstrap/artifactory/tomcat/lib/${DatabasePlugin} ${DatabasePluginUrl}
             persistence:
               enabled: false
               local: false
@@ -411,15 +410,16 @@ Resources:
               loadBalancerSourceRanges:  [ "${AccessCidr}" ]
             tlsSecretName: artifactory-nginx-tls
         - {
-           info_file: !FindInMap [ArtifactoryProductMap, !Ref ArtifactoryProduct, infoFile],
-           requests_memory: !FindInMap [DeploymentSize, !Ref ArtifactoryDeploymentSize, requestsMem],
-           requests_cpu: !FindInMap [DeploymentSize, !Ref ArtifactoryDeploymentSize, requestsCpu],
-           limits_memory: !FindInMap [DeploymentSize, !Ref ArtifactoryDeploymentSize, limitsMem],
-           limits_cpu: !FindInMap [DeploymentSize, !Ref ArtifactoryDeploymentSize, limitsCpu],
-           java_xms: !FindInMap [DeploymentSize, !Ref ArtifactoryDeploymentSize, javaOptsXms],
-           java_xmx: !FindInMap [DeploymentSize, !Ref ArtifactoryDeploymentSize, javaOptsXmx],
-          }
-
+          info_file: !FindInMap [ArtifactoryProductMap, !Ref ArtifactoryProduct, infoFile],
+          requests_memory: !FindInMap [DeploymentSize, !Ref ArtifactoryDeploymentSize, requestsMem],
+          requests_cpu: !FindInMap [DeploymentSize, !Ref ArtifactoryDeploymentSize, requestsCpu],
+          limits_memory: !FindInMap [DeploymentSize, !Ref ArtifactoryDeploymentSize, limitsMem],
+          limits_cpu: !FindInMap [DeploymentSize, !Ref ArtifactoryDeploymentSize, limitsCpu],
+          java_xms: !FindInMap [DeploymentSize, !Ref ArtifactoryDeploymentSize, javaOptsXms],
+          java_xmx: !FindInMap [DeploymentSize, !Ref ArtifactoryDeploymentSize, javaOptsXmx],
+          S3Bucket: !If [UsingDefaultBucket, !Sub '{QsS3BucketName}-${AWS::Region}', !Ref 'QsS3BucketName'],
+          S3Region: !If [UsingDefaultBucket, !Ref 'AWS::Region', !Ref 'QsS3BucketRegion'],
+        }
   IngressHostName:
     Condition: ArtifactoryHa
     DependsOn: ArtifactoryDeployment
@@ -427,12 +427,10 @@ Resources:
     Version: '1.0'
     Properties:
       ServiceToken: !Ref KubeGetLambdaArn
-      KubeConfigPath: !Ref KubeConfigPath
-      KubeConfigKmsContext: !Ref KubeConfigKmsContext
+      ClusterName: !Ref EksClusterName
       Namespace: !FindInMap [ArtifactoryProductMap, !Ref ArtifactoryProduct, namespace]
       Name: svc/quickstart-artifactory-ha-nginx
       JsonPath: '{.status.loadBalancer.ingress[0].hostname}'
-
   JcrDeployment:
     Condition: JcrInstall
     Type: "Custom::Helm"
@@ -440,13 +438,12 @@ Resources:
     Version: '1.0'
     Properties:
       ServiceToken: !Ref HelmLambdaArn
-      KubeConfigPath: !Ref KubeConfigPath
-      KubeConfigKmsContext: !Ref KubeConfigKmsContext
+      ClusterName: !Ref EksClusterName
       Namespace: !FindInMap [ArtifactoryProductMap, !Ref ArtifactoryProduct, namespace]
       Name: quickstart-jcr
       Chart: jfrog/artifactory-jcr
-      RepoUrl: !FindInMap [HelmRepoMap, !FindInMap [ArtifactoryProductMap, !Ref ArtifactoryProduct, !Ref ReleaseStage ], RepoUrl]
-      Version: !FindInMap [HelmRepoMap, !FindInMap [ArtifactoryProductMap, !Ref ArtifactoryProduct, !Ref ReleaseStage ], HelmChartVersion]
+      RepoUrl: !FindInMap [HelmRepoMap, !FindInMap [ArtifactoryProductMap, !Ref ArtifactoryProduct, !Ref ReleaseStage], RepoUrl]
+      Version: !FindInMap [HelmRepoMap, !FindInMap [ArtifactoryProductMap, !Ref ArtifactoryProduct, !Ref ReleaseStage], HelmChartVersion]
       ValueYaml: !Sub
         - |
           artifactory:
@@ -458,7 +455,7 @@ Resources:
                 pullPolicy: Always
               deleteDBPropertiesOnStartup: true
               masterKey: ${MasterKey}
-              preStartCommand: mkdir -p /var/opt/jfrog/artifactory/etc/artifactory/info/; wget ${QsS3Uri}scripts/roles/artifactory/files/${info_file} -O /var/opt/jfrog/artifactory/etc/artifactory/info/installer-info.json; mkdir -p /var/opt/jfrog/artifactory/bootstrap/artifactory/tomcat/lib/; wget -O  /var/opt/jfrog/artifactory/bootstrap/artifactory/tomcat/lib/${DatabasePlugin} ${DatabasePluginUrl}; cp /bootstrap/artifactory/binarystore.xml /var/opt/jfrog/artifactory/etc/artifactory/binarystore.xml
+              preStartCommand: mkdir -p /var/opt/jfrog/artifactory/etc/artifactory/info/; wget https://${S3Bucket}.s3.${S3Region}.${AWS::URLSuffix}/${QsS3KeyPrefix}scripts/roles/artifactory/files/${info_file} -O /var/opt/jfrog/artifactory/etc/artifactory/info/installer-info.json; mkdir -p /var/opt/jfrog/artifactory/bootstrap/artifactory/tomcat/lib/; wget -O  /var/opt/jfrog/artifactory/bootstrap/artifactory/tomcat/lib/${DatabasePlugin} ${DatabasePluginUrl}; cp /bootstrap/artifactory/binarystore.xml /var/opt/jfrog/artifactory/etc/artifactory/binarystore.xml
               persistence:
                 enabled: false
                 type: aws-s3-v3
@@ -531,14 +528,16 @@ Resources:
           postgresql:
             enabled: false
         - {
-           info_file: !FindInMap [ArtifactoryProductMap, !Ref ArtifactoryProduct, infoFile],
-           requests_memory: !FindInMap [DeploymentSize, !Ref ArtifactoryDeploymentSize, requestsMem],
-           requests_cpu: !FindInMap [DeploymentSize, !Ref ArtifactoryDeploymentSize, requestsCpu],
-           limits_memory: !FindInMap [DeploymentSize, !Ref ArtifactoryDeploymentSize, limitsMem],
-           limits_cpu: !FindInMap [DeploymentSize, !Ref ArtifactoryDeploymentSize, limitsCpu],
-           java_xms: !FindInMap [DeploymentSize, !Ref ArtifactoryDeploymentSize, javaOptsXms],
-           java_xmx: !FindInMap [DeploymentSize, !Ref ArtifactoryDeploymentSize, javaOptsXmx],
-          }
+          info_file: !FindInMap [ArtifactoryProductMap, !Ref ArtifactoryProduct, infoFile],
+          requests_memory: !FindInMap [DeploymentSize, !Ref ArtifactoryDeploymentSize, requestsMem],
+          requests_cpu: !FindInMap [DeploymentSize, !Ref ArtifactoryDeploymentSize, requestsCpu],
+          limits_memory: !FindInMap [DeploymentSize, !Ref ArtifactoryDeploymentSize, limitsMem],
+          limits_cpu: !FindInMap [DeploymentSize, !Ref ArtifactoryDeploymentSize, limitsCpu],
+          java_xms: !FindInMap [DeploymentSize, !Ref ArtifactoryDeploymentSize, javaOptsXms],
+          java_xmx: !FindInMap [DeploymentSize, !Ref ArtifactoryDeploymentSize, javaOptsXmx],
+          S3Bucket: !If [UsingDefaultBucket, !Sub '{QsS3BucketName}-${AWS::Region}', !Ref 'QsS3BucketName'],
+          S3Region: !If [UsingDefaultBucket, !Ref 'AWS::Region', !Ref 'QsS3BucketRegion'],
+        }
   JcrIngressHostName:
     Condition: JcrInstall
     DependsOn: JcrDeployment
@@ -546,11 +545,10 @@ Resources:
     Version: '1.0'
     Properties:
       ServiceToken: !Ref KubeGetLambdaArn
-      KubeConfigPath: !Ref KubeConfigPath
-      KubeConfigKmsContext: !Ref KubeConfigKmsContext
+      ClusterName: !Ref EksClusterName
       Namespace: !FindInMap [ArtifactoryProductMap, !Ref ArtifactoryProduct, namespace]
       Name: svc/quickstart-jcr-artifactory-nginx
       JsonPath: '{.status.loadBalancer.ingress[0].hostname}'
 Outputs:
   ArtifactoryUrl:
-    Value:  !If [ArtifactoryHa, !Sub "https://${IngressHostName}", !Sub "https://${JcrIngressHostName}"]
+    Value: !If [ArtifactoryHa, !Sub "https://${IngressHostName}", !Sub "https://${JcrIngressHostName}"]

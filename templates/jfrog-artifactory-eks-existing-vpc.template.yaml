@@ -9,8 +9,8 @@ Metadata:
           - KeyPairName
           - AccessCidr
           - RemoteAccessCidr
-          - AdditionalEKSAdminArns
-          - KubeConfigKmsContext
+          - AdditionalEKSAdminUserArn
+          - AdditionalEKSAdminRoleArn
       - Label:
           default: Network configuration
         Parameters:
@@ -68,7 +68,6 @@ Metadata:
           - QsS3BucketName
           - QsS3KeyPrefix
           - QsS3BucketRegion
-          - QsS3Uri
           - LambdaZipsBucketName
     ParameterLabels:
       KeyPairName:
@@ -77,10 +76,10 @@ Metadata:
         default: Permitted IP range
       RemoteAccessCidr:
         default: Remote access CIDR
-      AdditionalEKSAdminArns:
+      AdditionalEKSAdminUserArn:
         default: Additional EKS admin ARNs
-      KubeConfigKmsContext:
-        default: Kubernetes config KMS context
+      AdditionalEKSAdminRoleArn:
+        default: Additional EKS admin ARNs
       VpcId:
         default: VPC ID
       VpcCidr:
@@ -159,8 +158,6 @@ Metadata:
         default: Quick Start S3 key prefix
       QsS3BucketRegion:
         default: Quick Start S3 bucket region
-      QsS3Uri:
-        default: Quick Start S3 URI
       LambdaZipsBucketName:
         default: Lambda zips bucket name
 Parameters:
@@ -182,14 +179,14 @@ Parameters:
     AllowedPattern: ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/([0-9]|[1-2][0-9]|3[0-2]))$
     ConstraintDescription: CIDR block parameter must be in the form x.x.x.x/x
     Type: String
-  AdditionalEKSAdminArns:
-    Description: '[OPTIONAL] The Amazon Resource Names (ARNs): a comma-separated list of IAM users and roles to be granted admin access to the EKS cluster.'
+  AdditionalEKSAdminUserArn:
+    Description: '[OPTIONAL] The Amazon Resource Names (ARNs): a comma-separated list of IAM users to be granted admin access to the EKS cluster.'
     Default: ""
     Type: CommaDelimitedList
-  KubeConfigKmsContext:
-    Description: String value used by KMS to encrypt/decrypt Kubernetes configuration file.
-    Default: "JFrogArtifactory"
-    Type: String
+  AdditionalEKSAdminRoleArn:
+    Description: '[OPTIONAL] The Amazon Resource Names (ARNs): a comma-separated list of IAM roles to be granted admin access to the EKS cluster.'
+    Default: ""
+    Type: CommaDelimitedList
   VpcId:
     Description: The ID of your existing VPC for deployment (e.g., vpc-0343606e).
     Type: AWS::EC2::VPC::Id
@@ -238,11 +235,6 @@ Parameters:
   NodeInstanceType:
     Description: The Amazon EC2 instance type for the nodes hosting the Kubernetes pods.
     AllowedValues:
-      - m4.large
-      - m4.xlarge
-      - m4.2xlarge
-      - m4.4xlarge
-      - m4.10xlarge
       - m5.large
       - m5.xlarge
       - m5.2xlarge
@@ -250,7 +242,7 @@ Parameters:
       - m5.12xlarge
       - m5.24xlarge
     ConstraintDescription: Must be a valid EC2 instance type
-    Default: m4.xlarge
+    Default: m5.xlarge
     Type: String
   NodeVolumeSize:
     Description: The size of EBS volumes for master node instances, in GB.
@@ -507,10 +499,6 @@ Parameters:
     Default: 'us-east-1'
     Description: The AWS Region where the Quick Start S3 bucket (QSS3BucketName) is hosted. When using your own bucket, you must specify this value.
     Type: String
-  QsS3Uri:
-    Default: https://aws-quickstart.s3.us-east-1.amazonaws.com/quickstart-jfrog-artifactory/
-    Description: The S3 bucket URI for the Quick Start assets.
-    Type: String
   LambdaZipsBucketName:
     Description: '[OPTIONAL] The name of the S3 bucket where the Lambda .zip
       files should be placed. If you leave this parameter blank, an S3 bucket will be created.'
@@ -539,15 +527,20 @@ Conditions:
   ArtifactoryHa: !Equals [!Ref ArtifactoryProduct, 'JFrog-Artifactory-Pro']
   BastionSecurityGroup: !And [!Equals [!Ref ArtifactoryProduct, 'JFrog-Artifactory-Pro'], !Equals [!Ref 'ProvisionBastionHost', 'Enabled']]
   DefaultSize: !Equals [!Ref DefaultDeploymentSize, "true"]
+  UsingDefaultBucket: !Equals [!Ref QsS3BucketName, 'aws-quickstart']
 Resources:
   EksStack:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: !Sub ${QsS3Uri}submodules/quickstart-amazon-eks/templates/amazon-eks.template.yaml
+      TemplateURL: !Sub
+        - https://${S3Bucket}.s3.${S3Region}.${AWS::URLSuffix}/${QsS3KeyPrefix}submodules/quickstart-amazon-eks/templates/amazon-eks.template.yaml
+        - S3Bucket: !If [UsingDefaultBucket, !Sub '${QsS3BucketName}-${AWS::Region}', !Ref 'QsS3BucketName']
+          S3Region: !If [UsingDefaultBucket, !Ref 'AWS::Region', !Ref 'QsS3BucketRegion']
       Parameters:
         KeyPairName: !Ref KeyPairName
         RemoteAccessCIDR: !Ref RemoteAccessCidr
-        AdditionalEKSAdminArns: !Join [",", !Ref AdditionalEKSAdminArns]
+        AdditionalEKSAdminUserArn: !Join [",", !Ref AdditionalEKSAdminUserArn]
+        AdditionalEKSAdminRoleArn: !Join [",", !Ref AdditionalEKSAdminRoleArn]
         VPCID: !Ref VpcId
         PrivateSubnet1ID: !Ref PrivateSubnet1Id
         PrivateSubnet2ID: !Ref PrivateSubnet2Id
@@ -560,7 +553,6 @@ Resources:
         NumberOfNodes: !If [ArtifactoryHa, '1', !Ref NumberOfSecondary]
         NodeGroupName: !Sub ${ArtifactoryProduct}
         NodeVolumeSize: !Ref NodeVolumeSize
-        KubeConfigKmsContext: !Ref KubeConfigKmsContext
         BootstrapArguments: !Sub "--kubelet-extra-args '--node-labels=partition=${ArtifactoryProduct}'"
         ProvisionBastionHost: !Ref ProvisionBastionHost
         BastionInstanceType: !Ref BastionInstanceType
@@ -577,7 +569,10 @@ Resources:
     Condition: ArtifactoryHa
     Type: "AWS::CloudFormation::Stack"
     Properties:
-      TemplateURL: !Sub ${QsS3Uri}submodules/quickstart-amazon-eks/templates/amazon-eks-nodegroup.template.yaml
+      TemplateURL: !Sub
+        - https://${S3Bucket}.s3.${S3Region}.${AWS::URLSuffix}/${QsS3KeyPrefix}submodules/quickstart-amazon-eks/templates/amazon-eks-nodegroup.template.yaml
+        - S3Bucket: !If [UsingDefaultBucket, !Sub '${QsS3BucketName}-${AWS::Region}', !Ref 'QsS3BucketName']
+          S3Region: !If [UsingDefaultBucket, !Ref 'AWS::Region', !Ref 'QsS3BucketRegion']
       Parameters:
         KeyPairName: !Ref KeyPairName
         PrivateSubnet1ID: !Ref PrivateSubnet1Id
@@ -635,7 +630,10 @@ Resources:
     DependsOn: EksStack
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: !Sub ${QsS3Uri}templates/jfrog-artifactory-core-infrastructure.template.yaml
+      TemplateURL: !Sub
+        - https://${S3Bucket}.s3.${S3Region}.${AWS::URLSuffix}/${QsS3KeyPrefix}templates/jfrog-artifactory-core-infrastructure.template.yaml
+        - S3Bucket: !If [UsingDefaultBucket, !Sub '${QsS3BucketName}-${AWS::Region}', !Ref 'QsS3BucketName']
+          S3Region: !If [UsingDefaultBucket, !Ref 'AWS::Region', !Ref 'QsS3BucketRegion']
       Parameters:
         VpcId: !Ref VpcId
         VpcCidr: !Ref VpcCidr
@@ -657,12 +655,14 @@ Resources:
   ArtifactoryCoreStack:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: !Sub ${QsS3Uri}templates/jfrog-artifactory-eks-core-workload.template.yaml
+      TemplateURL: !Sub
+        - https://${S3Bucket}.s3.${S3Region}.${AWS::URLSuffix}/${QsS3KeyPrefix}templates/jfrog-artifactory-eks-core-workload.template.yaml
+        - S3Bucket: !If [UsingDefaultBucket, !Sub '${QsS3BucketName}-${AWS::Region}', !Ref 'QsS3BucketName']
+          S3Region: !If [UsingDefaultBucket, !Ref 'AWS::Region', !Ref 'QsS3BucketRegion']
       Parameters:
         KubeManifestLambdaArn: !GetAtt EksStack.Outputs.KubeManifestLambdaArn
         HelmLambdaArn: !GetAtt EksStack.Outputs.HelmLambdaArn
-        KubeConfigPath: !GetAtt EksStack.Outputs.KubeConfigPath
-        KubeConfigKmsContext: !Ref KubeConfigKmsContext
+        EksClusterName: !GetAtt EksStack.Outputs.EKSClusterName
         KubeGetLambdaArn: !GetAtt EksStack.Outputs.KubeGetLambdaArn
         NumberOfSecondary: !Ref NumberOfSecondary
         AccessCidr: !Ref AccessCidr
@@ -689,7 +689,9 @@ Resources:
         ArtifactoryVersion: !Ref ArtifactoryVersion
         ArtifactoryDeploymentSize: !If [DefaultSize, !GetAtt ArtifactoryCoreInfraStack.Outputs.DeploymentSize, !Ref ArtifactoryDeploymentSize]
         ReleaseStage: !Ref ReleaseStage
-        QsS3Uri: !Ref QsS3Uri
+        QsS3BucketName: !Ref QsS3BucketName
+        QsS3KeyPrefix: !Ref QsS3KeyPrefix
+        QsS3BucketRegion: !Ref QsS3BucketRegion
 Outputs:
   ArtifactoryUrl:
     Value: !GetAtt ArtifactoryCoreStack.Outputs.ArtifactoryUrl
@@ -697,6 +699,3 @@ Outputs:
   BastionIp:
     Value: !GetAtt EksStack.Outputs.BastionIP
     Description: Bastion host IP, for admin access via SSH
-  KubeConfigPath:
-    Value: !GetAtt EksStack.Outputs.KubeConfigPath
-    Description: (Advanced) Amazon S3 bucket containing encrypted Kubernetes config which can be used to access the Kubernetes API.
