@@ -16,7 +16,7 @@ tests:
 #      ArtifactRepoUrl: https://jfrog.bintray.com/artifactory-pro-rpms
 #      RemoteAccessCidr: "10.0.0.0/16"
 #      QsS3BucketName: "$[taskcat_autobucket]"
-#      QsS3KeyPrefix: "theflash/"
+#      QsS3KeyPrefix: "quickstart-jfrog-artifactory/"
 #      QsS3BucketRegion: "$[taskcat_current_region]"
 #    template: templates/jfrog-ami-master.template.yaml
 #    regions:
@@ -31,7 +31,7 @@ tests:
 #      AvailabilityZones: "$[taskcat_genaz_2]"
 #      DatabasePassword: "$[taskcat_genpass_8A]"
 #      QsS3BucketName: "$[taskcat_autobucket]"
-#      QsS3KeyPrefix: "theflash/"
+#      QsS3KeyPrefix: "quickstart-jfrog-artifactory/"
 #      QsS3BucketRegion: "$[taskcat_current_region]"
 #      DatabaseInstance: "db.m4.large"
 #      NumberOfSecondary: "2"
@@ -52,7 +52,7 @@ tests:
 #      AvailabilityZones: "$[taskcat_genaz_2]"
 #      DatabasePassword: "$[taskcat_genpass_8A]"
 #      QsS3BucketName: "$[taskcat_autobucket]"
-#      QsS3KeyPrefix: "theflash/"
+#      QsS3KeyPrefix: "quickstart-jfrog-artifactory/"
 #      QsS3BucketRegion: "$[taskcat_current_region]"
 #      DatabaseInstance: "db.m4.large"
 #      DatabaseEngine: MySQL
@@ -75,7 +75,7 @@ tests:
 #      AvailabilityZones: "$[taskcat_genaz_3]"
 #      DatabasePassword: "$[taskcat_genpass_8A]"
 #      QsS3BucketName: "$[taskcat_autobucket]"
-#      QsS3KeyPrefix: "theflash/"
+#      QsS3KeyPrefix: "quickstart-jfrog-artifactory/"
 #      QsS3BucketRegion: "$[taskcat_current_region]"
 #      DatabaseInstance: "db.m4.large"
 #      ArtifactoryVersion: "7.2.1"
