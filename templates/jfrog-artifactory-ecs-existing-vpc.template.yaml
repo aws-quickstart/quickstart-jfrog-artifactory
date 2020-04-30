@@ -42,7 +42,6 @@ Metadata:
           - InstanceType
           - VolumeSize
           - EnableFargate
-
       - Label:
           default: JFrog Artifactory Configuration
         Parameters:
@@ -73,7 +72,6 @@ Metadata:
           - QsS3BucketName
           - QsS3KeyPrefix
           - QsS3BucketRegion
-          # - QsS3Uri
     ParameterLabels:
       KeyPairName:
         default: SSH key name
@@ -171,8 +169,6 @@ Metadata:
         default: Quick Start S3 key prefix
       QsS3BucketRegion:
         default: Quick Start S3 bucket region
-      # QsS3Uri:
-      #   default: Quick Start S3 URI
 Parameters:
   KeyPairName:
     Description: The name of an existing public/private key pair, which allows you
@@ -557,17 +553,13 @@ Parameters:
     Default: 'us-east-1'
     Description: The AWS Region where the Quick Start S3 bucket (QSS3BucketName) is hosted. When using your own bucket, you must specify this value.
     Type: String
-  # QsS3Uri:
-  #   Default: https://aws-quickstart.s3.us-east-1.amazonaws.com/quickstart-jfrog-artifactory/
-  #   Description: The S3 bucket URI for the Quick Start assets.
-  #   Type: String
 Conditions:
-  UsingDefaultBucket: !Equals [!Ref QsS3BucketName, 'aws-quickstart']
   CreateEcsCluster: !Equals [!Ref 'CreateNewEcsCluster', 'Enabled']
   EnableBastion: !Equals [!Ref 'ProvisionBastionHost', 'Enabled']
   ArtifactoryHa: !Equals [!Ref ArtifactoryProduct, 'JFrog-Artifactory-Pro']
   DefaultJava: !Equals [!Ref DefaultJavaMemSettings, "true"]
   FargateEnabled: !Equals [!Ref EnableFargate, "Enabled"]
+  UsingDefaultBucket: !Equals [!Ref QsS3BucketName, 'aws-quickstart']
 Resources:
   BastionStack:
     Condition: EnableBastion
@@ -575,15 +567,8 @@ Resources:
     Properties:
       TemplateURL: !Sub
         - https://${S3Bucket}.s3.${S3Region}.${AWS::URLSuffix}/${QsS3KeyPrefix}submodules/quickstart-linux-bastion/templates/linux-bastion.template
-        - S3Bucket: !If
-            - UsingDefaultBucket
-            - !Sub 'aws-quickstart-${AWS::Region}'
-            - !Ref 'QsS3BucketName'
-          S3Region: !If
-            - UsingDefaultBucket
-            - !Ref 'AWS::Region'
-            - !Ref 'QsS3BucketRegion'
-            # !Sub ${QsS3Uri}submodules/quickstart-linux-bastion/templates/linux-bastion.template
+        - S3Bucket: !If [UsingDefaultBucket, !Sub '${QsS3BucketName}-${AWS::Region}', !Ref 'QsS3BucketName']
+          S3Region: !If [UsingDefaultBucket, !Ref 'AWS::Region', !Ref 'QsS3BucketRegion']
       Parameters:
         VPCID: !Ref VpcId
         PublicSubnet1ID: !Ref PublicSubnet1Id
@@ -605,15 +590,8 @@ Resources:
     Properties:
       TemplateURL: !Sub
         - https://${S3Bucket}.s3.${S3Region}.${AWS::URLSuffix}/${QsS3KeyPrefix}templates/jfrog-artifactory-core-infrastructure.template.yaml
-        - S3Bucket: !If
-            - UsingDefaultBucket
-            - !Sub 'aws-quickstart-${AWS::Region}'
-            - !Ref 'QsS3BucketName'
-          S3Region: !If
-            - UsingDefaultBucket
-            - !Ref 'AWS::Region'
-            - !Ref 'QsS3BucketRegion'
-            # !Sub ${QsS3Uri}templates/jfrog-artifactory-core-infrastructure.template.yaml
+        - S3Bucket: !If [UsingDefaultBucket, !Sub '${QsS3BucketName}-${AWS::Region}', !Ref 'QsS3BucketName']
+          S3Region: !If [UsingDefaultBucket, !Ref 'AWS::Region', !Ref 'QsS3BucketRegion']
       Parameters:
         VpcId: !Ref VpcId
         VpcCidr: !Ref VpcCidr
@@ -631,7 +609,6 @@ Resources:
         ArtifactoryProduct: !Ref ArtifactoryProduct
         ReleaseStage: !Ref ReleaseStage
         InstanceType: !Ref InstanceType
-
   ArtifactoryElb:
     Type: AWS::ElasticLoadBalancingV2::LoadBalancer
     Properties:
@@ -642,7 +619,6 @@ Resources:
         - !Ref PublicSubnet1Id
         - !Ref PublicSubnet2Id
       Type: network
-
   ArtifactorySslTargetGroup:
     Type: AWS::ElasticLoadBalancingV2::TargetGroup
     Properties:
@@ -657,7 +633,6 @@ Resources:
       TargetType: !If [FargateEnabled, "ip", "instance"]
       UnhealthyThresholdCount: 3
       VpcId: !Ref VpcId
-
   ArtifactoryTargetGroup:
     Type: AWS::ElasticLoadBalancingV2::TargetGroup
     Properties:
@@ -672,7 +647,6 @@ Resources:
       TargetType: !If [FargateEnabled, "ip", "instance"]
       UnhealthyThresholdCount: 3
       VpcId: !Ref VpcId
-
   ArtifactorySslElbListener:
     Type: AWS::ElasticLoadBalancingV2::Listener
     Properties:
@@ -682,7 +656,6 @@ Resources:
       LoadBalancerArn: !Ref ArtifactoryElb
       Port: 443
       Protocol: TCP
-
   ArtifactoryElbListener:
     Type: AWS::ElasticLoadBalancingV2::Listener
     Properties:
@@ -692,7 +665,6 @@ Resources:
       LoadBalancerArn: !Ref ArtifactoryElb
       Port: 80
       Protocol: TCP
-
   ArtifactoryEc2Sg:
     Type: AWS::EC2::SecurityGroup
     Properties:
@@ -733,27 +705,18 @@ Resources:
       SecurityGroupEgress:
         - IpProtocol: "-1"
           CidrIp: 0.0.0.0/0
-
   EcsCluster:
     Condition: CreateEcsCluster
     Type: AWS::ECS::Cluster
     Properties:
       ClusterName: !Ref ClusterName
-
   ArtifactoryECSBuild:
     Type: AWS::CloudFormation::Stack
     Properties:
       TemplateURL: !Sub
         - https://${S3Bucket}.s3.${S3Region}.${AWS::URLSuffix}/${QsS3KeyPrefix}templates/jfrog-artifactory-ecs-ec2.template.yaml
-        - S3Bucket: !If
-            - UsingDefaultBucket
-            - !Sub 'aws-quickstart-${AWS::Region}'
-            - !Ref 'QsS3BucketName'
-          S3Region: !If
-            - UsingDefaultBucket
-            - !Ref 'AWS::Region'
-            - !Ref 'QsS3BucketRegion'
-            # !Sub ${QsS3Uri}templates/jfrog-artifactory-ecs-ec2.template.yaml
+        - S3Bucket: !If [UsingDefaultBucket, !Sub '${QsS3BucketName}-${AWS::Region}', !Ref 'QsS3BucketName']
+          S3Region: !If [UsingDefaultBucket, !Ref 'AWS::Region', !Ref 'QsS3BucketRegion']
       Parameters:
         PrivateSubnet1Id: !Ref PrivateSubnet1Id
         PrivateSubnet2Id: !Ref PrivateSubnet2Id

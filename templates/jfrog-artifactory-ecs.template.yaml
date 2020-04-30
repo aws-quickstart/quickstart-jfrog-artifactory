@@ -77,7 +77,6 @@ Mappings:
     xxSmall:
       Memory: "4096"
       Cpu: "2048"
-
 Resources:
   ECSService:
     Type: AWS::ECS::Service

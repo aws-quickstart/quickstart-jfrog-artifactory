@@ -479,14 +479,8 @@ Resources:
     Properties:
       TemplateURL: !Sub
         - https://${S3Bucket}.s3.${S3Region}.${AWS::URLSuffix}/${QsS3KeyPrefix}submodules/quickstart-aws-vpc/templates/aws-vpc.template
-        - S3Bucket: !If
-            - UsingDefaultBucket
-            - !Sub 'aws-quickstart-${AWS::Region}'
-            - !Ref 'QsS3BucketName'
-          S3Region: !If
-            - UsingDefaultBucket
-            - !Ref 'AWS::Region'
-            - !Ref 'QsS3BucketRegion'
+        - S3Bucket: !If [UsingDefaultBucket, !Sub '${QsS3BucketName}-${AWS::Region}', !Ref 'QsS3BucketName']
+          S3Region: !If [UsingDefaultBucket, !Ref 'AWS::Region', !Ref 'QsS3BucketRegion']
       Parameters:
         AvailabilityZones:
           Fn::Join:
@@ -505,20 +499,13 @@ Resources:
           Ref: PublicSubnet2Cidr
         VPCCIDR:
           Ref: VpcCidr
-
   ArtifactoryExistingVpcStack:
     Type: AWS::CloudFormation::Stack
     Properties:
       TemplateURL: !Sub
         - https://${S3Bucket}.s3.${S3Region}.${AWS::URLSuffix}/${QsS3KeyPrefix}templates/jfrog-artifactory-ec2-existing-vpc.template.yaml
-        - S3Bucket: !If
-            - UsingDefaultBucket
-            - !Sub 'aws-quickstart-${AWS::Region}'
-            - !Ref 'QsS3BucketName'
-          S3Region: !If
-            - UsingDefaultBucket
-            - !Ref 'AWS::Region'
-            - !Ref 'QsS3BucketRegion'
+        - S3Bucket: !If [UsingDefaultBucket, !Sub '${QsS3BucketName}-${AWS::Region}', !Ref 'QsS3BucketName']
+          S3Region: !If [UsingDefaultBucket, !Ref 'AWS::Region', !Ref 'QsS3BucketRegion']
       Parameters:
         KeyPairName: !Ref KeyPairName
         VpcId: !GetAtt ArtifactoryVpcStack.Outputs.VPCID
@@ -557,25 +544,9 @@ Resources:
         DatabaseInstance: !Ref DatabaseInstance
         DatabaseAllocatedStorage: !Ref DatabaseAllocatedStorage
         MultiAzDatabase: !Ref MultiAzDatabase
-        QsS3BucketName: !If
-          - UsingDefaultBucket
-          - !Sub 'aws-quickstart-${AWS::Region}'
-          - !Ref 'QsS3BucketName'
+        QsS3BucketName: !Ref QsS3BucketName
         QsS3KeyPrefix: !Ref QsS3KeyPrefix
-        QsS3BucketRegion: !If
-          - UsingDefaultBucket
-          - !Ref 'AWS::Region'
-          - !Ref 'QsS3BucketRegion'
-        # QsS3Uri: !Sub
-        #   - https://${S3Bucket}.s3.${S3Region}.${AWS::URLSuffix}/${QsS3KeyPrefix}
-        #   - S3Bucket: !If
-        #       - UsingDefaultBucket
-        #       - !Sub 'aws-quickstart-${AWS::Region}'
-        #       - !Ref 'QsS3BucketName'
-        #     S3Region: !If
-        #       - UsingDefaultBucket
-        #       - !Ref 'AWS::Region'
-        #       - !Ref 'QsS3BucketRegion'
+        QsS3BucketRegion: !Ref QsS3BucketRegion
 Outputs:
   ArtifactoryUrl:
     Description: URL of the ELB to access Artifactory

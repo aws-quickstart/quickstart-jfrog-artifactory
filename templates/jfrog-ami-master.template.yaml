@@ -52,7 +52,6 @@ Metadata:
         default: Quick Start S3 key prefix
       QsS3BucketRegion:
         default: Quick Start S3 bucket region
-
 Parameters:
   AvailabilityZone:
     Description: The Availability Zone to use for the public subnet in the VPC.
@@ -139,14 +138,8 @@ Resources:
     Properties:
       TemplateURL: !Sub
         - https://${S3Bucket}.s3.${S3Region}.${AWS::URLSuffix}/${QsS3KeyPrefix}templates/jfrog-ami-vpc.template.yaml
-        - S3Bucket: !If
-            - UsingDefaultBucket
-            - !Sub 'aws-quickstart-${AWS::Region}'
-            - !Ref 'QsS3BucketName'
-          S3Region: !If
-            - UsingDefaultBucket
-            - !Ref 'AWS::Region'
-            - !Ref 'QsS3BucketRegion'
+        - S3Bucket: !If [UsingDefaultBucket, !Sub '${QsS3BucketName}-${AWS::Region}', !Ref 'QsS3BucketName']
+          S3Region: !If [UsingDefaultBucket, !Ref 'AWS::Region', !Ref 'QsS3BucketRegion']
       Parameters:
         AvailabilityZone: !Ref AvailabilityZone
   AMIStack:
@@ -154,14 +147,8 @@ Resources:
     Properties:
       TemplateURL: !Sub
         - https://${S3Bucket}.s3.${S3Region}.${AWS::URLSuffix}/${QsS3KeyPrefix}templates/jfrog-ami-creation.template.yaml
-        - S3Bucket: !If
-            - UsingDefaultBucket
-            - !Sub 'aws-quickstart-${AWS::Region}'
-            - !Ref 'QsS3BucketName'
-          S3Region: !If
-            - UsingDefaultBucket
-            - !Ref 'AWS::Region'
-            - !Ref 'QsS3BucketRegion'
+        - S3Bucket: !If [UsingDefaultBucket, !Sub '${QsS3BucketName}-${AWS::Region}', !Ref 'QsS3BucketName']
+          S3Region: !If [UsingDefaultBucket, !Ref 'AWS::Region', !Ref 'QsS3BucketRegion']
       Parameters:
         KeyPairName: !Ref KeyPairName
         RemoteAccessCidr: !Ref RemoteAccessCidr
@@ -173,18 +160,6 @@ Resources:
         JFrogProduct: !Ref JFrogProduct
         ArtifactVersion: !Ref ArtifactVersion
         ArtifactRepoUrl: !Ref ArtifactRepoUrl
-        QsS3BucketName: !If
-          - UsingDefaultBucket
-          - !Sub 'aws-quickstart-${AWS::Region}'
-          - !Ref 'QsS3BucketName'
+        QsS3BucketName: !Ref QsS3BucketName
         QsS3KeyPrefix: !Ref QsS3KeyPrefix
-        QsS3Uri: !Sub
-          - https://${S3Bucket}.s3.${S3Region}.${AWS::URLSuffix}/${QsS3KeyPrefix}
-          - S3Bucket: !If
-              - UsingDefaultBucket
-              - !Sub 'aws-quickstart-${AWS::Region}'
-              - !Ref 'QsS3BucketName'
-            S3Region: !If
-              - UsingDefaultBucket
-              - !Ref 'AWS::Region'
-              - !Ref 'QsS3BucketRegion'
+        QsS3BucketRegion: !Ref QsS3BucketRegion

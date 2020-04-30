@@ -5,6 +5,8 @@ Parameters:
     Type: String
   HelmLambdaArn:
     Type: String
+  EksClusterName:
+    Type: String
   # KubeConfigPath:
   #   Type: String
   # KubeConfigKmsContext:
@@ -166,9 +168,7 @@ Resources:
     Version: '1.0'
     Properties:
       ServiceToken: !Ref KubeManifestLambdaArn
-      # KubeConfigPath: !Ref KubeConfigPath
-      # KubeConfigKmsContext: !Ref KubeConfigKmsContext
-      ClusterName: !Ref KubeClusterName
+      ClusterName: !Ref EksClusterName
       Manifest:
         kind: Namespace
         apiVersion: v1
@@ -183,9 +183,7 @@ Resources:
     Version: '1.0'
     Properties:
       ServiceToken: !Ref KubeManifestLambdaArn
-      # KubeConfigPath: !Ref KubeConfigPath
-      # KubeConfigKmsContext: !Ref KubeConfigKmsContext
-      ClusterName: !Ref KubeClusterName
+      ClusterName: !Ref EksClusterName
       Manifest:
         kind: Secret
         apiVersion: v1
@@ -211,9 +209,7 @@ Resources:
     Version: '1.0'
     Properties:
       ServiceToken: !Ref KubeManifestLambdaArn
-      # KubeConfigPath: !Ref KubeConfigPath
-      # KubeConfigKmsContext: !Ref KubeConfigKmsContext
-      ClusterName: !Ref KubeClusterName
+      ClusterName: !Ref EksClusterName
       Manifest:
         kind: Secret
         apiVersion: v1
@@ -237,16 +233,13 @@ Resources:
 
 
             ${ArtifactoryLicense4}
-
   SecureStoreDatabase:
     DependsOn: NameSpace
     Type: "Custom::KubeManifest"
     Version: '1.0'
     Properties:
       ServiceToken: !Ref KubeManifestLambdaArn
-      # KubeConfigPath: !Ref KubeConfigPath
-      # KubeConfigKmsContext: !Ref KubeConfigKmsContext
-      ClusterName: !Ref KubeClusterName
+      ClusterName: !Ref EksClusterName
       Manifest:
         kind: Secret
         apiVersion: v1
@@ -267,7 +260,6 @@ Resources:
           db-url:
             Fn::Base64:
               !Sub ${DatabaseUrl}
-
   ArtifactoryDeployment:
     Condition: ArtifactoryHa
     Type: "Custom::Helm"
@@ -277,15 +269,13 @@ Resources:
     Version: '1.0'
     Properties:
       ServiceToken: !Ref HelmLambdaArn
-      # KubeConfigPath: !Ref KubeConfigPath
-      # KubeConfigKmsContext: !Ref KubeConfigKmsContext
-      ClusterName: !Ref KubeClusterName
+      ClusterName: !Ref EksClusterName
       Namespace: !FindInMap [ArtifactoryProductMap, !Ref ArtifactoryProduct, namespace]
       Name: quickstart-artifactory-ha
       Chart: jfrog/artifactory-ha
-      RepoUrl: !FindInMap [HelmRepoMap, !FindInMap [ArtifactoryProductMap, !Ref ArtifactoryProduct, !Ref ReleaseStage ], RepoUrl]
+      RepoUrl: !FindInMap [HelmRepoMap, !FindInMap [ArtifactoryProductMap, !Ref ArtifactoryProduct, !Ref ReleaseStage], RepoUrl]
       # If we want to test specific version of the Helm chart, we can pass it here
-      Version: !FindInMap [HelmRepoMap, !FindInMap [ArtifactoryProductMap, !Ref ArtifactoryProduct, !Ref ReleaseStage ], HelmChartVersion]
+      Version: !FindInMap [HelmRepoMap, !FindInMap [ArtifactoryProductMap, !Ref ArtifactoryProduct, !Ref ReleaseStage], HelmChartVersion]
       ValueYaml: !Sub
         - |
           artifactory:
@@ -434,12 +424,10 @@ Resources:
     Version: '1.0'
     Properties:
       ServiceToken: !Ref KubeGetLambdaArn
-      # KubeConfigPath: !Ref KubeConfigPath
-      # KubeConfigKmsContext: !Ref KubeConfigKmsContext
+      ClusterName: !Ref EksClusterName
       Namespace: !FindInMap [ArtifactoryProductMap, !Ref ArtifactoryProduct, namespace]
       Name: svc/quickstart-artifactory-ha-nginx
       JsonPath: '{.status.loadBalancer.ingress[0].hostname}'
-
   JcrDeployment:
     Condition: JcrInstall
     Type: "Custom::Helm"
@@ -447,13 +435,12 @@ Resources:
     Version: '1.0'
     Properties:
       ServiceToken: !Ref HelmLambdaArn
-      # KubeConfigPath: !Ref KubeConfigPath
-      # KubeConfigKmsContext: !Ref KubeConfigKmsContext
+      ClusterName: !Ref EksClusterName
       Namespace: !FindInMap [ArtifactoryProductMap, !Ref ArtifactoryProduct, namespace]
       Name: quickstart-jcr
       Chart: jfrog/artifactory-jcr
-      RepoUrl: !FindInMap [HelmRepoMap, !FindInMap [ArtifactoryProductMap, !Ref ArtifactoryProduct, !Ref ReleaseStage ], RepoUrl]
-      Version: !FindInMap [HelmRepoMap, !FindInMap [ArtifactoryProductMap, !Ref ArtifactoryProduct, !Ref ReleaseStage ], HelmChartVersion]
+      RepoUrl: !FindInMap [HelmRepoMap, !FindInMap [ArtifactoryProductMap, !Ref ArtifactoryProduct, !Ref ReleaseStage], RepoUrl]
+      Version: !FindInMap [HelmRepoMap, !FindInMap [ArtifactoryProductMap, !Ref ArtifactoryProduct, !Ref ReleaseStage], HelmChartVersion]
       ValueYaml: !Sub
         - |
           artifactory:
@@ -553,11 +540,10 @@ Resources:
     Version: '1.0'
     Properties:
       ServiceToken: !Ref KubeGetLambdaArn
-      # KubeConfigPath: !Ref KubeConfigPath
-      # KubeConfigKmsContext: !Ref KubeConfigKmsContext
+      ClusterName: !Ref EksClusterName
       Namespace: !FindInMap [ArtifactoryProductMap, !Ref ArtifactoryProduct, namespace]
       Name: svc/quickstart-jcr-artifactory-nginx
       JsonPath: '{.status.loadBalancer.ingress[0].hostname}'
 Outputs:
   ArtifactoryUrl:
-    Value:  !If [ArtifactoryHa, !Sub "https://${IngressHostName}", !Sub "https://${JcrIngressHostName}"]
+    Value: !If [ArtifactoryHa, !Sub "https://${IngressHostName}", !Sub "https://${JcrIngressHostName}"]
