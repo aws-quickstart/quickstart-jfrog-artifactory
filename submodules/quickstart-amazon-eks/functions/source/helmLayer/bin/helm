@@ -1,0 +1,9 @@
+#!/bin/bash
+tiller -listen 127.0.0.1:44134 -logtostderr -storage secret &
+# Give tiller a moment to come up
+sleep 5
+export HELM_HOST=127.0.0.1:44134
+helm-client "$@"
+EXIT_CODE=$?
+kill %1
+exit ${EXIT_CODE}

@@ -1,0 +1,151 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "Deploys the EKS control plane (qs-1p7nknofn)"
+Metadata:
+  QSLint:
+    Exclusions: [W9002, W9003, W9004, W9006]
+Parameters:
+  SecurityGroupIds:
+    Type: List<AWS::EC2::SecurityGroup::Id>
+  SubnetIds:
+    Type: List<AWS::EC2::Subnet::Id>
+  RoleArn:
+    Type: String
+  NodeInstanceRoleArn:
+    Type: String
+  CleanupLoadBalancersLambdaArn:
+    Type: String
+  GetCallerArnLambdaArn:
+    Type: String
+  AdditionalEKSAdminUserArn:
+    Type: String
+    Default: ""
+  AdditionalEKSAdminRoleArn:
+    Type: String
+    Default: ""
+  KubernetesVersion:
+    Type: String
+    AllowedValues: [ "1.15", "1.14", "1.13" ]
+    Default: "1.15"
+  BastionRole:
+    Type: String
+    Default: ""
+  FunctionRoleArn:
+    Type: String
+  EKSPublicAccessCIDRs:
+    Type: List<String>
+    Default: 0.0.0.0/0
+  EKSPublicAccessEndpoint:
+    Type: String
+    AllowedValues: [Enabled, Disabled]
+    Default: Disabled
+  EKSPrivateAccessEndpoint:
+    Type: String
+    AllowedValues: [Enabled, Disabled]
+    Default: Enabled
+  EKSClusterLoggingTypes:
+    Type: List<String>
+    Default: ""
+  EKSEncryptSecrets:
+    Type: String
+    AllowedValues: [Enabled, Disabled]
+    Default: Enabled
+  EKSEncryptSecretsKmsKeyArn:
+    Type: String
+    Default: ""
+Conditions:
+  AddUser: !Not [ !Equals [ !Ref AdditionalEKSAdminUserArn, "" ] ]
+  AddRole: !Not [ !Equals [ !Ref AdditionalEKSAdminRoleArn, "" ] ]
+  BastionRole: !Not [ !Equals [ !Ref BastionRole, "" ] ]
+  EnablePrivateEndpoint: !Equals [ !Ref EKSPrivateAccessEndpoint, "Enabled" ]
+  EnablePublicEndpoint: !Equals [ !Ref EKSPublicAccessEndpoint, "Enabled" ]
+  CreateKey: !And
+    - !Equals [ !Ref EKSEncryptSecretsKmsKeyArn, "" ]
+    - !Equals [ !Ref EKSEncryptSecrets, Enabled ]
+  EnableEncryption: !Equals [ !Ref EKSEncryptSecrets, Enabled ]
+  LoggingEnabled: !Not [ !Equals [ !Select [ 0, !Ref EKSClusterLoggingTypes ], "" ] ]
+Resources:
+  KMSKey:
+    Condition: CreateKey
+    Type: "AWS::KMS::Key"
+    Properties:
+      KeyPolicy: {
+        "Version": "2012-10-17",
+        "Id": "key-default-1",
+        "Statement": [
+          {
+            "Sid": "Enable IAM User Permissions",
+            "Effect": "Allow",
+            "Principal": {
+              "AWS": !Sub "arn:${AWS::Partition}:iam::${AWS::AccountId}:root"
+            },
+            "Action": "kms:*",
+            "Resource": "*"
+          }
+        ]
+      }
+  EKS:
+    Type: "AWSQS::EKS::Cluster"
+    Properties:
+      ResourcesVpcConfig:
+        SecurityGroupIds: !Ref SecurityGroupIds
+        SubnetIds: !Ref SubnetIds
+        PublicAccessCidrs: !Ref EKSPublicAccessCIDRs
+        EndpointPrivateAccess: !If [ EnablePrivateEndpoint, true, false ]
+        EndpointPublicAccess: !If [ EnablePublicEndpoint, true, false ]
+      EnabledClusterLoggingTypes: !If [ LoggingEnabled, !Ref EKSClusterLoggingTypes, !Ref "AWS::NoValue" ]
+      EncryptionConfig: !If
+        - EnableEncryption
+        - - Resources: [ secrets ]
+            Provider:
+              KeyArn: !If [ CreateKey, !GetAtt KMSKey.Arn, !Ref EKSEncryptSecretsKmsKeyArn ]
+        - !Ref AWS::NoValue
+      RoleArn: !Ref RoleArn
+      Version: !Ref KubernetesVersion
+      KubernetesApiAccess:
+        Roles:
+          - Arn: !Ref NodeInstanceRoleArn
+            Username: 'system:node:{{EC2PrivateDNSName}}'
+            Groups: [ 'system:bootstrappers', 'system:nodes' ]
+          - Arn: !Ref FunctionRoleArn
+            Username: !Ref FunctionRoleArn
+            Groups: [ 'system:masters' ]
+          - !If
+            - BastionRole
+            - Arn: !Sub "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/${BastionRole}"
+              Username: !Sub "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/${BastionRole}"
+              Groups: [ 'system:masters' ]
+            - !Ref 'AWS::NoValue'
+          - !If
+            - AddRole
+            - Arn: !Ref AdditionalEKSAdminRoleArn
+              Username: !Ref AdditionalEKSAdminRoleArn
+              Groups: [ 'system:masters' ]
+            - !Ref 'AWS::NoValue'
+        Users:
+          - Arn: !GetAtt CallerArn.Arn
+            Username: !GetAtt CallerArn.Arn
+            Groups: [ 'system:masters' ]
+          - !If
+            - AddUser
+            - Arn: !Ref AdditionalEKSAdminUserArn
+              Username: !Ref AdditionalEKSAdminUserArn
+              Groups: [ 'system:masters' ]
+            - !Ref 'AWS::NoValue'
+  CleanupLoadBalancers:
+    Type: Custom::CleanupLoadBalancers
+    Properties:
+      ServiceToken: !Ref CleanupLoadBalancersLambdaArn
+      ClusterName: !Ref EKS
+  CallerArn:
+    Type: Custom::GetCallerArn
+    Properties:
+      ServiceToken: !Ref GetCallerArnLambdaArn
+Outputs:
+  EksArn:
+    Value: !GetAtt EKS.Arn
+  CAData:
+    Value: !GetAtt EKS.CertificateAuthorityData
+  EKSEndpoint:
+    Value: !GetAtt EKS.Endpoint
+  EKSName:
+    Value: !Ref EKS

@@ -1,0 +1,359 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: Deploys Lambda functions required for the AWS EKS Quick Start (qs-1p7nknoh4)
+Metadata:
+  QSLint:
+    Exclusions: [W9002, W9003, W9004, W9006]
+Parameters:
+  LambdaZipsBucketName:
+    Description: Bucket Name where the lambda zip files should be placed
+    Type: String
+  QSS3BucketName:
+    AllowedPattern: ^[0-9a-zA-Z]+([0-9a-zA-Z-]*[0-9a-zA-Z])*$
+    ConstraintDescription: 'Quick Start bucket name can include numbers, lowercase
+      letters, uppercase letters, and hyphens (-). It cannot start or end with a hyphen
+      (-).'
+    Default: aws-quickstart
+    Description: 'S3 bucket name for the Quick Start assets. This string can include
+      numbers, lowercase letters, uppercase letters, and hyphens (-). It cannot start
+      or end with a hyphen (-).'
+    Type: String
+  QSS3KeyPrefix:
+    AllowedPattern: ^[0-9a-zA-Z-/.]*$
+    ConstraintDescription: Quick Start key prefix can include numbers, lowercase letters,
+      uppercase letters, hyphens (-), dots(.) and forward slash (/).
+    Default: quickstart-amazon-eks/
+    Description: S3 key prefix for the Quick Start assets. Quick Start key prefix
+      can include numbers, lowercase letters, uppercase letters, hyphens (-), dots(.) and
+      forward slash (/).
+    Type: String
+  CopyZipsRoleArn:
+    Type: String
+  KubernetesAdminRoleArn:
+    Type: String
+  VPCID:
+    Type: AWS::EC2::VPC::Id
+  DeleteLambdaZipsBucketContents:
+    Type: String
+    AllowedValues: [ "True", "False" ]
+    Default: "False"
+  DeleteBucketContentsRoleArn:
+    Type: String
+    Default: ""
+  ControlPlaneSecurityGroup:
+    Type: String
+  CleanupLoadBalancersRoleArn:
+    Type: String
+  CleanupSecurityGroupDependenciesRoleArn:
+    Type: String
+  GetCallerArnRoleArn:
+    Type: String
+  CreateVpcRoleRoleArn:
+    Type: String
+  RegisterTypeRoleArn:
+    Type: String
+  LogRoleArn:
+    Type: String
+  ExecutionRoleArn:
+    Type: String
+  EKSSubnetIds:
+    Type: List<String>
+Conditions:
+  CreateDeleteBucketContentsLambda: !Equals
+    - !Ref 'DeleteLambdaZipsBucketContents'
+    - "True"
+  UsingDefaultBucket: !Equals [!Ref QSS3BucketName, 'aws-quickstart']
+Resources:
+  CopyZips:
+    Type: Custom::CopyZips
+    Properties:
+      ServiceToken: !GetAtt 'CopyZipsFunction.Arn'
+      DestBucket: !Ref LambdaZipsBucketName
+      SourceBucket: !If [UsingDefaultBucket, !Sub '${QSS3BucketName}-${AWS::Region}', !Ref QSS3BucketName]
+      Prefix: !Ref 'QSS3KeyPrefix'
+      Objects:
+      - functions/packages/Helm/lambda.zip
+      - functions/packages/DeleteBucketContents/lambda.zip
+      - functions/packages/KubeManifest/lambda.zip
+      - functions/packages/KubeGet/lambda.zip
+      - functions/packages/CleanupLoadBalancers/lambda.zip
+      - functions/packages/CleanupSecurityGroupDependencies/lambda.zip
+      - functions/packages/kubectlLayer/lambda.zip
+      - functions/packages/helmLayer/lambda.zip
+      - functions/packages/crhelperLayer/lambda.zip
+      - functions/packages/GetCallerArn/lambda.zip
+      - functions/packages/createVpcRole/lambda.zip
+      - functions/packages/registerType/lambda.zip
+      - functions/packages/EksClusterResource/awsqs-eks-cluster.zip
+      - functions/packages/awscliLayer/lambda.zip
+  ArtifactCopyPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref LambdaZipsBucketName
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Sid: Allow CloudFormation to copy artifacts from the bucket
+            Effect: Allow
+            Principal:
+              Service: "cloudformation.amazonaws.com"
+            Action:
+              - s3:ListBucket
+              - s3:GetObject
+            Resource:
+              - !Sub "arn:${AWS::Partition}:s3:::${LambdaZipsBucketName}"
+              - !Sub "arn:${AWS::Partition}:s3:::${LambdaZipsBucketName}/${QSS3KeyPrefix}functions/packages/EksClusterResource/awsqs-eks-cluster.zip"
+  KubectlLayer:
+    DependsOn: CopyZips
+    Type: AWS::Lambda::LayerVersion
+    Properties:
+      Content:
+        S3Bucket: !Ref LambdaZipsBucketName
+        S3Key: !Sub '${QSS3KeyPrefix}functions/packages/kubectlLayer/lambda.zip'
+  AwsCliLayer:
+    DependsOn: CopyZips
+    Type: AWS::Lambda::LayerVersion
+    Properties:
+      Content:
+        S3Bucket: !Ref LambdaZipsBucketName
+        S3Key: !Sub '${QSS3KeyPrefix}functions/packages/awscliLayer/lambda.zip'
+  HelmLayer:
+    DependsOn: CopyZips
+    Type: AWS::Lambda::LayerVersion
+    Properties:
+      Content:
+        S3Bucket: !Ref LambdaZipsBucketName
+        S3Key: !Sub '${QSS3KeyPrefix}functions/packages/helmLayer/lambda.zip'
+  CrhelperLayer:
+    DependsOn: CopyZips
+    Type: AWS::Lambda::LayerVersion
+    Properties:
+      CompatibleRuntimes:
+        - python3.6
+        - python3.7
+      Content:
+        S3Bucket: !Ref LambdaZipsBucketName
+        S3Key: !Sub '${QSS3KeyPrefix}functions/packages/crhelperLayer/lambda.zip'
+  CleanupLoadBalancersLambda:
+    DependsOn: CopyZips
+    Type: "AWS::Lambda::Function"
+    Properties:
+      Handler: lambda_function.lambda_handler
+      MemorySize: 128
+      Role: !Ref CleanupLoadBalancersRoleArn
+      Runtime: python3.7
+      Timeout: 900
+      Layers: [!Ref CrhelperLayer]
+      Code:
+        S3Bucket: !Ref LambdaZipsBucketName
+        S3Key: !Sub '${QSS3KeyPrefix}functions/packages/CleanupLoadBalancers/lambda.zip'
+  CreateVpcRoleLambda:
+    DependsOn: CopyZips
+    Type: "AWS::Lambda::Function"
+    Properties:
+      Handler: lambda_function.lambda_handler
+      MemorySize: 128
+      Role: !Ref CreateVpcRoleRoleArn
+      Layers: [!Ref CrhelperLayer]
+      Runtime: python3.7
+      Timeout: 900
+      Code:
+        S3Bucket: !Ref LambdaZipsBucketName
+        S3Key: !Sub '${QSS3KeyPrefix}functions/packages/createVpcRole/lambda.zip'
+  CreateVpcRole:
+    Type: Custom::CreateVpcRole
+    Properties:
+      ServiceToken: !GetAtt CreateVpcRoleLambda.Arn
+      Partition: !Ref "AWS::Partition"
+  RegisterTypeFunction:
+    DependsOn: CopyZips
+    Type: "AWS::Lambda::Function"
+    Properties:
+      Handler: lambda_function.lambda_handler
+      MemorySize: 128
+      Role: !Ref RegisterTypeRoleArn
+      Layers: [!Ref CrhelperLayer]
+      Runtime: python3.7
+      Timeout: 900
+      Code:
+        S3Bucket: !Ref LambdaZipsBucketName
+        S3Key: !Sub '${QSS3KeyPrefix}functions/packages/registerType/lambda.zip'
+  RegisterType:
+    DependsOn: ArtifactCopyPolicy
+    Type: Custom::RegisterType
+    Properties:
+      ServiceToken: !GetAtt RegisterTypeFunction.Arn
+      TypeName: "AWSQS::EKS::Cluster"
+      SchemaHandlerPackage: !Sub "s3://${LambdaZipsBucketName}/${QSS3KeyPrefix}functions/packages/EksClusterResource/awsqs-eks-cluster.zip"
+      LogRoleArn: !Ref LogRoleArn
+      LogGroupName: "awsqs-eks-cluster-logs"
+      ExecutionRoleArn: !Ref ExecutionRoleArn
+  CleanupSecurityGroupDependenciesLambda:
+    DependsOn: CopyZips
+    Type: "AWS::Lambda::Function"
+    Properties:
+      Handler: lambda_function.lambda_handler
+      MemorySize: 128
+      Role: !Ref CleanupSecurityGroupDependenciesRoleArn
+      Layers: [!Ref CrhelperLayer]
+      Runtime: python3.7
+      Timeout: 900
+      Code:
+        S3Bucket: !Ref LambdaZipsBucketName
+        S3Key: !Sub '${QSS3KeyPrefix}functions/packages/CleanupSecurityGroupDependencies/lambda.zip'
+  LambdaSGCleanup:
+    Type: Custom::LambdaSGCleanup
+    Properties:
+      ServiceToken: !GetAtt CleanupSecurityGroupDependenciesLambda.Arn
+      Region: !Ref "AWS::Region"
+      SecurityGroups:
+        - !Ref EKSLambdaSecurityGroup
+  EKSLambdaSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Security group for lambda to communicate with cluster API
+      VpcId: !Ref VPCID
+  ClusterControlPlaneSecurityGroupIngress:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      Description: Allow lambda to communicate with the cluster API Server
+      GroupId: !Ref ControlPlaneSecurityGroup
+      SourceSecurityGroupId: !Ref EKSLambdaSecurityGroup
+      IpProtocol: tcp
+      ToPort: 443
+      FromPort: 443
+  HelmLambda:
+    DependsOn: [ CopyZips, LambdaSGCleanup ]
+    Type: AWS::Lambda::Function
+    Properties:
+      Handler: lambda_function.lambda_handler
+      MemorySize: 512
+      Role: !Ref KubernetesAdminRoleArn
+      Runtime: python3.7
+      Timeout: 900
+      Layers: [!Ref KubectlLayer, !Ref HelmLayer, !Ref CrhelperLayer, !Ref AwsCliLayer]
+      Code:
+        S3Bucket: !Ref LambdaZipsBucketName
+        S3Key: !Sub '${QSS3KeyPrefix}functions/packages/Helm/lambda.zip'
+      Environment: { Variables: { KUBECONFIG: /tmp/.kube/config } }
+      VpcConfig:
+        SecurityGroupIds: [!Ref EKSLambdaSecurityGroup]
+        SubnetIds: !Ref EKSSubnetIds
+  KubeManifestLambda:
+    DependsOn: [ CopyZips, LambdaSGCleanup ]
+    Type: AWS::Lambda::Function
+    Properties:
+      Handler: lambda_function.lambda_handler
+      MemorySize: 256
+      Role: !Ref KubernetesAdminRoleArn
+      Runtime: python3.7
+      Timeout: 900
+      Layers: [!Ref KubectlLayer, !Ref CrhelperLayer, !Ref AwsCliLayer]
+      Code:
+        S3Bucket: !Ref LambdaZipsBucketName
+        S3Key: !Sub '${QSS3KeyPrefix}functions/packages/KubeManifest/lambda.zip'
+      Environment: { Variables: { KUBECONFIG: /tmp/.kube/config } }
+      VpcConfig:
+        SecurityGroupIds: [!Ref EKSLambdaSecurityGroup]
+        SubnetIds: !Ref EKSSubnetIds
+  KubeGetLambda:
+    DependsOn: [ CopyZips, LambdaSGCleanup ]
+    Type: AWS::Lambda::Function
+    Properties:
+      Handler: lambda_function.lambda_handler
+      MemorySize: 256
+      Role: !Ref KubernetesAdminRoleArn
+      Runtime: python3.7
+      Timeout: 900
+      Layers: [!Ref KubectlLayer, !Ref CrhelperLayer, !Ref AwsCliLayer]
+      Code:
+        S3Bucket: !Ref LambdaZipsBucketName
+        S3Key: !Sub '${QSS3KeyPrefix}functions/packages/KubeGet/lambda.zip'
+      Environment: { Variables: { KUBECONFIG: /tmp/.kube/config } }
+      VpcConfig:
+        SecurityGroupIds: [!Ref EKSLambdaSecurityGroup]
+        SubnetIds: !Ref EKSSubnetIds
+  DeleteBucketContentsLambda:
+    DependsOn: CopyZips
+    Condition: CreateDeleteBucketContentsLambda
+    Type: AWS::Lambda::Function
+    Properties:
+      Handler: lambda_function.lambda_handler
+      MemorySize: 128
+      Role: !Ref DeleteBucketContentsRoleArn
+      Runtime: python3.7
+      Timeout: 900
+      Layers: [!Ref CrhelperLayer]
+      Code:
+        S3Bucket: !Ref LambdaZipsBucketName
+        S3Key: !Sub '${QSS3KeyPrefix}functions/packages/DeleteBucketContents/lambda.zip'
+  GetCallerArnLambda:
+    DependsOn: CopyZips
+    Type: AWS::Lambda::Function
+    Properties:
+      Handler: lambda_function.lambda_handler
+      MemorySize: 128
+      Role: !Ref GetCallerArnRoleArn
+      Runtime: python3.7
+      Timeout: 900
+      Layers: [!Ref CrhelperLayer]
+      Code:
+        S3Bucket: !Ref LambdaZipsBucketName
+        S3Key: !Sub '${QSS3KeyPrefix}functions/packages/GetCallerArn/lambda.zip'
+  CopyZipsFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      Description: Copies objects from a source S3 bucket to a destination
+      Handler: index.handler
+      Runtime: python3.7
+      Role: !Ref CopyZipsRoleArn
+      Timeout: 900
+      Code:
+        ZipFile: |
+          import cfnresponse
+          import logging
+          import boto3
+          logger = logging.getLogger(__name__)
+          def copy_objects(source_bucket, dest_bucket, prefix, objects):
+              s3 = boto3.client('s3')
+              for o in objects:
+                  key = prefix + o
+                  copy_source = {'Bucket': source_bucket, 'Key': key}
+                  logging.info(f'copy_source: {copy_source}\ndest_bucket: {dest_bucket}\nkey: {key}')
+                  s3.copy_object(CopySource=copy_source, Bucket=dest_bucket, Key=key)
+          def delete_objects(bucket, prefix, objects):
+              s3 = boto3.client('s3')
+              objects = {'Objects': [{'Key': prefix + o} for o in objects]}
+              try:
+                  s3.delete_objects(Bucket=bucket, Delete=objects)
+              except s3.exceptions.NoSuchBucket:
+                  pass
+          def handler(event, context):
+              logger.debug(event)
+              status = cfnresponse.SUCCESS
+              try:
+                  if event['RequestType'] == 'Delete':
+                      delete_objects(event['ResourceProperties']['DestBucket'], event['ResourceProperties']['Prefix'],
+                                     event['ResourceProperties']['Objects'])
+                  else:
+                      copy_objects(event['ResourceProperties']['SourceBucket'], event['ResourceProperties']['DestBucket'],
+                                   event['ResourceProperties']['Prefix'], event['ResourceProperties']['Objects'])
+              except Exception:
+                  logging.error('Unhandled exception', exc_info=True)
+                  status = cfnresponse.FAILED
+              finally:
+                  cfnresponse.send(event, context, status, {}, None)
+Outputs:
+  HelmLambdaArn:
+    Value: !GetAtt HelmLambda.Arn
+  DeleteBucketContentsLambdaArn:
+    Value: !If [ CreateDeleteBucketContentsLambda, !GetAtt DeleteBucketContentsLambda.Arn, "" ]
+  KubeManifestLambdaArn:
+    Value: !GetAtt KubeManifestLambda.Arn
+  KubeGetLambdaArn:
+    Value: !GetAtt KubeGetLambda.Arn
+  CleanupLoadBalancersLambdaArn:
+    Value: !GetAtt CleanupLoadBalancersLambda.Arn
+  CleanupSecurityGroupDependenciesLambdaArn:
+    Value: !GetAtt CleanupSecurityGroupDependenciesLambda.Arn
+  GetCallerArnLambdaArn:
+    Value: !GetAtt GetCallerArnLambda.Arn

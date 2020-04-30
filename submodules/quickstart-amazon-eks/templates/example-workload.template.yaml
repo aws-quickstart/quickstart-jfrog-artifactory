@@ -1,0 +1,101 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "deploy an example workload into an existing kubernetes cluster"
+Parameters:
+  KubeManifestLambdaArn:
+    Type: String
+  HelmLambdaArn:
+    Type: String
+  KubeClusterName:
+    Type: String
+  NodeInstanceProfile:
+    Type: String
+Resources:
+  # This resource creates a ConfigMap in the target cluster. It retrieves and decrypts a kms encrypted
+  # kubernetes config file, which is automatically created when customers deploy an EKS cluster with the quickstart,
+  # for bring-your-own-cluster the customer must encrypt and upload a config file prior to launching the stack.
+  #
+  # The "URL" property is an exact representation of a regular kubernetes resource manifest, available by link
+  KubeManifestURLExample:
+    Type: "Custom::KubeManifest"
+    Version: '1.0'
+    Properties:
+      # The lambda function that executes the manifest against the cluster. This is created in one of the parent stacks
+      ServiceToken: !Ref KubeManifestLambdaArn
+      ClusterName: !Ref KubeClusterName
+      # Kubernetes manifest URL
+      Url: https://k8s.io/examples/controllers/nginx-deployment.yaml
+  # This resource creates a ConfigMap in the target cluster. It retrieves and decrypts a kms encrypted
+  # kubernetes config file, which is automatically created when customers deploy an EKS cluster with the quickstart,
+  # for bring-your-own-cluster the customer must encrypt and upload a config file prior to launching the stack.
+  #
+  # The "Manifest" property is an exact representation of a regular kubernetes resource manifest, on stack create
+  # `kubectl create --save-config` is called, on stack update `kubectl apply` and on stack delete `kubectl delete`
+  #
+  # The following elements are available to be used in other cloudformation resources using !GetAtt:
+  # name, namespace, resourceVersion, selfLink, uid
+  KubeManifestExample:
+    Type: "Custom::KubeManifest"
+    Version: '1.0'
+    Properties:
+      # The lambda function that executes the manifest against the cluster. This is created in one of the parent stacks
+      ServiceToken: !Ref KubeManifestLambdaArn
+      ClusterName: !Ref KubeClusterName
+      # Kubernetes manifest
+      Manifest:
+        apiVersion: v1
+        kind: ConfigMap
+        metadata:
+          # If name is not specified it will be automatically generated,
+          # and can be retrieved with !GetAtt LogicalID.name
+          #
+          # name: test
+          #
+          # if namespace is not specified, "default" namespace will be used
+          namespace: kube-system
+        data:
+          # examples of consuming outputs of the HelmExample resource below's output. Creates an implicit dependency, so
+          # this resource will only launch once the HelmExample resource has completed successfully
+          ServiceCatalogReleaseName: !Ref HelmExample
+          ServiceCatalogKubernetesServiceName: !GetAtt HelmExample.Service0
+  # This resource deploys the kubernetes service catalog from it's helm chart.
+  #
+  # using !GetAtt you can fetch Name (release name) and Namespace, as well as all of the created resources, who's keys
+  # are the resource type + an index for the case where a chart creates more than 1 of a Kind (eg. ConfigMap0 fetches
+  # the 1st ConfigMap created)
+  HelmExample:
+    Type: "Custom::Helm"
+    Version: '1.0'
+    Properties:
+      ServiceToken: !Ref HelmLambdaArn
+      ClusterName: !Ref KubeClusterName
+      # If the chart is not in the stable repo then supply a repo url
+      RepoUrl: https://svc-catalog-charts.storage.googleapis.com
+      # namespace is optional, in most cases it's best to leave this out so that a namespace is dynamically generated.
+      # If namespace does not exist it will be created
+      #
+      # Namespace: example-ns
+      #
+      # supply chart name in "repo-name/chart-name" or "https://repo-hostname/repo-path/chart-package.tgz"
+      Chart: svc-cat/catalog
+      # Name can be specified, if not helm will generate one
+      # Name: myRelease
+      # Version can be specified, if not latest will be used
+      # Version: 1.0.1
+      # Custom values can optionally be specified
+      Values:
+        apiserver.healthcheck.enabled: true
+        imagePullPolicy: Always
+      # If there are a lot of values, or they contain ambiguous types (eg, enable: "true" or count: "1") then values can
+      # be passed as yaml enclosed in a string literal
+      # ValueYaml: |
+      #   deep:
+      #     nested:
+      #       list:
+      #         - "true"
+      #         - "1"
+Outputs:
+  # Examples for using the outputs of the KubeManifestExample resource
+  ExampleUid:
+    Value: !GetAtt KubeManifestExample.uid
+  ExampleSelfLink:
+    Value: !Ref KubeManifestExample
