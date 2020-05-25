@@ -348,7 +348,7 @@ Parameters:
       https://www.jfrog.com/confluence/display/RTF/Release+Notes
     AllowedPattern: ^(([0-9]|[1-9][0-9])\.){2}([1-9][0-9]|[0-9])$
     ConstraintDescription: A version that matches X.X.X per Artifactory releases
-    Default: 7.2.1
+    Default: 7.4.3
     Type: String
   SmLicenseCertName:
     Description: The secret name created in AWS Secrets Manager which contains the SSL certificate, certificate key, and Artifactory licenses.
@@ -401,9 +401,8 @@ Parameters:
     Default: artdb
     Type: String
   DatabaseEngine:
-    Description: The database engine that you want to run, currently locked to MySQL.
+    Description: The database engine that you want to run, currently locked to Postgres.
     AllowedValues:
-      - MySQL
       - Postgres
     Default: Postgres
     Type: String
@@ -483,6 +482,20 @@ Parameters:
     Default: 'us-east-1'
     Description: The AWS Region where the Quick Start S3 bucket (QSS3BucketName) is hosted. When using your own bucket, you must specify this value.
     Type: String
+  InstallXray:
+    Description: Choose true to install JFrog Xray instance(s).
+    ConstraintDescription: True or False
+    AllowedValues:
+      - "true"
+      - "false"
+    Default: "true"
+    Type: String
+  XrayReplicaCount:
+    Description: The number of JFrog Xray instance to create.
+    MinValue: 1
+    MaxValue: 2
+    Default: 1
+    Type: Number
 Conditions:
   UsingDefaultBucket: !Equals [!Ref QsS3BucketName, 'aws-quickstart']
   EnableBastion: !Equals [!Ref 'ProvisionBastionHost', 'Enabled']

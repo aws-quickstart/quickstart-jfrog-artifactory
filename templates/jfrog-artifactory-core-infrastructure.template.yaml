@@ -61,14 +61,6 @@ Mappings:
       PluginURL: https://jdbc.postgresql.org/download/
       port: "5432"
       extraDatabaseOps: ""
-    MySQL:
-      Name: mysql
-      DatabaseVersion: 5.7
-      Driver: "com.mysql.jdbc.Driver"
-      Plugin: mysql-connector-java-8.0.19.jar
-      PluginURL: https://bintray.com/artifact/download/bintray/jcenter/mysql/mysql-connector-java/8.0.19/
-      port: "3306"
-      extraDatabaseOps: "?characterEncoding=UTF-8&elideSetAutoCommits=true"
   ReleaseStageMap:
     BETA:
       ProDockerRepo: "earlyaccess-docker.jfrog.io/jfrog/artifactory-pro"

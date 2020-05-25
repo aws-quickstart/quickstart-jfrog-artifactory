@@ -138,11 +138,11 @@ Parameters:
 Mappings:
   AWSAMIRegionMap:
     us-west-2:
-      CentOS7HVM: "ami-01ed306a12b7d1c96"
+      CentOS7HVM: "ami-0bc06212a56393ee1"
     us-east-1:
-      CentOS7HVM: "ami-02eac2c0129f6376b"
+      CentOS7HVM: "ami-0affd4508a5d2481b"
     us-east-2:
-      CentOS7HVM: "ami-044418df00e2d42bb"
+      CentOS7HVM: "ami-01e36b7901e884a10"
 Conditions:
   UsingDefaultBucket: !Equals [!Ref QsS3BucketName, 'aws-quickstart']
 Resources:
