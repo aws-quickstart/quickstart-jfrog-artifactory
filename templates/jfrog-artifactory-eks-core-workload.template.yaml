@@ -79,13 +79,11 @@ Mappings:
     JFrog-Artifactory-Pro:
       namespace: jfrog-artifactory
       app: jfrog-artifactory
-      infoFile: 'installer-info.json'
       BETA: JFrog-Artifactory-Pro-BETA
       GA: JFrog-Artifactory-Pro-GA
     JFrog-Container-Registry:
       namespace: jfrog-container-registry
       app: jfrog-container-registry
-      infoFile: 'installer-info-jcr.json'
       BETA: JFrog-Container-Registry-BETA
       GA: JFrog-Container-Registry-GA
   HelmRepoMap:
@@ -289,7 +287,7 @@ Resources:
               secret: artifactory-cluster-license
               dataKey: art.lic
             masterKey: ${MasterKey}
-            preStartCommand: mkdir -p /var/opt/jfrog/artifactory/etc/artifactory/info/; wget ${QsS3Uri}scripts/roles/artifactory/files/${info_file} -O /var/opt/jfrog/artifactory/etc/artifactory/info/installer-info.json; mkdir -p /var/opt/jfrog/artifactory/bootstrap/artifactory/tomcat/lib/; wget -O  /var/opt/jfrog/artifactory/bootstrap/artifactory/tomcat/lib/${DatabasePlugin} ${DatabasePluginUrl}
+            preStartCommand: mkdir -p /var/opt/jfrog/artifactory/etc/artifactory/info/; mkdir -p /var/opt/jfrog/artifactory/bootstrap/artifactory/tomcat/lib/; wget -O  /var/opt/jfrog/artifactory/bootstrap/artifactory/tomcat/lib/${DatabasePlugin} ${DatabasePluginUrl}
             persistence:
               enabled: false
               local: false
@@ -407,6 +405,7 @@ Resources:
             service:
               loadBalancerSourceRanges:  [ "${AccessCidr}" ]
             tlsSecretName: artifactory-nginx-tls
+          installerInfo: `{"productId": "CloudFormation_artifactory-ha/1.0.0","features": [{"featureId": "Partner/ACC-006973"}]}`
         - {
            info_file: !FindInMap [ArtifactoryProductMap, !Ref ArtifactoryProduct, infoFile],
            requests_memory: !FindInMap [DeploymentSize, !Ref ArtifactoryDeploymentSize, requestsMem],
@@ -452,7 +451,7 @@ Resources:
                 pullPolicy: Always
               deleteDBPropertiesOnStartup: true
               masterKey: ${MasterKey}
-              preStartCommand: mkdir -p /var/opt/jfrog/artifactory/etc/artifactory/info/; wget ${QsS3Uri}scripts/roles/artifactory/files/${info_file} -O /var/opt/jfrog/artifactory/etc/artifactory/info/installer-info.json; mkdir -p /var/opt/jfrog/artifactory/bootstrap/artifactory/tomcat/lib/; wget -O  /var/opt/jfrog/artifactory/bootstrap/artifactory/tomcat/lib/${DatabasePlugin} ${DatabasePluginUrl}; cp /bootstrap/artifactory/binarystore.xml /var/opt/jfrog/artifactory/etc/artifactory/binarystore.xml
+              preStartCommand: mkdir -p /var/opt/jfrog/artifactory/etc/artifactory/info/; mkdir -p /var/opt/jfrog/artifactory/bootstrap/artifactory/tomcat/lib/; wget -O  /var/opt/jfrog/artifactory/bootstrap/artifactory/tomcat/lib/${DatabasePlugin} ${DatabasePluginUrl}; cp /bootstrap/artifactory/binarystore.xml /var/opt/jfrog/artifactory/etc/artifactory/binarystore.xml
               persistence:
                 enabled: false
                 type: aws-s3-v3
@@ -522,6 +521,7 @@ Resources:
               service:
                 loadBalancerSourceRanges:  [ "${AccessCidr}" ]
               tlsSecretName: artifactory-nginx-tls
+            installerInfo: `{"productId": "CloudFormation_artifactory-jcr/1.0.0","features": [{"featureId": "Partner/ACC-006973"}]}`
           postgresql:
             enabled: false
         - {
