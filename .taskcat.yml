@@ -44,51 +44,51 @@ tests:
    template: templates/jfrog-artifactory-ec2-master.template.yaml
    regions:
      - us-east-1
-#  jfrog-artifactory-ecs-mysql:
-#    parameters:
-#      KeyPairName: "$[taskcat_getkeypair]"
-#      RemoteAccessCidr: "10.0.0.0/16"
-#      AccessCidr: "10.0.0.0/16"
-#      AvailabilityZones: "$[taskcat_genaz_2]"
-#      DatabasePassword: "$[taskcat_genpass_8A]"
-#      QsS3BucketName: "$[taskcat_autobucket]"
-#      QsS3KeyPrefix: "quickstart-jfrog-artifactory/"
-#      QsS3BucketRegion: "$[taskcat_current_region]"
-#      DatabaseInstance: "db.m4.large"
-#      DatabaseEngine: MySQL
-#      ArtifactoryVersion: "7.2.1"
-#      ReleaseStage: "GA"
-#      NumberOfSecondary: "2"
-#      AnsibleVaultPass: "$[taskcat_genpass_8A]"
-#      ArtifactoryServerName: "artifactory"
-#      MasterKey: "override"
-#      SmLicenseCertName: "override"
-#      MultiAzDatabase: "false"
-#    template: templates/jfrog-artifactory-ecs-master.template.yaml
-#    regions:
-#      - us-west-2
+ jfrog-artifactory-ecs-mysql:
+   parameters:
+     KeyPairName: "$[taskcat_getkeypair]"
+     RemoteAccessCidr: "10.0.0.0/16"
+     AccessCidr: "10.0.0.0/16"
+     AvailabilityZones: "$[taskcat_genaz_2]"
+     DatabasePassword: "$[taskcat_genpass_8A]"
+     QsS3BucketName: "$[taskcat_autobucket]"
+     QsS3KeyPrefix: "quickstart-jfrog-artifactory/"
+     QsS3BucketRegion: "$[taskcat_current_region]"
+     DatabaseInstance: "db.m4.large"
+     DatabaseEngine: MySQL
+     ArtifactoryVersion: "7.2.1"
+     ReleaseStage: "GA"
+     NumberOfSecondary: "2"
+     AnsibleVaultPass: "$[taskcat_genpass_8A]"
+     ArtifactoryServerName: "artifactory"
+     MasterKey: "override"
+     SmLicenseCertName: "override"
+     MultiAzDatabase: "false"
+   template: templates/jfrog-artifactory-ecs-master.template.yaml
+   regions:
+     - us-east-1
     #  - eu-west-1
-#  jfrog-artifactory-eks:
-#    parameters:
-#      KeyPairName: "$[taskcat_getkeypair]"
-#      RemoteAccessCidr: "10.0.0.0/16"
-#      AccessCidr: "10.0.0.0/16"
-#      AvailabilityZones: "$[taskcat_genaz_3]"
-#      DatabasePassword: "$[taskcat_genpass_8A]"
-#      QsS3BucketName: "$[taskcat_autobucket]"
-#      QsS3KeyPrefix: "quickstart-jfrog-artifactory/"
-#      QsS3BucketRegion: "$[taskcat_current_region]"
-#      DatabaseInstance: "db.m4.large"
-#      ArtifactoryVersion: "7.2.1"
-#      NumberOfSecondary: "2"
-#      ArtifactoryServerName: "artifactory"
-#      MasterKey: "override"
-#      SmLicenseCertName: "override"
-#      MultiAzDatabase: "false"
-#    template: templates/jfrog-artifactory-eks-master.template.yaml
-#    regions:
-#     #  - us-east-2
-#      - eu-central-1
+ jfrog-artifactory-eks:
+   parameters:
+     KeyPairName: "$[taskcat_getkeypair]"
+     RemoteAccessCidr: "10.0.0.0/16"
+     AccessCidr: "10.0.0.0/16"
+     AvailabilityZones: "$[taskcat_genaz_3]"
+     DatabasePassword: "$[taskcat_genpass_8A]"
+     QsS3BucketName: "$[taskcat_autobucket]"
+     QsS3KeyPrefix: "quickstart-jfrog-artifactory/"
+     QsS3BucketRegion: "$[taskcat_current_region]"
+     DatabaseInstance: "db.m4.large"
+     ArtifactoryVersion: "7.2.1"
+     NumberOfSecondary: "2"
+     ArtifactoryServerName: "artifactory"
+     MasterKey: "override"
+     SmLicenseCertName: "override"
+     MultiAzDatabase: "false"
+   template: templates/jfrog-artifactory-eks-master.template.yaml
+   regions:
+     - us-east-1
+    #  - eu-central-1
 #  jfrog-artifactory-eks-core:
 #    parameters:
 #      ArtifactoryDeploymentSize: Medium
