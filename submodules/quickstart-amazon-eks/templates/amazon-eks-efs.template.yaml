@@ -1,0 +1,92 @@
+# Credit to [David Schott](https://github.com/schottsfired) from CloudBees for creating the original version of this
+# template https://github.com/aws-quickstart/quickstart-cloudbees-core/blob/master/templates/cloudbees-core-efs.template.yaml
+AWSTemplateFormatVersion: 2010-09-09
+Description: Deploys an EFS file system and efs-provisioner (qs-1pipqrqhi)
+Metadata:
+  QSLint:
+    Exclusions: [W9002, W9003, W9004, W9006]
+Parameters:
+  HelmLambdaArn:
+    Type: String
+  NodeGroupSecurityGroup:
+    Type: AWS::EC2::SecurityGroup::Id
+  PrivateSubnet1ID:
+    Type: AWS::EC2::Subnet::Id
+  PrivateSubnet2ID:
+    Type: String
+    Default: ""
+  PrivateSubnet3ID:
+    Type: String
+    Default: ""
+  PerformanceMode:
+    Type: String
+    AllowedValues: [ generalPurpose, maxIO ]
+    Default: generalPurpose
+  ProvisionedThroughputInMibps:
+    Type: Number
+    MinValue: 0
+    Default: 0
+  ThroughputMode:
+    Type: String
+    AllowedValues: [ bursting, provisioned ]
+    Default: bursting
+  ClusterName:
+    Type: String
+Rules:
+  ProvisionedThroughput:
+    RuleCondition: !Equals [ !Ref ThroughputMode, provisioned ]
+    Assertions:
+      - Assert: !Not [ !Equals [ '0', !Ref ProvisionedThroughputInMibps ] ]
+        AssertDescription: "ProvisionedThroughputInMibps must be greater than 0 when ThroughputMode is provisioned"
+  BurstingThroughput:
+    RuleCondition: !Equals [ !Ref ThroughputMode, bursting ]
+    Assertions:
+      - Assert:  !Equals [ '0', !Ref ProvisionedThroughputInMibps ]
+        AssertDescription: "ProvisionedThroughputInMibps must be 0 when ThroughputMode is bursting"
+Conditions:
+  IsProvisioned:
+    !Equals [ ThroughputMode, provisioned ]
+  3AZDeployment: !Not [!Equals [!Ref PrivateSubnet3ID, ""]]
+  2AZDeployment: !Or
+    - !Not [!Equals [!Ref PrivateSubnet2ID, ""]]
+    - !Not [!Equals [!Ref PrivateSubnet3ID, ""]]
+Resources:
+  EFSFileSystem:
+    Type: AWS::EFS::FileSystem
+    Properties:
+      Encrypted: true
+      PerformanceMode: !Ref PerformanceMode
+      ProvisionedThroughputInMibps: !If [ IsProvisioned, !Ref ProvisionedThroughputInMibps, !Ref 'AWS::NoValue' ]
+      ThroughputMode: !Ref ThroughputMode
+  MountTargetPrivateSubnet1:
+    Type: AWS::EFS::MountTarget
+    Properties:
+      FileSystemId: !Ref EFSFileSystem
+      SecurityGroups: [ !Ref NodeGroupSecurityGroup ]
+      SubnetId: !Ref PrivateSubnet1ID
+  MountTargetPrivateSubnet2:
+    Condition: 2AZDeployment
+    Type: AWS::EFS::MountTarget
+    Properties:
+      FileSystemId: !Ref EFSFileSystem
+      SecurityGroups: [ !Ref NodeGroupSecurityGroup ]
+      SubnetId: !Ref PrivateSubnet2ID
+  MountTargetPrivateSubnet3:
+    Condition: 3AZDeployment
+    Type: AWS::EFS::MountTarget
+    Properties:
+      FileSystemId: !Ref EFSFileSystem
+      SecurityGroups: [ !Ref NodeGroupSecurityGroup ]
+      SubnetId: !Ref PrivateSubnet3ID
+  EFSProvisioner:
+    Type: 'Custom::Helm'
+    Version: '1.0'
+    Properties:
+      ServiceToken: !Ref HelmLambdaArn
+      ClusterName: !Ref ClusterName
+      Namespace: efs-provisioner
+      Chart: stable/efs-provisioner
+      Values:
+        efsProvisioner.efsFileSystemId: !Ref EFSFileSystem
+        efsProvisioner.awsRegion: !Ref 'AWS::Region'
+        efsProvisioner.provisionerName: aws-quickstart/aws-efs

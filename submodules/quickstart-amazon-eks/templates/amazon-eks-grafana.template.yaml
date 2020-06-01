@@ -1,0 +1,62 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "Deploys the grafana helm chart into an existing kubernetes cluster (qs-1qde65hno)"
+Metadata:
+  QSLint:
+    Exclusions: [W9002, W9003, W9004, W9006]
+Parameters:
+  HelmLambdaArn:
+    Type: String
+  ClusterName:
+    Type: String
+Resources:
+  # Install grafana helm chart
+  GrafanaHelmChart:
+    Type: "Custom::Helm"
+    Version: "1.0"
+    Properties:
+      ServiceToken: !Ref HelmLambdaArn
+      ClusterName: !Ref ClusterName
+      Namespace: grafana
+      Chart: stable/grafana
+      Name: grafana
+      ValueYaml: |
+        persistence:
+          type: pvc
+          enabled: true
+          storageClassName: gp2
+        service:
+          type: LoadBalancer
+        datasources:
+          datasources.yaml:
+            apiVersion: 1
+            datasources:
+            - name: Prometheus
+              type: prometheus
+              url: http://prometheus-server.prometheus.svc.cluster.local
+              access: proxy
+              isDefault: true
+        dashboardProviders:
+          dashboardproviders.yaml:
+            apiVersion: 1
+            providers:
+            - name: 'default'
+              orgId: 1
+              folder: ''
+              type: file
+              disableDeletion: false
+              editable: true
+              options:
+                path: /var/lib/grafana/dashboards/default
+        dashboards:
+          default:
+            all-nodes:
+              gnetId: 3131
+              revision: 1
+              datasource: Prometheus
+            all-pods:
+              gnetId: 3146
+              revision: 1
+              datasource: Prometheus
+Outputs:
+  GrafanaReleaseName:
+    Value: !Ref GrafanaHelmChart

@@ -1,0 +1,460 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: Deploys IAM roles and policies required for the AWS EKS Quick Start (qs-1p7nknohl)
+Metadata:
+  QSLint:
+    Exclusions: [W9002, W9003, W9004, W9006]
+Parameters:
+  LambdaZipsBucketName:
+    Description: Bucket Name where the lambda zip files should be placed
+    Type: String
+  QSS3BucketName:
+    AllowedPattern: ^[0-9a-zA-Z]+([0-9a-zA-Z-]*[0-9a-zA-Z])*$
+    ConstraintDescription: 'Quick Start bucket name can include numbers, lowercase
+      letters, uppercase letters, and hyphens (-). It cannot start or end with a hyphen
+      (-).'
+    Default: aws-quickstart
+    Description: 'S3 bucket name for the Quick Start assets. This string can include
+      numbers, lowercase letters, uppercase letters, and hyphens (-). It cannot start
+      or end with a hyphen (-).'
+    Type: String
+  QSS3KeyPrefix:
+    AllowedPattern: ^[0-9a-zA-Z-/.]*$
+    ConstraintDescription: Quick Start key prefix can include numbers, lowercase letters,
+      uppercase letters, hyphens (-), dots(.) and forward slash (/).
+    Default: quickstart-amazon-eks/
+    Description: S3 key prefix for the Quick Start assets. Quick Start key prefix
+      can include numbers, lowercase letters, uppercase letters, hyphens (-), dots(.) and
+      forward slash (/).
+    Type: String
+  DeleteLambdaZipsBucketContents:
+    Type: String
+    AllowedValues: [ "True", "False" ]
+    Default: "False"
+  CreateBastionRole:
+    Type: String
+    Default: "Enabled"
+    AllowedValues: ["Enabled", "Disabled"]
+  BastionIAMRoleName:
+    Type: String
+    Default: ""
+Conditions:
+  CreateDeleteBucketContentsRole: !Equals [!Ref 'DeleteLambdaZipsBucketContents', "True"]
+  EnableBastionRole: !Equals [!Ref CreateBastionRole, "Enabled"]
+  UsingDefaultBucket: !Equals [!Ref QSS3BucketName, 'aws-quickstart']
+Resources:
+  CreateVpcRoleRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - !Sub 'arn:${AWS::Partition}:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole'
+      Policies:
+        - PolicyName: create-role
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action: "iam:CreateRole"
+                Resource: !Sub 'arn:${AWS::Partition}:iam::${AWS::AccountId}:role/CloudFormation-Kubernetes-VPC'
+              - Effect: Allow
+                Action: "iam:AttachRolePolicy"
+                Resource: !Sub 'arn:${AWS::Partition}:iam::${AWS::AccountId}:role/CloudFormation-Kubernetes-VPC'
+                Condition:
+                  ArnEquals:
+                    "iam:PolicyARN":
+                      - !Sub 'arn:${AWS::Partition}:iam::aws:policy/service-role/AWSLambdaENIManagementAccess'
+                      - !Sub 'arn:${AWS::Partition}:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole'
+  DeleteBucketContentsRole:
+    Condition: CreateDeleteBucketContentsRole
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - !Sub 'arn:${AWS::Partition}:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole'
+      Policies:
+        - PolicyName: deletebucketcontents
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action: s3:*
+                Resource:
+                  - !Sub 'arn:${AWS::Partition}:s3:::${LambdaZipsBucketName}/*'
+                  - !Sub 'arn:${AWS::Partition}:s3:::${LambdaZipsBucketName}'
+  CopyZipsRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - !Sub 'arn:${AWS::Partition}:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole'
+      Policies:
+        - PolicyName: lambda-copier
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action: s3:GetObject
+                Resource: !Sub
+                  - 'arn:${AWS::Partition}:s3:::${BucketName}/${QSS3KeyPrefix}*'
+                  - BucketName: !If [UsingDefaultBucket, !Sub '${QSS3BucketName}-${AWS::Region}', !Ref QSS3BucketName]
+              - Effect: Allow
+                Action:
+                  - s3:PutObject
+                  - s3:DeleteObject
+                Resource: !Sub 'arn:${AWS::Partition}:s3:::${LambdaZipsBucketName}/${QSS3KeyPrefix}*'
+  KubernetesAdminRole:
+    Type: "AWS::IAM::Role"
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: eksStackPolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - cloudformation:*
+                  - eks:*
+                  - ec2:DescribeSecurityGroups
+                  - ec2:DescribeSubnets
+                  - ec2:DescribeVpcs
+                  - lambda:InvokeFunction
+                Resource: "*"
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                  - ec2:CreateNetworkInterface
+                  - ec2:DescribeNetworkInterfaces
+                  - ec2:DeleteNetworkInterface
+                Resource:
+                  - "*"
+              - Effect: Allow
+                Action:
+                  - lambda:AddPermission
+                  - lambda:RemovePermission
+                Resource:  "*"
+              - Effect: Allow
+                Action:
+                  - events:PutRule
+                  - events:DeleteRule
+                  - events:PutTargets
+                  - events:RemoveTargets
+                Resource:  "*"
+  ControlPlaneRole:
+    Type: "AWS::IAM::Role"
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: eks.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - !Sub 'arn:${AWS::Partition}:iam::aws:policy/AmazonEKSClusterPolicy'
+        - !Sub 'arn:${AWS::Partition}:iam::aws:policy/AmazonEKSServicePolicy'
+  NodeInstanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      Path: "/"
+      Roles:
+        - !Ref NodeInstanceRole
+  NodeInstanceRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: !Sub "ec2.${AWS::URLSuffix}"
+            Action:
+              - sts:AssumeRole
+      Path: "/"
+      ManagedPolicyArns:
+        - !Sub 'arn:${AWS::Partition}:iam::aws:policy/AmazonEKSWorkerNodePolicy'
+        - !Sub 'arn:${AWS::Partition}:iam::aws:policy/AmazonEKS_CNI_Policy'
+        - !Sub 'arn:${AWS::Partition}:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly'
+        - !Sub 'arn:${AWS::Partition}:iam::aws:policy/AmazonElasticFileSystemReadOnlyAccess'
+      Policies:
+        - PolicyName: QSBucketAccess
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action: s3:GetObject
+                Resource: !Sub
+                 - "arn:${AWS::Partition}:s3:::${BucketName}/${QSS3KeyPrefix}*"
+                 - BucketName: !If [UsingDefaultBucket, !Sub '${QSS3BucketName}-${AWS::Region}', !Ref QSS3BucketName]
+  BastionRole:
+    Condition: EnableBastionRole
+    Type: "AWS::IAM::Role"
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: !Sub "ec2.${AWS::URLSuffix}"
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: QSBucketAccess
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action: s3:GetObject
+                Resource: !Sub
+                  - "arn:${AWS::Partition}:s3:::${BucketName}/*"
+                  - BucketName: !If [UsingDefaultBucket, !Sub '${QSS3BucketName}-${AWS::Region}', !Ref QSS3BucketName]
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogStream
+                  - logs:GetLogEvents
+                  - logs:PutLogEvents
+                  - logs:DescribeLogGroups
+                  - logs:DescribeLogStreams
+                  - logs:PutRetentionPolicy
+                  - logs:PutMetricFilter
+                  - logs:CreateLogGroup
+                Resource: !Sub "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:*:*"
+              - Effect: Allow
+                Action:
+                  - ec2:AssociateAddress
+                  - ec2:DescribeAddresses
+                  - eks:ListClusters
+                Resource: "*"
+      ManagedPolicyArns:
+        - !Sub 'arn:${AWS::Partition}:iam::aws:policy/service-role/AmazonEC2RoleforSSM'
+        - !Sub 'arn:${AWS::Partition}:iam::aws:policy/AmazonSSMManagedInstanceCore'
+        - !Sub 'arn:${AWS::Partition}:iam::aws:policy/CloudWatchAgentServerPolicy'
+  CleanupLoadBalancersRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action: ['sts:AssumeRole']
+            Effect: Allow
+            Principal:
+              Service: [lambda.amazonaws.com]
+        Version: '2012-10-17'
+      Path: /
+      Policies:
+        - PolicyName: LambdaRole
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Action:
+                  - 'logs:CreateLogGroup'
+                  - 'logs:CreateLogStream'
+                  - 'logs:PutLogEvents'
+                Effect: Allow
+                Resource: !Sub "arn:${AWS::Partition}:logs:*:*:*"
+              - Action:
+                  - 'elasticloadbalancing:DescribeLoadBalancers'
+                  - 'elasticloadbalancing:DescribeTags'
+                  - 'elasticloadbalancing:DeleteLoadBalancer'
+                  - 'ec2:DescribeTags'
+                  - 'ec2:DeleteSecurityGroup'
+                  - 'ec2:DescribeNetworkInterfaces'
+                  - 'ec2:DescribeSecurityGroups'
+                  - 'ec2:RevokeSecurityGroupEgress'
+                  - 'ec2:RevokeSecurityGroupIngress'
+                Effect: Allow
+                Resource: "*"
+  CleanupSecurityGroupDependenciesRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action: ['sts:AssumeRole']
+            Effect: Allow
+            Principal:
+              Service: [lambda.amazonaws.com]
+        Version: '2012-10-17'
+      Path: /
+      Policies:
+        - PolicyName: LambdaRole
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Action:
+                  - 'logs:CreateLogGroup'
+                  - 'logs:CreateLogStream'
+                  - 'logs:PutLogEvents'
+                Effect: Allow
+                Resource: !Sub "arn:${AWS::Partition}:logs:*:*:*"
+              - Action:
+                  - 'ec2:DescribeNetworkInterfaces'
+                  - 'ec2:DescribeSecurityGroups'
+                  - 'ec2:RevokeSecurityGroupEgress'
+                  - 'ec2:RevokeSecurityGroupIngress'
+                  - 'ec2:DeleteNetworkInterface'
+                  - 'ec2:DetachNetworkInterface'
+                Effect: Allow
+                Resource: "*"
+  GetCallerArnRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action: ['sts:AssumeRole']
+            Effect: Allow
+            Principal:
+              Service: [lambda.amazonaws.com]
+        Version: '2012-10-17'
+      Path: /
+      Policies:
+        - PolicyName: LambdaRole
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Action:
+                  - 'logs:CreateLogGroup'
+                  - 'logs:CreateLogStream'
+                  - 'logs:PutLogEvents'
+                Effect: Allow
+                Resource: !Sub "arn:${AWS::Partition}:logs:*:*:*"
+              - Action:
+                  - 'cloudformation:DescribeStacks'
+                  - 'cloudtrail:LookupEvents'
+                Effect: Allow
+                Resource: "*"
+  LogDeliveryRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+              - cloudformation.amazonaws.com
+              - resources.cloudformation.amazonaws.com
+            Action: sts:AssumeRole
+      Path: "/"
+      Policies:
+        - PolicyName: ResourceTypePolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - "logs:CreateLogGroup"
+                  - "logs:CreateLogStream"
+                  - "logs:DescribeLogGroups"
+                  - "logs:DescribeLogStreams"
+                  - "logs:PutLogEvents"
+                  - "cloudwatch:ListMetrics"
+                  - "cloudwatch:PutMetricData"
+                Resource: "*"
+  RegisterTypeRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      Path: "/"
+      ManagedPolicyArns:
+        - !Sub 'arn:${AWS::Partition}:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole'
+      Policies:
+        - PolicyName: ResourceTypePolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - "cloudformation:*"
+                  - "iam:PassRole"
+                Resource: "*"
+  ExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      MaxSessionDuration: 8400
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: resources.cloudformation.amazonaws.com
+            Action: sts:AssumeRole
+      Path: "/"
+      Policies:
+        - PolicyName: ResourceTypePolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - "ec2:*"
+                  - "eks:CreateCluster"
+                  - "eks:DeleteCluster"
+                  - "eks:DescribeCluster"
+                  - "eks:ListClusters"
+                  - "eks:UpdateClusterConfig"
+                  - "eks:UpdateClusterVersion"
+                  - "iam:*"
+                  - "kms:*"
+                  - "lambda:*"
+                Resource: "*"
+Outputs:
+  DeleteBucketContentsRoleArn:
+    Value: !If [ CreateDeleteBucketContentsRole, !GetAtt DeleteBucketContentsRole.Arn, "" ]
+  CopyZipsRoleArn:
+    Value: !GetAtt CopyZipsRole.Arn
+  ControlPlaneRoleArn:
+    Value: !GetAtt ControlPlaneRole.Arn
+  KubernetesAdminRoleArn:
+    Value: !GetAtt KubernetesAdminRole.Arn
+  NodeInstanceProfile:
+    Value: !Ref NodeInstanceProfile
+  NodeInstanceRoleArn:
+    Value: !GetAtt NodeInstanceRole.Arn
+  NodeInstanceRoleName:
+    Value: !Ref NodeInstanceRole
+  BastionRole:
+    Value: !If [EnableBastionRole, !Ref BastionRole, !Ref BastionIAMRoleName]
+  CleanupLoadBalancersRoleArn:
+    Value: !GetAtt CleanupLoadBalancersRole.Arn
+  CleanupSecurityGroupDependenciesRoleArn:
+    Value: !GetAtt CleanupSecurityGroupDependenciesRole.Arn
+  GetCallerArnRoleArn:
+    Value: !GetAtt GetCallerArnRole.Arn
+  CreateVpcRoleRoleArn:
+    Value: !GetAtt CreateVpcRoleRole.Arn
+  ExecutionRoleArn:
+    Value: !GetAtt ExecutionRole.Arn
+  RegisterTypeRoleArn:
+    Value: !GetAtt RegisterTypeRole.Arn
+  LogDeliveryRoleArn:
+    Value: !GetAtt LogDeliveryRole.Arn

@@ -1,0 +1,6 @@
+/var/log/kube-proxy.log {
+    missingok
+    rotate 5
+    daily
+    compress
+}

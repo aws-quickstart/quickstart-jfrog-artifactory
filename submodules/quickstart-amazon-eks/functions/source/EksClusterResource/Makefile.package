@@ -1,0 +1,11 @@
+.PHONY: package
+
+package:
+	go mod tidy
+	cfn generate
+	env CGO_ENABLED=0 GOARCH=amd64 GOOS=linux go build -ldflags="-s -w" -tags="logging callback scheduler" -o bin/handler cmd/main.go
+	env CGO_ENABLED=0 GOARCH=amd64 GOOS=linux go build -ldflags="-s -w" -o bin/k8svpc vpc/main.go
+	cd bin ; zip -FS -X k8svpc.zip k8svpc ; rm k8svpc ; zip -X ../handler.zip ./k8svpc.zip ./handler ; cd ..
+	cp  awsqs-eks-cluster.json schema.json
+	zip -X awsqs-eks-cluster.zip ./handler.zip ./schema.json ./.rpdk-config
+	rm ./handler.zip ./schema.json

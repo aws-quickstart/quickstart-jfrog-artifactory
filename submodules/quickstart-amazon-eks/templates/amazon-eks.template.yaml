@@ -1,0 +1,551 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: Deploys an EKS cluster into an existing VPC (qs-1p7nknoi6)
+Metadata:
+  QSLint:
+    Exclusions: [W9002, W9003, W9004, W9006]
+Parameters:
+  KeyPairName:
+    Type: AWS::EC2::KeyPair::KeyName
+  NodeAMIOS:
+    AllowedValues:
+      - Amazon-Linux-HVM
+      - SUSE-SLES-15-HVM
+    Default: Amazon-Linux-HVM
+    Type: String
+  QSS3BucketName:
+    AllowedPattern: ^[0-9a-zA-Z]+([0-9a-zA-Z-]*[0-9a-zA-Z])*$
+    Default: aws-quickstart
+    Type: String
+  QSS3KeyPrefix:
+    AllowedPattern: ^[0-9a-zA-Z-/.]*$
+    Default: quickstart-amazon-eks/
+    Type: String
+  QSS3BucketRegion:
+    Default: 'us-east-1'
+    Description: The AWS Region where the Quick Start S3 bucket (QSS3BucketName) is
+      hosted. When using your own bucket, you must specify this value.
+    Type: String
+  RemoteAccessCIDR:
+    AllowedPattern: ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/([0-9]|[1-2][0-9]|3[0-2]))$
+    Type: String
+  EKSPublicAccessCIDRs:
+    Type: List<String>
+    Default: 0.0.0.0/0
+  EKSPublicAccessEndpoint:
+    Type: String
+    AllowedValues: [Enabled, Disabled]
+    Default: Disabled
+  EKSPrivateAccessEndpoint:
+    Type: String
+    AllowedValues: [Enabled, Disabled]
+    Default: Enabled
+  EKSClusterLoggingTypes:
+    Type: List<String>
+    Default: ""
+  EKSEncryptSecrets:
+    Type: String
+    AllowedValues: [Enabled, Disabled]
+    Default: Enabled
+  EKSEncryptSecretsKmsKeyArn:
+    Type: String
+    Default: ""
+  AdditionalEKSAdminUserArn:
+    Type: String
+    Default: ""
+  AdditionalEKSAdminRoleArn:
+    Type: String
+    Default: ""
+  NodeInstanceType:
+    Default: t3.medium
+    AllowedValues:
+      - t3.nano
+      - t3.micro
+      - t3.small
+      - t3.medium
+      - t3.large
+      - t3.xlarge
+      - t3.2xlarge
+      - m5.large
+      - m5.xlarge
+      - m5.2xlarge
+      - m5.4xlarge
+      - m5.12xlarge
+      - m5.24xlarge
+      - c5.large
+      - c5.xlarge
+      - c5.2xlarge
+      - c5.4xlarge
+      - c5.9xlarge
+      - c5.18xlarge
+      - i3.large
+      - i3.xlarge
+      - i3.2xlarge
+      - i3.4xlarge
+      - i3.8xlarge
+      - i3.16xlarge
+      - x1.16xlarge
+      - x1.32xlarge
+      - p3.2xlarge
+      - p3.8xlarge
+      - p3.16xlarge
+      - r5.large
+      - r5.xlarge
+      - r5.2xlarge
+      - r5.4xlarge
+      - r5.12xlarge
+      - r5.24xlarge
+      - r5d.large
+      - r5d.xlarge
+      - r5d.2xlarge
+      - r5d.4xlarge
+      - r5d.12xlarge
+      - r5d.24xlarge
+      - z1d.large
+      - z1d.xlarge
+      - z1d.2xlarge
+      - z1d.3xlarge
+      - z1d.6xlarge
+      - z1d.12xlarge
+    ConstraintDescription: Must be a valid EC2 instance type
+    Type: String
+  NumberOfNodes:
+    Default: 3
+    Type: Number
+  MaxNumberOfNodes:
+    Default: 3
+    Type: Number
+  NodeGroupName:
+    Default: Default
+    Type: String
+  NodeVolumeSize:
+    Default: 20
+    Type: String
+  CustomAmiId:
+    Default: ""
+    Type: String
+  ManagedNodeGroup:
+    AllowedValues: [ "yes", "no" ]
+    Default: "no"
+    Description: Choose if you want to use a managed node group. If you select "yes", you must select Kubernetes Version 1.14 or higher.
+    Type: String
+  ManagedNodeGroupAMIType:
+    Description: Select one of the two AMI types for your managed node group (only applies if you chose "yes" for ManagedNodeGroup). GPU instance types should use the AL2_x86_64_GPU AMI type, which uses the Amazon EKS-optimized Linux AMI with GPU support. Non-GPU instances should use the AL2_x86_64 AMI type, which uses the Amazon EKS-optimized Linux AMI.
+    AllowedValues: [ "AL2_x86_64", " AL2_x86_64_GPU"]
+    Default: "AL2_x86_64"
+    Type: String
+  LambdaZipsBucketName:
+    Type: String
+    Default: ''
+  VPCID:
+    Type: "AWS::EC2::VPC::Id"
+  PublicSubnet1ID:
+    Type: String
+    Default: ""
+  PublicSubnet2ID:
+    Type: String
+    Default: ""
+  PublicSubnet3ID:
+    Type: String
+    Default: ""
+  PrivateSubnet1ID:
+    Type: "AWS::EC2::Subnet::Id"
+  PrivateSubnet2ID:
+    Type: String
+    Default: ""
+  PrivateSubnet3ID:
+    Type: String
+    Default: ""
+  KubernetesVersion:
+    Type: String
+    AllowedValues: [ "1.13", "1.14", "1.15" ]
+    Default: "1.15"
+  ProvisionClusterAutoScaler:
+    Type: String
+    AllowedValues: [ "Enabled", "Disabled" ]
+    Default: "Disabled"
+  ProvisionMonitoringStack:
+    Type: String
+    AllowedValues: [ "Prometheus + Grafana", "None" ]
+    Default: "None"
+  BootstrapArguments:
+    Type: String
+    Default: ""
+  BastionOS:
+    Type: String
+    AllowedValues: [ "Amazon-Linux-HVM", "CentOS-7-HVM", "Ubuntu-Server-14.04-LTS-HVM", "Ubuntu-Server-16.04-LTS-HVM", "SUSE-SLES-15-HVM" ]
+    Default: "Amazon-Linux-HVM"
+  ProvisionBastionHost:
+    Type: String
+    AllowedValues: [ "Enabled", "Disabled" ]
+    Default: "Enabled"
+  BastionBootstrapScript:
+    Default: ""
+    Type: String
+  BastionInstanceType:
+    Default: "t2.micro"
+    Type: String
+  BastionRootVolumeSize:
+    Type: Number
+    Default: 10
+  BastionIAMRoleName:
+    Type: String
+    Default: ""
+  BastionEnableTCPForwarding:
+    Type: String
+    Default: "false"
+    AllowedValues: [ "true", "false" ]
+  BastionEnableX11Forwarding:
+    Type: String
+    Default: "false"
+    AllowedValues: [ "true", "false" ]
+  BastionVariables:
+    Type: String
+    Default: ""
+  EfsStorageClass:
+    Type: String
+    AllowedValues: [ Enabled, Disabled ]
+    Default: Disabled
+  EfsPerformanceMode:
+    Type: String
+    AllowedValues: [ generalPurpose, maxIO ]
+    Default: generalPurpose
+  EfsThroughputMode:
+    Type: String
+    AllowedValues: [ bursting, provisioned ]
+    Default: bursting
+  EfsProvisionedThroughputInMibps:
+    Type: Number
+    MinValue: 0
+    Default: 0
+  HttpProxy:
+    Type: String
+    Default: ""
+Conditions:
+  3AZDeployment: !Not [!Equals [!Ref PrivateSubnet3ID, ""]]
+  2AZDeployment: !Or
+    - !Not [!Equals [!Ref PrivateSubnet2ID, ""]]
+    - !Not [!Equals [!Ref PrivateSubnet3ID, ""]]
+  EnablePublicSubnets: !Not [!Equals [!Ref PublicSubnet1ID, ""]]
+  CreateLambdaZipsBucket: !Equals [!Ref 'LambdaZipsBucketName', '']
+  DefaultBastionBootstrap: !Equals [!Ref 'BastionBootstrapScript', '']
+  EnableBastion: !And
+    - !Equals [!Ref 'ProvisionBastionHost', 'Enabled']
+    - !Not [!Equals [!Ref PublicSubnet1ID, ""]]
+  CustomBastionRole: !Not [!Equals [!Ref 'BastionIAMRoleName', '']]
+  AdditionalVars: !Not [!Equals [!Ref 'BastionVariables', '']]
+  EnableClusterAutoScaler: !Equals [!Ref 'ProvisionClusterAutoScaler', 'Enabled']
+  EnableMonitoringPrometheusGrafana: !Equals [!Ref 'ProvisionMonitoringStack', 'Prometheus + Grafana']
+  EnableEfs: !Equals [!Ref 'EfsStorageClass', 'Enabled']
+  UsingDefaultBucket: !Equals [!Ref QSS3BucketName, 'aws-quickstart']
+Resources:
+  BastionEksPermissions:
+    Condition: EnableBastion
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyName: "AllowEKSClusterOperations"
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: "Allow"
+            Action:
+              - "eks:DescribeCluster"
+              - "eks:DescribeUpdate"
+              - "eks:ListUpdates"
+              - "eks:UpdateClusterVersion"
+            Resource: !Sub "arn:${AWS::Partition}:eks:${AWS::Region}:${AWS::AccountId}:cluster/${EKSControlPlane.Outputs.EKSName}"
+      Roles:
+        - !GetAtt IamStack.Outputs.BastionRole
+  BastionStack:
+    Condition: EnableBastion
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub
+        - 'https://${S3Bucket}.s3.${S3Region}.${AWS::URLSuffix}/${QSS3KeyPrefix}submodules/quickstart-linux-bastion/templates/linux-bastion.template'
+        - S3Region: !If [UsingDefaultBucket, !Ref 'AWS::Region', !Ref QSS3BucketRegion]
+          S3Bucket: !If [UsingDefaultBucket, !Sub '${QSS3BucketName}-${AWS::Region}', !Ref QSS3BucketName]
+      Parameters:
+        BastionHostName: EKSBastion
+        BastionBanner: !Sub
+          - 's3://${S3Bucket}/${QSS3KeyPrefix}scripts/bastion_banner_message.txt'
+          - S3Bucket: !If [UsingDefaultBucket, !Sub '${QSS3BucketName}-${AWS::Region}', !Ref QSS3BucketName]
+        EnableBanner: true
+        BastionTenancy: default
+        NumBastionHosts: "1"
+        OSImageOverride: ""
+        VPCID: !Ref VPCID
+        PublicSubnet1ID: !Ref PublicSubnet1ID
+        PublicSubnet2ID: !If [2AZDeployment, !Ref PublicSubnet2ID, !Ref "AWS::NoValue"]
+        KeyPairName: !Ref KeyPairName
+        QSS3BucketName: !Ref QSS3BucketName
+        QSS3KeyPrefix: !Sub '${QSS3KeyPrefix}submodules/quickstart-linux-bastion/'
+        QSS3BucketRegion: !Ref QSS3BucketRegion
+        RemoteAccessCIDR: !Ref RemoteAccessCIDR
+        BastionInstanceType: !Ref BastionInstanceType
+        RootVolumeSize: !Ref BastionRootVolumeSize
+        AlternativeInitializationScript: !If
+          - DefaultBastionBootstrap
+          - !Sub
+            - 'https://${S3Bucket}.s3.${S3Region}.${AWS::URLSuffix}/${QSS3KeyPrefix}scripts/bastion_bootstrap.sh'
+            - S3Region: !If [UsingDefaultBucket, !Ref 'AWS::Region', !Ref QSS3BucketRegion]
+              S3Bucket: !If [UsingDefaultBucket, !Sub '${QSS3BucketName}-${AWS::Region}', !Ref QSS3BucketName]
+          - !Ref BastionBootstrapScript
+        AlternativeIAMRole: !GetAtt IamStack.Outputs.BastionRole
+        BastionAMIOS: !Ref BastionOS
+        EnableTCPForwarding: !Ref BastionEnableTCPForwarding
+        EnableX11Forwarding: !Ref BastionEnableX11Forwarding
+        EnvironmentVariables: !Sub
+        - >
+          K8S_CLUSTER_NAME=${EKSControlPlane.Outputs.EKSName},
+          K8S_CA_DATA=${EKSControlPlane.Outputs.CAData},
+          K8S_ENDPOINT=${EKSControlPlane.Outputs.EKSEndpoint}${Joiner}
+          ${BastionVariables}
+        - Joiner: !If [AdditionalVars, ",", ""]
+  NodeGroupStack:
+    Type: "AWS::CloudFormation::Stack"
+    Properties:
+      TemplateURL: !Sub
+        - 'https://${S3Bucket}.s3.${S3Region}.${AWS::URLSuffix}/${QSS3KeyPrefix}templates/amazon-eks-nodegroup.template.yaml'
+        - S3Region: !If [UsingDefaultBucket, !Ref 'AWS::Region', !Ref QSS3BucketRegion]
+          S3Bucket: !If [UsingDefaultBucket, !Sub '${QSS3BucketName}-${AWS::Region}', !Ref QSS3BucketName]
+      Parameters:
+        TargetGroupARNs: ""
+        ProvisionClusterAutoScaler: !Ref ProvisionClusterAutoScaler
+        HttpProxy: !Ref HttpProxy
+        KeyPairName: !Ref 'KeyPairName'
+        NodeAMIOS: !Ref NodeAMIOS
+        PrivateSubnet1ID: !Ref PrivateSubnet1ID
+        PrivateSubnet2ID: !If [2AZDeployment, !Ref PrivateSubnet2ID, !Ref "AWS::NoValue" ]
+        PrivateSubnet3ID: !If [3AZDeployment, !Ref PrivateSubnet3ID, !Ref "AWS::NoValue" ]
+        VPCID: !Ref VPCID
+        NodeInstanceType: !Ref NodeInstanceType
+        NumberOfNodes: !Ref NumberOfNodes
+        MaxNumberOfNodes: !Ref MaxNumberOfNodes
+        NodeGroupName: !Ref NodeGroupName
+        NodeVolumeSize: !Ref NodeVolumeSize
+        CustomAmiId: !Ref CustomAmiId
+        ManagedNodeGroup: !Ref ManagedNodeGroup
+        ManagedNodeGroupAMIType: !Ref ManagedNodeGroupAMIType
+        EKSControlPlane: !GetAtt EKSControlPlane.Outputs.EKSName
+        ControlPlaneSecurityGroup: !Ref ControlPlaneSecurityGroup
+        NodeInstanceProfile: !GetAtt IamStack.Outputs.NodeInstanceProfile
+        NodeInstanceRoleName: !GetAtt IamStack.Outputs.NodeInstanceRoleName
+        NodeInstanceRoleArn: !GetAtt IamStack.Outputs.NodeInstanceRoleArn
+        KubernetesVersion: !Ref KubernetesVersion
+        BootstrapArguments: !Ref BootstrapArguments
+        QSS3BucketName: !Ref QSS3BucketName
+        QSS3KeyPrefix: !Ref QSS3KeyPrefix
+        QSS3BucketRegion: !Ref QSS3BucketRegion
+        CleanupSecurityGroupDependenciesLambdaArn: !GetAtt FunctionStack.Outputs.CleanupSecurityGroupDependenciesLambdaArn
+        KubeManifestLambdaArn: !GetAtt FunctionStack.Outputs.KubeManifestLambdaArn
+  BastionSShToNodes:
+    Condition: EnableBastion
+    Type: "AWS::EC2::SecurityGroupIngress"
+    Properties:
+      Description: Allow SSH from Bastion server to Nodes
+      GroupId: !GetAtt NodeGroupStack.Outputs.EKSNodeSecurityGroup
+      SourceSecurityGroupId: !GetAtt BastionStack.Outputs.BastionSecurityGroupID
+      IpProtocol: tcp
+      ToPort: 22
+      FromPort: 22
+  BastionToAPIServerAccess:
+    Condition: EnableBastion
+    Type: "AWS::EC2::SecurityGroupIngress"
+    Properties:
+      Description: Allow Bastion server to communicate with the cluster API Server
+      GroupId: !Ref ControlPlaneSecurityGroup
+      SourceSecurityGroupId: !GetAtt BastionStack.Outputs.BastionSecurityGroupID
+      IpProtocol: tcp
+      ToPort: 443
+      FromPort: 443
+  IamStack:
+    Type: "AWS::CloudFormation::Stack"
+    Properties:
+      TemplateURL: !Sub
+        - 'https://${S3Bucket}.s3.${S3Region}.${AWS::URLSuffix}/${QSS3KeyPrefix}templates/amazon-eks-iam.template.yaml'
+        - S3Region: !If [UsingDefaultBucket, !Ref 'AWS::Region', !Ref QSS3BucketRegion]
+          S3Bucket: !If [UsingDefaultBucket, !Sub '${QSS3BucketName}-${AWS::Region}', !Ref QSS3BucketName]
+      Parameters:
+        LambdaZipsBucketName: !If [ CreateLambdaZipsBucket, !Ref LambdaZipsBucket, !Ref LambdaZipsBucketName ]
+        DeleteLambdaZipsBucketContents: !If [ CreateLambdaZipsBucket, "True", "False" ]
+        QSS3BucketName: !Ref QSS3BucketName
+        QSS3KeyPrefix: !Ref QSS3KeyPrefix
+        CreateBastionRole: !If [CustomBastionRole, "Disabled", !If [EnableBastion, "Enabled", "Disabled"]]
+        BastionIAMRoleName: !Ref BastionIAMRoleName
+  FunctionStack:
+    Type: "AWS::CloudFormation::Stack"
+    Properties:
+      TemplateURL: !Sub
+        - 'https://${S3Bucket}.s3.${S3Region}.${AWS::URLSuffix}/${QSS3KeyPrefix}templates/amazon-eks-functions.template.yaml'
+        - S3Region: !If [UsingDefaultBucket, !Ref 'AWS::Region', !Ref QSS3BucketRegion]
+          S3Bucket: !If [UsingDefaultBucket, !Sub '${QSS3BucketName}-${AWS::Region}', !Ref QSS3BucketName]
+      Parameters:
+        LambdaZipsBucketName: !If [ CreateLambdaZipsBucket, !Ref LambdaZipsBucket, !Ref LambdaZipsBucketName ]
+        QSS3BucketName: !Ref QSS3BucketName
+        QSS3KeyPrefix: !Ref QSS3KeyPrefix
+        CopyZipsRoleArn: !GetAtt IamStack.Outputs.CopyZipsRoleArn
+        KubernetesAdminRoleArn: !GetAtt IamStack.Outputs.KubernetesAdminRoleArn
+        ControlPlaneSecurityGroup: !Ref ControlPlaneSecurityGroup
+        DeleteBucketContentsRoleArn: !GetAtt IamStack.Outputs.DeleteBucketContentsRoleArn
+        DeleteLambdaZipsBucketContents: !If [ CreateLambdaZipsBucket, "True", "False" ]
+        VPCID: !Ref VPCID
+        CleanupLoadBalancersRoleArn: !GetAtt IamStack.Outputs.CleanupLoadBalancersRoleArn
+        CleanupSecurityGroupDependenciesRoleArn: !GetAtt IamStack.Outputs.CleanupSecurityGroupDependenciesRoleArn
+        GetCallerArnRoleArn: !GetAtt IamStack.Outputs.GetCallerArnRoleArn
+        CreateVpcRoleRoleArn: !GetAtt IamStack.Outputs.CreateVpcRoleRoleArn
+        RegisterTypeRoleArn: !GetAtt IamStack.Outputs.RegisterTypeRoleArn
+        ExecutionRoleArn: !GetAtt IamStack.Outputs.ExecutionRoleArn
+        LogRoleArn: !GetAtt IamStack.Outputs.LogDeliveryRoleArn
+        EKSSubnetIds: !If
+          - 3AZDeployment
+          - !Join [",", [ !Ref PrivateSubnet1ID, !Ref PrivateSubnet2ID, !Ref PrivateSubnet3ID ]]
+          - !If
+            - 2AZDeployment
+            - !Join [",", [ !Ref PrivateSubnet1ID, !Ref PrivateSubnet2ID ]]
+            - !Ref PrivateSubnet1ID
+  ClusterAutoScalerStack:
+    Condition: EnableClusterAutoScaler
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub
+        - 'https://${S3Bucket}.s3.${S3Region}.${AWS::URLSuffix}/${QSS3KeyPrefix}templates/amazon-eks-cluster-autoscaler.template.yaml'
+        - S3Region: !If [UsingDefaultBucket, !Ref 'AWS::Region', !Ref QSS3BucketRegion]
+          S3Bucket: !If [UsingDefaultBucket, !Sub '${QSS3BucketName}-${AWS::Region}', !Ref QSS3BucketName]
+      Parameters:
+        HelmLambdaArn: !GetAtt FunctionStack.Outputs.HelmLambdaArn
+        NodeInstanceRoleName: !GetAtt IamStack.Outputs.NodeInstanceRoleName
+        NodeAutoScalingGroup: !GetAtt NodeGroupStack.Outputs.NodeAutoScalingGroup
+        EksClusterName: !GetAtt EKSControlPlane.Outputs.EKSName
+        KubernetesVersion: !Ref KubernetesVersion
+  EfsStack:
+    Condition: EnableEfs
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub
+        - 'https://${S3Bucket}.s3.${S3Region}.${AWS::URLSuffix}/${QSS3KeyPrefix}templates/amazon-eks-efs.template.yaml'
+        - S3Region: !If [UsingDefaultBucket, !Ref 'AWS::Region', !Ref QSS3BucketRegion]
+          S3Bucket: !If [UsingDefaultBucket, !Sub '${QSS3BucketName}-${AWS::Region}', !Ref QSS3BucketName]
+      Parameters:
+        HelmLambdaArn: !GetAtt FunctionStack.Outputs.HelmLambdaArn
+        ClusterName: !GetAtt EKSControlPlane.Outputs.EKSName
+        NodeGroupSecurityGroup: !GetAtt NodeGroupStack.Outputs.EKSNodeSecurityGroup
+        PrivateSubnet1ID: !Ref PrivateSubnet1ID
+        PrivateSubnet2ID: !If [2AZDeployment, !Ref PrivateSubnet2ID, !Ref "AWS::NoValue" ]
+        PrivateSubnet3ID: !If [3AZDeployment, !Ref PrivateSubnet3ID, !Ref "AWS::NoValue" ]
+        PerformanceMode: !Ref EfsPerformanceMode
+        ProvisionedThroughputInMibps: !Ref EfsProvisionedThroughputInMibps
+        ThroughputMode: !Ref EfsThroughputMode
+  LambdaZipsBucket:
+    Type: AWS::S3::Bucket
+    Condition: CreateLambdaZipsBucket
+  DeleteBucketContents:
+    Condition: CreateLambdaZipsBucket
+    Type: Custom::DeleteBucketContents
+    Version: '1.0'
+    Properties:
+      ServiceToken: !GetAtt 'FunctionStack.Outputs.DeleteBucketContentsLambdaArn'
+      Bucket: !Ref 'LambdaZipsBucket'
+  ControlPlaneSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Cluster communication
+      VpcId: !Ref VPCID
+  EKSControlPlane:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub
+        - 'https://${S3Bucket}.s3.${S3Region}.${AWS::URLSuffix}/${QSS3KeyPrefix}templates/amazon-eks-controlplane.template.yaml'
+        - S3Region: !If [UsingDefaultBucket, !Ref 'AWS::Region', !Ref QSS3BucketRegion]
+          S3Bucket: !If [UsingDefaultBucket, !Sub '${QSS3BucketName}-${AWS::Region}', !Ref QSS3BucketName]
+      Parameters:
+        SecurityGroupIds: !Ref ControlPlaneSecurityGroup
+        SubnetIds: !If
+          - EnablePublicSubnets
+          - !If
+            - 3AZDeployment
+            - !Join [",", [ !Ref PrivateSubnet1ID, !Ref PrivateSubnet2ID, !Ref PrivateSubnet3ID, !Ref PublicSubnet1ID, !Ref PublicSubnet2ID, !Ref PublicSubnet3ID ]]
+            - !If
+              - 2AZDeployment
+              - !Join [",", [ !Ref PrivateSubnet1ID, !Ref PrivateSubnet2ID, !Ref PublicSubnet1ID, !Ref PublicSubnet2ID ]]
+              - !Join [",", [ !Ref PrivateSubnet1ID, !Ref PublicSubnet1ID ]]
+          - !If
+            - 3AZDeployment
+            - !Join [",", [ !Ref PrivateSubnet1ID, !Ref PrivateSubnet2ID, !Ref PrivateSubnet3ID ]]
+            - !If
+              - 2AZDeployment
+              - !Join [",", [ !Ref PrivateSubnet1ID, !Ref PrivateSubnet2ID ]]
+              - !Join [",", [ !Ref PrivateSubnet1ID ]]
+        RoleArn: !GetAtt IamStack.Outputs.ControlPlaneRoleArn
+        NodeInstanceRoleArn: !GetAtt IamStack.Outputs.NodeInstanceRoleArn
+        AdditionalEKSAdminUserArn: !Ref AdditionalEKSAdminUserArn
+        AdditionalEKSAdminRoleArn: !Ref AdditionalEKSAdminRoleArn
+        KubernetesVersion: !Ref KubernetesVersion
+        CleanupLoadBalancersLambdaArn: !GetAtt FunctionStack.Outputs.CleanupLoadBalancersLambdaArn
+        GetCallerArnLambdaArn: !GetAtt FunctionStack.Outputs.GetCallerArnLambdaArn
+        BastionRole: !GetAtt IamStack.Outputs.BastionRole
+        FunctionRoleArn: !GetAtt IamStack.Outputs.KubernetesAdminRoleArn
+        EKSPublicAccessCIDRs: !Join [ ',', !Ref 'EKSPublicAccessCIDRs' ]
+        EKSPublicAccessEndpoint: !Ref EKSPublicAccessEndpoint
+        EKSPrivateAccessEndpoint: !Ref EKSPrivateAccessEndpoint
+        EKSClusterLoggingTypes: !Join [ ',', !Ref 'EKSClusterLoggingTypes' ]
+        EKSEncryptSecrets: !Ref EKSEncryptSecrets
+        EKSEncryptSecretsKmsKeyArn: !Ref EKSEncryptSecretsKmsKeyArn
+  PrometheusStack:
+    Condition: EnableMonitoringPrometheusGrafana
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub
+        - 'https://${S3Bucket}.s3.${S3Region}.${AWS::URLSuffix}/${QSS3KeyPrefix}templates/amazon-eks-prometheus.template.yaml'
+        - S3Region: !If [UsingDefaultBucket, !Ref 'AWS::Region', !Ref QSS3BucketRegion]
+          S3Bucket: !If [UsingDefaultBucket, !Sub '${QSS3BucketName}-${AWS::Region}', !Ref QSS3BucketName]
+      Parameters:
+        ClusterName: !GetAtt EKSControlPlane.Outputs.EKSName
+        HelmLambdaArn: !GetAtt FunctionStack.Outputs.HelmLambdaArn
+  GrafanaStack:
+    Condition: EnableMonitoringPrometheusGrafana
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub
+        - 'https://${S3Bucket}.s3.${S3Region}.${AWS::URLSuffix}/${QSS3KeyPrefix}templates/amazon-eks-grafana.template.yaml'
+        - S3Region: !If [UsingDefaultBucket, !Ref 'AWS::Region', !Ref QSS3BucketRegion]
+          S3Bucket: !If [UsingDefaultBucket, !Sub '${QSS3BucketName}-${AWS::Region}', !Ref QSS3BucketName]
+      Parameters:
+        ClusterName: !GetAtt EKSControlPlane.Outputs.EKSName
+        HelmLambdaArn: !GetAtt FunctionStack.Outputs.HelmLambdaArn
+Outputs:
+  HelmLambdaArn:
+    Value: !GetAtt FunctionStack.Outputs.HelmLambdaArn
+  KubeManifestLambdaArn:
+    Value: !GetAtt FunctionStack.Outputs.KubeManifestLambdaArn
+  KubeGetLambdaArn:
+    Value: !GetAtt FunctionStack.Outputs.KubeGetLambdaArn
+  BastionIP:
+    Value: !If
+      - EnableBastion
+      - !GetAtt BastionStack.Outputs.EIP1
+      - ""
+  BastionSecurityGroup:
+    Value: !If
+      - EnableBastion
+      - !GetAtt BastionStack.Outputs.BastionSecurityGroupID
+      - ""
+  BastionAutoScalingGroup:
+    Value: !If
+      - EnableBastion
+      - !GetAtt BastionStack.Outputs.BastionAutoScalingGroup
+      - ""
+  EKSClusterName:
+    Value: !GetAtt EKSControlPlane.Outputs.EKSName
+  NodeInstanceProfile:
+    Value: !GetAtt IamStack.Outputs.NodeInstanceProfile
+  NodeInstanceRoleName:
+    Value: !GetAtt IamStack.Outputs.NodeInstanceRoleName
+  ControlPlaneSecurityGroup:
+    Value: !GetAtt ControlPlaneSecurityGroup.GroupId
+  NodeGroupSecurityGroup:
+    Value: !GetAtt NodeGroupStack.Outputs.EKSNodeSecurityGroup
+  NodeInstanceRoleArn:
+    Value: !GetAtt IamStack.Outputs.NodeInstanceRoleArn
+  CleanupSecurityGroupDependenciesLambdaArn:
+    Value: !GetAtt FunctionStack.Outputs.CleanupSecurityGroupDependenciesLambdaArn
+  NodeAutoScalingGroup:
+    Value: !GetAtt NodeGroupStack.Outputs.NodeAutoScalingGroup

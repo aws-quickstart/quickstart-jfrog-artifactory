@@ -1,0 +1,184 @@
+{
+  "PropertyTypes": {
+    "AWSQS::EKS::Cluster.Provider": {
+      "Documentation": "http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-eks-cluster-provider.html",
+      "Properties": {
+        "KeyArn": {
+          "Required": false,
+          "Documentation": "http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-eks-cluster-provider.html#cfn-eks-cluster-provider-keyarn",
+          "PrimitiveType": "String",
+          "UpdateType": "Mutable"
+        }
+      }
+    },
+    "AWSQS::EKS::Cluster.EncryptionConfig": {
+      "Documentation": "http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-eks-cluster-encryptionconfig.html",
+      "Properties": {
+        "Resources": {
+          "PrimitiveItemType": "String",
+          "Type": "List",
+          "Required": false,
+          "Documentation": "http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-eks-cluster-encryptionconfig.html#cfn-eks-cluster-encryptionconfig-resources",
+          "UpdateType": "Mutable"
+        },
+        "Provider": {
+          "Type": "Provider",
+          "Required": false,
+          "Documentation": "http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-eks-cluster-encryptionconfig.html#cfn-eks-cluster-encryptionconfig-provider",
+          "UpdateType": "Mutable"
+        }
+      }
+    },
+    "AWSQS::EKS::Cluster.ResourcesVpcConfig": {
+      "Documentation": "http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-eks-cluster-resourcesvpcconfig.html",
+      "Properties": {
+        "SecurityGroupIds": {
+          "PrimitiveItemType": "String",
+          "Type": "List",
+          "Required": false,
+          "Documentation": "http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-eks-cluster-resourcesvpcconfig.html#cfn-eks-cluster-resourcesvpcconfig-securitygroupids",
+          "UpdateType": "Mutable"
+        },
+        "SubnetIds": {
+          "PrimitiveItemType": "String",
+          "Type": "List",
+          "Required": true,
+          "Documentation": "http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-eks-cluster-resourcesvpcconfig.html#cfn-eks-cluster-resourcesvpcconfig-subnetids",
+          "UpdateType": "Mutable"
+        },
+        "PublicAccessCidrs": {
+          "PrimitiveItemType": "String",
+          "Type": "List",
+          "Required": false,
+          "Documentation": "https://github.com/aws-quickstart/quickstart-amazon-eks-cluster-resource-provider",
+          "UpdateType": "Mutable"
+        },
+        "EndpointPrivateAccess": {
+          "Required": false,
+          "Documentation": "https://github.com/aws-quickstart/quickstart-amazon-eks-cluster-resource-provider",
+          "PrimitiveType": "Boolean",
+          "UpdateType": "Mutable"
+        },
+        "EndpointPublicAccess": {
+          "Required": false,
+          "Documentation": "https://github.com/aws-quickstart/quickstart-amazon-eks-cluster-resource-provider",
+          "PrimitiveType": "Boolean",
+          "UpdateType": "Mutable"
+        }
+      }
+    },
+    "AWSQS::EKS::Cluster.KubernetesApiAccess": {
+      "Documentation": "https://github.com/aws-quickstart/quickstart-amazon-eks-cluster-resource-provider",
+      "Properties": {
+        "Users": {
+          "Documentation": "http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-cloudtrail-trail-eventselector.html#cfn-cloudtrail-trail-eventselector-dataresources",
+          "DuplicatesAllowed": false,
+          "ItemType": "IamMapping",
+          "Required": false,
+          "Type": "List",
+          "UpdateType": "Mutable"
+        },
+        "Roles": {
+          "Documentation": "http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-cloudtrail-trail-eventselector.html#cfn-cloudtrail-trail-eventselector-dataresources",
+          "DuplicatesAllowed": false,
+          "ItemType": "IamMapping",
+          "Required": false,
+          "Type": "List",
+          "UpdateType": "Mutable"
+        }
+      }
+    },
+    "AWSQS::EKS::Cluster.IamMapping": {
+      "Documentation": "http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-eks-cluster-resourcesvpcconfig.html",
+      "Properties": {
+        "Groups": {
+          "PrimitiveItemType": "String",
+          "Type": "List",
+          "Required": true,
+          "Documentation": "http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-eks-cluster-resourcesvpcconfig.html#cfn-eks-cluster-resourcesvpcconfig-securitygroupids",
+          "UpdateType": "Mutable"
+        },
+        "Arn": {
+          "Required": true,
+          "Documentation": "https://github.com/aws-quickstart/quickstart-amazon-eks-cluster-resource-provider",
+          "PrimitiveType": "String",
+          "UpdateType": "Mutable"
+        },
+        "Username": {
+          "Required": false,
+          "Documentation": "https://github.com/aws-quickstart/quickstart-amazon-eks-cluster-resource-provider",
+          "PrimitiveType": "String",
+          "UpdateType": "Mutable"
+        }
+      }
+    }
+  },
+  "ResourceTypes": {
+    "AWSQS::EKS::Cluster": {
+      "Documentation": "http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-eks-cluster.html",
+      "Attributes": {
+        "Endpoint": {
+          "PrimitiveType": "String"
+        },
+        "ClusterSecurityGroupId": {
+          "PrimitiveType": "String"
+        },
+        "EncryptionConfigKeyArn": {
+          "PrimitiveType": "String"
+        },
+        "Arn": {
+          "PrimitiveType": "String"
+        },
+        "CertificateAuthorityData": {
+          "PrimitiveType": "String"
+        }
+      },
+      "Properties": {
+        "Version": {
+          "Required": false,
+          "Documentation": "http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-eks-cluster.html#cfn-eks-cluster-version",
+          "PrimitiveType": "String",
+          "UpdateType": "Mutable"
+        },
+        "EncryptionConfig": {
+          "Type": "List",
+          "Required": false,
+          "Documentation": "http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-eks-cluster.html#cfn-eks-cluster-encryptionconfig",
+          "ItemType": "EncryptionConfig",
+          "UpdateType": "Immutable"
+        },
+        "RoleArn": {
+          "Required": true,
+          "Documentation": "http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-eks-cluster.html#cfn-eks-cluster-rolearn",
+          "PrimitiveType": "String",
+          "UpdateType": "Immutable"
+        },
+        "ResourcesVpcConfig": {
+          "Type": "ResourcesVpcConfig",
+          "Required": true,
+          "Documentation": "http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-eks-cluster.html#cfn-eks-cluster-resourcesvpcconfig",
+          "UpdateType": "Immutable"
+        },
+        "KubernetesApiAccess": {
+          "Type": "KubernetesApiAccess",
+          "Required": true,
+          "Documentation": "https://github.com/aws-quickstart/quickstart-amazon-eks-cluster-resource-provider",
+          "UpdateType": "Immutable"
+        },
+        "Name": {
+          "Required": false,
+          "Documentation": "http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-eks-cluster.html#cfn-eks-cluster-name",
+          "PrimitiveType": "String",
+          "UpdateType": "Immutable"
+        },
+        "EnabledClusterLoggingTypes": {
+          "PrimitiveItemType": "String",
+          "Type": "List",
+          "Required": false,
+          "Documentation": "https://github.com/aws-quickstart/quickstart-amazon-eks-cluster-resource-provider",
+          "UpdateType": "Mutable"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,195 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "deploy the AWSQS::EKS::Cluster resource into CloudFormation registry"
+Parameters:
+  CreateClusterAccessRole:
+    Type: String
+    Default: 'true'
+    AllowedValues:
+      - 'true'
+      - 'false'
+  PermissionsBoundary:
+    Type: String
+    Default: ''
+Conditions:
+  CreateRole: !Equals [!Ref CreateClusterAccessRole, 'true']
+  PermissionsBoundary: !Not [!Equals [!Ref PermissionsBoundary, '']]
+Resources:
+  ExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      PermissionsBoundary:
+        Fn::If:
+          - PermissionsBoundary
+          - Ref: PermissionsBoundary
+          - Ref: AWS::NoValue
+      MaxSessionDuration: 8400
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: resources.cloudformation.amazonaws.com
+            Action: sts:AssumeRole
+      Path: "/"
+      Policies:
+        - PolicyName: ResourceTypePolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - "ec2:*"
+                  - "eks:CreateCluster"
+                  - "eks:DeleteCluster"
+                  - "eks:DescribeCluster"
+                  - "eks:ListClusters"
+                  - "eks:UpdateClusterConfig"
+                  - "eks:UpdateClusterVersion"
+                  - "iam:*"
+                  - "kms:*"
+                  - "lambda:*"
+                  - "sts:AssumeRole"
+                Resource: "*"
+  KubernetesVpcRole:
+    Condition: CreateRole
+    Type: AWS::IAM::Role
+    Properties:
+      PermissionsBoundary:
+        Fn::If:
+          - PermissionsBoundary
+          - Ref: PermissionsBoundary
+          - Ref: AWS::NoValue
+      RoleName: "CloudFormation-Kubernetes-VPC"
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      Path: "/"
+      ManagedPolicyArns:
+        - 'arn:aws:iam::aws:policy/service-role/AWSLambdaENIManagementAccess'
+        - 'arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole'
+  LogDeliveryRole:
+    Type: AWS::IAM::Role
+    Properties:
+      PermissionsBoundary:
+        Fn::If:
+          - PermissionsBoundary
+          - Ref: PermissionsBoundary
+          - Ref: AWS::NoValue
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - cloudformation.amazonaws.com
+                - resources.cloudformation.amazonaws.com
+            Action: sts:AssumeRole
+      Path: "/"
+      Policies:
+        - PolicyName: ResourceTypePolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - "logs:CreateLogGroup"
+                  - "logs:CreateLogStream"
+                  - "logs:DescribeLogGroups"
+                  - "logs:DescribeLogStreams"
+                  - "logs:PutLogEvents"
+                  - "cloudwatch:ListMetrics"
+                  - "cloudwatch:PutMetricData"
+                Resource: "*"
+  RegisterTypeRole:
+    Type: AWS::IAM::Role
+    Properties:
+      PermissionsBoundary:
+        Fn::If:
+          - PermissionsBoundary
+          - Ref: PermissionsBoundary
+          - Ref: AWS::NoValue
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      Path: "/"
+      ManagedPolicyArns:
+        - 'arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole'
+      Policies:
+        - PolicyName: ResourceTypePolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - "cloudformation:*"
+                  - "iam:PassRole"
+                Resource: "*"
+  RegisterTypeFunction:
+    Type: "AWS::Lambda::Function"
+    Properties:
+      Timeout: 900
+      Runtime: python3.7
+      Handler: index.handler
+      Role: !GetAtt RegisterTypeRole.Arn
+      Code:
+        ZipFile: !Sub |
+          import cfnresponse
+          import logging
+          import boto3
+          from time import sleep
+
+          def stabilize(token, cfn):
+              p = cfn.describe_type_registration(RegistrationToken=token)
+              while p['ProgressStatus'] == "IN_PROGRESS":
+                  sleep(5)
+                  p = cfn.describe_type_registration(RegistrationToken=token)
+              if p['ProgressStatus'] == 'FAILED':
+                  logging.error(p)
+                  return cfnresponse.FAILED, p['TypeVersionArn']
+              return cfnresponse.SUCCESS, p['TypeVersionArn']
+
+          def register(cfn):
+              response = cfn.register_type(
+                  Type='RESOURCE',
+                  TypeName='AWSQS::EKS::Cluster',
+                  SchemaHandlerPackage="s3://aws-quickstart/quickstart-amazon-eks-cluster-resource-provider/awsqs-eks-cluster.zip",
+                  LoggingConfig={"LogRoleArn": "${LogDeliveryRole.Arn}", "LogGroupName": "awsqs-eks-cluster-logs"},
+                  ExecutionRoleArn="${ExecutionRole.Arn}"
+              )
+              status, version_arn = stabilize(response['RegistrationToken'], cfn)
+              cfn.set_type_default_version(Arn=version_arn)
+              return status, version_arn
+
+          def handler(event, context):
+              print(event)
+              status = cfnresponse.SUCCESS
+              physical_id = event.get('PhysicalResourceId')
+              try:
+                  cfn = boto3.client('cloudformation')
+                  if event['RequestType'] == 'Create':
+                      status, physical_id = register(cfn)
+                  if event['RequestType'] == 'Update':
+                      status, physical_id = register(cfn)
+                  if event['RequestType'] == 'Delete':
+                      versions = cfn.list_type_versions(Type='RESOURCE', TypeName='AWSQS::EKS::Cluster')['TypeVersionSummaries']
+                      if len(versions) > 1:
+                          cfn.deregister_type(Arn=physical_id)
+                      else:
+                          cfn.deregister_type(Type='RESOURCE', TypeName='AWSQS::EKS::Cluster')
+              except Exception:
+                  logging.error('Unhandled exception', exc_info=True)
+                  status = cfnresponse.FAILED
+              finally:
+                  cfnresponse.send(event, context, status, {}, physicalResourceId=physical_id)
+  RegisterType:
+    Type: "AWS::CloudFormation::CustomResource"
+    Properties:
+      ServiceToken: !GetAtt RegisterTypeFunction.Arn

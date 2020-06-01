@@ -1,0 +1,82 @@
+project:
+  name: quickstart-amazon-eks
+  owner: quickstart-eng@amazon.com
+  regions:
+  - us-east-1
+  - us-east-2
+  - us-west-2
+  - sa-east-1
+  - eu-central-1
+  - eu-west-1
+  - eu-west-2
+  - eu-west-3
+  - ap-northeast-1
+  - ap-southeast-1
+  - ap-southeast-2
+  template: templates/amazon-eks-master.template.yaml
+  parameters:
+    RemoteAccessCIDR: 10.0.0.0/16
+    QSS3BucketName: $[taskcat_autobucket]
+    QSS3BucketRegion: $[taskcat_current_region]
+    ProvisionBastionHost: Disabled
+  lambda_source_path: functions/source
+  lambda_zip_path: functions/packages
+tests:
+  defaults:
+    parameters:
+      AvailabilityZones: $[taskcat_genaz_3]
+  public-endpoint:
+    parameters:
+      AvailabilityZones: $[taskcat_genaz_3]
+      EKSPublicAccessEndpoint: Enabled
+    regions:
+      - ap-northeast-2
+  with-bastion:
+    parameters:
+      AvailabilityZones: $[taskcat_genaz_3]
+      ProvisionBastionHost: Enabled
+    regions:
+      - eu-north-1
+  cluster-autoscaler:
+    parameters:
+      AvailabilityZones: $[taskcat_genaz_3]
+      ClusterAutoScaler: Enabled
+    regions:
+    - eu-central-1
+  efs:
+    parameters:
+      AvailabilityZones: $[taskcat_genaz_3]
+      EfsStorageClass: Enabled
+    regions:
+    - us-west-2
+  managed-node-group:
+    parameters:
+      AvailabilityZones: $[taskcat_genaz_3]
+      ClusterAutoScaler: Disabled
+      ManagedNodeGroup: 'yes'
+      ManagedNodeGroupAMIType: AL2_x86_64
+    regions:
+    - us-east-1
+  monitoring-prom-graf:
+    parameters:
+      AvailabilityZones: $[taskcat_genaz_3]
+      MonitoringStack: Prometheus + Grafana
+      ProvisionBastionHost: Enabled
+    regions:
+    - ap-southeast-2
+  2az:
+    parameters:
+      AvailabilityZones: $[taskcat_genaz_2]
+      NumberOfAZs: "2"
+      ProvisionBastionHost: Enabled
+    regions:
+    - ca-central-1
+    - cn-northwest-1
+    - cn-north-1
+  no-logging:
+    parameters:
+      AvailabilityZones: $[taskcat_genaz_2]
+      NumberOfAZs: "2"
+      EKSClusterLoggingTypes: ""
+    regions:
+      - eu-west-1

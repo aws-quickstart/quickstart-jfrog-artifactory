@@ -1,0 +1,203 @@
+{
+    "typeName": "AWSQS::EKS::Cluster",
+    "description": "A resource that creates EKS clusters.",
+    "sourceUrl": "https://github.com/aws-quickstart/quickstart-amazon-eks-cluster-resource-provider.git",
+    "properties": {
+        "Name": {
+            "description": "The unique name to give to your cluster.",
+            "type": "string"
+        },
+        "RoleArn": {
+            "description": "The Amazon Resource Name (ARN) of the IAM role that provides permissions for Amazon EKS to make calls to other AWS API operations on your behalf.",
+            "type": "string"
+        },
+        "Version": {
+            "description": "The desired Kubernetes version for your cluster. If you don't specify a value here, the latest version available in Amazon EKS is used.",
+            "type": "string"
+        },
+        "ResourcesVpcConfig": {
+            "description": "An object representing the VPC configuration to use for an Amazon EKS cluster.\n\n",
+            "type": "object",
+            "properties": {
+                "SecurityGroupIds": {
+                    "description": "Specify one or more security groups for the cross-account elastic network interfaces that Amazon EKS creates to use to allow communication between your worker nodes and the Kubernetes control plane. If you don't specify a security group, the default security group for your VPC is used.",
+                    "type": "array",
+                    "items": {"type": "string"}
+                },
+                "SubnetIds": {
+                    "description": "Specify subnets for your Amazon EKS worker nodes. Amazon EKS creates cross-account elastic network interfaces in these subnets to allow communication between your worker nodes and the Kubernetes control plane.",
+                    "type": "array",
+                    "items": {"type": "string"}
+                },
+                "EndpointPublicAccess": {
+                    "description": "Set this value to false to disable public access to your cluster's Kubernetes API server endpoint. If you disable public access, your cluster's Kubernetes API server can only receive requests from within the cluster VPC. The default value for this parameter is true , which enables public access for your Kubernetes API server.",
+                    "type": "boolean"
+                },
+                "EndpointPrivateAccess": {
+                    "description": "Set this value to true to enable private access for your cluster's Kubernetes API server endpoint. If you enable private access, Kubernetes API requests from within your cluster's VPC use the private VPC endpoint. The default value for this parameter is false , which disables private access for your Kubernetes API server. If you disable private access and you have worker nodes or AWS Fargate pods in the cluster, then ensure that publicAccessCidrs includes the necessary CIDR blocks for communication with the worker nodes or Fargate pods.",
+                    "type": "boolean"
+                },
+                "PublicAccessCidrs": {
+                    "description": "The CIDR blocks that are allowed access to your cluster's public Kubernetes API server endpoint. Communication to the endpoint from addresses outside of the CIDR blocks that you specify is denied. The default value is 0.0.0.0/0 . If you've disabled private endpoint access and you have worker nodes or AWS Fargate pods in the cluster, then ensure that you specify the necessary CIDR blocks.",
+                    "type": "array",
+                    "items": {"type": "string"}
+                }
+            },
+            "required": ["SubnetIds"],
+            "additionalProperties": false
+        },
+        "EnabledClusterLoggingTypes": {
+            "description": "Enable exporting the Kubernetes control plane logs for your cluster to CloudWatch Logs. By default, cluster control plane logs aren't exported to CloudWatch Logs. Valid log types are api, audit, authenticator, controllerManager and scheduler",
+            "type": "array",
+            "items": {"type": "string", "pattern": "^api$|^audit$|^authenticator$|^controllerManager$|^scheduler$"}
+        },
+        "EncryptionConfig": {
+            "description": "The encryption configuration for the cluster.",
+            "type": "array",
+            "items": {
+                "description": "The encryption configuration for the cluster.",
+                "type": "object",
+                "properties": {
+                    "Resources": {
+                        "type": "array",
+                        "description": "Specifies the resources to be encrypted. The only supported value is \"secrets\".",
+                        "items": {
+                            "description": "Specifies the resources to be encrypted. The only supported value is \"secrets\".",
+                            "type": "string"
+                        }
+                    },
+                    "Provider": {
+                        "description": "AWS Key Management Service (AWS KMS) customer master key (CMK). Either the ARN or the alias can be used.",
+                        "type": "object",
+                        "properties": {
+                            "KeyArn": {
+                                "description": "Amazon Resource Name (ARN) or alias of the customer master key (CMK). The CMK must be symmetric, created in the same region as the cluster, and if the CMK was created in a different account, the user must have access to the CMK.",
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "KubernetesApiAccess": {
+            "type": "object",
+            "properties": {
+                "Roles": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "Arn": {"type": "string"},
+                            "Username": {"type": "string"},
+                            "Groups": {"type": "array", "items": {"type": "string"}}
+                        }
+                    }
+                },
+                "Users": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "Arn": {"type": "string"},
+                            "Username": {"type": "string"},
+                            "Groups": {"type": "array", "items": {"type": "string"}}
+                        },
+                        "required": ["Arn", "Groups"]
+                    }
+                }
+            }
+        },
+        "Arn": {
+            "description": "The ARN of the cluster, such as arn:aws:eks:us-west-2:666666666666:cluster/prod.",
+            "type": "string"
+        },
+        "CertificateAuthorityData": {
+            "description": "The certificate-authority-data for your cluster.",
+            "type": "string"
+        },
+        "ClusterSecurityGroupId": {
+            "description": "The cluster security group that was created by Amazon EKS for the cluster. Managed node groups use this security group for control plane to data plane communication.",
+            "type": "string"
+        },
+        "Endpoint": {
+            "description": "The endpoint for your Kubernetes API server, such as https://5E1D0CEXAMPLEA591B746AFC5AB30262.yl4.us-west-2.eks.amazonaws.com.",
+            "type": "string"
+        },
+        "EncryptionConfigKeyArn": {
+            "description": "Amazon Resource Name (ARN) or alias of the customer master key (CMK).",
+            "type": "string"
+        }
+    },
+    "additionalProperties": false,
+    "required": [
+        "RoleArn",
+        "ResourcesVpcConfig"
+    ],
+    "readOnlyProperties": [
+        "/properties/Arn",
+        "/properties/Endpoint",
+        "/properties/ClusterSecurityGroupId",
+        "/properties/CertificateAuthorityData",
+        "/properties/EncryptionConfigKeyArn"
+    ],
+    "createOnlyProperties": [
+        "/properties/Name",
+        "/properties/RoleArn",
+        "/properties/ResourcesVpcConfig/SubnetIds",
+        "/properties/ResourcesVpcConfig/SecurityGroupIds"
+    ],
+    "primaryIdentifier": [
+        "/properties/Name"
+    ],
+    "handlers": {
+        "create": {
+            "permissions": [
+                "eks:CreateCluster",
+                "eks:DescribeCluster",
+                "iam:PassRole",
+                "sts:AssumeRole",
+                "kms:*",
+                "lambda:*",
+                "ec2:*",
+                "iam:*"
+            ]
+        },
+        "read": {
+            "permissions": [
+                "eks:DescribeCluster",
+                "kms:*",
+                "lambda:*",
+                "ec2:*"
+            ]
+        },
+        "update": {
+            "permissions": [
+                "eks:DescribeCluster",
+                "eks:UpdateClusterVersion",
+                "eks:UpdateClusterConfig",
+                "iam:PassRole",
+                "kms:*",
+                "lambda:*",
+                "ec2:*"
+            ]
+        },
+        "delete": {
+            "permissions": [
+                "eks:DescribeCluster",
+                "eks:DeleteCluster",
+                "kms:*",
+                "lambda:*",
+                "ec2:*"
+            ]
+        },
+        "list": {
+            "permissions": [
+                "eks:DescribeCluster",
+                "eks:ListClusters",
+                "kms:*",
+                "lambda:*",
+                "ec2:*"
+            ]
+        }
+    }
+}

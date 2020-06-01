@@ -1,0 +1,12 @@
+{
+    "typeName": "AWSQS::EKS::Cluster",
+    "language": "go",
+    "runtime": "go1.x",
+    "entrypoint": "handler",
+    "testEntrypoint": "handler",
+    "settings": {
+        "importpath": "github.com/aws-quickstart/quickstart-amazon-eks-cluster-resource-provider",
+        "protocolVersion": "1.0.0",
+        "pluginVersion": "0.1.4"
+    }
+}
