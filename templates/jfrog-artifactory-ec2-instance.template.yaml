@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: "2010-09-09"
-Description: "Deploys the EC2 Autoscaling, LaunchConfig and Instance for Artifactory"
+Description: "Deploys the EC2 Autoscaling, LaunchConfig and Instance for Artifactory (qs-1qpmmjh5o)"
 Parameters:
   PrivateSubnet1Id:
     Type: 'AWS::EC2::Subnet::Id'

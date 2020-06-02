@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: "2010-09-09"
-Description: "Deploys Artifactory into an existing Kubernetes cluster"
+Description: "Deploys Artifactory into an existing Kubernetes cluster (qs-1qpmn20mc)"
 Parameters:
   KubeManifestLambdaArn:
     Type: String

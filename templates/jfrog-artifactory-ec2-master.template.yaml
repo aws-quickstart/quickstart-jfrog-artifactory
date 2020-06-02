@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: 'JFrog Artifactory Quick Start Deployment'
+Description: 'JFrog Artifactory Quick Start Deployment (qs-1qpmmjh2f)'
 Metadata:
   AWS::CloudFormation::Interface:
     ParameterGroups:
@@ -148,8 +148,7 @@ Parameters:
     Type: String
   AvailabilityZones:
     Description: The list of Availability Zones to use for the subnets in the VPC. Two
-      Availability Zones are used for this deployment, and the logical order of your
-      selections is preserved.
+      Availability Zones are used for this deployment.
     Type: List<AWS::EC2::AvailabilityZone::Name>
   KeyPairName:
     Description: The name of an existing public/private key pair,

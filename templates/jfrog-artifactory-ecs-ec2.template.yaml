@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: "2010-09-09"
-Description: "Deploys the EC2 Autoscaling, LaunchConfig, ECS Cluster, and calls nested Stack for the ECS Service"
+Description: "Deploys the EC2 Autoscaling, LaunchConfig, ECS Cluster, and calls nested Stack for the ECS Service (qs-1qpmmjh6q)"
 Parameters:
   PrivateSubnet1Id:
     Type: 'AWS::EC2::Subnet::Id'

@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: 'JFrog Artifactory Quick Start Deployment'
+Description: 'JFrog Artifactory ECS Quick Start Deployment (qs-1qpmmjh6a)'
 Metadata:
   AWS::CloudFormation::Interface:
     ParameterGroups:

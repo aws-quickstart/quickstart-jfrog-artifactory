@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: "2010-09-09"
-Description: "Deploys the ECS Artifactory Service and Task"
+Description: "Deploys the ECS Artifactory Service and Task (qs-1qpmmjh73)"
 Parameters:
   EcsCluster:
     Type: String
