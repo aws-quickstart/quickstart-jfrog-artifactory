@@ -8,6 +8,20 @@ project:
   regions:
     - us-east-2
 tests:
+ #AMI will load applications and JFrog Cloud Installer Scripts
+#  jfrog-rt-xray-product-ami:
+#    parameters:
+#      AvailabilityZone: "$[taskcat_genaz_1]"
+#      KeyPairName: "$[taskcat_getkeypair]"
+#      ArtifactVersion: 7.4.3
+#      ArtifactRepoUrl: https://jfrog.bintray.com/artifactory-pro-rpms
+#      RemoteAccessCidr: "10.0.0.0/16"
+#      QsS3BucketName: "$[taskcat_autobucket]"
+#      QsS3KeyPrefix: "quickstart-jfrog-artifactory/"
+#      QsS3BucketRegion: "$[taskcat_current_region]"
+#    template: templates/ami-rt-xray-master.template.yaml
+#    regions:
+#      - us-east-2
 #  jfrog-product-ami:
 #    parameters:
 #      AvailabilityZone: "$[taskcat_genaz_1]"
@@ -21,10 +35,10 @@ tests:
 #    template: templates/jfrog-ami-master.template.yaml
 #    regions:
 #      - us-east-2
- jfrog-artifactory-ec2-postgres:
+ jfrog-artifactory-xray-ec2-postgres:
    parameters:
      KeyPairName: "$[taskcat_getkeypair]"
-     ArtifactoryVersion: 7.4.3
+     ArtifactoryVersion: 7.5.5
      RemoteAccessCidr: "10.0.0.0/16"
      DatabaseEngine: Postgres
      AccessCidr: "10.0.0.0/16"
@@ -41,6 +55,10 @@ tests:
      MasterKey: "override"
      SmLicenseCertName: "override"
      MultiAzDatabase: "false"
+     InstallXray: "true"
+     XrayVersion: 3.3.0
+     XrayDatabasePassword: "$[taskcat_genpass_8A]"
+     XrayNumberOfSecondary: 1
    template: templates/jfrog-artifactory-ec2-master.template.yaml
    regions:
      - us-east-2

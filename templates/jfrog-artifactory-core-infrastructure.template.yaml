@@ -376,6 +376,20 @@ Outputs:
         port: !FindInMap [DatabaseMap, !Ref DatabaseEngine, port],
         extraDatabaseOps: !FindInMap [DatabaseMap, !Ref DatabaseEngine, extraDatabaseOps],
         }
+  XrayMasterDatabaseUrl:
+    Value: !Sub
+      - "${ArtifactoryDatabaseEndpointAddress}:${port}/${DatabaseName}?sslmode=disable"
+      - {
+        ArtifactoryDatabaseEndpointAddress: !GetAtt ArtifactoryDatabase.Endpoint.Address,
+        port: !FindInMap [DatabaseMap, !Ref DatabaseEngine, port],
+        }
+  XrayDatabaseUrl:
+    Value: !Sub
+      - "${ArtifactoryDatabaseEndpointAddress}:${port}/xraydb?sslmode=disable"
+      - {
+        ArtifactoryDatabaseEndpointAddress: !GetAtt ArtifactoryDatabase.Endpoint.Address,
+        port: !FindInMap [DatabaseMap, !Ref DatabaseEngine, port],
+        }
   ProDockerRepo:
     Value: !FindInMap
       - ReleaseStageMap

@@ -1,0 +1,6 @@
+- hosts: localhost
+  gather_facts: true
+  become: true
+  roles:
+  - name: artifactory
+  - name: artifactory-nginx-ssl

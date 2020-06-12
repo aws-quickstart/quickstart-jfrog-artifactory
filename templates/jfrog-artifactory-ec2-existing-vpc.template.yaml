@@ -482,20 +482,6 @@ Parameters:
     Default: 'us-east-1'
     Description: The AWS Region where the Quick Start S3 bucket (QSS3BucketName) is hosted. When using your own bucket, you must specify this value.
     Type: String
-  InstallXray:
-    Description: Choose true to install JFrog Xray instance(s).
-    ConstraintDescription: True or False
-    AllowedValues:
-      - "true"
-      - "false"
-    Default: "true"
-    Type: String
-  XrayReplicaCount:
-    Description: The number of JFrog Xray instance to create.
-    MinValue: 1
-    MaxValue: 2
-    Default: 1
-    Type: Number
 Conditions:
   UsingDefaultBucket: !Equals [!Ref QsS3BucketName, 'aws-quickstart']
   EnableBastion: !Equals [!Ref 'ProvisionBastionHost', 'Enabled']
@@ -643,6 +629,40 @@ Resources:
       LoadBalancerArn: !Ref ArtifactoryElb
       Port: 80
       Protocol: TCP
+  ArtifactoryInternalElb:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      IpAddressType: ipv4
+      Name: ArtifactoryInternal-ELB
+      Scheme: internal
+      Subnets:
+        - !Ref PrivateSubnet1Id
+        - !Ref PrivateSubnet2Id
+      Type: network
+  ArtifactoryInternalTargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      HealthCheckEnabled: True
+      HealthCheckIntervalSeconds: 30
+      HealthCheckProtocol: TCP
+      HealthCheckTimeoutSeconds: 10
+      HealthyThresholdCount: 3
+      HealthCheckPort: "8082"
+      Name: artifactory-internal-http
+      Port: 80
+      Protocol: TCP
+      TargetType: instance
+      UnhealthyThresholdCount: 3
+      VpcId: !Ref VpcId
+  ArtifactoryInternalElbListener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      DefaultActions:
+        - TargetGroupArn: !Ref ArtifactoryInternalTargetGroup
+          Type: forward
+      LoadBalancerArn: !Ref ArtifactoryInternalElb
+      Port: 80
+      Protocol: TCP
   ArtifactoryEc2Sg:
     Type: AWS::EC2::SecurityGroup
     Properties:
@@ -675,6 +695,10 @@ Resources:
         - IpProtocol: tcp
           FromPort: 8081
           ToPort: 8082
+          CidrIp: !Ref VpcCidr
+        - IpProtocol: tcp
+          FromPort: 8046
+          ToPort: 8046
           CidrIp: !Ref VpcCidr
       SecurityGroupEgress:
         - IpProtocol: "-1"
@@ -726,7 +750,7 @@ Resources:
               - UsingDefaultBucket
               - !Ref 'AWS::Region'
               - !Ref 'QsS3BucketRegion'
-        AmiId: !Join ['', !Split [".", !Ref ArtifactoryVersion]]
+        AmiId: !If [ArtifactoryHa, 'ArtifactoryCloudInstaller', !Join ['', !Split [".", !Ref ArtifactoryVersion]]]
         ArtifactoryProduct: !Ref ArtifactoryProduct
         ArtifactoryLicense1: !If [ArtifactoryHa, !Sub '{{resolve:secretsmanager:${SmLicenseCertName}:SecretString:ArtifactoryLicense1}}', '']
         ArtifactoryLicense2: !If [ArtifactoryHa, !Sub '{{resolve:secretsmanager:${SmLicenseCertName}:SecretString:ArtifactoryLicense2}}', '']
@@ -758,6 +782,7 @@ Resources:
         VolumeSize: !Ref VolumeSize
         TargetGroupARN: !Ref ArtifactoryTargetGroup
         SSLTargetGroupARN: !Ref ArtifactorySslTargetGroup
+        InternalTargetGroupARN: !Ref ArtifactoryInternalTargetGroup
         AnsibleVaultPass: !Ref AnsibleVaultPass
 
   ArtifactorySecondary:
@@ -776,7 +801,7 @@ Resources:
         MaxScalingNodes: !Ref NumberOfSecondary
         DeploymentTag: ArtifactorySecondary
         HostRole: !Ref ArtifactoryHostRole
-        AmiId: !Join ['', !Split [".", !Ref ArtifactoryVersion]]
+        AmiId: !If [ArtifactoryHa, 'ArtifactoryCloudInstaller', !Join ['', !Split [".", !Ref ArtifactoryVersion]]]
         ArtifactoryProduct: !Ref ArtifactoryProduct
         ArtifactoryLicense1: !Sub '{{resolve:secretsmanager:${SmLicenseCertName}:SecretString:ArtifactoryLicense1}}'
         ArtifactoryLicense2: !Sub '{{resolve:secretsmanager:${SmLicenseCertName}:SecretString:ArtifactoryLicense2}}'
@@ -808,6 +833,7 @@ Resources:
         VolumeSize: !Ref VolumeSize
         TargetGroupARN: !Ref ArtifactoryTargetGroup
         SSLTargetGroupARN: !Ref ArtifactorySslTargetGroup
+        InternalTargetGroupARN: !Ref ArtifactoryInternalTargetGroup
         AnsibleVaultPass: !Ref AnsibleVaultPass
         QsS3BucketName: !Ref QsS3BucketName
         QsS3KeyPrefix: !Ref QsS3KeyPrefix
@@ -825,8 +851,55 @@ Outputs:
   ArtifactoryUrl:
     Description: URL of the ELB to access Artifactory
     Value: !Sub "https://${ArtifactoryElb.DNSName}"
+    Export:
+      Name: !Sub '${AWS::StackName}-ArtifactoryUrl'
+  ArtifactoryInternalUrl:
+    Description: URL of the internal ELB to access Artifactory
+    Value: !Sub "http://${ArtifactoryInternalElb.DNSName}"
+    Export:
+      Name: !Sub '${AWS::StackName}-ArtifactoryInternalUrl'
+  DatabaseType:
+    Description: Type of database
+    Value: !GetAtt ArtifactoryCoreInfraStack.Outputs.DatabaseType
+    Export:
+      Name: !Sub '${AWS::StackName}-DatabaseType'
+  DatabaseDriver:
+    Description: Database driver
+    Value: !GetAtt ArtifactoryCoreInfraStack.Outputs.DatabaseDriver
+    Export:
+      Name: !Sub '${AWS::StackName}-DatabaseDriver'
+  DatabaseUrl:
+    Description: Database driver
+    Value: !GetAtt ArtifactoryCoreInfraStack.Outputs.DatabaseUrl
+    Export:
+      Name: !Sub '${AWS::StackName}-DatabaseUrl'
+  ArtifactoryTargetGroup:
+    Description: Artifactory target group
+    Value: !Ref ArtifactoryTargetGroup
+    Export:
+      Name: !Sub '${AWS::StackName}-ArtifactoryTargetGroup'
+  ArtifactorySslTargetGroup:
+    Description: Artifactory SSL target group
+    Value: !Ref ArtifactorySslTargetGroup
+    Export:
+      Name: !Sub '${AWS::StackName}-ArtifactorySslTargetGroup'
+  ArtifactoryEc2Sg:
+    Description: Artifactory EC2 sercurity group
+    Value: !Ref ArtifactoryEc2Sg
+    Export:
+      Name: !Sub '${AWS::StackName}-ArtifactoryEc2Sg'
   BastionIp:
     Value: !If
       - EnableBastion
       - !GetAtt BastionStack.Outputs.EIP1
       - ""
+  XrayMasterDatabaseUrl:
+    Description: Database driver
+    Value: !GetAtt ArtifactoryCoreInfraStack.Outputs.XrayMasterDatabaseUrl
+    Export:
+      Name: !Sub '${AWS::StackName}-XrayMasterDatabaseUrl'
+  XrayDatabaseUrl:
+    Description: Database driver
+    Value: !GetAtt ArtifactoryCoreInfraStack.Outputs.XrayDatabaseUrl
+    Export:
+      Name: !Sub '${AWS::StackName}-XrayDatabaseUrl'

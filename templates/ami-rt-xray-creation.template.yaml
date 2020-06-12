@@ -198,22 +198,6 @@ Resources:
 
   JFrogAMIInstance:
     Type: AWS::EC2::Instance
-    Metadata:
-      'AWS::CloudFormation::Init':
-        configSets:
-          jfrog_ami_setup:
-            - "config-ansible-art-ami"
-        config-ansible-art-ami:
-          files:
-            /root/.jfrog_ami/jfrog-ami-setup.yml:
-              content: !Sub |
-                  # Base install for JFrogAMIInstance
-                  - import_playbook: jfrog-ami.yml
-                    vars:
-                      jfrog_ami_version: ${ArtifactVersion}
-                      jfrog_ami_repo_url: ${ArtifactRepoUrl}
-                      jfrog_product: ${JFrogProduct}
-              mode: "0400"
     Properties:
       KeyName: !Ref KeyPairName
       ImageId: !FindInMap
@@ -264,6 +248,9 @@ Resources:
             S3URI=https://${S3Bucket}.s3.${S3Region}.${AWS::URLSuffix}/${QsS3KeyPrefix}
 
             yum install -y git
+            yum install -y postgresql-server postgresql-devel
+            yum install -y epel-release
+            yum install -y nginx
 
             echo $PATH
 
@@ -298,19 +285,11 @@ Resources:
 
             pip install selinux &> /var/log/userdata.selinux_install.log || qs_err " selinux install failed "
 
+            setsebool httpd_can_network_connect 1 -P
+
             yum update --security -y &> /var/log/userdata.yum_security_update.log || qs_err " ansible install failed "
 
-            mkdir ~/.jfrog_ami
-
-            aws s3 sync s3://${QsS3BucketName}/${QsS3KeyPrefix}scripts/ ~/.jfrog_ami/
-
-            cfn-init -v --stack ${AWS::StackName} --resource JFrogAMIInstance --configsets jfrog_ami_setup --region ${AWS::Region} || cfn_fail
-
             find / -name "authorized_keys" –exec rm –f {} \;
-
-            ansible-playbook /root/.jfrog_ami/jfrog-ami-setup.yml &> /var/log/jfrog-ami.log || cfn_fail
-
-            rm -rf ~/.jfrog_ami
 
             [ $(qs_status) == 0 ] && cfn_success || cfn_fail
           - S3Bucket: !If [UsingDefaultBucket, !Sub '{QsS3BucketName}-${AWS::Region}', !Ref 'QsS3BucketName']
