@@ -351,7 +351,7 @@ Parameters:
     Default: 7.4.3
     Type: String
   SmLicenseCertName:
-    Description: The secret name created in AWS Secrets Manager which contains the SSL certificate, certificate key, and Artifactory licenses.
+    Description: The secret name created in AWS Secrets Manager which contains the SSL certificate, certificate key, and Artifactory licenses. 	Note all entries are mandatory e.g. even if you do not have 4 licenses, you need to create 4 entries for licenses.
     Type: String
   ArtifactoryServerName:
     Description: The name of your Artifactory server. Ensure that this matches your certificate.
@@ -461,12 +461,11 @@ Parameters:
     Type: String
   QsS3BucketName:
     Description: S3 bucket name for the Quick Start assets. This string can include
-      numbers, lowercase letters, uppercase letters, and hyphens (-). It cannot start
+      numbers, lowercase letters, and hyphens (-). It cannot start
       or end with a hyphen (-).
-    AllowedPattern: ^[0-9a-zA-Z]+([0-9a-zA-Z-]*[0-9a-zA-Z])*$
+    AllowedPattern: ^[0-9a-z]+([0-9a-z-]*[0-9a-z])*$
     ConstraintDescription: Quick Start bucket name can include numbers, lowercase
-      letters, uppercase letters, and hyphens (-). It cannot start or end with a hyphen
-      (-).
+      letters, and hyphens (-). It cannot start or end with a hyphen (-).
     Default: aws-quickstart
     Type: String
   QsS3KeyPrefix:
