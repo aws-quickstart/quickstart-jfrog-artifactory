@@ -541,6 +541,9 @@ Parameters:
 Conditions:
   UsingDefaultBucket: !Equals [!Ref QsS3BucketName, 'aws-quickstart']
   EnableXray: !Equals [!Ref InstallXray, 'true']
+  EnableXraySecondary: !And
+    - !Equals [!Ref InstallXray, 'true']
+    - !Not [!Equals [!Ref XrayNumberOfSecondary, '0']]
 Resources:
   ArtifactoryVpcStack:
     Type: AWS::CloudFormation::Stack
@@ -684,7 +687,7 @@ Resources:
         XrayFirstNode: 'true'
         XrayVersion: !Ref XrayVersion
   XraySecondaryExistingVpcStack:
-    Condition: EnableXray
+    Condition: EnableXraySecondary
     DependsOn: XrayExistingVpcStack
     Type: AWS::CloudFormation::Stack
     Properties:
