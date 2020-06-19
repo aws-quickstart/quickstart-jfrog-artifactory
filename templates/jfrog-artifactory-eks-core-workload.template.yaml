@@ -7,10 +7,6 @@ Parameters:
     Type: String
   EksClusterName:
     Type: String
-  # KubeConfigPath:
-  #   Type: String
-  # KubeConfigKmsContext:
-  #   Type: String
   KubeGetLambdaArn:
     Type: String
   NumberOfSecondary:
@@ -405,9 +401,8 @@ Resources:
             service:
               loadBalancerSourceRanges:  [ "${AccessCidr}" ]
             tlsSecretName: artifactory-nginx-tls
-          installerInfo: `{"productId": "CloudFormation_artifactory-ha/1.0.0","features": [{"featureId": "Partner/ACC-006973"}]}`
+          installerInfo: '{"productId": "CloudFormation_artifactory-ha/1.0.0","features": [{"featureId": "Partner/ACC-006973"}]}'
         - {
-           info_file: !FindInMap [ArtifactoryProductMap, !Ref ArtifactoryProduct, infoFile],
            requests_memory: !FindInMap [DeploymentSize, !Ref ArtifactoryDeploymentSize, requestsMem],
            requests_cpu: !FindInMap [DeploymentSize, !Ref ArtifactoryDeploymentSize, requestsCpu],
            limits_memory: !FindInMap [DeploymentSize, !Ref ArtifactoryDeploymentSize, limitsMem],
@@ -451,6 +446,7 @@ Resources:
                 pullPolicy: Always
               deleteDBPropertiesOnStartup: true
               masterKey: ${MasterKey}
+              joinKey: ${MasterKey}
               preStartCommand: mkdir -p /var/opt/jfrog/artifactory/etc/artifactory/info/; mkdir -p /var/opt/jfrog/artifactory/bootstrap/artifactory/tomcat/lib/; wget -O  /var/opt/jfrog/artifactory/bootstrap/artifactory/tomcat/lib/${DatabasePlugin} ${DatabasePluginUrl}; cp /bootstrap/artifactory/binarystore.xml /var/opt/jfrog/artifactory/etc/artifactory/binarystore.xml
               persistence:
                 enabled: false
@@ -521,11 +517,10 @@ Resources:
               service:
                 loadBalancerSourceRanges:  [ "${AccessCidr}" ]
               tlsSecretName: artifactory-nginx-tls
-            installerInfo: `{"productId": "CloudFormation_artifactory-jcr/1.0.0","features": [{"featureId": "Partner/ACC-006973"}]}`
+            installerInfo: '{"productId": "CloudFormation_artifactory-jcr/1.0.0","features": [{"featureId": "Partner/ACC-006973"}]}''
           postgresql:
             enabled: false
         - {
-           info_file: !FindInMap [ArtifactoryProductMap, !Ref ArtifactoryProduct, infoFile],
            requests_memory: !FindInMap [DeploymentSize, !Ref ArtifactoryDeploymentSize, requestsMem],
            requests_cpu: !FindInMap [DeploymentSize, !Ref ArtifactoryDeploymentSize, requestsCpu],
            limits_memory: !FindInMap [DeploymentSize, !Ref ArtifactoryDeploymentSize, limitsMem],

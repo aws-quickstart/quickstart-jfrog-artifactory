@@ -1,0 +1,146 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "Deploys Xray into an existing Kubernetes cluster"
+Parameters:
+  HelmLambdaArn:
+    Type: String
+    # Default: arn:aws:lambda:us-east-2:717243751155:function:tCaT-quickstart-jfrog-artifactory-jfrog-HelmLambda-2R4VI8UK0MZS
+  EksClusterName:
+    Type: String
+    # Default: EKS-TY0R0CHG
+  AccessCidr:
+    Type: String
+    # Default: 184.96.28.156/32
+  ArtifactoryProduct:
+    Type: String
+    # Default: JFrog-Artifactory-Pro
+  ArtifactoryIamAcessKey:
+    Type: String
+    # Default: AKIA2N7YPDLZ5HW7V5HD
+    #NoEcho: 'true'
+  SecretAccessKey:
+    Type: String
+    # Default: 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
+    #NoEcho: 'true'
+  ArtifactoryS3Bucket:
+    Type: String
+    # Default: tcat-quickstart-jfrog-artifac-artifactorys3bucket-pspyi90qgbnu
+  Certificate:
+    Type: String
+    # Default: -----BEGIN CERTIFICATE-----|MIIDqjCCApICCQC8LhIxyNDozzANBgkqhkiG9w0BAQsFADCBljELMAkGA1UEBhMC|VVMxETAPBgNVBAgMCENvbG9yYWRvMQ8wDQYDVQQHDAZEZW52ZXIxDzANBgNVBAoM|BlRyYWNlMzEXMBUGA1UECwwOQ2xvdWRTb2x1dGlvbnMxFDASBgNVBAMMC2xvY2Fs|ZG9tYWluMSMwIQYJKoZIhvcNAQkBFhRqYmF0a2FsaW5AdHJhY2UzLmNvbTAeFw0y|MDAxMzAyMDQ4MDlaFw0yMTAxMjkyMDQ4MDlaMIGWMQswCQYDVQQGEwJVUzERMA8G|A1UECAwIQ29sb3JhZG8xDzANBgNVBAcMBkRlbnZlcjEPMA0GA1UECgwGVHJhY2Uz|MRcwFQYDVQQLDA5DbG91ZFNvbHV0aW9uczEUMBIGA1UEAwwLbG9jYWxkb21haW4x|IzAhBgkqhkiG9w0BCQEWFGpiYXRrYWxpbkB0cmFjZTMuY29tMIIBIjANBgkqhkiG|9w0BAQEFAAOCAQ8AMIIBCgKCAQEA09xnW/WYeuDxXiY+hw0zEsowZMeqj9qURIXg|wZbPgUwLgpgutci/WfNh66RmsZmQLNRzc0QQilfVzLQxC7HNvBUXfuFDUVIw8S4j|AX+xxKuwNC3L4Nl58VD+HIR5A/pBA+5Ncjhdlciwg1xzQCBYawTsAZ+OjMT/t4jo|NBncb0EdTWqZiRZw87waI+dV0O0CzBzMM+dLVz3QB/+EdlMHaX9mCs9FPqChUblO|fJldRKzF97d092yziNJheAh5VSA1z6xeUeVxe4pPRd+tH7x6LQmTuEzSLdBLw+yD|gg1wB+HxgZoyn5yrc1gxc3sdlg4JBLEP66IhGurvj4dU0zGvCQIDAQABMA0GCSqG|SIb3DQEBCwUAA4IBAQB6xlS2hyhZNholr9XwAONeXh98G8VcaPhievq9ug6OlGKS|6q3Y03Ucky3eCqGf958INqWtoAHQYME40xuXeY4OlRYlwclIJHFOoSD8jyLSwGf7|JTqNofeGPnM34WwoCX4Sm6zN9HgcIrUc6OFxmS7zo7FAr40RRCkE//84GVQIJC/M|yEsP/ydpyOB5VI7LIoosikbS78HY8W/sJsW6TwKb0JqJXWjSb5UtEBc6059wGqjP|Jc5k93Tu0WQnMGWitpOi4LbCoKvgvynXpGco9ngee8JmoywX+spaa32VMbXZ0C9i|sFeQb9Set86zyOblfc8BTA9KW8yBxYXF3J5IFx+u|-----END CERTIFICATE-----
+  DatabaseDriver:
+    Type: String
+    # Default: org.postgresql.Driver
+  DatabasePluginUrl:
+    Type: String
+    # Default: https://jdbc.postgresql.org/download/postgresql-42.2.9.jar
+  DatabasePlugin:
+    Type: String
+    # Default: postgresql-42.2.9.jar
+  DatabaseType:
+    Type: String
+    # Default: postgresql
+  MasterKey:
+    Type: String
+    # Default: ee95e4a55f3fbbc79f097def8fe81a89
+    #NoEcho: 'true'
+  XrayVersion:
+    Type: String
+    # Default: 3.3.0
+  ProDockerRepo:
+    Type: String
+    # Default: docker.bintray.io/jfrog/artifactory-pro
+  NginxDockerRepo:
+    Type: String
+    # Default: docker.bintray.io/jfrog/nginx-artifactory-pro
+  ArtifactoryDeploymentSize:
+    Type: String
+    # Default: xSmall
+  ReleaseStage:
+    Type: String
+    # Default: GA
+  InstallXray:
+    Type: String
+    Default: true
+  XrayVersion:
+    Type: String
+    # Default: 3.3.0
+  XrayNumberOfSecondary:
+    Type: Number
+    # Default: 1
+  JFrogUrl:
+    Type: String
+    # Default: https://a977e849fae8511ea83e70a4929b7c3f-396034543.us-east-2.elb.amazonaws.com
+  DatabaseUrl:
+    Type: String
+    # Default: postgres://tak1ej3sscikfl.cffuv0bsar3j.us-east-2.rds.amazonaws.com:5432/xraydb?sslmode=disable
+  DatabaseUser:
+    Type: String
+    # Default: xray
+  DatabasePassword:
+    Type: String
+    # Default: passworA
+Mappings:
+  AWSAMIRegionMap:
+    AMI:
+      AMZNLINUXHVM: amzn-ami-hvm-2018.03.0.20181129-x86_64-gp2
+    ap-northeast-1:
+      AMZNLINUXHVM: ami-079e6fb1e856e80c1
+      "xray": ami-09dfb20a591375d09 # TODO: Get correct ami - provided by market place tem
+    ap-northeast-2:
+      AMZNLINUXHVM: ami-0e4a253fb5f082688
+      "xray": ami-0eb86b82de93a34fb # TODO: Get correct ami - provided by market place tem
+    ap-south-1:
+      AMZNLINUXHVM: ami-01e074f40dfb9999d
+      "xray": ami-01b828aa6cc99a322 # TODO: Get correct ami - provided by market place tem
+    ap-southeast-1:
+      AMZNLINUXHVM: ami-0d9233e8ce73df7b2
+      "xray": ami-04a94cc4dc0d08c98 # TODO: Get correct ami - provided by market place tem
+    ap-southeast-2:
+      AMZNLINUXHVM: ami-0c91f97cadcc8499e
+      "xray": ami-030871aa8d1f0689e # TODO: Get correct ami - provided by market place tem
+    ca-central-1:
+      AMZNLINUXHVM: ami-003a0ba7ea76b2785
+      "xray": ami-0148cebea7bea4aaf # TODO: Get correct ami - provided by market place tem
+    eu-central-1:
+      AMZNLINUXHVM: ami-0ab838eeee7f316eb
+      "xray": ami-07961f7c210143a42 # TODO: Get correct ami - provided by market place tem
+    eu-west-1:
+      AMZNLINUXHVM: ami-071f4ce599deff521
+      "xray": ami-0171b8d46941b4ca1 # TODO: Get correct ami - provided by market place tem
+    sa-east-1:
+      AMZNLINUXHVM: ami-04b202bf877b5027b
+      "xray": ami-0596f196b273bb8a6 # TODO: Get correct ami - provided by market place tem
+    us-east-1:
+      AMZNLINUXHVM: ami-09d069a04349dc3cb
+      "xray": ami-0d4d4252cdc2b6f11 # TODO: Get correct ami - provided by market place tem
+    us-east-2:
+      AMZNLINUXHVM: ami-0d542ef84ec55d71c
+      "xray": ami-0271e3a7ded8d868b # TODO: Get correct ami - using ami generated by myself - provided by market place tem
+    us-west-1:
+      AMZNLINUXHVM: ami-04bc3da8f14823e88
+      "xray": ami-068cd684b4d3a3a86 # TODO: Get correct ami - provided by market place tem
+    us-west-2:
+      AMZNLINUXHVM: ami-01460aa81365561fe
+      "xray": ami-09cc97ebc804dbf6f # TODO: Get correct ami - provided by market place tem
+Resources:
+  XrayDeployment:
+    Type: "Custom::Helm"
+    Version: "1.0"
+    Properties:
+      ServiceToken: !Ref HelmLambdaArn
+      ClusterName: !Ref EksClusterName
+      Namespace: xray
+      Name: quickstart-xray
+      Chart: jfrog/xray
+      RepoUrl: https://charts.jfrog.io/
+      Version: !Ref XrayVersion
+      Values:
+        xray.joinKey: !Ref MasterKey
+        xray.masterKey: !Ref MasterKey
+        xray.jfrogUrl: !Ref JFrogUrl
+        # set consoleLog to true if you want to debug using kubectl log commands
+        xray.consoleLog: true
+        database.url: !Sub 'postgres://${DatabaseUrl}'
+        database.user: !Ref DatabaseUser
+        database.password: !Ref DatabasePassword
+        postgresql.enabled: false

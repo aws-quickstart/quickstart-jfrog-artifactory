@@ -69,6 +69,14 @@ Metadata:
           - QsS3KeyPrefix
           - QsS3BucketRegion
           - QsS3Uri
+      - Label:
+          default: JFrog Xray Configuration
+        Parameters:
+          - InstallXray
+          - XrayVersion
+          - XrayNumberOfSecondary
+          - XrayDatabaseUser
+          - XrayDatabasePassword
     ParameterLabels:
       KeyPairName:
         default: SSH key name
@@ -160,6 +168,16 @@ Metadata:
         default: Quick Start S3 bucket region
       LambdaZipsBucketName:
         default: Lambda zips bucket name
+      InstallXray:
+        default: Install JFrog Xray
+      XrayVersion:
+        default: Version of Xray to install
+      XrayNumberOfSecondary:
+        default: Number of JFrog Xray secondary instances
+      XrayDatabaseUser:
+        defualt: User to access Xray database
+      XrayDatabasePassword:
+        defualt: Password to access Xray database
 Parameters:
   KeyPairName:
     Description: The name of an existing public/private key pair, which allows you
@@ -545,6 +563,46 @@ Parameters:
       files should be placed. If you leave this parameter blank, an S3 bucket will be created.'
     Default: ''
     Type: String
+  InstallXray:
+    Description: Choose true to install JFrog Xray instance(s).
+    ConstraintDescription: True or False
+    AllowedValues:
+      - "true"
+      - "false"
+    Default: "false"
+    Type: String
+  XrayVersion:
+    Description: The version of Xray that you want to deploy into the Quick Start.
+    AllowedPattern: ^(([0-9]|[1-9][0-9])\.){2}([1-9][0-9]|[0-9])$
+    ConstraintDescription: A version that matches X.X.X per Xray releases.
+    Default: 3.3.0
+    Type: String
+  XrayNumberOfSecondary:
+    Description: The number of secondary Xray servers to complete your
+      HA deployment. The minimum number is zero; the maximum is seven.
+      Do not select more than instances than you have licenses for.
+    MinValue: 0
+    MaxValue: 7
+    Default: 0
+    Type: Number
+  XrayDatabaseUser:
+    Description: The login ID for the Xray database user.
+    MinLength: '1'
+    MaxLength: '16'
+    AllowedPattern: ^[a-zA-Z]([a-zA-Z0-9])+$
+    ConstraintDescription: 1 to 16 alphanumeric characters. First character must be a letter.
+    Default: xray
+    Type: String
+  XrayDatabasePassword:
+    Description: The password for the Xray database user.
+    AllowedPattern: ^[^ \\']+$
+    MinLength: '8'
+    MaxLength: '12'
+    ConstraintDescription: Must be at least 8 and no more than
+      12 characters containing letters and (minimum 1 capital letter), numbers and
+      symbols.
+    NoEcho: 'true'
+    Type: String
 Rules:
   EKSSupport:
     Assertions:
@@ -569,6 +627,7 @@ Conditions:
   BastionSecurityGroup: !And [!Equals [!Ref ArtifactoryProduct, 'JFrog-Artifactory-Pro'], !Equals [!Ref 'ProvisionBastionHost', 'Enabled']]
   DefaultSize: !Equals [!Ref DefaultDeploymentSize, "true"]
   UsingDefaultBucket: !Equals [!Ref QsS3BucketName, 'aws-quickstart']
+  EnableXray: !Equals [!Ref InstallXray, 'true']
 Resources:
   EksStack:
     Type: AWS::CloudFormation::Stack
@@ -741,6 +800,62 @@ Resources:
               - UsingDefaultBucket
               - !Ref 'AWS::Region'
               - !Ref 'QsS3BucketRegion'
+  XrayDB:
+    Condition: EnableXray
+    DependsOn: ArtifactoryCoreStack
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub
+        - https://${S3Bucket}.s3.${S3Region}.${AWS::URLSuffix}/${QsS3KeyPrefix}templates/jfrog-artifactory-eks-xray-db.template.yaml
+        - S3Bucket: !If [UsingDefaultBucket, !Sub '${QsS3BucketName}-${AWS::Region}', !Ref 'QsS3BucketName']
+          S3Region: !If [UsingDefaultBucket, !Ref 'AWS::Region', !Ref 'QsS3BucketRegion']
+      Parameters:
+        DatabaseUser: !Ref DatabaseUser
+        DatabasePassword: !Ref DatabasePassword
+        XrayDatabaseUser: !Ref XrayDatabaseUser
+        XrayDatabasePassword: !Ref XrayDatabasePassword
+        XrayMasterDatabaseUrl: !GetAtt ArtifactoryCoreInfraStack.Outputs.XrayMasterDatabaseUrl
+        KeyPairName: !Ref KeyPairName
+        PrivateSubnet1ID: !Ref PrivateSubnet1Id
+        PrivateSubnet2ID: !Ref PrivateSubnet2Id
+        PrivateSubnet3ID: !Ref PrivateSubnet3Id
+        VpcId: !Ref VpcId
+        KubeManifestLambdaArn: !GetAtt EksStack.Outputs.KubeManifestLambdaArn
+        EksClusterName: !GetAtt EksStack.Outputs.EKSClusterName
+  XrayDeployment:
+    Condition: EnableXray
+    DependsOn: XrayDB
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub
+        - https://${S3Bucket}.s3.${S3Region}.${AWS::URLSuffix}/${QsS3KeyPrefix}templates/jfrog-artifactory-eks-xray.template.yaml
+        - S3Bucket: !If [UsingDefaultBucket, !Sub '${QsS3BucketName}-${AWS::Region}', !Ref 'QsS3BucketName']
+          S3Region: !If [UsingDefaultBucket, !Ref 'AWS::Region', !Ref 'QsS3BucketRegion']
+      Parameters:
+        HelmLambdaArn: !GetAtt EksStack.Outputs.HelmLambdaArn
+        EksClusterName: !GetAtt EksStack.Outputs.EKSClusterName
+        AccessCidr: !Ref AccessCidr
+        ArtifactoryProduct: !Ref ArtifactoryProduct
+        Certificate: !Sub '{{resolve:secretsmanager:${SmLicenseCertName}:SecretString:Certificate}}'
+        ArtifactoryIamAcessKey: !GetAtt ArtifactoryCoreInfraStack.Outputs.ArtifactoryIamAcessKey
+        SecretAccessKey: !GetAtt ArtifactoryCoreInfraStack.Outputs.SecretAccessKey
+        ArtifactoryS3Bucket: !GetAtt ArtifactoryCoreInfraStack.Outputs.S3Bucket
+        ProDockerRepo: !GetAtt ArtifactoryCoreInfraStack.Outputs.ProDockerRepo
+        NginxDockerRepo: !GetAtt ArtifactoryCoreInfraStack.Outputs.NginxDockerRepo
+        DatabaseDriver: !GetAtt ArtifactoryCoreInfraStack.Outputs.DatabaseDriver
+        DatabasePlugin: !GetAtt ArtifactoryCoreInfraStack.Outputs.DatabasePlugin
+        DatabasePluginUrl: !GetAtt ArtifactoryCoreInfraStack.Outputs.DatabasePluginUrl
+        DatabaseType: !GetAtt ArtifactoryCoreInfraStack.Outputs.DatabaseType
+        MasterKey: !Ref MasterKey
+        ArtifactoryDeploymentSize: !If [DefaultSize, !GetAtt ArtifactoryCoreInfraStack.Outputs.DeploymentSize, !Ref ArtifactoryDeploymentSize]
+        ReleaseStage: !Ref ReleaseStage
+        InstallXray: !Ref InstallXray
+        XrayVersion: !Ref XrayVersion
+        XrayNumberOfSecondary: !Ref XrayNumberOfSecondary
+        JFrogUrl: !GetAtt XrayDB.Outputs.ArtifactoryInternalUrl
+        DatabaseUrl: !GetAtt ArtifactoryCoreInfraStack.Outputs.XrayDatabaseUrl
+        DatabaseUser: !Ref XrayDatabaseUser
+        DatabasePassword: !Ref DatabasePassword
 Outputs:
   ArtifactoryUrl:
     Value: !GetAtt ArtifactoryCoreStack.Outputs.ArtifactoryUrl

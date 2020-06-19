@@ -18,22 +18,10 @@
     state: directory
   become: yes
 
-- name: download xray
-  unarchive:
-    src: "{{ xray_tar }}"
-    dest: "{{ xray_download_directory }}"
-    remote_src: yes
-    owner: "{{ xray_user }}"
-    group: "{{ xray_group }}"
-    creates: "{{ xray_home }}"
-  become: yes
-  register: downloadxray
-  until: downloadxray is succeeded
-  retries: 3
 
 - name: perform prerequisite installation
   include_tasks: "{{ ansible_os_family }}.yml"
-  
+
 - name: ensure etc exists
   file:
     path: "{{ xray_home }}/var/etc"
@@ -41,7 +29,7 @@
     owner: "{{ xray_user }}"
     group: "{{ xray_group }}"
   become: yes
-  
+
 - name: configure system yaml
   template:
     src: system.yaml.j2

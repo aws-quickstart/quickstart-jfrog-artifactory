@@ -351,7 +351,7 @@ Parameters:
     Default: 7.4.3
     Type: String
   SmLicenseCertName:
-    Description: The secret name created in AWS Secrets Manager which contains the SSL certificate, certificate key, and Artifactory licenses. 	Note all entries are mandatory e.g. even if you do not have 4 licenses, you need to create 4 entries for licenses.
+    Description: The secret name created in AWS Secrets Manager which contains the SSL certificate, certificate key, and Artifactory licenses. Note all entries are mandatory e.g. even if you do not have 4 licenses, you need to create 4 entries for licenses.
     Type: String
   ArtifactoryServerName:
     Description: The name of your Artifactory server. Ensure that this matches your certificate.
@@ -749,7 +749,7 @@ Resources:
               - UsingDefaultBucket
               - !Ref 'AWS::Region'
               - !Ref 'QsS3BucketRegion'
-        AmiId: !If [ArtifactoryHa, 'ArtifactoryCloudInstaller', !Join ['', !Split [".", !Ref ArtifactoryVersion]]]
+        AmiId: !Join ['', !Split [".", !Ref ArtifactoryVersion]]
         ArtifactoryProduct: !Ref ArtifactoryProduct
         ArtifactoryLicense1: !If [ArtifactoryHa, !Sub '{{resolve:secretsmanager:${SmLicenseCertName}:SecretString:ArtifactoryLicense1}}', '']
         ArtifactoryLicense2: !If [ArtifactoryHa, !Sub '{{resolve:secretsmanager:${SmLicenseCertName}:SecretString:ArtifactoryLicense2}}', '']
@@ -800,7 +800,7 @@ Resources:
         MaxScalingNodes: !Ref NumberOfSecondary
         DeploymentTag: ArtifactorySecondary
         HostRole: !Ref ArtifactoryHostRole
-        AmiId: !If [ArtifactoryHa, 'ArtifactoryCloudInstaller', !Join ['', !Split [".", !Ref ArtifactoryVersion]]]
+        AmiId: !Join ['', !Split [".", !Ref ArtifactoryVersion]]
         ArtifactoryProduct: !Ref ArtifactoryProduct
         ArtifactoryLicense1: !Sub '{{resolve:secretsmanager:${SmLicenseCertName}:SecretString:ArtifactoryLicense1}}'
         ArtifactoryLicense2: !Sub '{{resolve:secretsmanager:${SmLicenseCertName}:SecretString:ArtifactoryLicense2}}'

@@ -1,8 +1,5 @@
 ---
 # tasks file for artifactory
-- name: install nginx
-  include_role:
-    name: artifactory-nginx
 
 - name: create group for artifactory
   group:
@@ -22,19 +19,6 @@
     path: "{{ artifactory_download_directory }}"
     state: directory
   become: yes
-
-- name: download artifactory
-  unarchive:
-    src: "{{ artifactory_tar }}"
-    dest: "{{ artifactory_download_directory }}"
-    remote_src: yes
-    owner: "{{ artifactory_user }}"
-    group: "{{ artifactory_group }}"
-    creates: "{{ artifactory_home }}"
-  become: yes
-  register: downloadartifactory
-  until: downloadartifactory is succeeded
-  retries: 3
 
 - name: ensure artifactory_file_store_dir exists
   file:
@@ -127,14 +111,6 @@
     dest: "{{ artifactory_home }}/var/etc/artifactory/artifactory.cluster.license"
   become: yes
   when: artifactory_license_file is not defined and artifactory_is_primary == true
-
-- name: download database driver
-  get_url:
-    url: "{{ db_download_url }}"
-    dest: "{{ artifactory_home }}/var/bootstrap/artifactory/tomcat/lib"
-    owner: "{{ artifactory_user }}"
-    group: "{{ artifactory_group }}"
-  become: yes
 
 - name: create artifactory service
   shell: "{{ artifactory_home }}/app/bin/installService.sh"
