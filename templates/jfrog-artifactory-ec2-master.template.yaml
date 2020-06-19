@@ -67,7 +67,7 @@ Metadata:
         Parameters:
           - InstallXray
           - XrayVersion
-          - XrayNumberOfInstances
+          - XrayNumberOfSecondary
           - XrayInstanceType
           - XrayDatabaseUser
           - XrayDatabasePassword
@@ -152,8 +152,8 @@ Metadata:
         default: Install JFrog Xray
       XrayVersion:
         default: Version of Xray to install
-      XrayNumberOfInstances:
-        default: Number of JFrog Xray instances
+      XrayNumberOfSecondary:
+        default: Number of JFrog secondary Xray instances
       XrayInstanceType:
         default: Xray instance type
       XrayDatabaseUser:
@@ -504,13 +504,13 @@ Parameters:
     ConstraintDescription: A version that matches X.X.X per Xray releases.
     Default: 3.3.0
     Type: String
-  XrayNumberOfInstances:
-    Description: The number of Xray instances servers to complete your
+  XrayNumberOfSecondary:
+    Description: The number of Xray secondary instances servers to complete your
       HA deployment. The minimum number is one; the maximum is seven.
       Do not select more than instances than you have licenses for.
-    MinValue: 1
+    MinValue: 0
     MaxValue: 7
-    Default: 1
+    Default: 0
     Type: Number
   XrayInstanceType:
     Description: The EC2 instance type for the Xray instances.
@@ -650,8 +650,8 @@ Resources:
         PrivateSubnet1Id: !GetAtt ArtifactoryVpcStack.Outputs.PrivateSubnet1AID
         PrivateSubnet2Id: !GetAtt ArtifactoryVpcStack.Outputs.PrivateSubnet2AID
         KeyPairName: !Ref KeyPairName
-        MinScalingNodes: !Ref XrayNumberOfInstances
-        MaxScalingNodes: !Ref XrayNumberOfInstances
+        MinScalingNodes: 1
+        MaxScalingNodes: 1
         DeploymentTag: 'xray'
         HostRole: !Ref XrayHostRole
         QsS3BucketName: !Ref QsS3BucketName
@@ -682,6 +682,52 @@ Resources:
         XrayMasterDatabaseUrl: !GetAtt ArtifactoryExistingVpcStack.Outputs.XrayMasterDatabaseUrl
         XrayDatabaseUrl: !GetAtt ArtifactoryExistingVpcStack.Outputs.XrayDatabaseUrl
         XrayFirstNode: 'true'
+        XrayVersion: !Ref XrayVersion
+  XraySecondaryExistingVpcStack:
+    Condition: EnableXray
+    DependsOn: XrayExistingVpcStack
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub
+        - https://${S3Bucket}.s3.${S3Region}.${AWS::URLSuffix}/${QsS3KeyPrefix}templates/jfrog-xray-ec2-instance.template.yaml
+        - S3Bucket: !If [UsingDefaultBucket, !Sub '${QsS3BucketName}-${AWS::Region}', !Ref 'QsS3BucketName']
+          S3Region: !If [UsingDefaultBucket, !Ref 'AWS::Region', !Ref 'QsS3BucketRegion']
+      Parameters:
+        PrivateSubnet1Id: !GetAtt ArtifactoryVpcStack.Outputs.PrivateSubnet1AID
+        PrivateSubnet2Id: !GetAtt ArtifactoryVpcStack.Outputs.PrivateSubnet2AID
+        KeyPairName: !Ref KeyPairName
+        MinScalingNodes: !Ref XrayNumberOfSecondary
+        MaxScalingNodes: !Ref XrayNumberOfSecondary
+        DeploymentTag: 'xray'
+        HostRole: !Ref XrayHostRole
+        QsS3BucketName: !Ref QsS3BucketName
+        QsS3KeyPrefix: !Ref QsS3KeyPrefix
+        QsS3Uri: !Sub
+          - https://${S3Bucket}.s3.${S3Region}.${AWS::URLSuffix}/${QsS3KeyPrefix}
+          - S3Bucket: !If
+              - UsingDefaultBucket
+              - !Sub 'aws-quickstart-${AWS::Region}'
+              - !Ref 'QsS3BucketName'
+            S3Region: !If
+              - UsingDefaultBucket
+              - !Ref 'AWS::Region'
+              - !Ref 'QsS3BucketRegion'
+        DatabaseDriver: !GetAtt ArtifactoryExistingVpcStack.Outputs.DatabaseDriver
+        DatabaseType: !GetAtt ArtifactoryExistingVpcStack.Outputs.DatabaseType
+        DatabaseUser: !Ref DatabaseUser
+        DatabasePassword: !Ref DatabasePassword
+        MasterKey: !Ref MasterKey
+        HostProfile: !Ref XrayHostProfile
+        SecurityGroups: !GetAtt ArtifactoryExistingVpcStack.Outputs.ArtifactoryEc2Sg
+        VolumeSize: !Ref VolumeSize
+        XrayInstanceType: !Ref XrayInstanceType
+        JfrogInternalUrl: !GetAtt ArtifactoryExistingVpcStack.Outputs.ArtifactoryInternalUrl
+        AnsibleVaultPass: !Ref AnsibleVaultPass
+        XrayDatabaseUser: !Ref XrayDatabaseUser
+        XrayDatabasePassword: !Ref XrayDatabasePassword
+        XrayMasterDatabaseUrl: !GetAtt ArtifactoryExistingVpcStack.Outputs.XrayMasterDatabaseUrl
+        XrayDatabaseUrl: !GetAtt ArtifactoryExistingVpcStack.Outputs.XrayDatabaseUrl
+        XrayFirstNode: 'false'
         XrayVersion: !Ref XrayVersion
 Outputs:
   ArtifactoryUrl:

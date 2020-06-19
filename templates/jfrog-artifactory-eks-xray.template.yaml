@@ -64,7 +64,7 @@ Parameters:
   XrayVersion:
     Type: String
     # Default: 3.3.0
-  XrayNumberOfInstances:
+  XrayNumberOfSecondary:
     Type: Number
     # Default: 1
   DatabaseUrl:
@@ -76,6 +76,14 @@ Parameters:
   DatabasePassword:
     Type: String
     # Default: passworA
+  KubeGetLambdaArn:
+    Type: String
+  PrivateSubnet1ID:
+    Type: String
+  PrivateSubnet2ID:
+    Type: String
+  PrivateSubnet3ID:
+    Type: String
 Mappings:
   AWSAMIRegionMap:
     AMI:
@@ -120,40 +128,35 @@ Mappings:
       AMZNLINUXHVM: ami-01460aa81365561fe
       "xray": ami-09cc97ebc804dbf6f # TODO: Get correct ami - provided by market place tem
 Resources:
-  # IngressPort:
-  #   Condition: ArtifactoryHa
-  #   DependsOn: ArtifactoryDeployment
-  #   Type: "Custom::KubeGet"
-  #   Version: '1.0'
-  #   Properties:
-  #     ServiceToken: !Ref KubeGetLambdaArn
-  #     ClusterName: !Ref EksClusterName
-  #     Namespace:
-  #     Name: svc/quickstart-artifactory-ha-nginx
-  #     JsonPath: '{.status.loadBalancer.ingress[0].hostname}'
-  # ArtifactoryInternalElb:
-  #   Type: AWS::ElasticLoadBalancing::LoadBalancer
-  #   Properties:
-  #       ConnectionDrainingPolicy:
-  #             Enabled: true
-  #             Timeout: 60
-  #       ConnectionSettings:
-  #             IdleTimeout: 60
-  #       CrossZone: true
-  #       Listeners:
-  #           - InstancePort: 80
-  #             InstanceProtocol: TCP
-  #             LoadBalancerPort: 32231
-  #             Protocol: TCP
-  #       LoadBalancerName: ArtifactoryInternalLoadBalancer-${EnvironmentName}
-  #       Scheme: internal
-  #       Subnets:
-  #         - !Ref PrivateSubnet1ID
-  #         - !Ref PrivateSubnet2ID
-  #         - !Ref PrivateSubnet3ID
-  #       SecurityGroups:
-  #           - !Ref SecurityGroup
-  #           - !ImportValue LumerisConnSG
+  IngressPort:
+    Type: "Custom::KubeGet"
+    Version: '1.0'
+    Properties:
+      ServiceToken: !Ref KubeGetLambdaArn
+      ClusterName: !Ref EksClusterName
+      Namespace: jfrog-artifactory
+      Name: svc/quickstart-artifactory-ha-nginx
+      JsonPath: '{.spec.ports[0].nodePort}'
+  ArtifactoryInternalElb:
+    Type: AWS::ElasticLoadBalancing::LoadBalancer
+    Properties:
+        ConnectionDrainingPolicy:
+              Enabled: true
+              Timeout: 60
+        ConnectionSettings:
+              IdleTimeout: 60
+        CrossZone: true
+        Listeners:
+            - InstancePort: 80
+              InstanceProtocol: TCP
+              LoadBalancerPort: !Ref IngressPort
+              Protocol: TCP
+        LoadBalancerName: ArtifactoryInternalLoadBalancer
+        Scheme: internal
+        Subnets:
+          - !Ref PrivateSubnet1ID
+          - !Ref PrivateSubnet2ID
+          - !Ref PrivateSubnet3ID
   XrayDeployment:
     Type: "Custom::Helm"
     Version: "1.0"
@@ -168,7 +171,7 @@ Resources:
       Values:
         xray.joinKey: !Ref MasterKey
         xray.masterKey: !Ref MasterKey
-        xray.jfrogUrl: "update to internal lb"
+        xray.jfrogUrl: !Sub 'http://${ArtifactoryInternalElb.DNSName}'
         # set consoleLog to true if you want to debug using kubectl log commands
         xray.consoleLog: true
         database.url: !Sub 'postgres://${DatabaseUrl}'

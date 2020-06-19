@@ -15,10 +15,6 @@ Parameters:
     Type: String
   PrivateSubnet1ID:
     Type: String
-  PrivateSubnet2ID:
-    Type: String
-  PrivateSubnet3ID:
-    Type: String
   VpcId:
     Type: String
   KeyPairName:

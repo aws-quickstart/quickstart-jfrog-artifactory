@@ -70,7 +70,7 @@ Metadata:
         Parameters:
           - InstallXray
           - XrayVersion
-          - XrayNumberOfInstances
+          - XrayNumberOfSecondary
           - XrayDatabaseUser
           - XrayDatabasePassword
     ParameterLabels:
@@ -160,8 +160,8 @@ Metadata:
         default: Install JFrog Xray
       XrayVersion:
         default: Version of Xray to install
-      XrayNumberOfInstances:
-        default: Number of JFrog Xray instances
+      XrayNumberOfSecondary:
+        default: Number of JFrog secondary Xray instances
       XrayDatabaseUser:
         defualt: User to access Xray database
       XrayDatabasePassword:
@@ -564,13 +564,13 @@ Parameters:
     ConstraintDescription: A version that matches X.X.X per Xray releases.
     Default: 3.3.0
     Type: String
-  XrayNumberOfInstances:
+  XrayNumberOfSecondary:
     Description: The number of secondary Xray servers to complete your
       HA deployment. The minimum number is one; the maximum is seven.
       Do not select more than instances than you have licenses for.
-    MinValue: 1
+    MinValue: 0
     MaxValue: 7
-    Default: 1
+    Default: 0
     Type: Number
   XrayDatabaseUser:
     Description: The login ID for the Xray database user.
@@ -687,7 +687,7 @@ Resources:
         QsS3BucketRegion: !Ref QsS3BucketRegion
         InstallXray: !Ref InstallXray
         XrayVersion: !Ref XrayVersion
-        XrayNumberOfInstances: !Ref XrayNumberOfInstances
+        XrayNumberOfSecondary: !Ref XrayNumberOfSecondary
         XrayDatabaseUser: !Ref XrayDatabaseUser
         XrayDatabasePassword: !Ref XrayDatabasePassword
 Outputs:
