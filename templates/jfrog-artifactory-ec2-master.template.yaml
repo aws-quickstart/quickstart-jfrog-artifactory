@@ -67,7 +67,7 @@ Metadata:
         Parameters:
           - InstallXray
           - XrayVersion
-          - XrayNumberOfSecondary
+          - XrayNumberOfInstances
           - XrayInstanceType
           - XrayDatabaseUser
           - XrayDatabasePassword
@@ -152,8 +152,8 @@ Metadata:
         default: Install JFrog Xray
       XrayVersion:
         default: Version of Xray to install
-      XrayNumberOfSecondary:
-        default: Number of JFrog Xray secondary instances
+      XrayNumberOfInstances:
+        default: Number of JFrog Xray instances
       XrayInstanceType:
         default: Xray instance type
       XrayDatabaseUser:
@@ -504,13 +504,13 @@ Parameters:
     ConstraintDescription: A version that matches X.X.X per Xray releases.
     Default: 3.3.0
     Type: String
-  XrayNumberOfSecondary:
-    Description: The number of secondary Xray servers to complete your
-      HA deployment. The minimum number is zero; the maximum is seven.
+  XrayNumberOfInstances:
+    Description: The number of Xray instances servers to complete your
+      HA deployment. The minimum number is one; the maximum is seven.
       Do not select more than instances than you have licenses for.
-    MinValue: 0
+    MinValue: 1
     MaxValue: 7
-    Default: 0
+    Default: 1
     Type: Number
   XrayInstanceType:
     Description: The EC2 instance type for the Xray instances.
@@ -541,9 +541,6 @@ Parameters:
 Conditions:
   UsingDefaultBucket: !Equals [!Ref QsS3BucketName, 'aws-quickstart']
   EnableXray: !Equals [!Ref InstallXray, 'true']
-  EnableXraySecondary: !And
-    - !Not [!Equals [!Ref XrayNumberOfSecondary, 0]]
-    - !Equals [!Ref InstallXray, 'true']
 Resources:
   ArtifactoryVpcStack:
     Type: AWS::CloudFormation::Stack
@@ -653,8 +650,8 @@ Resources:
         PrivateSubnet1Id: !GetAtt ArtifactoryVpcStack.Outputs.PrivateSubnet1AID
         PrivateSubnet2Id: !GetAtt ArtifactoryVpcStack.Outputs.PrivateSubnet2AID
         KeyPairName: !Ref KeyPairName
-        MinScalingNodes: !Ref XrayNumberOfSecondary
-        MaxScalingNodes: !Ref XrayNumberOfSecondary
+        MinScalingNodes: !Ref XrayNumberOfInstances
+        MaxScalingNodes: !Ref XrayNumberOfInstances
         DeploymentTag: 'xray'
         HostRole: !Ref XrayHostRole
         QsS3BucketName: !Ref QsS3BucketName
@@ -687,7 +684,7 @@ Resources:
         XrayFirstNode: 'true'
         XrayVersion: !Ref XrayVersion
   XraySecondaryExistingVpcStack:
-    Condition: EnableXraySecondary
+    Condition: EnableXray
     DependsOn: XrayExistingVpcStack
     Type: AWS::CloudFormation::Stack
     Properties:
@@ -699,8 +696,8 @@ Resources:
         PrivateSubnet1Id: !GetAtt ArtifactoryVpcStack.Outputs.PrivateSubnet1AID
         PrivateSubnet2Id: !GetAtt ArtifactoryVpcStack.Outputs.PrivateSubnet2AID
         KeyPairName: !Ref KeyPairName
-        MinScalingNodes: !Ref XrayNumberOfSecondary
-        MaxScalingNodes: !Ref XrayNumberOfSecondary
+        MinScalingNodes: !Ref XrayNumberOfInstances
+        MaxScalingNodes: !Ref XrayNumberOfInstances
         DeploymentTag: 'xray'
         HostRole: !Ref XrayHostRole
         QsS3BucketName: !Ref QsS3BucketName

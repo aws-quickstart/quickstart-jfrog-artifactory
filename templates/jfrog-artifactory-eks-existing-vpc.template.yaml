@@ -74,7 +74,7 @@ Metadata:
         Parameters:
           - InstallXray
           - XrayVersion
-          - XrayNumberOfSecondary
+          - XrayNumberOfInstances
           - XrayDatabaseUser
           - XrayDatabasePassword
     ParameterLabels:
@@ -172,7 +172,7 @@ Metadata:
         default: Install JFrog Xray
       XrayVersion:
         default: Version of Xray to install
-      XrayNumberOfSecondary:
+      XrayNumberOfInstances:
         default: Number of JFrog Xray secondary instances
       XrayDatabaseUser:
         defualt: User to access Xray database
@@ -577,13 +577,13 @@ Parameters:
     ConstraintDescription: A version that matches X.X.X per Xray releases.
     Default: 3.3.0
     Type: String
-  XrayNumberOfSecondary:
-    Description: The number of secondary Xray servers to complete your
-      HA deployment. The minimum number is zero; the maximum is seven.
+  XrayNumberOfInstances:
+    Description: The number of Xray instances servers to complete your
+      HA deployment. The minimum number is one; the maximum is seven.
       Do not select more than instances than you have licenses for.
-    MinValue: 0
+    MinValue: 1
     MaxValue: 7
-    Default: 0
+    Default: 1
     Type: Number
   XrayDatabaseUser:
     Description: The login ID for the Xray database user.
@@ -851,8 +851,7 @@ Resources:
         ReleaseStage: !Ref ReleaseStage
         InstallXray: !Ref InstallXray
         XrayVersion: !Ref XrayVersion
-        XrayNumberOfSecondary: !Ref XrayNumberOfSecondary
-        JFrogUrl: !GetAtt XrayDB.Outputs.ArtifactoryInternalUrl
+        XrayNumberOfInstances: !Ref XrayNumberOfInstances
         DatabaseUrl: !GetAtt ArtifactoryCoreInfraStack.Outputs.XrayDatabaseUrl
         DatabaseUser: !Ref XrayDatabaseUser
         DatabasePassword: !Ref DatabasePassword

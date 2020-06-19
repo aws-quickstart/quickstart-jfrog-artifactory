@@ -20,7 +20,8 @@ tests:
 #      QsS3BucketRegion: "$[taskcat_current_region]"
 #    template: templates/jfrog-ami-master.template.yaml
 #    regions:
-#      - us-east-2
+#      - us-west-2
+     #- us-east-2
 #  jfrog-xray-product-ami:
 #    parameters:
 #      AvailabilityZone: "$[taskcat_genaz_1]"
@@ -32,7 +33,8 @@ tests:
 #      QsS3BucketRegion: "$[taskcat_current_region]"
 #    template: templates/ami-rt-xray-master.template.yaml
 #    regions:
-#      - us-east-2
+#      - us-west-2
+    #  - us-east-2
  jfrog-artifactory-xray-ec2-postgres:
    parameters:
      KeyPairName: "$[taskcat_getkeypair]"
@@ -56,7 +58,7 @@ tests:
      InstallXray: "true"
      XrayVersion: 3.3.0
      XrayDatabasePassword: "$[taskcat_genpass_8A]"
-     XrayNumberOfSecondary: 1
+     XrayNumberOfInstances: 1
    template: templates/jfrog-artifactory-ec2-master.template.yaml
    regions:
      - us-east-2
@@ -95,47 +97,21 @@ tests:
 #      QsS3KeyPrefix: "quickstart-jfrog-artifactory/"
 #      QsS3BucketRegion: "$[taskcat_current_region]"
 #      DatabaseInstance: "db.m4.large"
-#      ArtifactoryVersion: "7.4.3"
+#      ArtifactoryVersion: "7.5.5"
 #      NumberOfSecondary: "2"
 #      ArtifactoryServerName: "artifactory"
 #      MasterKey: "override"
 #      SmLicenseCertName: "override"
 #      MultiAzDatabase: "false"
-#     #  DefaultDeploymentSize: "false"
-#     #  ArtifactoryDeploymentSize: "Small"
 #      InstallXray: "true"
 #      XrayVersion: 3.3.0
 #      XrayDatabasePassword: "passworA"
 #      #"$[taskcat_genpass_8A]"
-#      XrayNumberOfSecondary: 1
+#      XrayNumberOfInstances: 1
 #    template: templates/jfrog-artifactory-eks-master.template.yaml
 #    regions:
-#     # - us-west-2
+#      # - us-west-2
 #      - us-east-2
-  # jfrog-artifactory-eks:
-  #  parameters:
-  #    KeyPairName: "$[taskcat_getkeypair]"
-  #    RemoteAccessCidr: "10.0.0.0/16"
-  #    AccessCidr: "10.0.0.0/16"
-  #    AvailabilityZones: "$[taskcat_genaz_3]"
-  #    DatabasePassword: "$[taskcat_genpass_8A]"
-  #    QsS3BucketName: "$[taskcat_autobucket]"
-  #    QsS3KeyPrefix: "quickstart-jfrog-artifactory/"
-  #    QsS3BucketRegion: "$[taskcat_current_region]"
-  #    DatabaseInstance: "db.m4.large"
-  #    ArtifactoryVersion: "7.4.3"
-  #    NumberOfSecondary: "2"
-  #    ArtifactoryServerName: "artifactory"
-  #    MasterKey: "override"
-  #    SmLicenseCertName: "override"
-  #    MultiAzDatabase: "false"
-  #    InstallXray: "false"
-  #    XrayVersion: 3.3.0
-  #    XrayDatabasePassword: "$[taskcat_genpass_8A]"
-  #    XrayNumberOfSecondary: 0
-  #  template: templates/jfrog-artifactory-eks-master.template.yaml
-  #  regions:
-  #    - us-east-2
 #  jfrog-artifactory-eks-core:
 #    parameters:
 #      ArtifactoryDeploymentSize: Medium

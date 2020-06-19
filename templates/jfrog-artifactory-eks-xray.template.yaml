@@ -64,12 +64,9 @@ Parameters:
   XrayVersion:
     Type: String
     # Default: 3.3.0
-  XrayNumberOfSecondary:
+  XrayNumberOfInstances:
     Type: Number
     # Default: 1
-  JFrogUrl:
-    Type: String
-    # Default: https://a977e849fae8511ea83e70a4929b7c3f-396034543.us-east-2.elb.amazonaws.com
   DatabaseUrl:
     Type: String
     # Default: postgres://tak1ej3sscikfl.cffuv0bsar3j.us-east-2.rds.amazonaws.com:5432/xraydb?sslmode=disable
@@ -123,6 +120,40 @@ Mappings:
       AMZNLINUXHVM: ami-01460aa81365561fe
       "xray": ami-09cc97ebc804dbf6f # TODO: Get correct ami - provided by market place tem
 Resources:
+  # IngressPort:
+  #   Condition: ArtifactoryHa
+  #   DependsOn: ArtifactoryDeployment
+  #   Type: "Custom::KubeGet"
+  #   Version: '1.0'
+  #   Properties:
+  #     ServiceToken: !Ref KubeGetLambdaArn
+  #     ClusterName: !Ref EksClusterName
+  #     Namespace:
+  #     Name: svc/quickstart-artifactory-ha-nginx
+  #     JsonPath: '{.status.loadBalancer.ingress[0].hostname}'
+  # ArtifactoryInternalElb:
+  #   Type: AWS::ElasticLoadBalancing::LoadBalancer
+  #   Properties:
+  #       ConnectionDrainingPolicy:
+  #             Enabled: true
+  #             Timeout: 60
+  #       ConnectionSettings:
+  #             IdleTimeout: 60
+  #       CrossZone: true
+  #       Listeners:
+  #           - InstancePort: 80
+  #             InstanceProtocol: TCP
+  #             LoadBalancerPort: 32231
+  #             Protocol: TCP
+  #       LoadBalancerName: ArtifactoryInternalLoadBalancer-${EnvironmentName}
+  #       Scheme: internal
+  #       Subnets:
+  #         - !Ref PrivateSubnet1ID
+  #         - !Ref PrivateSubnet2ID
+  #         - !Ref PrivateSubnet3ID
+  #       SecurityGroups:
+  #           - !Ref SecurityGroup
+  #           - !ImportValue LumerisConnSG
   XrayDeployment:
     Type: "Custom::Helm"
     Version: "1.0"
@@ -137,7 +168,7 @@ Resources:
       Values:
         xray.joinKey: !Ref MasterKey
         xray.masterKey: !Ref MasterKey
-        xray.jfrogUrl: !Ref JFrogUrl
+        xray.jfrogUrl: "update to internal lb"
         # set consoleLog to true if you want to debug using kubectl log commands
         xray.consoleLog: true
         database.url: !Sub 'postgres://${DatabaseUrl}'

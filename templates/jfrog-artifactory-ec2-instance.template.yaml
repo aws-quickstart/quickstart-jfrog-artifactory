@@ -167,7 +167,7 @@ Mappings:
       AMZNLINUXHVM: ami-01460aa81365561fe
       "700": ami-000937e944ea194bf
       "Artifactory721": ami-0c132dd3640519a35
-      "Artifactory755": ami-0c132dd3640519a35 # TODO: Get correct ami
+      "Artifactory755": ami-0007155f7b7de9386 # TODO: Get correct ami
       "Jcr721": ami-083542bb4f8afa3db
   ArtifactoryProductMap:
     JFrog-Container-Registry:

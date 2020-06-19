@@ -54,7 +54,7 @@ Mappings:
     us-west-1:
       "xray": ami-068cd684b4d3a3a86 # TODO: Get correct ami - provided by market place tem
     us-west-2:
-      "xray": ami-09cc97ebc804dbf6f # TODO: Get correct ami - provided by market place tem
+      "xray": ami-03d60da4c8a146a55 # TODO: Get correct ami - provided by market place tem
 Resources:
   NameSpace:
     Type: "Custom::KubeManifest"
@@ -69,29 +69,6 @@ Resources:
           name: xray
           labels:
             app: xray
-  ArtifactoryInternalElb:
-    Type: AWS::ElasticLoadBalancing::LoadBalancer
-    Properties:
-        ConnectionDrainingPolicy:
-              Enabled: true
-              Timeout: 60
-        ConnectionSettings:
-              IdleTimeout: 60
-        CrossZone: true
-        Listeners:
-            - InstancePort: 80
-              InstanceProtocol: TCP
-              LoadBalancerPort: 32231
-              Protocol: TCP
-        LoadBalancerName: ArtifactoryInternalLoadBalancer-${EnvironmentName}
-        Scheme: internal
-        Subnets:
-          - !Ref PrivateSubnet1ID
-          - !Ref PrivateSubnet2ID
-          - !Ref PrivateSubnet3ID
-        SecurityGroups:
-            - !Ref SecurityGroup
-            - !ImportValue LumerisConnSG
   XrayHostRole:
       Type: 'AWS::IAM::Role'
       Properties:
@@ -156,10 +133,4 @@ Resources:
             psql postgresql://${DatabaseUser}:${DatabasePassword}@${XrayMasterDatabaseUrl} -c "CREATE DATABASE xraydb WITH OWNER=${XrayDatabaseUser} ENCODING='UTF8'" &>> /var/log/userdata.xray_database.log
             psql postgresql://${DatabaseUser}:${DatabasePassword}@${XrayMasterDatabaseUrl} -c "GRANT ALL PRIVILEGES ON DATABASE xraydb TO ${XrayDatabaseUser}" &>> /var/log/userdata.xray_database.log
 
-            aws cloudformation delete-stack ${AWS::StackName}
-Outputs:
-  ArtifactoryInternalUrl:
-    Description: URL of the internal ELB to access Artifactory
-    Value: !Sub "http://${ArtifactoryInternalElb.DNSName}"
-    Export:
-      Name: !Sub '${AWS::StackName}-ArtifactoryInternalUrl'
+            #aws cloudformation delete-stack ${AWS::StackName}

@@ -90,7 +90,7 @@ Mappings:
     us-west-1:
       "xray": ami-068cd684b4d3a3a86 # TODO: Get correct ami - provided by market place tem
     us-west-2:
-      "xray": ami-09cc97ebc804dbf6f # TODO: Get correct ami - provided by market place tem
+      "xray": ami-03d60da4c8a146a55 # TODO: Get correct ami - provided by market place tem
 Resources:
   XrayScalingGroup:
     Type: 'AWS::AutoScaling::AutoScalingGroup'
