@@ -488,7 +488,6 @@ Conditions:
   EnableBastion: !Equals [!Ref 'ProvisionBastionHost', 'Enabled']
   ArtifactoryHa: !Equals [!Ref ArtifactoryProduct, 'JFrog-Artifactory-Pro']
   DefaultJava: !Equals [!Ref DefaultJavaMemSettings, "true"]
-  UsingDefaultBucket: !Equals [!Ref QsS3BucketName, 'aws-quickstart']
 Resources:
   BastionRole:
     Condition: EnableBastion
