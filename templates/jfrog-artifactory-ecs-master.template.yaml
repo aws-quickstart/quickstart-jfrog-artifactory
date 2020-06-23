@@ -50,7 +50,7 @@ Metadata:
           - DefaultJavaMemSettings
           - AnsibleVaultPass
       - Label:
-          default: Amazon RDS Configuration
+          default: Amazon RDS configuration
         Parameters:
           - DatabaseName
           - DatabaseEngine
@@ -60,7 +60,7 @@ Metadata:
           - DatabaseAllocatedStorage
           - MultiAzDatabase
       - Label:
-          default: AWS Quick Start Configuration
+          default: AWS Quick Start configuration
         Parameters:
           - QsS3BucketName
           - QsS3KeyPrefix
@@ -97,7 +97,7 @@ Metadata:
       BastionOs:
         default: Bastion operating system
       NumBastionHosts:
-        default: Number of bastion instances
+        default: Bastion instances
       ArtifactoryProduct:
         default: Artifactory product to install
       ArtifactoryVersion:
@@ -105,7 +105,7 @@ Metadata:
       ReleaseStage:
         default: Release stage of the product to deploy
       NumberOfSecondary:
-        default: Number of secondary instances
+        default: Secondary instances
       NumberOfEC2Nodes:
         default: Number of EC2 nodes
       ClusterName:
@@ -141,16 +141,16 @@ Metadata:
       DatabaseAllocatedStorage:
         default: Database allocated storage
       MultiAzDatabase:
-        default: High available database
+        default: High-availability database
       QsS3BucketName:
         default: Quick Start S3 bucket name
       QsS3KeyPrefix:
         default: Quick Start S3 key prefix
       QsS3BucketRegion:
-        default: Quick Start S3 bucket region
+        default: Quick Start S3 bucket Region
 Parameters:
   KeyPairName:
-    Description: The name of an existing public/private key pair, which allows you
+    Description: Name of an existing key pair, which allows you
       to securely connect to your instance after it launches.
     Type: AWS::EC2::KeyPair::KeyName
   AccessCidr:

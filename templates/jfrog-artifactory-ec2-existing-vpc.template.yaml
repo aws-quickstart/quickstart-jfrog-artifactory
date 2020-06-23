@@ -125,7 +125,7 @@ Metadata:
       DefaultJavaMemSettings:
         default: Default Java memory settings
       KeystorePassword:
-        default: Java key store password
+        default: Java keystore password
       AnsibleVaultPass:
         default: Ansible Vault password
       DatabaseName:
@@ -380,7 +380,7 @@ Parameters:
     Default: "true"
     Type: String
   KeystorePassword:
-    Description: Java key store password. For better security, the password that you specify will
+    Description: Java keystore password. For better security, the password that you specify will
       replace the default Java key store password.
     NoEcho: 'true'
     Type: String

@@ -1,8 +1,8 @@
 project:
   name: quickstart-jfrog-artifactory
   owner: quickstart-eng@amazon.com
-  lambda_source_path: submodules/quickstart-amazon-eks/functions/source
-  lambda_zip_path: submodules/quickstart-amazon-eks/functions/packages
+  # lambda_source_path: submodules/quickstart-amazon-eks/functions/source
+  # lambda_zip_path: submodules/quickstart-amazon-eks/functions/packages
   s3_object_acl: public-read
   s3_regional_buckets: True
   regions:
@@ -45,7 +45,6 @@ tests:
      MultiAzDatabase: "false"
    template: templates/jfrog-artifactory-ec2-master.template.yaml
    regions:
-     - eu-west-1
      - us-west-2
  jfrog-artifactory-ecs-mysql:
    parameters:
@@ -69,7 +68,6 @@ tests:
      MultiAzDatabase: "false"
    template: templates/jfrog-artifactory-ecs-master.template.yaml
    regions:
-     - us-west-2
      - us-east-1
 #  jfrog-artifactory-eks:
 #    parameters:
@@ -90,8 +88,7 @@ tests:
 #      MultiAzDatabase: "false"
 #    template: templates/jfrog-artifactory-eks-master.template.yaml
 #    regions:
-#      - us-west-2
-    #  - eu-west-1
+    #  - us-west-2
 #  jfrog-artifactory-eks-core:
 #    parameters:
 #      ArtifactoryDeploymentSize: Medium
