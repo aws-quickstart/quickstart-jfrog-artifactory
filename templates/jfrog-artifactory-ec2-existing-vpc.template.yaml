@@ -338,7 +338,7 @@ Parameters:
     Default: 2
     Type: Number
   ArtifactoryProduct:
-    Description: Jfrog Artifactory product you want to install into an AMI.
+    Description: JFrog Artifactory product you want to install into an AMI.
     AllowedValues:
       - JFrog-Artifactory-Pro
       - JFrog-Container-Registry

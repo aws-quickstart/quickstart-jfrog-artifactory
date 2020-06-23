@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: 'JFrog Artifactory Quick Start Deployment (qs-1qrptlrg2)'
+Description: 'JFrog Artifactory Quick Start Deployment (qs-1qpmmjh2f)'
 Metadata:
   QuickStartDocumentation:
     EntrypointName: "Launch into a new VPC"
@@ -191,7 +191,7 @@ Parameters:
     Type: String
   RemoteAccessCidr:
     Description: Remote CIDR range that allows you to connect to the bastion instance by using SSH.
-      It is reommended that you set this value to a trusted IP range.
+      It is recommended that you set this value to a trusted IP range.
       For example, you may want to grant specific ranges from within your corporate network that use the SSH protocol.
     AllowedPattern: ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/([0-9]|[1-2][0-9]|3[0-2]))$
     Type: String
@@ -325,7 +325,7 @@ Parameters:
     Default: 2
     Type: Number
   ArtifactoryProduct:
-    Description: Jfrog Artifactory product you want to install into an AMI.
+    Description: JFrog Artifactory product you want to install into an AMI.
     AllowedValues:
       - JFrog-Artifactory-Pro
       - JFrog-Container-Registry
@@ -390,7 +390,7 @@ Parameters:
     Default: artdb
     Type: String
   DatabaseEngine:
-    Description: Database engine that you want to run, which is currently locked to MySQL.
+    Description: Database engine that you want to run.
     AllowedValues:
       - MySQL
       - Postgres
