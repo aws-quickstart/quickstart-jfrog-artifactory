@@ -4,5 +4,5 @@
 /.venv
 .DS_Store
 /.taskcat
-/functions/packages
+# /functions/packages
 /output
