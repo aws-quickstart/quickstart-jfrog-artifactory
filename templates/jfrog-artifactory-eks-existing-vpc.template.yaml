@@ -634,6 +634,9 @@ Resources:
         NodeInstanceRoleArn: !GetAtt EksStack.Outputs.NodeInstanceRoleArn
         KubernetesVersion: !Ref KubernetesVersion
         BootstrapArguments: !Sub "--kubelet-extra-args '--node-labels=partition=${ArtifactoryProduct}-secondary'"
+        QSS3BucketName: !Ref QsS3BucketName
+        QSS3KeyPrefix: !Sub "${QsS3KeyPrefix}submodules/quickstart-amazon-eks/"
+        QSS3BucketRegion: !Ref QsS3BucketRegion
 
   # Allow the bastion host to SSH into the secondary node pools
   BastionToRegularIngress:
