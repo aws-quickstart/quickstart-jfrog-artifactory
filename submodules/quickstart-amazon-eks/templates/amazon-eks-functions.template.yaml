@@ -71,20 +71,20 @@ Resources:
       SourceBucket: !If [UsingDefaultBucket, !Sub '${QSS3BucketName}-${AWS::Region}', !Ref QSS3BucketName]
       Prefix: !Ref 'QSS3KeyPrefix'
       Objects:
-      - functions/packages/Helm/lambda.zip
-      - functions/packages/DeleteBucketContents/lambda.zip
-      - functions/packages/KubeManifest/lambda.zip
-      - functions/packages/KubeGet/lambda.zip
-      - functions/packages/CleanupLoadBalancers/lambda.zip
-      - functions/packages/CleanupSecurityGroupDependencies/lambda.zip
-      - functions/packages/kubectlLayer/lambda.zip
-      - functions/packages/helmLayer/lambda.zip
-      - functions/packages/crhelperLayer/lambda.zip
-      - functions/packages/GetCallerArn/lambda.zip
-      - functions/packages/createVpcRole/lambda.zip
-      - functions/packages/registerType/lambda.zip
-      - functions/packages/EksClusterResource/awsqs-eks-cluster.zip
-      - functions/packages/awscliLayer/lambda.zip
+      - functions/jfrog/packages/Helm/lambda.zip
+      - functions/jfrog/packages/DeleteBucketContents/lambda.zip
+      - functions/jfrog/packages/KubeManifest/lambda.zip
+      - functions/jfrog/packages/KubeGet/lambda.zip
+      - functions/jfrog/packages/CleanupLoadBalancers/lambda.zip
+      - functions/jfrog/packages/CleanupSecurityGroupDependencies/lambda.zip
+      - functions/jfrog/packages/kubectlLayer/lambda.zip
+      - functions/jfrog/packages/helmLayer/lambda.zip
+      - functions/jfrog/packages/crhelperLayer/lambda.zip
+      - functions/jfrog/packages/GetCallerArn/lambda.zip
+      - functions/jfrog/packages/createVpcRole/lambda.zip
+      - functions/jfrog/packages/registerType/lambda.zip
+      - functions/jfrog/packages/EksClusterResource/awsqs-eks-cluster.zip
+      - functions/jfrog/packages/awscliLayer/lambda.zip
   ArtifactCopyPolicy:
     Type: AWS::S3::BucketPolicy
     Properties:
