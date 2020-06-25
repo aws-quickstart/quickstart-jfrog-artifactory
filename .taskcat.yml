@@ -100,7 +100,7 @@ tests:
      MasterKey: "override"
      SmLicenseCertName: "override"
      MultiAzDatabase: "false"
-     InstallXray: "false"
+     InstallXray: "true"
      XrayVersion: 3.3.0
      XrayDatabasePassword: $[taskcat_genpass_8A]"
      XrayNumberOfSecondary: 1
