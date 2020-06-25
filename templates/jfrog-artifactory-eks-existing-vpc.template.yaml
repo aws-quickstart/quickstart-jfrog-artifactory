@@ -74,7 +74,8 @@ Metadata:
         Parameters:
           - InstallXray
           - XrayVersion
-          - XrayNumberOfSecondary
+          - XrayReplicaCount
+          - RabbitMQReplicaCount
           - XrayDatabaseUser
           - XrayDatabasePassword
     ParameterLabels:
@@ -172,8 +173,10 @@ Metadata:
         default: Install JFrog Xray
       XrayVersion:
         default: Version of Xray to install
-      XrayNumberOfSecondary:
-        default: Number of JFrog Xray secondary instances
+      XrayReplicaCount:
+        default: Number of JFrog Xray pods
+      RabbitMQReplicaCount:
+        default: Number of JFrog Xray RabbitMQ pods
       XrayDatabaseUser:
         defualt: User to access Xray database
       XrayDatabasePassword:
@@ -577,13 +580,21 @@ Parameters:
     ConstraintDescription: A version that matches X.X.X per Xray releases.
     Default: 3.3.0
     Type: String
-  XrayNumberOfSecondary:
-    Description: The number of Xray instances servers to complete your
+  XrayReplicaCount:
+    Description: The number of Xray pods to complete your
       HA deployment. The minimum number is one; the maximum is seven.
-      Do not select more than instances than you have licenses for.
+      For high availability of Xray, set the replica count to be equal or higher than 2. Recommended is 3.
     MinValue: 1
     MaxValue: 7
-    Default: 1
+    Default: 3
+    Type: Number
+  RabbitMQReplicaCount:
+    Description: The number of RabbitMQ pods to complete your
+      HA deployment. The minimum number is one; the maximum is seven.
+      For high availability of Xray, set the replica count to be equal or higher than 2. Recommended is 3.
+    MinValue: 1
+    MaxValue: 7
+    Default: 3
     Type: Number
   XrayDatabaseUser:
     Description: The login ID for the Xray database user.
@@ -817,9 +828,6 @@ Resources:
         XrayMasterDatabaseUrl: !GetAtt ArtifactoryCoreInfraStack.Outputs.XrayMasterDatabaseUrl
         KeyPairName: !Ref KeyPairName
         PrivateSubnet1ID: !Ref PrivateSubnet1Id
-        PrivateSubnet2ID: !Ref PrivateSubnet2Id
-        PrivateSubnet3ID: !Ref PrivateSubnet3Id
-        VpcId: !Ref VpcId
         KubeManifestLambdaArn: !GetAtt EksStack.Outputs.KubeManifestLambdaArn
         EksClusterName: !GetAtt EksStack.Outputs.EKSClusterName
   XrayDeployment:
@@ -834,31 +842,15 @@ Resources:
       Parameters:
         HelmLambdaArn: !GetAtt EksStack.Outputs.HelmLambdaArn
         EksClusterName: !GetAtt EksStack.Outputs.EKSClusterName
-        AccessCidr: !Ref AccessCidr
-        ArtifactoryProduct: !Ref ArtifactoryProduct
-        Certificate: !Sub '{{resolve:secretsmanager:${SmLicenseCertName}:SecretString:Certificate}}'
-        ArtifactoryIamAcessKey: !GetAtt ArtifactoryCoreInfraStack.Outputs.ArtifactoryIamAcessKey
-        SecretAccessKey: !GetAtt ArtifactoryCoreInfraStack.Outputs.SecretAccessKey
-        ArtifactoryS3Bucket: !GetAtt ArtifactoryCoreInfraStack.Outputs.S3Bucket
-        ProDockerRepo: !GetAtt ArtifactoryCoreInfraStack.Outputs.ProDockerRepo
-        NginxDockerRepo: !GetAtt ArtifactoryCoreInfraStack.Outputs.NginxDockerRepo
-        DatabaseDriver: !GetAtt ArtifactoryCoreInfraStack.Outputs.DatabaseDriver
-        DatabasePlugin: !GetAtt ArtifactoryCoreInfraStack.Outputs.DatabasePlugin
-        DatabasePluginUrl: !GetAtt ArtifactoryCoreInfraStack.Outputs.DatabasePluginUrl
-        DatabaseType: !GetAtt ArtifactoryCoreInfraStack.Outputs.DatabaseType
         MasterKey: !Ref MasterKey
-        ArtifactoryDeploymentSize: !If [DefaultSize, !GetAtt ArtifactoryCoreInfraStack.Outputs.DeploymentSize, !Ref ArtifactoryDeploymentSize]
-        ReleaseStage: !Ref ReleaseStage
-        InstallXray: !Ref InstallXray
         XrayVersion: !Ref XrayVersion
-        XrayNumberOfSecondary: !Ref XrayNumberOfSecondary
+        XrayReplicaCount: !Ref XrayReplicaCount
+        RabbitMQReplicaCount: !Ref RabbitMQReplicaCount
         DatabaseUrl: !GetAtt ArtifactoryCoreInfraStack.Outputs.XrayDatabaseUrl
         DatabaseUser: !Ref XrayDatabaseUser
+        DatabasePassword: !Ref XrayDatabasePassword
         KubeGetLambdaArn: !GetAtt EksStack.Outputs.KubeGetLambdaArn
-        DatabasePassword: !Ref DatabasePassword
-        PrivateSubnet1ID: !Ref PrivateSubnet1Id
-        PrivateSubnet2ID: !Ref PrivateSubnet2Id
-        PrivateSubnet3ID: !Ref PrivateSubnet3Id
+
 Outputs:
   ArtifactoryUrl:
     Value: !GetAtt ArtifactoryCoreStack.Outputs.ArtifactoryUrl

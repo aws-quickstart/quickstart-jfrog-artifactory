@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: "2010-09-09"
-Description: "Deploys Artifactory into an existing Kubernetes cluster"
+Description: "Sets up xray database user"
 Parameters:
   DatabaseUser:
     Type: String
@@ -14,8 +14,6 @@ Parameters:
   XrayMasterDatabaseUrl:
     Type: String
   PrivateSubnet1ID:
-    Type: String
-  VpcId:
     Type: String
   KeyPairName:
     Type: String
@@ -85,48 +83,45 @@ Resources:
             Statement:
             - Effect: Allow
               Action:
-              - "cloudformation:DeleteStack"
-              Resource: !Ref "AWS::StackId"
-            - Effect: Allow
-              Action: [ "ec2:TerminateInstances" ]
+                - "autoscaling:UpdateAutoScalingGroup"
+                -  "autoscaling:DescribeAutoScalingInstances"
               Resource: "*"
-              Condition:
-                StringEquals:
-                  "ec2:ResourceTag/aws:cloudformation:stack-id": !Ref AWS::StackId
-            - Effect: Allow
-              Action: [ "ec2:DescribeInstances" ]
-              Resource: "*"
-            - Effect: Allow
-              Action:
-              - "iam:RemoveRoleFromInstanceProfile"
-              - "iam:DeleteInstanceProfile"
-              Resource: !Sub "arn:aws:iam::${AWS::AccountId}:instance-profile/*"
-            - Effect: Allow
-              Action:
-              - "iam:DeleteRole"
-              - "iam:DeleteRolePolicy"
-              Resource: !Sub "arn:aws:iam::${AWS::AccountId}:role/EC2Role-${AWS::StackName}"
   XrayHostProfile:
     Type: 'AWS::IAM::InstanceProfile'
     Properties:
       Roles:
         - !Ref XrayHostRole
       Path: /
-  XrayDatabaseCreate:
-    Type: AWS::EC2::Instance
+  XrayDBSetupAutoScalingGroup:
+    Type: 'AWS::AutoScaling::AutoScalingGroup'
     Properties:
+      LaunchConfigurationName: !Ref XrayDBLaunchConfiguration
+      VPCZoneIdentifier:
+        - !Ref PrivateSubnet1ID
+      MinSize: '0'
+      MaxSize: '1'
+      DesiredCapacity: '1'
+      Tags:
+        - Key: Name
+          Value: XrayDBSetupAutoScalingGroup
+          PropagateAtLaunch: true
+  XrayDBLaunchConfiguration:
+    Type: 'AWS::AutoScaling::LaunchConfiguration'
+    Properties:
+      AssociatePublicIpAddress: false
       ImageId: !FindInMap [ AWSAMIRegionMap,  !Ref 'AWS::Region', 'xray']
       InstanceType: t2.micro
       IamInstanceProfile: !Ref XrayHostProfile
-      SubnetId: !Ref PrivateSubnet1ID
       KeyName: !Ref KeyPairName
       UserData:
-        "Fn::Base64":
+        'Fn::Base64':
           !Sub |
             #!/bin/bash
             psql postgresql://${DatabaseUser}:${DatabasePassword}@${XrayMasterDatabaseUrl} -c "CREATE USER ${XrayDatabaseUser} WITH PASSWORD '${XrayDatabasePassword}'" &>> /var/log/userdata.xray_database.log
             psql postgresql://${DatabaseUser}:${DatabasePassword}@${XrayMasterDatabaseUrl} -c "grant ${XrayDatabaseUser} to ${DatabaseUser}" &>> /var/log/userdata.xray_database.log
             psql postgresql://${DatabaseUser}:${DatabasePassword}@${XrayMasterDatabaseUrl} -c "CREATE DATABASE xraydb WITH OWNER=${XrayDatabaseUser} ENCODING='UTF8'" &>> /var/log/userdata.xray_database.log
             psql postgresql://${DatabaseUser}:${DatabasePassword}@${XrayMasterDatabaseUrl} -c "GRANT ALL PRIVILEGES ON DATABASE xraydb TO ${XrayDatabaseUser}" &>> /var/log/userdata.xray_database.log
-
-            #aws cloudformation delete-stack ${AWS::StackName}
+            source ~/venv/bin/activate &> /var/log/userdata.activate_venv.log || qs_err " activate venv failed "
+            instanceId=$(curl 'http://169.254.169.254/latest/meta-data/instance-id')
+            autoscalingGroup=$(aws autoscaling describe-auto-scaling-instances --instance-ids $instanceId --query 'AutoScalingInstances[0].AutoScalingGroupName' --region ${AWS::Region} | sed -e 's/^"//' -e 's/"$//')
+            aws autoscaling update-auto-scaling-group --auto-scaling-group-name $autoscalingGroup --region ${AWS::Region} --min-size 0 --max-size 0 --desired-capacity 0 &>> /var/log/userdata.autoscaling.log

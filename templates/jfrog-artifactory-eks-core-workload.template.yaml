@@ -283,6 +283,7 @@ Resources:
               secret: artifactory-cluster-license
               dataKey: art.lic
             masterKey: ${MasterKey}
+            joinKey: ${MasterKey}
             preStartCommand: mkdir -p /var/opt/jfrog/artifactory/etc/artifactory/info/; mkdir -p /var/opt/jfrog/artifactory/bootstrap/artifactory/tomcat/lib/; wget -O  /var/opt/jfrog/artifactory/bootstrap/artifactory/tomcat/lib/${DatabasePlugin} ${DatabasePluginUrl}
             persistence:
               enabled: false
@@ -446,7 +447,6 @@ Resources:
                 pullPolicy: Always
               deleteDBPropertiesOnStartup: true
               masterKey: ${MasterKey}
-              joinKey: ${MasterKey}
               preStartCommand: mkdir -p /var/opt/jfrog/artifactory/etc/artifactory/info/; mkdir -p /var/opt/jfrog/artifactory/bootstrap/artifactory/tomcat/lib/; wget -O  /var/opt/jfrog/artifactory/bootstrap/artifactory/tomcat/lib/${DatabasePlugin} ${DatabasePluginUrl}; cp /bootstrap/artifactory/binarystore.xml /var/opt/jfrog/artifactory/etc/artifactory/binarystore.xml
               persistence:
                 enabled: false

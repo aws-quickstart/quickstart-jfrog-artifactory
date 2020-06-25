@@ -70,7 +70,8 @@ Metadata:
         Parameters:
           - InstallXray
           - XrayVersion
-          - XrayNumberOfSecondary
+          - XrayReplicaCount
+          - RabbitMQReplicaCount
           - XrayDatabaseUser
           - XrayDatabasePassword
     ParameterLabels:
@@ -160,8 +161,10 @@ Metadata:
         default: Install JFrog Xray
       XrayVersion:
         default: Version of Xray to install
-      XrayNumberOfSecondary:
-        default: Number of JFrog secondary Xray instances
+      XrayReplicaCount:
+        default: Number of JFrog Xray pods
+      RabbitMQReplicaCount:
+        default: Number of RabitMQ pods
       XrayDatabaseUser:
         defualt: User to access Xray database
       XrayDatabasePassword:
@@ -564,13 +567,21 @@ Parameters:
     ConstraintDescription: A version that matches X.X.X per Xray releases.
     Default: 3.3.0
     Type: String
-  XrayNumberOfSecondary:
-    Description: The number of secondary Xray servers to complete your
+  XrayReplicaCount:
+    Description: The number of Xray pods to complete your
       HA deployment. The minimum number is one; the maximum is seven.
-      Do not select more than instances than you have licenses for.
-    MinValue: 0
+      For high availability of Xray, set the replica count to be equal or higher than 2. Recommended is 3.
+    MinValue: 1
     MaxValue: 7
-    Default: 0
+    Default: 3
+    Type: Number
+  RabbitMQReplicaCount:
+    Description: The number of RabbitMQ pods to complete your
+      HA deployment. The minimum number is one; the maximum is seven.
+      For high availability of Xray, set the replica count to be equal or higher than 2. Recommended is 3.
+    MinValue: 1
+    MaxValue: 7
+    Default: 3
     Type: Number
   XrayDatabaseUser:
     Description: The login ID for the Xray database user.
@@ -687,7 +698,8 @@ Resources:
         QsS3BucketRegion: !Ref QsS3BucketRegion
         InstallXray: !Ref InstallXray
         XrayVersion: !Ref XrayVersion
-        XrayNumberOfSecondary: !Ref XrayNumberOfSecondary
+        XrayReplicaCount: !Ref XrayReplicaCount
+        RabbitMQReplicaCount: !Ref RabbitMQReplicaCount
         XrayDatabaseUser: !Ref XrayDatabaseUser
         XrayDatabasePassword: !Ref XrayDatabasePassword
 Outputs:
