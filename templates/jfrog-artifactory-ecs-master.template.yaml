@@ -566,7 +566,7 @@ Resources:
         VolumeSize: !Ref VolumeSize
         NumberOfSecondary: !Ref NumberOfSecondary
         NumberOfEC2Nodes: !Ref NumberOfEC2Nodes
-        EnableFargate: "Disabled" # !Ref EnableFargate
+        # EnableFargate: !Ref EnableFargate
         ArtifactoryProduct: !Ref ArtifactoryProduct
         ArtifactoryVersion: !Ref ArtifactoryVersion
         ReleaseStage: !Ref ReleaseStage
