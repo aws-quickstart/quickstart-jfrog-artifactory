@@ -13,8 +13,6 @@ Parameters:
     Type: Number
   DeploymentTag:
     Type: String
-  HostRole:
-    Type: String
   QsS3BucketName:
     Type: String
   QsS3KeyPrefix:
@@ -33,12 +31,14 @@ Parameters:
   MasterKey:
     Type: String
     NoEcho: 'true'
-  HostProfile:
-    Type: String
   SecurityGroups:
     Type: String
   VolumeSize:
     Type: Number
+  XrayHostProfile:
+    Type: String
+  XrayHostRole:
+    Type: String
   XrayInstanceType:
     Type: String
   JfrogInternalUrl:
@@ -104,7 +104,7 @@ Resources:
       Cooldown: '300'
       DesiredCapacity: !Ref MinScalingNodes
       HealthCheckType: EC2
-      HealthCheckGracePeriod: 600
+      HealthCheckGracePeriod: 900
       Tags:
         - Key: Name
           Value: !Ref DeploymentTag
@@ -113,7 +113,6 @@ Resources:
       ResourceSignal:
         Count: 1
         Timeout: PT60M
-
   XrayLaunchConfiguration:
     Type: 'AWS::AutoScaling::LaunchConfiguration'
     Metadata:
@@ -121,7 +120,7 @@ Resources:
         S3AccessCreds:
           type: S3
           roleName:
-            - !Ref HostRole
+            - !Ref XrayHostRole
           buckets:
             - !Ref QsS3BucketName
       'AWS::CloudFormation::Init':
@@ -156,7 +155,7 @@ Resources:
     Properties:
       AssociatePublicIpAddress: false
       KeyName: !Ref KeyPairName
-      IamInstanceProfile: !Ref HostProfile
+      IamInstanceProfile: !Ref XrayHostProfile
       ImageId: !FindInMap
         - AWSAMIRegionMap
         - !Ref 'AWS::Region'

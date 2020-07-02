@@ -540,10 +540,6 @@ Parameters:
     Type: String
 Conditions:
   UsingDefaultBucket: !Equals [!Ref QsS3BucketName, 'aws-quickstart']
-  EnableXray: !Equals [!Ref InstallXray, 'true']
-  EnableXraySecondary: !And
-    - !Equals [!Ref InstallXray, 'true']
-    - !Not [!Equals [!Ref XrayNumberOfSecondary, '0']]
 Resources:
   ArtifactoryVpcStack:
     Type: AWS::CloudFormation::Stack
@@ -618,120 +614,12 @@ Resources:
         QsS3BucketName: !Ref QsS3BucketName
         QsS3KeyPrefix: !Ref QsS3KeyPrefix
         QsS3BucketRegion: !Ref QsS3BucketRegion
-  XrayHostRole:
-    Condition: EnableXray
-    Type: 'AWS::IAM::Role'
-    Properties:
-      Path: /
-      AssumeRolePolicyDocument:
-        Statement:
-          - Action:
-              - 'sts:AssumeRole'
-            Principal:
-              Service:
-                - ec2.amazonaws.com
-            Effect: Allow
-        Version: 2012-10-17
-      ManagedPolicyArns:
-        - 'arn:aws:iam::aws:policy/service-role/AmazonEC2RoleforSSM'
-  XrayHostProfile:
-    Condition: EnableXray
-    Type: 'AWS::IAM::InstanceProfile'
-    Properties:
-      Roles:
-        - !Ref XrayHostRole
-      Path: /
-  XrayExistingVpcStack:
-    Condition: EnableXray
-    Type: AWS::CloudFormation::Stack
-    Properties:
-      TemplateURL: !Sub
-        - https://${S3Bucket}.s3.${S3Region}.${AWS::URLSuffix}/${QsS3KeyPrefix}templates/jfrog-xray-ec2-instance.template.yaml
-        - S3Bucket: !If [UsingDefaultBucket, !Sub '${QsS3BucketName}-${AWS::Region}', !Ref 'QsS3BucketName']
-          S3Region: !If [UsingDefaultBucket, !Ref 'AWS::Region', !Ref 'QsS3BucketRegion']
-      Parameters:
-        PrivateSubnet1Id: !GetAtt ArtifactoryVpcStack.Outputs.PrivateSubnet1AID
-        PrivateSubnet2Id: !GetAtt ArtifactoryVpcStack.Outputs.PrivateSubnet2AID
-        KeyPairName: !Ref KeyPairName
-        MinScalingNodes: 1
-        MaxScalingNodes: 1
-        DeploymentTag: 'xray'
-        HostRole: !Ref XrayHostRole
-        QsS3BucketName: !Ref QsS3BucketName
-        QsS3KeyPrefix: !Ref QsS3KeyPrefix
-        QsS3Uri: !Sub
-          - https://${S3Bucket}.s3.${S3Region}.${AWS::URLSuffix}/${QsS3KeyPrefix}
-          - S3Bucket: !If
-              - UsingDefaultBucket
-              - !Sub 'aws-quickstart-${AWS::Region}'
-              - !Ref 'QsS3BucketName'
-            S3Region: !If
-              - UsingDefaultBucket
-              - !Ref 'AWS::Region'
-              - !Ref 'QsS3BucketRegion'
-        DatabaseDriver: !GetAtt ArtifactoryExistingVpcStack.Outputs.DatabaseDriver
-        DatabaseType: !GetAtt ArtifactoryExistingVpcStack.Outputs.DatabaseType
-        DatabaseUser: !Ref DatabaseUser
-        DatabasePassword: !Ref DatabasePassword
-        MasterKey: !Ref MasterKey
-        HostProfile: !Ref XrayHostProfile
-        SecurityGroups: !GetAtt ArtifactoryExistingVpcStack.Outputs.ArtifactoryEc2Sg
-        VolumeSize: !Ref VolumeSize
+        InstallXray: !Ref InstallXray
+        XrayVersion: !Ref XrayVersion
+        XrayNumberOfSecondary: !Ref XrayNumberOfSecondary
         XrayInstanceType: !Ref XrayInstanceType
-        JfrogInternalUrl: !GetAtt ArtifactoryExistingVpcStack.Outputs.ArtifactoryInternalUrl
-        AnsibleVaultPass: !Ref AnsibleVaultPass
         XrayDatabaseUser: !Ref XrayDatabaseUser
         XrayDatabasePassword: !Ref XrayDatabasePassword
-        XrayMasterDatabaseUrl: !GetAtt ArtifactoryExistingVpcStack.Outputs.XrayMasterDatabaseUrl
-        XrayDatabaseUrl: !GetAtt ArtifactoryExistingVpcStack.Outputs.XrayDatabaseUrl
-        XrayFirstNode: 'true'
-        XrayVersion: !Ref XrayVersion
-  XraySecondaryExistingVpcStack:
-    Condition: EnableXraySecondary
-    DependsOn: XrayExistingVpcStack
-    Type: AWS::CloudFormation::Stack
-    Properties:
-      TemplateURL: !Sub
-        - https://${S3Bucket}.s3.${S3Region}.${AWS::URLSuffix}/${QsS3KeyPrefix}templates/jfrog-xray-ec2-instance.template.yaml
-        - S3Bucket: !If [UsingDefaultBucket, !Sub '${QsS3BucketName}-${AWS::Region}', !Ref 'QsS3BucketName']
-          S3Region: !If [UsingDefaultBucket, !Ref 'AWS::Region', !Ref 'QsS3BucketRegion']
-      Parameters:
-        PrivateSubnet1Id: !GetAtt ArtifactoryVpcStack.Outputs.PrivateSubnet1AID
-        PrivateSubnet2Id: !GetAtt ArtifactoryVpcStack.Outputs.PrivateSubnet2AID
-        KeyPairName: !Ref KeyPairName
-        MinScalingNodes: !Ref XrayNumberOfSecondary
-        MaxScalingNodes: !Ref XrayNumberOfSecondary
-        DeploymentTag: 'xray'
-        HostRole: !Ref XrayHostRole
-        QsS3BucketName: !Ref QsS3BucketName
-        QsS3KeyPrefix: !Ref QsS3KeyPrefix
-        QsS3Uri: !Sub
-          - https://${S3Bucket}.s3.${S3Region}.${AWS::URLSuffix}/${QsS3KeyPrefix}
-          - S3Bucket: !If
-              - UsingDefaultBucket
-              - !Sub 'aws-quickstart-${AWS::Region}'
-              - !Ref 'QsS3BucketName'
-            S3Region: !If
-              - UsingDefaultBucket
-              - !Ref 'AWS::Region'
-              - !Ref 'QsS3BucketRegion'
-        DatabaseDriver: !GetAtt ArtifactoryExistingVpcStack.Outputs.DatabaseDriver
-        DatabaseType: !GetAtt ArtifactoryExistingVpcStack.Outputs.DatabaseType
-        DatabaseUser: !Ref DatabaseUser
-        DatabasePassword: !Ref DatabasePassword
-        MasterKey: !Ref MasterKey
-        HostProfile: !Ref XrayHostProfile
-        SecurityGroups: !GetAtt ArtifactoryExistingVpcStack.Outputs.ArtifactoryEc2Sg
-        VolumeSize: !Ref VolumeSize
-        XrayInstanceType: !Ref XrayInstanceType
-        JfrogInternalUrl: !GetAtt ArtifactoryExistingVpcStack.Outputs.ArtifactoryInternalUrl
-        AnsibleVaultPass: !Ref AnsibleVaultPass
-        XrayDatabaseUser: !Ref XrayDatabaseUser
-        XrayDatabasePassword: !Ref XrayDatabasePassword
-        XrayMasterDatabaseUrl: !GetAtt ArtifactoryExistingVpcStack.Outputs.XrayMasterDatabaseUrl
-        XrayDatabaseUrl: !GetAtt ArtifactoryExistingVpcStack.Outputs.XrayDatabaseUrl
-        XrayFirstNode: 'false'
-        XrayVersion: !Ref XrayVersion
 Outputs:
   ArtifactoryUrl:
     Description: URL of the ELB to access Artifactory

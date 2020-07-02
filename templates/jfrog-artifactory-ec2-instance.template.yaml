@@ -198,7 +198,7 @@ Resources:
         - !Ref SSLTargetGroupARN
         - !Ref InternalTargetGroupARN
       HealthCheckType: ELB
-      HealthCheckGracePeriod: 600
+      HealthCheckGracePeriod: 900
       Tags:
         - Key: Name
           Value: !Ref DeploymentTag
