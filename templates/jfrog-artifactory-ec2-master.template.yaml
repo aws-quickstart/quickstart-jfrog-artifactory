@@ -506,7 +506,7 @@ Parameters:
     Type: String
   XrayNumberOfSecondary:
     Description: The number of Xray secondary instances servers to complete your
-      HA deployment. The minimum number is one; the maximum is seven.
+      HA deployment. The minimum number is zero; the maximum is seven.
       Do not select more than instances than you have licenses for.
     MinValue: 0
     MaxValue: 7
