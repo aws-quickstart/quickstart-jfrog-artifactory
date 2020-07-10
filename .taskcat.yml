@@ -89,7 +89,7 @@ tests:
      RemoteAccessCidr: "10.0.0.0/16"
      AccessCidr: "10.0.0.0/16"
      AvailabilityZones: "$[taskcat_genaz_3]"
-     DatabasePassword: $[taskcat_genpass_8A]"
+     DatabasePassword: "$[taskcat_genpass_8A]"
      QsS3BucketName: "$[taskcat_autobucket]"
      QsS3KeyPrefix: "quickstart-jfrog-artifactory/"
      QsS3BucketRegion: "$[taskcat_current_region]"
@@ -107,7 +107,7 @@ tests:
      RabbitMQPassword: "$[taskcat_genpass_8A]"
    template: templates/jfrog-artifactory-eks-master.template.yaml
    regions:
-     - us-east-2
+     - us-west-2
 #  jfrog-artifactory-eks-core:
 #    parameters:
 #      ArtifactoryDeploymentSize: Medium
