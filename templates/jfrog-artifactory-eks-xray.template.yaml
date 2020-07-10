@@ -17,6 +17,9 @@ Parameters:
   RabbitMQReplicaCount:
     Type: Number
     Default: 1
+  RabbitMQPassword:
+    Type: String
+    NoEcho: 'true'
   DatabaseUrl:
     Type: String
   DatabaseUser:
@@ -47,7 +50,7 @@ Resources:
       Name: quickstart-xray
       Chart: jfrog/xray
       RepoUrl: https://charts.jfrog.io/
-      Version: !Ref XrayVersion
+      Version: 3.5.1
       Values:
         xray.joinKey: !Sub '${MasterKey}'
         xray.masterKey: !Sub '${MasterKey}'
@@ -60,3 +63,6 @@ Resources:
         postgresql.enabled: false
         replicaCount: !Sub ${XrayReplicaCount}
         rabbitmq-ha.replicaCount: !Sub ${RabbitMQReplicaCount}
+        unifiedUpgradeAllowed: true
+        common.xrayVersion: !Sub ${XrayVersion}
+        rabbitmq-ha.rabbitmqPassword: !Sub '${RabbitMQPassword}'

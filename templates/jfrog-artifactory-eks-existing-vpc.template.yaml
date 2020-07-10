@@ -78,6 +78,7 @@ Metadata:
           - RabbitMQReplicaCount
           - XrayDatabaseUser
           - XrayDatabasePassword
+          - RabbitMQPassword
     ParameterLabels:
       KeyPairName:
         default: SSH key name
@@ -181,6 +182,8 @@ Metadata:
         defualt: User to access Xray database
       XrayDatabasePassword:
         defualt: Password to access Xray database
+      RabbitMQPassword:
+        defualt: Password to access Xray RabbitMQ
 Parameters:
   KeyPairName:
     Description: The name of an existing public/private key pair, which allows you
@@ -614,6 +617,16 @@ Parameters:
       symbols.
     NoEcho: 'true'
     Type: String
+  RabbitMQPassword:
+    Description: The password for Xray RabbitMQ.
+    AllowedPattern: ^[^ \\']+$
+    MinLength: '8'
+    MaxLength: '12'
+    ConstraintDescription: Must be at least 8 and no more than
+      12 characters containing letters and (minimum 1 capital letter), numbers and
+      symbols.
+    NoEcho: 'true'
+    Type: String
 Rules:
   EKSSupport:
     Assertions:
@@ -846,6 +859,7 @@ Resources:
         XrayVersion: !Ref XrayVersion
         XrayReplicaCount: !Ref XrayReplicaCount
         RabbitMQReplicaCount: !Ref RabbitMQReplicaCount
+        RabbitMQPassword: !Ref RabbitMQPassword
         DatabaseUrl: !GetAtt ArtifactoryCoreInfraStack.Outputs.XrayDatabaseUrl
         DatabaseUser: !Ref XrayDatabaseUser
         DatabasePassword: !Ref XrayDatabasePassword

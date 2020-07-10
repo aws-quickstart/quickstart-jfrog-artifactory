@@ -88,7 +88,7 @@ Mappings:
       HelmChartVersion: 2.0.11
     JFrog-Artifactory-Pro-GA:
       RepoUrl: https://charts.jfrog.io/
-      HelmChartVersion: 2.0.18
+      HelmChartVersion: 3.0.2
     JFrog-Container-Registry-BETA:
       RepoUrl: https://charts.jfrog.io/
       HelmChartVersion: 2.0.8

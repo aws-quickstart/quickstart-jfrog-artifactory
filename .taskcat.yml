@@ -13,26 +13,26 @@ tests:
 #    parameters:
 #      AvailabilityZone: "$[taskcat_genaz_1]"
 #      KeyPairName: "$[taskcat_getkeypair]"
-#      ArtifactVersion: 7.5.5
+#      ArtifactVersion: 7.6.1
 #      RemoteAccessCidr: "10.0.0.0/16"
 #      QsS3BucketName: "$[taskcat_autobucket]"
 #      QsS3KeyPrefix: "quickstart-jfrog-artifactory/"
 #      QsS3BucketRegion: "$[taskcat_current_region]"
 #    template: templates/jfrog-ami-master.template.yaml
 #    regions:
-#      - us-west-2
+#      - us-east-2
 #  jfrog-xray-product-ami:
 #    parameters:
 #      AvailabilityZone: "$[taskcat_genaz_1]"
 #      KeyPairName: "$[taskcat_getkeypair]"
-#      XrayVersion: 3.3.0
+#      XrayVersion: 3.6.1
 #      RemoteAccessCidr: "10.0.0.0/16"
 #      QsS3BucketName: "$[taskcat_autobucket]"
 #      QsS3KeyPrefix: "quickstart-jfrog-artifactory/"
 #      QsS3BucketRegion: "$[taskcat_current_region]"
 #    template: templates/ami-rt-xray-master.template.yaml
 #    regions:
-#      - us-west-2
+#      - us-east-2
 #  jfrog-artifactory-xray-ec2-postgres:
 #    parameters:
 #      KeyPairName: "$[taskcat_getkeypair]"
@@ -104,6 +104,7 @@ tests:
      XrayVersion: 3.3.0
      XrayDatabasePassword: $[taskcat_genpass_8A]"
      XrayNumberOfSecondary: 1
+     RabbitMQPassword: $[taskcat_genpass_8A]"
    template: templates/jfrog-artifactory-eks-master.template.yaml
    regions:
      - us-east-2
