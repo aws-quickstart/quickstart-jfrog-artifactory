@@ -25,23 +25,23 @@ Parameters:
     Type: String
   ArtifactoryIamAcessKey:
     Type: String
-    NoEcho: 'true'
+    #NoEcho: 'true'
   SecretAccessKey:
     Type: String
-    NoEcho: 'true'
+    #NoEcho: 'true'
   ArtifactoryS3Bucket:
     Type: String
   CertificateKey:
     Type: String
-    NoEcho: 'true'
+    #NoEcho: 'true'
   Certificate:
     Type: String
   DatabaseUser:
     Type: String
-    NoEcho: 'true'
+    #NoEcho: 'true'
   DatabasePassword:
     Type: String
-    NoEcho: 'true'
+    #NoEcho: 'true'
   DatabaseUrl:
     Type: String
   DatabaseDriver:
@@ -54,7 +54,7 @@ Parameters:
     Type: String
   MasterKey:
     Type: String
-    NoEcho: 'true'
+    #NoEcho: 'true'
   ArtifactoryVersion:
     Type: String
   ProDockerRepo:

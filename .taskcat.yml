@@ -102,9 +102,9 @@ tests:
      MultiAzDatabase: "false"
      InstallXray: "true"
      XrayVersion: 3.3.0
-     XrayDatabasePassword: $[taskcat_genpass_8A]"
+     XrayDatabasePassword: "$[taskcat_genpass_8A]"
      XrayNumberOfSecondary: 1
-     RabbitMQPassword: $[taskcat_genpass_8A]"
+     RabbitMQPassword: "$[taskcat_genpass_8A]"
    template: templates/jfrog-artifactory-eks-master.template.yaml
    regions:
      - us-east-2
