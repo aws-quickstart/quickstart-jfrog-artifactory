@@ -55,7 +55,7 @@ Parameters:
   MasterKey:
     Type: String
     #NoEcho: 'true'
-  ArtifactoryVersion:
+  HelmChartVersion:
     Type: String
   ProDockerRepo:
     Type: String
@@ -269,15 +269,11 @@ Resources:
       Chart: jfrog/artifactory-ha
       RepoUrl: !FindInMap [HelmRepoMap, !FindInMap [ArtifactoryProductMap, !Ref ArtifactoryProduct, !Ref ReleaseStage], RepoUrl]
       # If we want to test specific version of the Helm chart, we can pass it here
-      Version: !FindInMap [HelmRepoMap, !FindInMap [ArtifactoryProductMap, !Ref ArtifactoryProduct, !Ref ReleaseStage], HelmChartVersion]
+      Version: !Ref HelmChartVersion
       ValueYaml: !Sub
         - |
           artifactory:
             name: artifactory-ha
-            image:
-              repository: ${ProDockerRepo}
-              version: ${ArtifactoryVersion}
-              pullPolicy: Always
             deleteDBPropertiesOnStartup: true
             license:
               secret: artifactory-cluster-license
@@ -381,9 +377,6 @@ Resources:
                 key: "db-url"
           nginx:
             enabled: true
-            image:
-              repository: ${NginxDockerRepo}
-              version: ${ArtifactoryVersion}
             replicaCount: 3
             service:
               loadBalancerSourceRanges:  [ "${AccessCidr}" ]
@@ -421,16 +414,12 @@ Resources:
       Name: quickstart-jcr
       Chart: jfrog/artifactory-jcr
       RepoUrl: !FindInMap [HelmRepoMap, !FindInMap [ArtifactoryProductMap, !Ref ArtifactoryProduct, !Ref ReleaseStage], RepoUrl]
-      Version: !FindInMap [HelmRepoMap, !FindInMap [ArtifactoryProductMap, !Ref ArtifactoryProduct, !Ref ReleaseStage], HelmChartVersion]
+      Version: !Ref HelmChartVersion
       ValueYaml: !Sub
         - |
           artifactory:
             artifactory:
               name: artifactory-jcr
-              image:
-                repository: ${ProDockerRepo}
-                version: ${ArtifactoryVersion}
-                pullPolicy: Always
               deleteDBPropertiesOnStartup: true
               masterKey: ${MasterKey}
               preStartCommand: mkdir -p /var/opt/jfrog/artifactory/etc/artifactory/info/; mkdir -p /var/opt/jfrog/artifactory/bootstrap/artifactory/tomcat/lib/; wget -O  /var/opt/jfrog/artifactory/bootstrap/artifactory/tomcat/lib/${DatabasePlugin} ${DatabasePluginUrl}; cp /bootstrap/artifactory/binarystore.xml /var/opt/jfrog/artifactory/etc/artifactory/binarystore.xml
@@ -497,8 +486,6 @@ Resources:
                   key: "db-url"
             nginx:
               enabled: true
-              image:
-                repository: ${NginxDockerRepo}
               replicaCount: ${NumberOfSecondary}
               service:
                 loadBalancerSourceRanges:  [ "${AccessCidr}" ]

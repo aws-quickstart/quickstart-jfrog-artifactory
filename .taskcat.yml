@@ -6,7 +6,7 @@ project:
   s3_object_acl: public-read
   s3_regional_buckets: True
   regions:
-    - us-east-2
+    - us-west-2
 tests:
  #AMI will load applications and JFrog Cloud Installer Scripts
 #  jfrog-artifactory-product-ami:
@@ -94,20 +94,20 @@ tests:
      QsS3KeyPrefix: "quickstart-jfrog-artifactory/"
      QsS3BucketRegion: "$[taskcat_current_region]"
      DatabaseInstance: "db.m4.large"
-     ArtifactoryVersion: "7.5.5"
+     HelmChartVersion: "2.5.0"
      NumberOfSecondary: "2"
      ArtifactoryServerName: "artifactory"
      MasterKey: "override"
      SmLicenseCertName: "override"
      MultiAzDatabase: "false"
      InstallXray: "true"
-     XrayVersion: 3.3.0
+     XrayHelmChartVersion: 3.3.0
      XrayDatabasePassword: "$[taskcat_genpass_8A]"
      XrayNumberOfSecondary: 1
      RabbitMQPassword: "$[taskcat_genpass_8A]"
    template: templates/jfrog-artifactory-eks-master.template.yaml
    regions:
-     - us-west-2
+     - us-east-1
 #  jfrog-artifactory-eks-core:
 #    parameters:
 #      ArtifactoryDeploymentSize: Medium

@@ -8,7 +8,7 @@ Parameters:
   MasterKey:
     Type: String
     NoEcho: 'true'
-  XrayVersion:
+  XrayHelmChartVersion:
     Type: String
     Default: 3.3.0
   XrayReplicaCount:
@@ -50,7 +50,7 @@ Resources:
       Name: quickstart-xray
       Chart: jfrog/xray
       RepoUrl: https://charts.jfrog.io/
-      Version: 3.5.1
+      Version: !Ref XrayHelmChartVersion
       Values:
         xray.joinKey: !Sub '${MasterKey}'
         xray.masterKey: !Sub '${MasterKey}'
@@ -64,5 +64,4 @@ Resources:
         replicaCount: !Sub ${XrayReplicaCount}
         rabbitmq-ha.replicaCount: !Sub ${RabbitMQReplicaCount}
         unifiedUpgradeAllowed: true
-        common.xrayVersion: !Sub ${XrayVersion}
         rabbitmq-ha.rabbitmqPassword: !Sub '${RabbitMQPassword}'
