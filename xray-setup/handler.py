@@ -2,6 +2,7 @@ from __future__ import print_function
 from crhelper import CfnResource
 import logging
 import psycopg2
+from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
 
 logger = logging.getLogger(__name__)
 # Initialise the helper, all inputs are optional, this example shows the defaults
@@ -18,12 +19,14 @@ def create(event, context):
             host=event['ResourceProperties']['XrayMasterDatabaseUrl'].split(":")[0],
             password=event['ResourceProperties']['DatabasePassword']
         )
+        conn.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
         cur = conn.cursor()
         logger.info("Start Queries")
-        cur.execute(f"CREATE USER {event['ResourceProperties']['XrayDatabaseUser']} WITH PASSWORD {event['ResourceProperties']['XrayDatabasePassword']}")
-        cur.execute(f"GRANT {event['ResourceProperties']['XrayDatabaseUser']} to {event['ResourceProperties']['DatabaseUser']}")
-        cur.execute(f"CREATE DATABASE xraydb WITH OWNER={event['ResourceProperties']['XrayDatabaseUser']}")
-        cur.execute(f"GRANT ALL PRIVILEGES ON DATABASE xraydb TO {event['ResourceProperties']['XrayDatabaseUser']}")
+        cur.execute(f"CREATE USER {event['ResourceProperties']['XrayDatabaseUser']} WITH PASSWORD \'{event['ResourceProperties']['XrayDatabasePassword']}\';")
+        cur.execute(f"GRANT {event['ResourceProperties']['XrayDatabaseUser']} to {event['ResourceProperties']['DatabaseUser']};")
+        cur.execute(f"CREATE DATABASE xraydb WITH OWNER={event['ResourceProperties']['XrayDatabaseUser']};")
+        cur.execute(f"GRANT ALL PRIVILEGES ON DATABASE xraydb TO {event['ResourceProperties']['XrayDatabaseUser']};")
+        cur.close()
         logger.info("End Queries")
     except psycopg2.DatabaseError as e:
         raise ValueError(e)
