@@ -16,7 +16,7 @@ def create(event, context):
             dbname=event['ResourceProperties']['XrayMasterDatabaseUrl'].split("/")[1].split("?")[0], 
             user=event['ResourceProperties']['DatabaseUser'], 
             host=event['ResourceProperties']['XrayMasterDatabaseUrl'].split(":")[0],
-            password=event['ResourceProperties']['DatabaseEvent']
+            password=event['ResourceProperties']['DatabasePassword']
         )
         cur = conn.cursor()
         logger.info("Start Queries")
@@ -24,6 +24,7 @@ def create(event, context):
         cur.execute(f"GRANT {event['ResourceProperties']['XrayDatabaseUser']} to {event['ResourceProperties']['DatabaseUser']}")
         cur.execute(f"CREATE DATABASE xraydb WITH OWNER={event['ResourceProperties']['XrayDatabaseUser']}")
         cur.execute(f"GRANT ALL PRIVILEGES ON DATABASE xraydb TO {event['ResourceProperties']['XrayDatabaseUser']}")
+        logger.info("End Queries")
     except psycopg2.DatabaseError as e:
         raise ValueError(e)
     finally:
