@@ -75,12 +75,12 @@ Resources:
   Function:
     Type: AWS::Lambda::Function
     Properties:
-      Handler: index.handler
+      Handler: handler.handler
       Role: !GetAtt XrayLambdaRole.Arn
       Code:
         S3Bucket: !Ref QSS3BucketName
         S3Key: !Sub "${QSS3KeyPrefix}JFrogLambda.zip"
-      Runtime: nodejs12.x
+      Runtime: python3.7
       Timeout: 60
       Description: Lambda function to setup XrayDB.
       TracingConfig:
