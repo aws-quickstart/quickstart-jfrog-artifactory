@@ -307,8 +307,8 @@ Parameters:
     Type: Number
   KubernetesVersion:
     Description: Kubernetes control plane version.
-    AllowedValues: ["1.14", "1.13", "1.12"]
-    Default: "1.14"
+    AllowedValues: ["1.14", "1.15", "1.16"]
+    Default: "1.16"
     Type: String
   ProvisionBastionHost:
     Description: Choose Disabled to skip creating a bastion instance. Due to the Artifactory nodes being
@@ -360,12 +360,11 @@ Parameters:
   BastionOs:
     Description: Linux distribution for the Amazon Machine Image (AMI) to be used for the bastion instances.
     AllowedValues:
-      - "Amazon-Linux-HVM"
+      - "Amazon-Linux2-HVM"
       - "CentOS-7-HVM"
-      - "Ubuntu-Server-14.04-LTS-HVM"
-      - "Ubuntu-Server-16.04-LTS-HVM"
+      - "Ubuntu-Server-20.04-LTS-HVM"
       - "SUSE-SLES-15-HVM"
-    Default: "Amazon-Linux-HVM"
+    Default: "Amazon-Linux2-HVM"
     Type: String
   NumberOfSecondary:
     Description: Number of secondary Artifactory pods to complete your HA deployment.
