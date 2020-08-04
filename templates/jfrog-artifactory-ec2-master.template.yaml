@@ -67,7 +67,7 @@ Metadata:
         Parameters:
           - InstallXray
           - XrayVersion
-          - XrayNumberOfSecondary
+          - XrayNumberOfInstances
           - XrayInstanceType
           - XrayDatabaseUser
           - XrayDatabasePassword
@@ -152,8 +152,8 @@ Metadata:
         default: Install JFrog Xray
       XrayVersion:
         default: Version of Xray to install
-      XrayNumberOfSecondary:
-        default: Number of JFrog secondary Xray instances
+      XrayNumberOfInstances:
+        default: Number of JFrog XrayNumberOfInstances
       XrayInstanceType:
         default: Xray instance type
       XrayDatabaseUser:
@@ -265,12 +265,12 @@ Parameters:
   BastionOs:
     Description: The Linux distribution for the Amazon Machine Image (AMI) to be used for the bastion instances.
     AllowedValues:
-      - "Amazon-Linux-HVM"
+      - "Amazon-Linux2-HVM"
       - "CentOS-7-HVM"
       - "Ubuntu-Server-14.04-LTS-HVM"
       - "Ubuntu-Server-16.04-LTS-HVM"
       - "SUSE-SLES-15-HVM"
-    Default: "Amazon-Linux-HVM"
+    Default: "Amazon-Linux2-HVM"
     Type: String
   NumBastionHosts:
     Description: The number of bastion instances to create.
@@ -504,13 +504,13 @@ Parameters:
     ConstraintDescription: A version that matches X.X.X per Xray releases.
     Default: 3.3.0
     Type: String
-  XrayNumberOfSecondary:
-    Description: The number of Xray secondary instances servers to complete your
-      HA deployment. The minimum number is zero; the maximum is seven.
+  XrayNumberOfInstances:
+    Description: The number of Xray instances servers to complete your
+      HA deployment. The minimum number is one; the maximum is seven.
       Do not select more than instances than you have licenses for.
-    MinValue: 0
+    MinValue: 1
     MaxValue: 7
-    Default: 0
+    Default: 1
     Type: Number
   XrayInstanceType:
     Description: The EC2 instance type for the Xray instances.
@@ -616,7 +616,7 @@ Resources:
         QsS3BucketRegion: !Ref QsS3BucketRegion
         InstallXray: !Ref InstallXray
         XrayVersion: !Ref XrayVersion
-        XrayNumberOfSecondary: !Ref XrayNumberOfSecondary
+        XrayNumberOfInstances: !Ref XrayNumberOfInstances
         XrayInstanceType: !Ref XrayInstanceType
         XrayDatabaseUser: !Ref XrayDatabaseUser
         XrayDatabasePassword: !Ref XrayDatabasePassword
