@@ -1,18 +1,18 @@
 AWSTemplateFormatVersion: "2010-09-09"
 Description: "Deploys Artifactory into an existing Kubernetes cluster (qs-1qpmn20mc)"
 Parameters:
-  KubeManifestLambdaArn:
-    Type: String
-  HelmLambdaArn:
-    Type: String
-  EksClusterName:
-    Type: String
+  # KubeManifestLambdaArn:
+  #   Type: String
+  # HelmLambdaArn:
+  #   Type: String
+  # EksClusterName:
+  #   Type: String
   # KubeConfigPath:
   #   Type: String
   # KubeConfigKmsContext:
   #   Type: String
-  KubeGetLambdaArn:
-    Type: String
+  # KubeGetLambdaArn:
+  #   Type: String
   NumberOfSecondary:
     Type: Number
   AccessCidr:
@@ -167,8 +167,10 @@ Resources:
     Type: "Custom::KubeManifest"
     Version: '1.0'
     Properties:
-      ServiceToken: !Ref KubeManifestLambdaArn
-      ClusterName: !Ref EksClusterName
+      # ServiceToken: !Ref KubeManifestLambdaArn
+      # ClusterName: !Ref EksClusterName
+      ServiceToken: !Sub "arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:EKS-QuickStart-KubeManifest-${KubeClusterName}"
+      ClusterName: !Ref KubeClusterName
       Manifest:
         kind: Namespace
         apiVersion: v1
@@ -182,8 +184,10 @@ Resources:
     Type: "Custom::KubeManifest"
     Version: '1.0'
     Properties:
-      ServiceToken: !Ref KubeManifestLambdaArn
-      ClusterName: !Ref EksClusterName
+      # ServiceToken: !Ref KubeManifestLambdaArn
+      # ClusterName: !Ref EksClusterName
+      ServiceToken: !Sub "arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:EKS-QuickStart-KubeManifest-${KubeClusterName}"
+      ClusterName: !Ref KubeClusterName
       Manifest:
         kind: Secret
         apiVersion: v1
@@ -208,8 +212,10 @@ Resources:
     Type: "Custom::KubeManifest"
     Version: '1.0'
     Properties:
-      ServiceToken: !Ref KubeManifestLambdaArn
-      ClusterName: !Ref EksClusterName
+      # ServiceToken: !Ref KubeManifestLambdaArn
+      # ClusterName: !Ref EksClusterName
+      ServiceToken: !Sub "arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:EKS-QuickStart-KubeManifest-${KubeClusterName}"
+      ClusterName: !Ref KubeClusterName
       Manifest:
         kind: Secret
         apiVersion: v1
@@ -238,8 +244,10 @@ Resources:
     Type: "Custom::KubeManifest"
     Version: '1.0'
     Properties:
-      ServiceToken: !Ref KubeManifestLambdaArn
-      ClusterName: !Ref EksClusterName
+      # ServiceToken: !Ref KubeManifestLambdaArn
+      # ClusterName: !Ref EksClusterName
+      ServiceToken: !Sub "arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:EKS-QuickStart-KubeManifest-${KubeClusterName}"
+      ClusterName: !Ref KubeClusterName
       Manifest:
         kind: Secret
         apiVersion: v1
@@ -262,18 +270,21 @@ Resources:
               !Sub ${DatabaseUrl}
   ArtifactoryDeployment:
     Condition: ArtifactoryHa
-    Type: "Custom::Helm"
+    # Type: "Custom::Helm"
+    Type: "AWSQS::Kubernetes::Helm"
     DependsOn:
       - LicenseStore
       - CertificateStore
-    Version: '1.0'
+    # Version: '1.0'
     Properties:
-      ServiceToken: !Ref HelmLambdaArn
-      ClusterName: !Ref EksClusterName
+      # ServiceToken: !Ref HelmLambdaArn
+      # ClusterName: !Ref EksClusterName
+      ClusterID: !Ref KubeClusterName
       Namespace: !FindInMap [ArtifactoryProductMap, !Ref ArtifactoryProduct, namespace]
       Name: quickstart-artifactory-ha
       Chart: jfrog/artifactory-ha
-      RepoUrl: !FindInMap [HelmRepoMap, !FindInMap [ArtifactoryProductMap, !Ref ArtifactoryProduct, !Ref ReleaseStage], RepoUrl]
+      # RepoUrl: !FindInMap [HelmRepoMap, !FindInMap [ArtifactoryProductMap, !Ref ArtifactoryProduct, !Ref ReleaseStage], RepoUrl]
+      Repository: !FindInMap [HelmRepoMap, !FindInMap [ArtifactoryProductMap, !Ref ArtifactoryProduct, !Ref ReleaseStage], RepoUrl]
       # If we want to test specific version of the Helm chart, we can pass it here
       Version: !FindInMap [HelmRepoMap, !FindInMap [ArtifactoryProductMap, !Ref ArtifactoryProduct, !Ref ReleaseStage], HelmChartVersion]
       ValueYaml: !Sub
@@ -423,23 +434,28 @@ Resources:
     Type: "Custom::KubeGet"
     Version: '1.0'
     Properties:
-      ServiceToken: !Ref KubeGetLambdaArn
-      ClusterName: !Ref EksClusterName
+      # ServiceToken: !Ref KubeGetLambdaArn
+      # ClusterName: !Ref EksClusterName
+      ServiceToken: !Sub "arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:EKS-QuickStart-KubeGet-${KubeClusterName}"
+      ClusterName: !Ref KubeClusterName
       Namespace: !FindInMap [ArtifactoryProductMap, !Ref ArtifactoryProduct, namespace]
       Name: svc/quickstart-artifactory-ha-nginx
       JsonPath: '{.status.loadBalancer.ingress[0].hostname}'
   JcrDeployment:
     Condition: JcrInstall
-    Type: "Custom::Helm"
+    # Type: "Custom::Helm"
+    Type: "AWSQS::Kubernetes::Helm"
     DependsOn: CertificateStore
-    Version: '1.0'
+    # Version: '1.0'
     Properties:
-      ServiceToken: !Ref HelmLambdaArn
-      ClusterName: !Ref EksClusterName
+      # ServiceToken: !Ref HelmLambdaArn
+      # ClusterName: !Ref EksClusterName
+      ClusterID: !Ref KubeClusterName
       Namespace: !FindInMap [ArtifactoryProductMap, !Ref ArtifactoryProduct, namespace]
       Name: quickstart-jcr
       Chart: jfrog/artifactory-jcr
-      RepoUrl: !FindInMap [HelmRepoMap, !FindInMap [ArtifactoryProductMap, !Ref ArtifactoryProduct, !Ref ReleaseStage], RepoUrl]
+      # RepoUrl: !FindInMap [HelmRepoMap, !FindInMap [ArtifactoryProductMap, !Ref ArtifactoryProduct, !Ref ReleaseStage], RepoUrl]
+      Repository: !FindInMap [HelmRepoMap, !FindInMap [ArtifactoryProductMap, !Ref ArtifactoryProduct, !Ref ReleaseStage], RepoUrl]
       Version: !FindInMap [HelmRepoMap, !FindInMap [ArtifactoryProductMap, !Ref ArtifactoryProduct, !Ref ReleaseStage], HelmChartVersion]
       ValueYaml: !Sub
         - |
@@ -539,8 +555,10 @@ Resources:
     Type: "Custom::KubeGet"
     Version: '1.0'
     Properties:
-      ServiceToken: !Ref KubeGetLambdaArn
-      ClusterName: !Ref EksClusterName
+      # ServiceToken: !Ref KubeGetLambdaArn
+      # ClusterName: !Ref EksClusterName
+      ServiceToken: !Sub "arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:EKS-QuickStart-KubeGet-${KubeClusterName}"
+      ClusterName: !Ref KubeClusterName
       Namespace: !FindInMap [ArtifactoryProductMap, !Ref ArtifactoryProduct, namespace]
       Name: svc/quickstart-jcr-artifactory-nginx
       JsonPath: '{.status.loadBalancer.ingress[0].hostname}'
