@@ -12,3 +12,6 @@
 	path = submodules/quickstart-amazon-eks
 	url = git@github.com:aws-quickstart/quickstart-amazon-eks.git
 	branch = master
+[submodule "docs/boilerplate"]
+	path = docs/boilerplate
+	url = https://github.com/aws-quickstart/quickstart-documentation-base-common.git
