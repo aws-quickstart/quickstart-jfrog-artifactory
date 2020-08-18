@@ -2,6 +2,17 @@
 // Identify your target audience and explain how/why they would use this Quick Start.
 //Avoid borrowing text from third-party websites (copying text from AWS service documentation is fine). Also, avoid marketing-speak, focusing instead on the technical aspect.
 
-This Quick Start reference deployment guide provides step-by-step instructions for deploying {partner-product-name} on the AWS Cloud.
+https://jfrog.com/artifactory/[JFrog’s Artifactory^] is an enterprise universal repository manager, capable of hosting all of
+your binaries in one place. This Quick Start deploys Artifactory Enterprise in a highly
+available (HA) configuration into AWS.
 
-This Quick Start is for users who <target audience and usage scenario>
+This Quick Start is for administrators who want the flexibility, scale, and availability of
+AWS through products such as virtual private clouds (VPCs), Amazon Elastic Compute
+Cloud (Amazon EC2), Amazon Simple Storage Service (Amazon S3), Elastic Load Balancing
+(ELB), and Amazon Relational Database Service (Amazon RDS) to deploy Artifactory as
+their repository manager.
+
+Amazon EC2, along with Amazon S3 and Amazon RDS, forms the foundation for the
+deployment. By using Amazon S3 and Amazon RDS as persistent storage for artifacts and
+the configuration, respectively, Artifactory can be completely redeployed, scaled up, or
+scaled down, depending on your requirements. This configuration allows organ

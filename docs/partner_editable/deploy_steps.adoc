@@ -4,6 +4,42 @@
 . Sign in to your AWS account at https://aws.amazon.com with an IAM user role that has the necessary permissions. For details, see link:#_planning_the_deployment[Planning the deployment] earlier in this guide.
 . Make sure that your AWS account is configured correctly, as discussed in the link:#_technical_requirements[Technical requirements] section.
 
+=== Prepare the certificate and certificate key
+
+Due to the underlying JSON system, the parameters for both the certificate and certificate key must be edited by replacing their line endings.
+
+. Copy the certificate into a text editor, and view line endings. Line endings on Windows and Linux terminate in CRFL and LF, respectively.
+. Remove all CRFL or LF characters, and replace them with the | (pipe) character. This puts the certificate on a single line.
+. Follow the same process for the certificate key.
+
+=== Add the license keys and certificate to AWS Secrets Manager
+
+. Open AWS Secrets Manager in the same Region in which you deploy the Quick Start.
+. Choose Store a new secret.
+. Choose Other type of secret.
+. For the secret key value, create seven rows for the Artifactory licenses and certificate information.
+. Key names should be as follows, with the key values being Artifactory license keys and certificate details (see <<secret_manager>>):
+.. `ArtifactoryLicense1`
+.. `ArtifactoryLicense2`
+.. `ArtifactoryLicense3`
+.. `ArtifactoryLicense4`
+.. `Certificate`
+.. `CertificateKey`
+.. `CertificateDomain`
+
+:xrefstyle: short
+[#secret_manager]
+.Secrets Manager key-value page
+[link=../{quickstart-project-name}/images/secrets_manager.png]
+image::../images/secrets_manager.png[image_placeholder,width=648,height=439]
+
+[start=6]
+. Choose *Next*.
+. Provide a secret name. This name is used to deploy this Quick Start.
+. Choose *Next* twice.
+. Choose *Store*.
+
+
 // Optional based on Marketplace listing. Not to be edited
 ifdef::marketplace_subscription[]
 === Subscribe to the {partner-product-name} AMI
@@ -25,10 +61,13 @@ NOTE: You are responsible for the cost of the AWS services used while running th
 
 . Sign in to your AWS account, and choose one of the following options to launch the AWS CloudFormation template. For help with choosing an option, see link:#_deployment_options[deployment options] earlier in this guide.
 
-[cols=",]
+[cols=2*]
 |===
-|http://qs_launch_link[Deploy {partner-product-name} into a new VPC on AWS^] 
-|http://qs_launch_link[Deploy {partner-product-name} into an existing VPC on AWS^]
+^|https://fwd.aws/DzEkv[Deploy {partner-product-name} into a new VPC on AWS^]
+^|https://fwd.aws/5wnqz[View template^]
+
+^|https://fwd.aws/Ee88A[Deploy {partner-product-name} into an existing VPC on AWS^]
+^|https://fwd.aws/jMBXD[View template^]
 |===
 
 WARNING: If you’re deploying {partner-product-name} into an existing VPC, make sure that your VPC has two private subnets in different Availability Zones for the workload instances, and that the subnets aren’t shared. This Quick Start doesn’t support https://docs.aws.amazon.com/vpc/latest/userguide/vpc-sharing.html[shared subnets^]. These subnets require https://docs.aws.amazon.com/vpc/latest/userguide/vpc-nat-gateway.html[NAT gateways^] in their route tables, to allow the instances to download packages and software without exposing them to the internet.
