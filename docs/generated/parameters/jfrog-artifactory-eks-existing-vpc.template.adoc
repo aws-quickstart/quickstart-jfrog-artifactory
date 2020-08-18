@@ -1,0 +1,81 @@
+
+.Security configuration
+[width="100%",cols="16%,11%,73%",options="header",]
+|===
+|Parameter label (name) |Default value|Description|SSH key name
+(`KeyPairName`)|`**__Requires input__**`|Name of an existing key pair, which allows you to securely connect to your instance after it launches.|Permitted IP range
+(`AccessCidr`)|`**__Requires input__**`|CIDR IP range that is permitted to access Artifactory. We recommend that you set this value to a trusted IP range. For example, you might want to grant only your corporate network access to the software.|Remote access CIDR
+(`RemoteAccessCidr`)|`**__Requires input__**`|Remote CIDR range for allowing SSH into the bastion instance. We recommend that you set this value to a trusted IP range. For example, you might want to grant specific ranges inside your corporate network SSH access.|Additional EKS admin ARN (IAM user)
+(`AdditionalEKSAdminUserArn`)|`**__Requires input__**`|[OPTIONAL] Amazon Resource Name (ARN): a comma-separated list of IAM users to be granted admin access to the EKS cluster.|Additional EKS admin ARN (IAM role)
+(`AdditionalEKSAdminRoleArn`)|`**__Requires input__**`|[OPTIONAL] Amazon Resource Name (ARN): a comma-separated list of IAM roles to be granted admin access to the EKS cluster.
+|===
+.Network configuration
+[width="100%",cols="16%,11%,73%",options="header",]
+|===
+|Parameter label (name) |Default value|Description|VPC ID
+(`VpcId`)|`**__Requires input__**`|ID of your existing VPC for deployment (e.g., vpc-0343606e).|VPC CIDR
+(`VpcCidr`)|`10.0.0.0/16`|CIDR block for the VPC.|Private subnet 1 ID
+(`PrivateSubnet1Id`)|`**__Requires input__**`|ID of the private subnet in Availability Zone 1 of your existing VPC (e.g., subnet-a0246dcd).|Private subnet 2 ID
+(`PrivateSubnet2Id`)|`**__Requires input__**`|ID of the private subnet in Availability Zone 2 of your existing VPC (e.g., subnet-b58c3d67).|Private subnet 3 ID
+(`PrivateSubnet3Id`)|`**__Requires input__**`|ID of the private subnet in Availability Zone 3 of your existing VPC (e.g., subnet-b58c3d67).|Public subnet 1 ID
+(`PublicSubnet1Id`)|`**__Requires input__**`|ID of the public subnet in Availability Zone 1 of your existing VPC (e.g., subnet-z0376dab).|Public subnet 2 ID
+(`PublicSubnet2Id`)|`**__Requires input__**`|ID of the public subnet in Availability Zone 2 of your existing VPC (e.g., subnet-a29c3d84).|Public subnet 3 ID
+(`PublicSubnet3Id`)|`**__Requires input__**`|ID of the public subnet in Availability Zone 3 of your existing VPC (e.g., subnet-a29c3d84).|Private subnet 1 CIDR
+(`PrivateSubnet1Cidr`)|`10.0.0.0/19`|CIDR of the private subnet in Availability Zone 1 of your existing VPC (e.g., 10.0.0.0/19).|Private subnet 2 CIDR
+(`PrivateSubnet2Cidr`)|`10.0.32.0/19`|CIDR of the private subnet in Availability Zone 2 of your existing VPC (e.g., 10.0.32.0/19).|Private subnet 3 CIDR
+(`PrivateSubnet3Cidr`)|`10.0.64.0/19`|CIDR block for private subnet 3 located in Availability Zone 3 of your existing VPC (e.g., 10.0.64.0/19).
+|===
+.Bastion configuration
+[width="100%",cols="16%,11%,73%",options="header",]
+|===
+|Parameter label (name) |Default value|Description|Bastion instance
+(`ProvisionBastionHost`)|`Enabled`|Choose Disabled to skip creating a bastion instance. Due to the Artifactory nodes being created in private subnets, the default setting of Enabled this is highly recommended.|Bastion instance type
+(`BastionInstanceType`)|`t2.micro`|Size of the bastion instances.|Bastion operating system
+(`BastionOs`)|`Amazon-Linux2-HVM`|Linux distribution for the Amazon Machine Image (AMI) to be used for the bastion instances.|Bastion root volume size
+(`BastionRootVolumeSize`)|`10`|Size of the root volume on the bastion instances.|Bastion enable TCP forwarding
+(`BastionEnableTcpForwarding`)|`true`|Choose whether to enable TCPForwarding via the bootstrapping of the bastion instance or not.|Bastion enable X11 forwarding
+(`BastionEnableX11Forwarding`)|`false`|Choose true to enable X11 via the bootstrapping of the bastion host. Setting this value to true will enable X Windows over SSH. X11 forwarding can be very useful but it is also a security risk, so we recommend that you keep the default (false) setting unless required.
+|===
+.JFrog Artifactory configuration
+[width="100%",cols="16%,11%,73%",options="header",]
+|===
+|Parameter label (name) |Default value|Description|Artifactory product to install
+(`ArtifactoryProduct`)|`JFrog-Artifactory-Pro`|JFrog Artifactory product you wish to install.|Artifactory version
+(`ArtifactoryVersion`)|`7.2.1`|Version of Artifactory that you want to deploy into the Quick Start. Please see the release notes to select the version you want to deploy. https://www.jfrog.com/confluence/display/RTF/Release+Notes|Release stage of the product to deploy
+(`ReleaseStage`)|`GA`|Whether to use the upstream repository that is pre-GA.|Default Artifactory deployment size
+(`DefaultDeploymentSize`)|`true`|Choose false to overwrite the standard calculations of memory options to pass Java options for the deployment. If overwriting them, not to over provision the nodes.|Artifactory deployment size
+(`ArtifactoryDeploymentSize`)|`xSmall`|Configuration settings implemented by the Helm chart. There are currently eight supported sizes. This value is only taken into account if you choose 'false' for DefaultDeploymentSize. 'xxxLarge:' Only applicable to node InstanceType m5.24xlarge or larger - Memory request of 240 GiB, memory limit of 384GiB; CPU request of 64, CPU limit of 96; Java heap size minimum of 192 GB, maximum of 288 GB. 'xxLarge:' Only applicable to node InstanceType m5.16xlarge or larger - Memory request of 160 GiB, memory limit of 256GiB; CPU request of 48, CPU limit of 64; Java heap size minimum of 128 GB, maximum of 192 GB. 'xLarge:' Only applicable to node InstanceType m5.12xlarge or larger - Memory request of 120 GiB, memory limit of 192GiB; CPU request of 32, CPU limit of 48; Java heap size minimum of 96 GB, maximum of 144 GB. 'Large:' Only applicable to node InstanceType m5.8xlarge or larger - Memory request of 80 GiB, memory limit of 128GiB; CPU request of 16, CPU limit of 32; Java heap size minimum of 64 GB, maximum of 96 GB. 'Medium:' Only applicable to node InstanceType m5.4xlarge or larger - Memory request of 42 GiB, memory limit of 64 GiB; CPU request of 8, CPU limit of 16; Java heap size minimum of 32 GB, maximum of 48 GB. 'Small:' Only applicable to node InstanceType m5.2xlarge or larger - Memory request of 20 GiB, memory limit of 32 GiB; CPU request of 4, CPU limit of 8; Java heap size minimum of 16 GB, maximum of 24 GB. 'xSmall:' Only applicable to node InstanceType m5.xlarge or larger - Memory request of 6 GiB, memory limit of 16 GiB; CPU request of 2, CPU limit of 4; Java heap size minimum of 8 GB, maximum of 12 GB. 'xxSmall:' Applicable to all node Instance Types - Memory request of 4 GiB, memory limit of 6 GiB; CPU request of 2, CPU limit of 2; Java heap size of 4 GB.|Number of secondary pods
+(`NumberOfSecondary`)|`2`|Number of secondary Artifactory pods to complete your HA deployment. Minimum number of 2 to fit the Artifactory best practices. Do not select more than you license for. If you are doing a JFrog Container Registry Deployment, this will create the number of underlying nodes and NGINX containers.|Artifactory licenses and certificate secret name
+(`SmLicenseCertName`)|`**__Requires input__**`|Secret name created in AWS Secrets Manager, which contains the SSL certificate, certificate key, and Artifactory licenses.|Master server key
+(`MasterKey`)|`**__Requires input__**`|Master key for the Artifactory cluster. Generate a master key by using the command '$openssl rand -hex 16'.
+|===
+.Amazon RDS configuration
+[width="100%",cols="16%,11%,73%",options="header",]
+|===
+|Parameter label (name) |Default value|Description|Database name
+(`DatabaseName`)|`artdb`|Name for your database instance. The name must be unique across all database instances owned by your AWS account in the current AWS Region. The database instance identifier is case-insensitive, but is stored as all lowercase (as in "mydbinstance").|Database engine
+(`DatabaseEngine`)|`Postgres`|Database engine that you want to run.|Database user
+(`DatabaseUser`)|`artifactory`|Login ID for the master user of your database instance.|Database password
+(`DatabasePassword`)|`**__Requires input__**`|The password for the Artifactory database user.|Database instance type
+(`DatabaseInstance`)|`db.m4.large`|Size of the database to be deployed as part of the Quick Start.|Database allocated storage
+(`DatabaseAllocatedStorage`)|`10`|Size in gigabytes of the available storage for the database instance.|High-available database
+(`MultiAzDatabase`)|`true`|Choose false to create an Amazon RDS instance in a single Availability Zone.
+|===
+.EC2/EKS configuration
+[width="100%",cols="16%,11%,73%",options="header",]
+|===
+|Parameter label (name) |Default value|Description|Kubernetes version
+(`KubernetesVersion`)|`1.16`|Kubernetes control plane version.|Node instance type
+(`NodeInstanceType`)|`m5.xlarge`|Amazon EC2 instance type for the nodes hosting the Kubernetes pods.|Number of secondary nodes
+(`NumofSecondaryNodes`)|`2`|Initial number of secondary node instances to create. If you do not have large enough instances to boot the number of secondary pods, the deployment will fail.|Node EBS volume size
+(`NodeVolumeSize`)|`200`|Size of EBS volumes for master node instances, in gigabytes.|Lambda zips bucket name
+(`LambdaZipsBucketName`)|`**__Requires input__**`|[OPTIONAL] The name of the S3 bucket where the Lambda .zip files should be placed. If you leave this parameter blank, an S3 bucket will be created.
+|===
+.AWS Quick Start configuration
+[width="100%",cols="16%,11%,73%",options="header",]
+|===
+|Parameter label (name) |Default value|Description|Quick Start S3 bucket name
+(`QsS3BucketName`)|`aws-quickstart`|S3 bucket name for the Quick Start assets. This string can include numbers, lowercase letters, uppercase letters, and hyphens (-). It cannot start or end with a hyphen (-).|Quick Start S3 key prefix
+(`QsS3KeyPrefix`)|`quickstart-jfrog-artifactory/`|S3 key prefix for the Quick Start assets. Quick Start key prefix can include numbers, lowercase letters, uppercase letters, hyphens (-), and forward slash (/).|Quick Start S3 bucket Region
+(`QsS3BucketRegion`)|`us-east-1`|AWS Region where the Quick Start S3 bucket (QSS3BucketName) is hosted. When using your own bucket, you must specify this value.
+|===
