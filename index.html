@@ -1345,7 +1345,7 @@ Certain regions are available on an opt-in basis. Refer to the AWS Documentation
 <p>For the secret key value, create seven rows for the Artifactory licenses and certificate information.</p>
 </li>
 <li>
-<p>Key names should be as follows, with the key values being Artifactory license keys and certificate details (see <a href="#secret_manager">Secrets Manager key-value page</a>):</p>
+<p>Key names should be as follows, with the key values being Artifactory license keys and certificate details (see <a href="#secret_manager">Secrets Manager key-value page</a>)):</p>
 <div class="olist loweralpha">
 <ol class="loweralpha" type="a">
 <li>
@@ -1376,7 +1376,7 @@ Certain regions are available on an opt-in basis. Refer to the AWS Documentation
 </div>
 <div id="secret_manager" class="imageblock">
 <div class="content">
-<a class="image" href="../quickstart-jfrog-artifactory/images/secrets_manager.png"><img src="images/secrets_manager.png" alt="image_placeholder" width="648" height="439"></a>
+<a class="image" href="../quickstart-jfrog-artifactory/images/secrets_manager.png"><img src="images/secrets_manager.png" alt="image_placeholder"></a>
 </div>
 <div class="title">Figure 2. Secrets Manager key-value page</div>
 </div>
@@ -3810,7 +3810,7 @@ match the ELB DNS unless you configure Amazon Route 53.
 </table>
 </div>
 <div class="olist arabic">
-<ol class="arabic">
+<ol class="arabic" start="2">
 <li>
 <p>The default user name and password for Artifactory are <code>admin</code> and <code>password</code>, respectively. Enter your credentials, and choose <strong>Login</strong>. For more information, see
 JFrog Users and Groups.</p>
@@ -3830,7 +3830,7 @@ JFrog Users and Groups.</p>
 <p>This Quick Start handles the license key configuration during the deployment, so you are not prompted to activate your license.</p>
 </div>
 <div class="olist arabic">
-<ol class="arabic">
+<ol class="arabic" start="3">
 <li>
 <p>Set a secure administrator password for your deployment, and then choose <strong>Next</strong> (see <a href="#get_started_3">Figure 6</a>).</p>
 </li>
@@ -3843,7 +3843,7 @@ JFrog Users and Groups.</p>
 <div class="title">Figure 6. Set administrator password</div>
 </div>
 <div class="olist arabic">
-<ol class="arabic">
+<ol class="arabic" start="4">
 <li>
 <p>Optionally, configure the base URL setting. Because this deployment uses a proxy, it’s highly recommended that you update the base URL of Artifactory. More information
 regarding this setting can be found in the <a href="https://www.jfrog.com/confluence/display/RTF/Configuring+Artifactory#ConfiguringArtifactory-GeneralSettings" target="_blank" rel="noopener">Getting Started guide</a> (see <a href="#get_started_4">Figure 7</a>).</p>
@@ -3857,7 +3857,7 @@ regarding this setting can be found in the <a href="https://www.jfrog.com/conflu
 <div class="title">Figure 7. Set Base URL screen</div>
 </div>
 <div class="olist arabic">
-<ol class="arabic">
+<ol class="arabic" start="5">
 <li>
 <p>Optionally, configure proxy settings for remote resources. (see <a href="#get_started_5">Figure 8</a>).</p>
 </li>
@@ -3870,7 +3870,7 @@ regarding this setting can be found in the <a href="https://www.jfrog.com/conflu
 <div class="title">Figure 8. SConfigure proxy settings if required</div>
 </div>
 <div class="olist arabic">
-<ol class="arabic">
+<ol class="arabic" start="6">
 <li>
 <p>Select the repositories that you require, and then choose <strong>Create</strong> (see <a href="#get_started_6">Figure 9</a>).</p>
 </li>
@@ -3883,7 +3883,7 @@ regarding this setting can be found in the <a href="https://www.jfrog.com/conflu
 <div class="title">Figure 9. Select repositories</div>
 </div>
 <div class="olist arabic">
-<ol class="arabic">
+<ol class="arabic" start="7">
 <li>
 <p>Choose <strong>Finish</strong> (see <a href="#get_started_7">Figure 10</a>).</p>
 </li>
@@ -3896,7 +3896,7 @@ regarding this setting can be found in the <a href="https://www.jfrog.com/conflu
 <div class="title">Figure 10. SFinal wizard screen</div>
 </div>
 <div class="olist arabic">
-<ol class="arabic">
+<ol class="arabic" start="8">
 <li>
 <p>Complete the administrative tasks by configuring the following:</p>
 <div class="ulist">
@@ -3970,7 +3970,7 @@ in the CloudFormation templates. Otherwise, the update will fail.
 <div class="title">Figure 12. Stack list and update button on the CloudFormation console</div>
 </div>
 <div class="olist arabic">
-<ol class="arabic">
+<ol class="arabic" start="2">
 <li>
 <p>On the <strong>Prerequisite</strong> screen, Choose <strong>Use current template</strong>, and then choose <strong>Next</strong>
 (see <a href="#update_3">Figure 13</a>).</p>
@@ -3984,7 +3984,7 @@ in the CloudFormation templates. Otherwise, the update will fail.
 <div class="title">Figure 13. Update stack, prerequisite information</div>
 </div>
 <div class="olist arabic">
-<ol class="arabic">
+<ol class="arabic" start="3">
 <li>
 <p>Find the <strong>Artifactory version</strong> field by scrolling down (see <a href="#update_4">Figure 14</a>).</p>
 </li>
@@ -3997,7 +3997,7 @@ in the CloudFormation templates. Otherwise, the update will fail.
 <div class="title">Figure 14. CloudFormation console update page (before you change the version)</div>
 </div>
 <div class="olist arabic">
-<ol class="arabic">
+<ol class="arabic" start="4">
 <li>
 <p>Enter the version number that you want to run (see <a href="#update_5">Figure 15</a>).</p>
 </li>
@@ -4010,7 +4010,7 @@ in the CloudFormation templates. Otherwise, the update will fail.
 <div class="title">Figure 15. CloudFormation console update page (after you change the version)</div>
 </div>
 <div class="olist arabic">
-<ol class="arabic">
+<ol class="arabic" start="5">
 <li>
 <p>Scroll down, and choose <strong>Next</strong>. Choose <strong>Next</strong> again, unless you want to change any other tags or policies. Select the two <strong>I acknowledge</strong> check boxes, and choose <strong>Update stack</strong> (see <a href="#update_6">Figure 16</a>).</p>
 </li>
@@ -4023,7 +4023,7 @@ in the CloudFormation templates. Otherwise, the update will fail.
 <div class="title">Figure 16. Completing the update process</div>
 </div>
 <div class="olist arabic">
-<ol class="arabic">
+<ol class="arabic" start="6">
 <li>
 <p>Shut down the <strong>ArtifactoryMaster</strong> node. The proper process shuts down the nodes one at a time, starting with the Artifactory primary node. This will trigger a health check
 failure on the load balancer. The load balancer will then delete the current running primary node and deploy a new primary node with the updated version (see <a href="#update_7">Figure 17</a>).</p>
@@ -4191,7 +4191,7 @@ and to share your customizations with others.</p>
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2020-08-19 00:55:45 UTC
+Last updated 2020-08-19 18:42:30 UTC
 </div>
 </div>
 </body>
