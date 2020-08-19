@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="generator" content="Asciidoctor 2.0.10">
-<title>Example Product Name on the AWS Cloud</title>
+<title>Artifactory on the AWS Cloud</title>
 <style>
 
 /* Asciidoctor default stylesheet | MIT License | https://asciidoctor.org */
@@ -771,10 +771,15 @@ table p {
 <div id="toctitle"></div>
 <ul class="sectlevel1">
 <li><a href="#_overview">Overview</a></li>
-<li><a href="#_example_product_name_on_aws">Example Product Name on AWS</a></li>
+<li><a href="#_artifactory_on_aws">Artifactory on AWS</a></li>
 <li><a href="#_cost">Cost</a></li>
 <li><a href="#_software_licenses">Software licenses</a></li>
-<li><a href="#_architecture">Architecture</a></li>
+<li><a href="#_architecture">Architecture</a>
+<ul class="sectlevel2">
+<li><a href="#_auto_scaling_groups">Auto Scaling groups</a></li>
+<li><a href="#_ansible_init_script">Ansible init script</a></li>
+</ul>
+</li>
 <li><a href="#_planning_the_deployment">Planning the deployment</a>
 <ul class="sectlevel2">
 <li><a href="#_specialized_knowledge">Specialized knowledge</a></li>
@@ -785,6 +790,9 @@ table p {
 <li><a href="#_deployment_steps">Deployment steps</a>
 <ul class="sectlevel2">
 <li><a href="#_sign_in_to_your_aws_account">Sign in to your AWS account</a></li>
+<li><a href="#_prepare_the_certificate_and_certificate_key">Prepare the certificate and certificate key</a></li>
+<li><a href="#_add_the_license_keys_and_certificate_to_aws_secrets_manager">Add the license keys and certificate to AWS Secrets Manager</a></li>
+<li><a href="#_subscribe_to_the_artifactory_ami">Subscribe to the Artifactory AMI</a></li>
 <li><a href="#_launch_the_quick_start">Launch the Quick Start</a></li>
 <li><a href="#_launch_into_an_existing_vpc">Launch into an existing VPC</a></li>
 <li><a href="#_launch_into_an_existing_vpc_2">Launch into an existing VPC</a></li>
@@ -794,11 +802,10 @@ table p {
 <li><a href="#_launch_into_a_new_vpc_3">Launch into a new VPC</a></li>
 </ul>
 </li>
-<li><a href="#_test_the_deployment">Test the deployment</a></li>
-<li><a href="#_post_deployment_steps">Post deployment steps</a></li>
-<li><a href="#_best_practices_for_using_example_product_name_on_aws">Best practices for using Example Product Name on AWS</a></li>
+<li><a href="#_get_started_with_jfrog_artifactory">Get started with JFrog Artifactory</a></li>
+<li><a href="#_updating_artifactory">Updating Artifactory</a></li>
 <li><a href="#_security">Security</a></li>
-<li><a href="#_other_useful_information">Other useful information</a></li>
+<li><a href="#_storage">Storage</a></li>
 <li><a href="#_faq">FAQ</a></li>
 <li><a href="#_troubleshooting">Troubleshooting</a></li>
 <li><a href="#_send_us_feedback">Send us feedback</a></li>
@@ -814,17 +821,17 @@ table p {
 <div id="content">
 <div id="preamble">
 <div class="sectionbody">
-<h2 id="_example_product_name_on_the_aws_cloud" class="discrete text-center">Example Product Name on the AWS Cloud</h2>
+<h2 id="_artifactory_on_the_aws_cloud" class="discrete text-center">Artifactory on the AWS Cloud</h2>
 <h2 id="_quick_start_reference_deployment" class="discrete text-left text-center">Quick Start Reference Deployment</h2>
 <div class="imageblock text-center">
 <div class="content">
-<img src="https://aws-quickstart.s3.amazonaws.com/quickstart-documentation-base/docs/boilerplate/.images/aws-quickstart-graphic.png" alt="QS" width="80" height="80">
+<img src="https://aws-quickstart.s3.amazonaws.com/quickstart-jfrog-artifactory/docs/boilerplate/.images/aws-quickstart-graphic.png" alt="QS" width="80" height="80">
 </div>
 </div>
 <div class="paragraph text-center">
-<p><strong>May, 2020</strong><br>
-<em>John Doe and Jane Doe - Example Company Name, Ltd.</em><br>
-<em>Jim Smith - AWS Global Partner SA, AWS + Joe Jones - Technical Product Manager, AWS</em></p>
+<p><strong>June, 2020</strong><br>
+<em>Chris Hirsch, Jacob Batkalin, and Travis McVey, Trace3</em><br>
+<em>Yaniv Bossem and Dylan Owen, AWS Quick Start team</em></p>
 </div>
 <div class="admonitionblock tip text-left">
 <table>
@@ -833,14 +840,14 @@ table p {
 <i class="fa icon-tip" title="Tip"></i>
 </td>
 <td class="content">
-Visit our <a href="https://github.com/aws-quickstart/quickstart-documentation-base" target="_blank" rel="noopener">GitHub repository</a> for source files and to post feedback,
+Visit our <a href="https://github.com/aws-quickstart/quickstart-jfrog-artifactory" target="_blank" rel="noopener">GitHub repository</a> for source files and to post feedback,
 report bugs, or submit feature ideas for this Quick Start.
 </td>
 </tr>
 </table>
 </div>
 <div class="paragraph text-left">
-<p>This Quick Start was created by Example Company Name, Ltd. in collaboration with Amazon Web Services (AWS). <a href="http://aws.amazon.com/quickstart/" target="_blank" rel="noopener">Quick Starts</a> are automated reference deployments that use AWS CloudFormation templates to deploy key technologies on AWS, following AWS best practices.</p>
+<p>This Quick Start was created by JFrog Ltd. in collaboration with Amazon Web Services (AWS). <a href="http://aws.amazon.com/quickstart/" target="_blank" rel="noopener">Quick Starts</a> are automated reference deployments that use AWS CloudFormation templates to deploy key technologies on AWS, following AWS best practices.</p>
 </div>
 </div>
 </div>
@@ -848,10 +855,22 @@ report bugs, or submit feature ideas for this Quick Start.
 <h2 id="_overview">Overview</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>This Quick Start reference deployment guide provides step-by-step instructions for deploying Example Product Name on the AWS Cloud.</p>
+<p><a href="https://jfrog.com/artifactory/" target="_blank" rel="noopener">JFrog’s Artifactory</a> is an enterprise universal repository manager, capable of hosting all of
+your binaries in one place. This Quick Start deploys Artifactory Enterprise in a highly
+available (HA) configuration into AWS.</p>
 </div>
 <div class="paragraph">
-<p>This Quick Start is for users who &lt;target audience and usage scenario&gt;</p>
+<p>This Quick Start is for administrators who want the flexibility, scale, and availability of
+AWS through products such as virtual private clouds (VPCs), Amazon Elastic Compute
+Cloud (Amazon EC2), Amazon Simple Storage Service (Amazon S3), Elastic Load Balancing
+(ELB), and Amazon Relational Database Service (Amazon RDS) to deploy Artifactory as
+their repository manager.</p>
+</div>
+<div class="paragraph">
+<p>Amazon EC2, along with Amazon S3 and Amazon RDS, forms the foundation for the
+deployment. By using Amazon S3 and Amazon RDS as persistent storage for artifacts and
+the configuration, respectively, Artifactory can be completely redeployed, scaled up, or
+scaled down, depending on your requirements. This configuration allows organ</p>
 </div>
 <div class="admonitionblock note">
 <table>
@@ -870,10 +889,29 @@ collaborated with AWS on the content of the Quick Start.
 </div>
 </div>
 <div class="sect1">
-<h2 id="_example_product_name_on_aws">Example Product Name on AWS</h2>
+<h2 id="_artifactory_on_aws">Artifactory on AWS</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>&lt;Describe how the software works on AWS.&gt;</p>
+<p>Once you deploy JFrog’s Artifactory, you can use it as a production service. For further
+information about setting up Artifactory, see the #_Getting_started_with_Artifactory section,
+later in this guide.</p>
+</div>
+<div class="admonitionblock warning">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-warning" title="Warning"></i>
+</td>
+<td class="content">
+The deployment is configured as “infrastructure as code.” Any changes
+to the infrastructure should be done by updating the <a href="https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/stacks.html" target="_blank" rel="noopener">CloudFormation stack</a>. Any
+changes performed on the boxes themselves (including reverse-proxy
+configurations) are lost when an instance reboots. By design, upon shutdown of an
+instance—or when Artifactory is unavailable—an Auto Scaling group replaces the
+node, following a load-balancing health check.
+</td>
+</tr>
+</table>
 </div>
 </div>
 </div>
@@ -909,19 +947,42 @@ After you deploy the Quick Start, enable the <a href="https://docs.aws.amazon.co
 <h2 id="_software_licenses">Software licenses</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>These two paragraphs provide an example of the details you can provide. Provide links as appropriate.</p>
+<p>This Quick Start requires an Enterprise or Enterprise+ license for Artifactory. It also
+requires a subscription to the <a href="http://aws.amazon.com/marketplace/pp/B086PTRY8G" target="_blank" rel="noopener">JFrog Enterprise EC2 (Enterprise Artifact Repository, SelfHosted)</a> Amazon Machine Image (AMI) in <a href="https://aws.amazon.com/marketplace" target="_blank" rel="noopener">AWS Marketplace</a>. To use the Quick Start in
+your production environment, sign up for a <a href="https://jfrog.com/artifactory/free-trial-aws/#enterprise" target="_blank" rel="noopener">free trial license</a>, which includes three
+Artifactory Enterprise licenses. Place the license keys in the specified fields when you
+launch the Quick Start. Enterprise or Enterprise+ licenses are required due to the following
+features of this deployment:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>High availability</p>
+</li>
+<li>
+<p>Storing S3 objects</p>
+</li>
+</ul>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+If the license isn’t an Enterprise or Enterprise+ license, the license is invalid,
+or the license is not included, the deployment will fail. Also, ensure that the number
+of secondary Artifactory servers is at most the amount licensed minus one, for the
+primary server. If you specify too many servers, see the <a href="#_faq">FAQ</a> section for instructions.
+</td>
+</tr>
+</table>
 </div>
 <div class="paragraph">
-<p>Example content below:</p>
-</div>
-<div class="paragraph">
-<p><em>&lt;license information&gt;This Quick Start requires a license for Example Product Name. To use the Quick Start in your production environment, sign up for a license at &lt;link&gt;. When you launch the Quick Start, place the license key in an S3 bucket and specify its location.</em></p>
-</div>
-<div class="paragraph">
-<p><em>If you don’t have a license, the Quick Start deploys with a trial license. The trial license gives you &lt;n&gt; days of free usage in a non-production environment. After this time, you can upgrade to a production license by following the instructions at &lt;link&gt;.</em></p>
-</div>
-<div class="paragraph">
-<p><em>&lt;AMI information&gt;The Quick Start requires a subscription to the Amazon Machine Image (AMI) for Example Product Name, which is available from <a href="https://aws.amazon.com/marketplace/" target="_blank" rel="noopener">AWS Marketplace</a>. Additional pricing, terms, and conditions may apply. For instructions, see <a href="#step-2.-subscribe-to-the-software-ami">step 2</a> in the deployment section.</em></p>
+<p>If you use a free trial, ensure that you convert to a permanent license before your trial ends,
+otherwise the nodes will become unresponsive. You can request a quote by contacting
+<a href="https://jfrog.com/pricing/" target="_blank" rel="noopener">JFrog</a>.</p>
 </div>
 </div>
 </div>
@@ -930,14 +991,14 @@ After you deploy the Quick Start, enable the <a href="https://docs.aws.amazon.co
 <div class="sectionbody">
 <div class="paragraph">
 <p>Deploying this Quick Start for a new virtual private cloud (VPC) with
-<strong>default parameters</strong> builds the following <em>Example Product Name</em> environment in the
+<strong>default parameters</strong> builds the following <em>Artifactory</em> environment in the
 AWS Cloud.</p>
 </div>
 <div id="architecture1" class="imageblock">
 <div class="content">
 <a class="image" href="images/architecture_diagram.png"><img src="images/architecture_diagram.png" alt="Architecture" width="648" height="439"></a>
 </div>
-<div class="title">Figure 1. Quick Start architecture for <em>Example Product Name</em> on AWS</div>
+<div class="title">Figure 1. Quick Start architecture for <em>Artifactory</em> on AWS</div>
 </div>
 <div class="paragraph">
 <p>As shown in Figure 1, the Quick Start sets up the following:</p>
@@ -945,11 +1006,18 @@ AWS Cloud.</p>
 <div class="ulist">
 <ul>
 <li>
-<p>A highly available architecture that spans two Availability Zones.*</p>
+<p>An HA architecture that spans two Availability Zones.*</p>
 </li>
 <li>
-<p>A VPC configured with public and private subnets, according to AWS
-best practices, to provide you with your own virtual network on AWS.*</p>
+<p>A VPC configured with public and private subnets, according to AWS best practices, to
+provide you with your own virtual network on AWS.*</p>
+</li>
+<li>
+<p>A private and encrypted S3 bucket for repository storage.</p>
+</li>
+<li>
+<p>A Network Load Balancer attached to the public subnets connecting via port 80 or 443
+to the Artifactory primary and secondary nodes in the private subnets.</p>
 </li>
 </ul>
 </div>
@@ -964,18 +1032,82 @@ internet access for resources in the private subnets.*</p>
 </li>
 <li>
 <p>A Linux bastion host in an Auto Scaling group to allow inbound Secure
-Shell (SSH) access to EC2 instances in public and private subnets.*</p>
+Shell (SSH) access from the <code>RemoteAccess</code> CIDR to the EC2 instances in public
+and private subnets.</p>
 </li>
 </ul>
 </div>
 <div class="paragraph">
-<p>In the private subnets:
-* &lt;describe any additional components&gt;.</p>
+<p>In the private subnets:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>A <a href="https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/CHAP_MySQL.html" target="_blank" rel="noopener">MySQL</a> or <a href="https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/CHAP_PostgreSQL.html" target="_blank" rel="noopener">PostgreSQL</a> instance on Amazon RDS that’s accessible from the
+private subnets on port 3306 or 5532, respectively.</p>
+</li>
+<li>
+<p>Two Amazon EC2 <a href="https://aws.amazon.com/autoscaling/" target="_blank" rel="noopener">Auto Scaling</a> groups, one for the primary node and one for the
+secondary nodes.</p>
+</li>
+</ul>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+The purpose of the Automatic Scaling groups is for automatic deployment of
+the primary node into another Availability Zone if a failure occurs. Do not modify the
+number of instances.
+</td>
+</tr>
+</table>
 </div>
 <div class="paragraph">
 <p>*The template that deploys the Quick Start into an existing VPC skips
 the components marked by asterisks and prompts you for your existing VPC
 configuration.</p>
+</div>
+<div class="sect2">
+<h3 id="_auto_scaling_groups">Auto Scaling groups</h3>
+<div class="paragraph">
+<p>The Auto Scaling groups are designed to have one primary node and multiple secondary
+nodes. When an EC2 node or service fail, Auto Scaling groups automatically recreate the
+instances. For this reason, all configurations are done on boot and result in a loss of any
+data that are not stored in the Amazon RDS instance or S3 bucket.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_ansible_init_script">Ansible init script</h3>
+<div class="paragraph">
+<p>Ansible is installed and configured to run only on initial boot. Ansible, in cooperation with
+the Auto Scaling group, initiates the required configuration and runs Artifactory. As a part
+of this configuration, the nodes automatically join the HA cluster.</p>
+</div>
+<div class="admonitionblock warning">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-warning" title="Warning"></i>
+</td>
+<td class="content">
+Do not change the master key of the stack when updating the stack.
+Doing so results in an unsupported configuration that future nodes cannot join.
+To update an expired Secure Sockets Layer (SSL) certificate, change the
+CloudFormation stack certificate and certificate key inputs, and then redeploy the
+nodes (see Updating Artifactory).<br>
+<br>
+If you change the certificate and certificate key
+manually on the EC2 instances (instead of updating the CloudFormation stack), your
+manual changes are lost at the next update or reboot, which results in an unwanted
+configuration.
+</td>
+</tr>
+</table>
+</div>
 </div>
 </div>
 </div>
@@ -994,7 +1126,7 @@ deploy, and operate your infrastructure and applications on the AWS
 Cloud.</p>
 </div>
 <div class="paragraph">
-<p>This Quick Start assumes familiarity with &lt;knowledge expectations&gt;.</p>
+<p>This Quick Start assumes familiarity with JFrog Artifactory and infrastructure as code.</p>
 </div>
 </div>
 <div class="sect2">
@@ -1030,35 +1162,47 @@ Cloud.</p>
 <tbody>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">VPCs</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">&lt;n&gt;</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">1</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Elastic IP addresses</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">&lt;n&gt;</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">3</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">AWS Identity and Access Management (IAM) security groups</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">&lt;n&gt;</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">1</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">IAM roles</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">&lt;n&gt;</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">2</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Security groups</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">4</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Auto Scaling groups</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">&lt;n&gt;</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">3</p></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Application Load Balancers</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">&lt;n&gt;</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Load Balancers</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">1</p></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Network Load Balancers</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">&lt;n&gt;</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">m4.xlarge instances</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">4</p></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">&lt;type&gt; instances</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">&lt;n&gt;</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">t2.micro instances</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">1</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">db.m4.large (RDS)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">1</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">S3 Buckets</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">1</p></td>
 </tr>
 </tbody>
 </table>
@@ -1116,7 +1260,7 @@ Certain regions are available on an opt-in basis. Refer to the AWS Documentation
 </div>
 </div>
 <div class="sect3">
-<h4 id="_prepare_your_example_company_name_ltd_account">Prepare your Example Company Name, Ltd. account</h4>
+<h4 id="_prepare_your_jfrog_ltd_account">Prepare your JFrog Ltd. account</h4>
 <div class="paragraph">
 <p><em>Describe any setup required in the partner portal/account prior to template launch</em></p>
 </div>
@@ -1135,15 +1279,15 @@ Certain regions are available on an opt-in basis. Refer to the AWS Documentation
 <div class="ulist">
 <ul>
 <li>
-<p><strong>Deploy Example Product Name into a new VPC (end-to-end deployment)</strong>. This option builds a new AWS environment consisting of the VPC, subnets, NAT gateways, security groups, bastion hosts, and other infrastructure components. It then deploys Example Product Name into this new VPC.</p>
+<p><strong>Deploy Artifactory into a new VPC (end-to-end deployment)</strong>. This option builds a new AWS environment consisting of the VPC, subnets, NAT gateways, security groups, bastion hosts, and other infrastructure components. It then deploys Artifactory into this new VPC.</p>
 </li>
 <li>
-<p><strong>Deploy Example Product Name into an existing VPC</strong>. This option provisions Example Product Name in your existing AWS infrastructure.</p>
+<p><strong>Deploy Artifactory into an existing VPC</strong>. This option provisions Artifactory in your existing AWS infrastructure.</p>
 </li>
 </ul>
 </div>
 <div class="paragraph">
-<p>The Quick Start provides separate templates for these options. It also lets you configure Classless Inter-Domain Routing (CIDR) blocks, instance types, and Example Product Name settings, as discussed later in this guide.</p>
+<p>The Quick Start provides separate templates for these options. It also lets you configure Classless Inter-Domain Routing (CIDR) blocks, instance types, and Artifactory settings, as discussed later in this guide.</p>
 </div>
 </div>
 </div>
@@ -1161,6 +1305,117 @@ Certain regions are available on an opt-in basis. Refer to the AWS Documentation
 </li>
 <li>
 <p>Make sure that your AWS account is configured correctly, as discussed in the <a href="#_technical_requirements">Technical requirements</a> section.</p>
+</li>
+</ol>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_prepare_the_certificate_and_certificate_key">Prepare the certificate and certificate key</h3>
+<div class="paragraph">
+<p>Due to the underlying JSON system, the parameters for both the certificate and certificate key must be edited by replacing their line endings.</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Copy the certificate into a text editor, and view line endings. Line endings on Windows and Linux terminate in CRFL and LF, respectively.</p>
+</li>
+<li>
+<p>Remove all CRFL or LF characters, and replace them with the | (pipe) character. This puts the certificate on a single line.</p>
+</li>
+<li>
+<p>Follow the same process for the certificate key.</p>
+</li>
+</ol>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_add_the_license_keys_and_certificate_to_aws_secrets_manager">Add the license keys and certificate to AWS Secrets Manager</h3>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Open AWS Secrets Manager in the same Region in which you deploy the Quick Start.</p>
+</li>
+<li>
+<p>Choose Store a new secret.</p>
+</li>
+<li>
+<p>Choose Other type of secret.</p>
+</li>
+<li>
+<p>For the secret key value, create seven rows for the Artifactory licenses and certificate information.</p>
+</li>
+<li>
+<p>Key names should be as follows, with the key values being Artifactory license keys and certificate details (see <a href="#secret_manager">Secrets Manager key-value page</a>):</p>
+<div class="olist loweralpha">
+<ol class="loweralpha" type="a">
+<li>
+<p><code>ArtifactoryLicense1</code></p>
+</li>
+<li>
+<p><code>ArtifactoryLicense2</code></p>
+</li>
+<li>
+<p><code>ArtifactoryLicense3</code></p>
+</li>
+<li>
+<p><code>ArtifactoryLicense4</code></p>
+</li>
+<li>
+<p><code>Certificate</code></p>
+</li>
+<li>
+<p><code>CertificateKey</code></p>
+</li>
+<li>
+<p><code>CertificateDomain</code></p>
+</li>
+</ol>
+</div>
+</li>
+</ol>
+</div>
+<div id="secret_manager" class="imageblock">
+<div class="content">
+<a class="image" href="../quickstart-jfrog-artifactory/images/secrets_manager.png"><img src="images/secrets_manager.png" alt="image_placeholder" width="648" height="439"></a>
+</div>
+<div class="title">Figure 2. Secrets Manager key-value page</div>
+</div>
+<div class="olist arabic">
+<ol class="arabic" start="6">
+<li>
+<p>Choose <strong>Next</strong>.</p>
+</li>
+<li>
+<p>Provide a secret name. This name is used to deploy this Quick Start.</p>
+</li>
+<li>
+<p>Choose <strong>Next</strong> twice.</p>
+</li>
+<li>
+<p>Choose <strong>Store</strong>.</p>
+</li>
+</ol>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_subscribe_to_the_artifactory_ami">Subscribe to the Artifactory AMI</h3>
+<div class="paragraph">
+<p>This Quick Start requires a subscription to the AMI for Artifactory in AWS Marketplace.</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Sign in to your AWS account.</p>
+</li>
+<li>
+<p><a href="http://aws.amazon.com/marketplace/pp/B086PTRY8G">Open the page for the Artifactory AMI in AWS Marketplace</a>, and then choose <strong>Continue to Subscribe</strong>.</p>
+</li>
+<li>
+<p>Review the terms and conditions for software usage, and then choose <strong>Accept Terms</strong>.<br>
+A confirmation page loads, and an email confirmation is sent to the account owner. For detailed subscription instructions, see the <a href="https://aws.amazon.com/marketplace/help/200799470" target="_blank" rel="noopener">AWS Marketplace documentation</a>.</p>
+</li>
+<li>
+<p>When the subscription process is complete, exit out of AWS Marketplace without further action. <strong>Do not</strong> provision the software from AWS Marketplace—the Quick Start deploys the AMI for you.</p>
 </li>
 </ol>
 </div>
@@ -1188,14 +1443,17 @@ You are responsible for the cost of the AWS services used while running this Qui
 </div>
 <table class="tableblock frame-all grid-all stretch">
 <colgroup>
-<col style="width: 100%;">
+<col style="width: 50%;">
+<col style="width: 50%;">
 </colgroup>
 <tbody>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="http://qs_launch_link" target="_blank" rel="noopener">Deploy Example Product Name into a new VPC on AWS</a></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><a href="https://fwd.aws/DzEkv" target="_blank" rel="noopener">Deploy Artifactory into a new VPC on AWS</a></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><a href="https://fwd.aws/5wnqz" target="_blank" rel="noopener">View template</a></p></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="http://qs_launch_link" target="_blank" rel="noopener">Deploy Example Product Name into an existing VPC on AWS</a></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><a href="https://fwd.aws/Ee88A" target="_blank" rel="noopener">Deploy Artifactory into an existing VPC on AWS</a></p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><a href="https://fwd.aws/jMBXD" target="_blank" rel="noopener">View template</a></p></td>
 </tr>
 </tbody>
 </table>
@@ -1206,7 +1464,7 @@ You are responsible for the cost of the AWS services used while running this Qui
 <i class="fa icon-warning" title="Warning"></i>
 </td>
 <td class="content">
-If you’re deploying Example Product Name into an existing VPC, make sure that your VPC has two private subnets in different Availability Zones for the workload instances, and that the subnets aren’t shared. This Quick Start doesn’t support <a href="https://docs.aws.amazon.com/vpc/latest/userguide/vpc-sharing.html" target="_blank" rel="noopener">shared subnets</a>. These subnets require <a href="https://docs.aws.amazon.com/vpc/latest/userguide/vpc-nat-gateway.html" target="_blank" rel="noopener">NAT gateways</a> in their route tables, to allow the instances to download packages and software without exposing them to the internet.
+If you’re deploying Artifactory into an existing VPC, make sure that your VPC has two private subnets in different Availability Zones for the workload instances, and that the subnets aren’t shared. This Quick Start doesn’t support <a href="https://docs.aws.amazon.com/vpc/latest/userguide/vpc-sharing.html" target="_blank" rel="noopener">shared subnets</a>. These subnets require <a href="https://docs.aws.amazon.com/vpc/latest/userguide/vpc-nat-gateway.html" target="_blank" rel="noopener">NAT gateways</a> in their route tables, to allow the instances to download packages and software without exposing them to the internet.
 </td>
 </tr>
 </table>
@@ -1215,12 +1473,12 @@ If you’re deploying Example Product Name into an existing VPC, make sure that 
 <p>Also, make sure that the domain name option in the DHCP options is configured as explained in the <a href="http://docs.aws.amazon.com/AmazonVPC/latest/UserGuide/VPC_DHCP_Options.html" target="_blank" rel="noopener">Amazon VPC documentation</a>. You provide your VPC settings when you launch the Quick Start.</p>
 </div>
 <div class="paragraph">
-<p>Each deployment takes about 30 minutes / 1 hour to complete.</p>
+<p>Each deployment takes about 30 minutes to complete.</p>
 </div>
 <div class="olist arabic">
 <ol class="arabic" start="2">
 <li>
-<p>Check the AWS Region that’s displayed in the upper-right corner of the navigation bar, and change it if necessary. This is where the network infrastructure for Example Product Name will be built. The template is launched in the us-east-1 Region by default.</p>
+<p>Check the AWS Region that’s displayed in the upper-right corner of the navigation bar, and change it if necessary. This is where the network infrastructure for Artifactory will be built. The template is launched in the us-east-1 Region by default.</p>
 </li>
 </ol>
 </div>
@@ -3506,7 +3764,7 @@ Region</code>, and <code>Quick Start S3 key prefix</code>. Changing these parame
 <p>Choose <strong>Create stack</strong> to deploy the stack.</p>
 </li>
 <li>
-<p>Monitor the status of the stack. When the status is <strong>CREATE_COMPLETE</strong>, the Example Product Name deployment is ready.</p>
+<p>Monitor the status of the stack. When the status is <strong>CREATE_COMPLETE</strong>, the Artifactory deployment is ready.</p>
 </li>
 <li>
 <p>Use the values displayed in the <strong>Outputs</strong> tab for the stack, as shown in figure 2, to view the created resources.</p>
@@ -3517,28 +3775,288 @@ Region</code>, and <code>Quick Start S3 key prefix</code>. Changing these parame
 <div class="content">
 <img src="images/cfn_outputs.png" alt="cfn_outputs" width="648" height="439">
 </div>
-<div class="title">Figure 2. Example Product Name outputs after successful deployment</div>
+<div class="title">Figure 3. Artifactory outputs after successful deployment</div>
 </div>
 </div>
 </div>
 </div>
 <div class="sect1">
-<h2 id="_test_the_deployment">Test the deployment</h2>
+<h2 id="_get_started_with_jfrog_artifactory">Get started with JFrog Artifactory</h2>
 <div class="sectionbody">
-
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Connect to Artifactory from <code>ArtifactoryURL</code>. You can find <code>ArtifactoryUrl</code> on the <strong>Outputs</strong> tab of the Artifactory primary stack. Verify that you can view the login screen (see <a href="#get_started_1">Figure 4</a>).</p>
+</li>
+</ol>
+</div>
+<div id="get_started_1" class="imageblock">
+<div class="content">
+<a class="image" href="../quickstart-jfrog-artifactory/images/get_started_1.png"><img src="images/get_started_1.png" alt="image_placeholder" width="648" height="439"></a>
+</div>
+<div class="title">Figure 4. JFrog Artifactory login screen</div>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+If you use a non-CA-signed certificate, you will receive a certificate warning when you attempt to access the page. This happens because the certificate doesn’t
+match the ELB DNS unless you configure Amazon Route 53.
+</td>
+</tr>
+</table>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>The default user name and password for Artifactory are <code>admin</code> and <code>password</code>, respectively. Enter your credentials, and choose <strong>Login</strong>. For more information, see
+JFrog Users and Groups.</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>This loads the setup wizard for initial configuration. Choose <strong>Get Started</strong>. (see <a href="#get_started_2">Figure 5</a>).</p>
+</div>
+<div id="get_started_2" class="imageblock">
+<div class="content">
+<a class="image" href="../quickstart-jfrog-artifactory/images/get_started_2.png"><img src="images/get_started_2.png" alt="image_placeholder" width="648" height="439"></a>
+</div>
+<div class="title">Figure 5. JFrog Artifactory welcome screen</div>
+</div>
+<div class="paragraph">
+<p>This Quick Start handles the license key configuration during the deployment, so you are not prompted to activate your license.</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Set a secure administrator password for your deployment, and then choose <strong>Next</strong> (see <a href="#get_started_3">Figure 6</a>).</p>
+</li>
+</ol>
+</div>
+<div id="get_started_3" class="imageblock">
+<div class="content">
+<a class="image" href="../quickstart-jfrog-artifactory/images/get_started_3.png"><img src="images/get_started_3.png" alt="image_placeholder" width="648" height="439"></a>
+</div>
+<div class="title">Figure 6. Set administrator password</div>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Optionally, configure the base URL setting. Because this deployment uses a proxy, it’s highly recommended that you update the base URL of Artifactory. More information
+regarding this setting can be found in the <a href="https://www.jfrog.com/confluence/display/RTF/Configuring+Artifactory#ConfiguringArtifactory-GeneralSettings" target="_blank" rel="noopener">Getting Started guide</a> (see <a href="#get_started_4">Figure 7</a>).</p>
+</li>
+</ol>
+</div>
+<div id="get_started_4" class="imageblock">
+<div class="content">
+<a class="image" href="../quickstart-jfrog-artifactory/images/get_started_4.png"><img src="images/get_started_4.png" alt="image_placeholder" width="648" height="439"></a>
+</div>
+<div class="title">Figure 7. Set Base URL screen</div>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Optionally, configure proxy settings for remote resources. (see <a href="#get_started_5">Figure 8</a>).</p>
+</li>
+</ol>
+</div>
+<div id="get_started_5" class="imageblock">
+<div class="content">
+<a class="image" href="../quickstart-jfrog-artifactory/images/get_started_5.png"><img src="images/get_started_5.png" alt="image_placeholder" width="648" height="439"></a>
+</div>
+<div class="title">Figure 8. SConfigure proxy settings if required</div>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Select the repositories that you require, and then choose <strong>Create</strong> (see <a href="#get_started_6">Figure 9</a>).</p>
+</li>
+</ol>
+</div>
+<div id="get_started_6" class="imageblock">
+<div class="content">
+<a class="image" href="../quickstart-jfrog-artifactory/images/get_started_6.png"><img src="images/get_started_6.png" alt="image_placeholder" width="648" height="439"></a>
+</div>
+<div class="title">Figure 9. Select repositories</div>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Choose <strong>Finish</strong> (see <a href="#get_started_7">Figure 10</a>).</p>
+</li>
+</ol>
+</div>
+<div id="get_started_7" class="imageblock">
+<div class="content">
+<a class="image" href="../quickstart-jfrog-artifactory/images/get_started_7.png"><img src="images/get_started_7.png" alt="image_placeholder" width="648" height="439"></a>
+</div>
+<div class="title">Figure 10. SFinal wizard screen</div>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Complete the administrative tasks by configuring the following:</p>
+<div class="ulist">
+<ul>
+<li>
+<p><a href="https://www.jfrog.com/confluence/display/RTF/Managing+Backups" target="_blank" rel="noopener">Backups</a></p>
+</li>
+<li>
+<p><a href="https://www.jfrog.com/confluence/display/JFROG/Regular+Maintenance+Operations" target="_blank" rel="noopener">Regular Maintenance Operations</a></p>
+</li>
+<li>
+<p><a href="https://www.jfrog.com/confluence/display/RTF/Authentication" target="_blank" rel="noopener">Security</a></p>
+</li>
+</ul>
+</div>
+</li>
+</ol>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+Backups save to the local file system and do not persist if the EC2 instance is terminated. It is recommended to create snapshots of the primary instance.
+</td>
+</tr>
+</table>
+</div>
 </div>
 </div>
 <div class="sect1">
-<h2 id="_post_deployment_steps">Post deployment steps</h2>
-<div class="sectionbody">
-
-</div>
-</div>
-<div class="sect1">
-<h2 id="_best_practices_for_using_example_product_name_on_aws">Best practices for using Example Product Name on AWS</h2>
+<h2 id="_updating_artifactory">Updating Artifactory</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p><em>Add any best practices for using the software.</em></p>
+<p>If maintenance must be performed on the stack, ensure that you update the
+CloudFormation stack rather than updating the infrastructure manually (this also applies to
+updating Artifactory). The Artifactory version for this Quick Start is <strong>7.0.x</strong> (see <a href="#update_1">Figure 11</a>).</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+Because the instances are backed by an AWS Marketplace AMI, the version you update must be available in AWS Marketplace, and a new map must be created
+in the CloudFormation templates. Otherwise, the update will fail.
+</td>
+</tr>
+</table>
+</div>
+<div id="update_1" class="imageblock">
+<div class="content">
+<a class="image" href="../quickstart-jfrog-artifactory/images/update_1.png"><img src="images/update_1.png" alt="image_placeholder" width="648" height="439"></a>
+</div>
+<div class="title">Figure 11. JFrog Artifactory status page shows the current version</div>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Choose the root stack, and then choose <strong>Update</strong> (see <a href="#update_2">Figure 12</a>).</p>
+</li>
+</ol>
+</div>
+<div id="update_2" class="imageblock">
+<div class="content">
+<a class="image" href="../quickstart-jfrog-artifactory/images/update_2.png"><img src="images/update_2.png" alt="image_placeholder" width="648" height="439"></a>
+</div>
+<div class="title">Figure 12. Stack list and update button on the CloudFormation console</div>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>On the <strong>Prerequisite</strong> screen, Choose <strong>Use current template</strong>, and then choose <strong>Next</strong>
+(see <a href="#update_3">Figure 13</a>).</p>
+</li>
+</ol>
+</div>
+<div id="update_3" class="imageblock">
+<div class="content">
+<a class="image" href="../quickstart-jfrog-artifactory/images/update_3.png"><img src="images/update_3.png" alt="image_placeholder" width="648" height="439"></a>
+</div>
+<div class="title">Figure 13. Update stack, prerequisite information</div>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Find the <strong>Artifactory version</strong> field by scrolling down (see <a href="#update_4">Figure 14</a>).</p>
+</li>
+</ol>
+</div>
+<div id="update_4" class="imageblock">
+<div class="content">
+<a class="image" href="../quickstart-jfrog-artifactory/images/update_4.png"><img src="images/update_4.png" alt="image_placeholder" width="648" height="439"></a>
+</div>
+<div class="title">Figure 14. CloudFormation console update page (before you change the version)</div>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Enter the version number that you want to run (see <a href="#update_5">Figure 15</a>).</p>
+</li>
+</ol>
+</div>
+<div id="update_5" class="imageblock">
+<div class="content">
+<a class="image" href="../quickstart-jfrog-artifactory/images/update_5.png"><img src="images/update_5.png" alt="image_placeholder" width="648" height="439"></a>
+</div>
+<div class="title">Figure 15. CloudFormation console update page (after you change the version)</div>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Scroll down, and choose <strong>Next</strong>. Choose <strong>Next</strong> again, unless you want to change any other tags or policies. Select the two <strong>I acknowledge</strong> check boxes, and choose <strong>Update stack</strong> (see <a href="#update_6">Figure 16</a>).</p>
+</li>
+</ol>
+</div>
+<div id="update_6" class="imageblock">
+<div class="content">
+<a class="image" href="../quickstart-jfrog-artifactory/images/update_6.png"><img src="images/update_6.png" alt="image_placeholder" width="648" height="439"></a>
+</div>
+<div class="title">Figure 16. Completing the update process</div>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Shut down the <strong>ArtifactoryMaster</strong> node. The proper process shuts down the nodes one at a time, starting with the Artifactory primary node. This will trigger a health check
+failure on the load balancer. The load balancer will then delete the current running primary node and deploy a new primary node with the updated version (see <a href="#update_7">Figure 17</a>).</p>
+</li>
+</ol>
+</div>
+<div id="update_7" class="imageblock">
+<div class="content">
+<a class="image" href="../quickstart-jfrog-artifactory/images/update_7.png"><img src="images/update_7.png" alt="image_placeholder" width="648" height="439"></a>
+</div>
+<div class="title">Figure 17. Shutting down Artifactory’s primary node</div>
+</div>
+<div class="paragraph">
+<p>The Artifactory status page shows which instances are off-line (see <a href="#update_8">Figure 18</a>).</p>
+</div>
+<div id="update_8" class="imageblock">
+<div class="content">
+<a class="image" href="../quickstart-jfrog-artifactory/images/update_8.png"><img src="images/update_8.png" alt="image_placeholder" width="648" height="439"></a>
+</div>
+<div class="title">Figure 18. JFrog Artifactory service status page</div>
+</div>
+<div class="admonitionblock important">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-important" title="Important"></i>
+</td>
+<td class="content">
+To prevent issues and downtime, update only one node at a time. Ensure that you begin by shutting down the ArtifactoryPrimary node first. When
+the new version starts up, shut down the secondary nodes one by one.
+</td>
+</tr>
+</table>
 </div>
 </div>
 </div>
@@ -3546,21 +4064,54 @@ Region</code>, and <code>Quick Start S3 key prefix</code>. Changing these parame
 <h2 id="_security">Security</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p><em>Add any security-related information.</em></p>
+<p>By default, the load balancer does not match your certificate. You must configure the DNS
+according to your organization’s configuration, which is highly recommended for a
+production deployment.
+When you create a new VPC, the private subnet CIDR is automatically provided to the
+database security group <code>ArtifactoryBDSG</code>. In the new VPC, the private subnet is accessible
+only from the public subnet.
+When you deploy to an existing VPC, ensure similar rules are followed so that your
+Artifactory nodes are not accessible directly from the internet. Also, ensure that the private
+CIDR is correct and locked down. Avoid using <code>0.0.0.0/0</code>. If the subnet is a public subnet, it
+will allow your MySQL database to be available from the internet.</p>
 </div>
 </div>
 </div>
 <div class="sect1">
-<h2 id="_other_useful_information">Other useful information</h2>
+<h2 id="_storage">Storage</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p><em>Add any other details that will help the customer use the software on AWS.</em></p>
+<p>A major difference between running on-premises and on AWS is storage. Because S3 is
+used, you are charged for what is currently in use rather than what may be allocated onpremises. Ensure to <a href="https://www.jfrog.com/confluence/display/RTF/Monitoring+Storage" target="_blank" rel="noopener">monitor your usage</a>.</p>
 </div>
 </div>
 </div>
 <div class="sect1">
 <h2 id="_faq">FAQ</h2>
 <div class="sectionbody">
+<div class="paragraph">
+<p><strong>Q.</strong> . I provisioned more secondary nodes than I have licenses, and I cannot access
+Artifactory. What do I do?</p>
+</div>
+<div class="paragraph">
+<p><strong>A.</strong> In the AWS CloudFormation console, choose <strong>Update stack</strong>, and reduce the number of
+secondary nodes to the number of licenses you purchased, minus one license for the master.</p>
+</div>
+<div class="paragraph">
+<p><strong>Q.</strong> My license ran out and Artifactory is unresponsive. How do I fix this?</p>
+</div>
+<div class="paragraph">
+<p><strong>A.</strong> Reduce the number of secondary nodes to zero, and contact JFrog for a new license.</p>
+</div>
+<div class="paragraph">
+<p><strong>Q.</strong> My certificate is out of date. How do I update it?</p>
+</div>
+<div class="paragraph">
+<p><strong>A.</strong> The certificate is handled via Ansible or Helm. In the AWS CloudFormation console,
+choose <strong>Update stack</strong>, change the certificate and certificate key values. Then, by rolling
+restart, update the master node first, and then, one at a time, the secondary nodes. This will
+rebuild each node with the correct certificate.</p>
+</div>
 <div class="paragraph">
 <p><strong>Q.</strong> I encountered a <strong>CREATE_FAILED</strong> error when I launched the Quick Start.</p>
 </div>
@@ -3602,7 +4153,7 @@ When you set <strong>Rollback on failure</strong> to <strong>Disabled</strong>, 
 <h2 id="_send_us_feedback">Send us feedback</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>To post feedback, submit feature ideas, or report bugs, use the <strong>Issues</strong> section of the <a href="https://github.com/aws-quickstart/quickstart-documentation-base" target="_blank" rel="noopener">GitHub repository</a> for this Quick Start. If you’d like to submit code, please review the <a href="https://aws-quickstart.github.io/" target="_blank" rel="noopener">Quick Start Contributor’s Guide</a>.</p>
+<p>To post feedback, submit feature ideas, or report bugs, use the <strong>Issues</strong> section of the <a href="https://github.com/aws-quickstart/quickstart-jfrog-artifactory" target="_blank" rel="noopener">GitHub repository</a> for this Quick Start. If you’d like to submit code, please review the <a href="https://aws-quickstart.github.io/" target="_blank" rel="noopener">Quick Start Contributor’s Guide</a>.</p>
 </div>
 </div>
 </div>
@@ -3618,13 +4169,13 @@ When you set <strong>Rollback on failure</strong> to <strong>Disabled</strong>, 
 <h2 id="_github_repository">GitHub repository</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>You can visit our <a href="https://github.com/aws-quickstart/quickstart-documentation-base" target="_blank" rel="noopener">GitHub repository</a> to download
+<p>You can visit our <a href="https://github.com/aws-quickstart/quickstart-jfrog-artifactory" target="_blank" rel="noopener">GitHub repository</a> to download
 the templates and scripts for this Quick Start, to post your comments,
 and to share your customizations with others.</p>
 </div>
 <hr>
 <div class="paragraph">
-<p>© 2020, Amazon Web Services Inc., or its affiliates, and Example Company Name, Ltd.. All rights reserved.</p>
+<p>© 2020, Amazon Web Services Inc., or its affiliates, and JFrog Ltd.. All rights reserved.</p>
 </div>
 <div class="sect3">
 <h4 id="_notices">Notices</h4>
@@ -3640,7 +4191,7 @@ and to share your customizations with others.</p>
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2020-08-18 17:29:47 UTC
+Last updated 2020-08-19 00:55:45 UTC
 </div>
 </div>
 </body>
