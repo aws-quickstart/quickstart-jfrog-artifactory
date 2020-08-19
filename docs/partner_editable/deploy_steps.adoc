@@ -18,7 +18,7 @@ Due to the underlying JSON system, the parameters for both the certificate and c
 . Choose Store a new secret.
 . Choose Other type of secret.
 . For the secret key value, create seven rows for the Artifactory licenses and certificate information.
-. Key names should be as follows, with the key values being Artifactory license keys and certificate details (see <<secret_manager>>):
+. Key names should be as follows, with the key values being Artifactory license keys and certificate details (see <<secret_manager>>)):
 .. `ArtifactoryLicense1`
 .. `ArtifactoryLicense2`
 .. `ArtifactoryLicense3`
@@ -31,7 +31,7 @@ Due to the underlying JSON system, the parameters for both the certificate and c
 [#secret_manager]
 .Secrets Manager key-value page
 [link=../{quickstart-project-name}/images/secrets_manager.png]
-image::../images/secrets_manager.png[image_placeholder,width=648,height=439]
+image::../images/secrets_manager.png[image_placeholder]
 
 [start=6]
 . Choose *Next*.
