@@ -591,7 +591,6 @@ Resources:
       HealthCheckTimeoutSeconds: 10
       HealthyThresholdCount: 3
       HealthCheckPort: "8082"
-      Name: !Sub ${ArtifactoryProduct}-EC2-https
       Port: 443
       Protocol: TCP
       TargetType: instance
@@ -606,7 +605,6 @@ Resources:
       HealthCheckTimeoutSeconds: 10
       HealthyThresholdCount: 3
       HealthCheckPort: "8082"
-      Name: !Sub ${ArtifactoryProduct}-EC2-http
       Port: 80
       Protocol: TCP
       TargetType: instance
