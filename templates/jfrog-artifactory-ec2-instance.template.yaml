@@ -157,7 +157,7 @@ Mappings:
       "Artifactory721": ami-0c132dd3640519a35
       "Jcr721": ami-083542bb4f8afa3db
   ArtifactoryProductMap:
-    JFrog-Container-Registry:
+    JFrog-Container-Reg:
       "720": "Jcr720"
       "721": "Jcr721"
       product: "jcr"

@@ -79,7 +79,7 @@ Mappings:
       JcrDockerRepo: "docker.bintray.io/jfrog/artifactory-jcr"
       NginxDockerRepo: "docker.bintray.io/jfrog/nginx-artifactory-pro"
   ProductMap:
-    JFrog-Container-Registry:
+    JFrog-Container-Reg:
       RepoName: JcrDockerRepo
     JFrog-Artifactory-Pro:
       RepoName: ProDockerRepo

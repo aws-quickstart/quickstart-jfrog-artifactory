@@ -400,7 +400,7 @@ Parameters:
     Description: JFrog Artifactory product you wish to install.
     AllowedValues:
       - JFrog-Artifactory-Pro
-      - JFrog-Container-Registry
+      - JFrog-Container-Reg
     Default: JFrog-Artifactory-Pro
     Type: String
   ArtifactoryVersion:

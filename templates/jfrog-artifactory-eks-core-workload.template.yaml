@@ -82,7 +82,7 @@ Mappings:
       infoFile: 'installer-info.json'
       BETA: JFrog-Artifactory-Pro-BETA
       GA: JFrog-Artifactory-Pro-GA
-    JFrog-Container-Registry:
+    JFrog-Container-Reg:
       namespace: jfrog-container-registry
       app: jfrog-container-registry
       infoFile: 'installer-info-jcr.json'
