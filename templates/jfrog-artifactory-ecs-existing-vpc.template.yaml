@@ -627,7 +627,7 @@ Resources:
       HealthCheckProtocol: TCP
       HealthCheckTimeoutSeconds: 10
       HealthyThresholdCount: 3
-      Name: !Sub ${ArtifactoryProduct}-https
+      Name: !Sub ${ArtifactoryProduct}-ECS-https
       Port: 443
       Protocol: TCP
       TargetType: "instance" # !If [FargateEnabled, "ip", "instance"]
@@ -641,7 +641,7 @@ Resources:
       HealthCheckProtocol: TCP
       HealthCheckTimeoutSeconds: 10
       HealthyThresholdCount: 3
-      Name: !Sub ${ArtifactoryProduct}-http
+      Name: !Sub ${ArtifactoryProduct}-ECS-http
       Port: 80
       Protocol: TCP
       TargetType: "instance" # !If [FargateEnabled, "ip", "instance"]
