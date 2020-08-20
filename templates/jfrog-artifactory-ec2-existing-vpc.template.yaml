@@ -576,7 +576,7 @@ Resources:
     Type: AWS::ElasticLoadBalancingV2::LoadBalancer
     Properties:
       IpAddressType: ipv4
-      Name: !Sub ${ArtifactoryProduct}-ELB
+      Name: !Sub ${ArtifactoryProduct}-EC2-ELB
       Scheme: !Ref ELBScheme
       Subnets:
         - !Ref PublicSubnet1Id
@@ -591,7 +591,7 @@ Resources:
       HealthCheckTimeoutSeconds: 10
       HealthyThresholdCount: 3
       HealthCheckPort: "8082"
-      Name: !Sub ${ArtifactoryProduct}-https
+      Name: !Sub ${ArtifactoryProduct}-EC2-https
       Port: 443
       Protocol: TCP
       TargetType: instance
@@ -606,7 +606,7 @@ Resources:
       HealthCheckTimeoutSeconds: 10
       HealthyThresholdCount: 3
       HealthCheckPort: "8082"
-      Name: !Sub ${ArtifactoryProduct}-http
+      Name: !Sub ${ArtifactoryProduct}-EC2-http
       Port: 80
       Protocol: TCP
       TargetType: instance

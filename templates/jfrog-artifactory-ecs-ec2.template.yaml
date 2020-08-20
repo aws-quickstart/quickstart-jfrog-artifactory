@@ -363,7 +363,7 @@ Resources:
 
             pip install awscli &> /var/log/userdata.awscli_install.log || qs_err " awscli install failed "
 
-            pip install ansible &> /var/log/userdata.ansible_install.log || qs_err " ansible install failed "
+            pip3 install ansible &> /var/log/userdata.ansible_install.log || qs_err " ansible install failed "
 
             pip install selinux &> /var/log/userdata.selinux_install.log || qs_err " selinux install failed "
 
