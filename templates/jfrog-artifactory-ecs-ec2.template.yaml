@@ -143,7 +143,7 @@ Mappings:
     sa-east-1:
       AMZNLINUXHVM: ami-0c16a6e54a2f933f0
   ArtifactoryProductMap:
-    JFrog-Container-Registry:
+    JFrog-Container-Reg:
       infoFile: "installer-info-jcr.json"
       product: "jcr"
     JFrog-Artifactory-Pro:
@@ -156,7 +156,7 @@ Conditions:
   CreateEcsRole: !Equals [!Ref 'CreateNewEcsRole', 'Enabled']
   JcrWithFargate: !And
     - !Equals [!Ref EnableFargate, 'Enabled']
-    - !Equals [!Ref ArtifactoryProduct, 'JFrog-Container-Registry']
+    - !Equals [!Ref ArtifactoryProduct, 'JFrog-Container-Reg']
 Resources:
   EcsRole:
     Condition: CreateEcsRole
