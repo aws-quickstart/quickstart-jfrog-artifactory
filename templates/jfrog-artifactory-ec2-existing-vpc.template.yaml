@@ -576,7 +576,7 @@ Resources:
     Type: AWS::ElasticLoadBalancingV2::LoadBalancer
     Properties:
       IpAddressType: ipv4
-      Name: !Sub ${ArtifactoryProduct}-ELB
+      Name: !Sub ${ArtifactoryProduct}-EC2-ELB
       Scheme: !Ref ELBScheme
       Subnets:
         - !Ref PublicSubnet1Id
