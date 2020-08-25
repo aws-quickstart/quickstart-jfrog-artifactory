@@ -238,19 +238,16 @@ Parameters:
   BastionInstanceType:
     Description: The size of the bastion instances.
     AllowedValues:
-      - t2.nano
-      - t2.micro
-      - t2.small
-      - t2.medium
-      - t2.large
-      - m3.large
-      - m3.xlarge
-      - m3.2xlarge
-      - m4.large
-      - m4.xlarge
-      - m4.2xlarge
-      - m4.4xlarge
-    Default: "t2.micro"
+      - t3.nano
+      - t3.micro
+      - t3.small
+      - t3.medium
+      - t3.large
+      - m5.large
+      - m5.xlarge
+      - m5.2xlarge
+      - m5.4xlarge
+    Default: "t3.micro"
     Type: String
   BastionRootVolumeSize:
     Description: The size of the root volume on the bastion instances.
@@ -301,12 +298,6 @@ Parameters:
   InstanceType:
     Description: The EC2 instance type for the Artifactory instances.
     AllowedValues:
-      - m4.large
-      - m4.xlarge
-      - m4.2xlarge
-      - m4.4xlarge
-      - m4.10xlarge
-      - m4.16xlarge
       - m5.large
       - m5.xlarge
       - m5.2xlarge
@@ -333,14 +324,8 @@ Parameters:
       - m5a.12xlarge
       - m5a.16xlarge
       - m5a.24xlarge
-      - m5ad.large
-      - m5ad.xlarge
-      - m5ad.2xlarge
-      - m5ad.4xlarge
-      - m5ad.12xlarge
-      - m5ad.24xlarge
     ConstraintDescription: Must contain valid instance type.
-    Default: m4.xlarge
+    Default: m5.xlarge
     Type: String
   NumberOfSecondary:
     Description: The number of secondary Artifactory servers to complete your
@@ -448,15 +433,11 @@ Parameters:
   DatabaseInstance:
     Description: The size of the database to be deployed as part of the Quick Start.
     AllowedValues:
-      - db.m3.medium
-      - db.m3.large
-      - db.m3.xlarge
-      - db.m3.2xlarge
-      - db.m4.large
-      - db.m4.xlarge
-      - db.m4.2xlarge
-      - db.m4.10xlarge
-      - db.m4.16xlarge
+      - db.m5.large
+      - db.m5.xlarge
+      - db.m5.2xlarge
+      - db.m5.10xlarge
+      - db.m5.16xlarge
       - db.m5.large
       - db.m5.xlarge
       - db.m5.2xlarge
@@ -464,7 +445,7 @@ Parameters:
       - db.m5.12xlarge
       - db.m5.24xlarge
     ConstraintDescription: Must be a valid database Instance Type.
-    Default: db.m4.large
+    Default: db.m5.large
     Type: String
   DatabaseAllocatedStorage:
     Description: The size in GB of the available storage for the database instance.
@@ -527,10 +508,10 @@ Parameters:
   XrayInstanceType:
     Description: The EC2 instance type for the Xray instances.
     AllowedValues:
-      - c4.2xlarge
-      - c4.4xlarge
+      - c5.2xlarge
+      - c5.4xlarge
     ConstraintDescription: Must contain valid instance type.
-    Default: c4.2xlarge
+    Default: c5.2xlarge
     Type: String
   XrayDatabaseUser:
     Description: The login ID for the Xray database user.
@@ -587,7 +568,7 @@ Resources:
                   - logs:PutRetentionPolicy
                   - logs:PutMetricFilter
                   - logs:CreateLogGroup
-                Resource: !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:*:*"
+                Resource: !Sub "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:*:*"
               - Effect: Allow
                 Action:
                   - ec2:AssociateAddress
@@ -786,7 +767,7 @@ Resources:
             Effect: Allow
         Version: 2012-10-17
       ManagedPolicyArns:
-        - 'arn:aws:iam::aws:policy/service-role/AmazonEC2RoleforSSM'
+        - !Sub 'arn:${AWS::Partition}:iam::aws:policy/service-role/AmazonEC2RoleforSSM'
   ArtifactoryHostProfile:
     Type: 'AWS::IAM::InstanceProfile'
     Properties:
@@ -825,6 +806,8 @@ Resources:
         ArtifactoryLicense2: !If [ArtifactoryHa, !Sub '{{resolve:secretsmanager:${SmLicenseCertName}:SecretString:ArtifactoryLicense2}}', '']
         ArtifactoryLicense3: !If [ArtifactoryHa, !Sub '{{resolve:secretsmanager:${SmLicenseCertName}:SecretString:ArtifactoryLicense3}}', '']
         ArtifactoryLicense4: !If [ArtifactoryHa, !Sub '{{resolve:secretsmanager:${SmLicenseCertName}:SecretString:ArtifactoryLicense4}}', '']
+        ArtifactoryLicense5: !If [ArtifactoryHa, !Sub '{{resolve:secretsmanager:${SmLicenseCertName}:SecretString:ArtifactoryLicense5}}', '']
+        ArtifactoryLicense6: !If [ArtifactoryHa, !Sub '{{resolve:secretsmanager:${SmLicenseCertName}:SecretString:ArtifactoryLicense6}}', '']
         ArtifactoryServerName: !Ref ArtifactoryServerName
         Certificate: !Sub '{{resolve:secretsmanager:${SmLicenseCertName}:SecretString:Certificate}}'
         CertificateKey: !Sub '{{resolve:secretsmanager:${SmLicenseCertName}:SecretString:CertificateKey}}'
@@ -876,6 +859,8 @@ Resources:
         ArtifactoryLicense2: !Sub '{{resolve:secretsmanager:${SmLicenseCertName}:SecretString:ArtifactoryLicense2}}'
         ArtifactoryLicense3: !Sub '{{resolve:secretsmanager:${SmLicenseCertName}:SecretString:ArtifactoryLicense3}}'
         ArtifactoryLicense4: !Sub '{{resolve:secretsmanager:${SmLicenseCertName}:SecretString:ArtifactoryLicense4}}'
+        ArtifactoryLicense5: !If [ArtifactoryHa, !Sub '{{resolve:secretsmanager:${SmLicenseCertName}:SecretString:ArtifactoryLicense5}}', '']
+        ArtifactoryLicense6: !If [ArtifactoryHa, !Sub '{{resolve:secretsmanager:${SmLicenseCertName}:SecretString:ArtifactoryLicense6}}', '']
         ArtifactoryServerName: !Ref ArtifactoryServerName
         Certificate: !Sub '{{resolve:secretsmanager:${SmLicenseCertName}:SecretString:Certificate}}'
         CertificateKey: !Sub '{{resolve:secretsmanager:${SmLicenseCertName}:SecretString:CertificateKey}}'
@@ -931,7 +916,7 @@ Resources:
             Effect: Allow
         Version: 2012-10-17
       ManagedPolicyArns:
-        - 'arn:aws:iam::aws:policy/service-role/AmazonEC2RoleforSSM'
+        - !Sub 'arn:${AWS::Partition}:iam::aws:policy/service-role/AmazonEC2RoleforSSM'
   XrayHostProfile:
     Condition: EnableXray
     Type: 'AWS::IAM::InstanceProfile'
