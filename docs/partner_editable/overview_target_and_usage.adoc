@@ -15,4 +15,18 @@ their repository manager.
 Amazon EC2, along with Amazon S3 and Amazon RDS, forms the foundation for the
 deployment. By using Amazon S3 and Amazon RDS as persistent storage for artifacts and
 the configuration, respectively, Artifactory can be completely redeployed, scaled up, or
-scaled down, depending on your requirements. This configuration allows organ
+scaled down, depending on your requirements. This configuration allows organizations to
+save on costs for multiple secondary nodes and to pay only for storage used.
+
+The default installation creates two https://docs.aws.amazon.com/autoscaling/ec2/userguide/what-is-amazon-ec2-auto-scaling.html[Amazon EC2 Auto Scaling^] groups:
+
+* The first Auto Scaling group is responsible for the primary node and ensures that the
+node.id for HA is set to `primary` and that there is always only one primary node.
+* The second Auto Scaling group is responsible for ensuring that the `node.id` for the
+secondaries is unique and therefore sets it to the hostname. This Auto Scaling group is
+also responsible for scaling up or down the number of secondaries to the amount
+specified by the administrator.
+
+The Auto Scaling groups are monitored by the Classic Load Balancer, which is configured
+with https://docs.aws.amazon.com/elasticloadbalancing/latest/classic/elb-healthchecks.html[health checks^] that validate the Artifactory service is up and running. If the endpoint
+returns an error response, a new node is recovered within 10 minutes.

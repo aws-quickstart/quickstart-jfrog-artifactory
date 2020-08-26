@@ -1,8 +1,8 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Description: Deploys an EKS cluster with JFrog Artifactory into an existing VPC (qs-1q037efm3).
 Metadata:
-  QuickStartDocumentation:
-    EntrypointName: "Launch into an existing VPC"
+  # QuickStartDocumentation:
+  #   EntrypointName: "Launch into an existing VPC"
   AWS::CloudFormation::Interface:
     ParameterGroups:
       - Label:
