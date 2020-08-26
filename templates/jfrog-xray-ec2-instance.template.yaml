@@ -91,6 +91,11 @@ Mappings:
       "xray": ami-068cd684b4d3a3a86 # TODO: Get correct ami - provided by market place tem
     us-west-2:
       "xray": ami-03d60da4c8a146a55 # TODO: Get correct ami - provided by market place tem
+    us-gov-east-1:
+      "xray": ami-001d5cec1e7399f65 # TODO: Get correct ami - provided by market place tem
+    us-gov-west-1:
+      "xray": ami-0eb4eecce8d5bcb80 # TODO: Get correct ami - provided by market place tem
+
 Resources:
   XrayScalingGroup:
     Type: 'AWS::AutoScaling::AutoScalingGroup'
@@ -225,7 +230,7 @@ Resources:
 
             mkdir ~/.xray_ansible
 
-            aws s3 sync s3://${QsS3BucketName}/${QsS3KeyPrefix}cloudInstallerScripts/ ~/.xray_ansible/
+            aws s3 --region ${AWS::Region} sync s3://${QsS3BucketName}/${QsS3KeyPrefix}cloudInstallerScripts/ ~/.xray_ansible/
 
             cfn-init -v --stack ${AWS::StackName} --resource XrayLaunchConfiguration --configsets xray_install --region ${AWS::Region} || cfn_fail
 

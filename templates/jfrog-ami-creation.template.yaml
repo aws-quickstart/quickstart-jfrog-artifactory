@@ -93,12 +93,12 @@ Parameters:
   InstanceType:
     Description: The EC2 instance type for the AMI.
     AllowedValues:
-      - m4.xlarge
-      - m4.2xlarge
-      - m4.4xlarge
-      - m4.10xlarge
+      - m5.xlarge
+      - m5.2xlarge
+      - m5.4xlarge
+      - m5.10xlarge
     ConstraintDescription: Must contain valid instance type.
-    Default: m4.xlarge
+    Default: m5.xlarge
     Type: String
   VolumeSize:
     Description: The size in GB of the available storage; the Quick Start will create an
@@ -136,6 +136,10 @@ Mappings:
       CentOS7HVM: "ami-0affd4508a5d2481b"
     us-east-2:
       CentOS7HVM: "ami-01e36b7901e884a10"
+    us-gov-east-1:
+      CentOS7HVM: "ami-00e30c71"
+    us-gov-east-1:
+      CentOS7HVM: "ami-bbba86da"
 Conditions:
   UsingDefaultBucket: !Equals [!Ref QsS3BucketName, 'aws-quickstart']
 Resources:
@@ -297,7 +301,7 @@ Resources:
 
             mkdir ~/.jfrog_ami
 
-            aws s3 sync s3://${QsS3BucketName}/${QsS3KeyPrefix}cloudInstallerScripts/ ~/.jfrog_ami/
+            aws s3 --region ${AWS::Region} sync s3://${QsS3BucketName}/${QsS3KeyPrefix}cloudInstallerScripts/ ~/.jfrog_ami/
 
             cfn-init -v --stack ${AWS::StackName} --resource JFrogAMIInstance --configsets jfrog_ami_setup --region ${AWS::Region} || cfn_fail
 

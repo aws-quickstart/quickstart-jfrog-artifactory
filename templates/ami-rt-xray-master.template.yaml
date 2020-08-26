@@ -78,12 +78,12 @@ Parameters:
   InstanceType:
     Description: The EC2 instance type for the AMI.
     AllowedValues:
-      - m4.xlarge
-      - m4.2xlarge
-      - m4.4xlarge
-      - m4.10xlarge
+      - m5.xlarge
+      - m5.2xlarge
+      - m5.4xlarge
+      - m5.10xlarge
     ConstraintDescription: Must contain valid instance type.
-    Default: m4.xlarge
+    Default: m5.xlarge
     Type: String
   VolumeSize:
     Description: The size in GB of the available storage; the Quick Start will create an

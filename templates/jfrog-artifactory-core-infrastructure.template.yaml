@@ -48,7 +48,7 @@ Parameters:
     Default: GA
     Type: String
   InstanceType:
-    Default: m4.xlarge
+    Default: m5.xlarge
     Type: String
 
 Mappings:
@@ -76,27 +76,27 @@ Mappings:
     JFrog-Artifactory-Pro:
       RepoName: ProDockerRepo
   JavaOptionstoInstance:
-    m4.large:
+    m5.large:
       Min: 4
       Max: 4
       DeploymentSize: xxSmall
-    m4.xlarge:
+    m5.xlarge:
       Min: 8
       Max: 12
       DeploymentSize: xSmall
-    m4.2xlarge:
+    m5.2xlarge:
       Min: 16
       Max: 24
       DeploymentSize: Small
-    m4.4xlarge:
+    m5.4xlarge:
       Min: 32
       Max: 48
       DeploymentSize: Medium
-    m4.10xlarge:
+    m5.10xlarge:
       Min: 80
       Max: 120
       DeploymentSize: Large
-    m4.16xlarge:
+    m5.16xlarge:
       Min: 128
       Max: 192
       DeploymentSize: xxLarge
@@ -335,11 +335,11 @@ Resources:
             Resource:
               - Fn::Join:
                 - ''
-                - - "arn:aws:s3:::"
+                - - !Sub "arn:${AWS::Partition}:s3:::"
                   - !Ref ArtifactoryS3Bucket
               - Fn::Join:
                 - ''
-                - - "arn:aws:s3:::"
+                - - !Sub "arn:${AWS::Partition}:s3:::"
                   - !Ref ArtifactoryS3Bucket
                   - "/*"
       Users:

@@ -12,7 +12,7 @@
   ## server configuration
   server {
   listen 80 ;
-  server_name {{ server_name }};
+  server_name _;
   if ($http_x_forwarded_proto = '') {
   set $http_x_forwarded_proto  $scheme;
   }

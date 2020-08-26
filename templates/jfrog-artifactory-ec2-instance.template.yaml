@@ -31,6 +31,10 @@ Parameters:
     Type: String
   ArtifactoryLicense4:
     Type: String
+  ArtifactoryLicense5:
+    Type: String
+  ArtifactoryLicense6:
+    Type: String
   ArtifactoryServerName:
     Type: String
   Certificate:
@@ -169,6 +173,12 @@ Mappings:
       "Artifactory721": ami-0c132dd3640519a35
       "Artifactory755": ami-0007155f7b7de9386 # TODO: Get correct ami
       "Jcr721": ami-083542bb4f8afa3db
+    us-gov-east-1:
+      AMZNLINUX2: ami-7c2bc80d
+      "Artifactory755": ami-0732b9134b39caf5c
+    us-gov-west-1:
+      AMZNLINUX2: ami-a03768c1
+      "Artifactory755": ami-0b9d3e9ee5ffdc491
   ArtifactoryProductMap:
     JFrog-Container-Registry:
       "720": "Jcr720"
@@ -235,6 +245,8 @@ Resources:
                       artifactory_license2: ${ArtifactoryLicense2}
                       artifactory_license3: ${ArtifactoryLicense3}
                       artifactory_license4: ${ArtifactoryLicense4}
+                      artifactory_license5: ${ArtifactoryLicense5}
+                      artifactory_license6: ${ArtifactoryLicense6}
                       artifactory_product: ${product}
                       artifactory_server_name: ${ArtifactoryServerName}
                       server_name: ${ArtifactoryServerName}.${CertificateDomain}
@@ -364,7 +376,7 @@ Resources:
 
             mkdir ~/.artifactory_ansible
 
-            aws s3 sync s3://${QsS3BucketName}/${QsS3KeyPrefix}cloudInstallerScripts/ ~/.artifactory_ansible/
+            aws s3 --region ${AWS::Region} sync s3://${QsS3BucketName}/${QsS3KeyPrefix}cloudInstallerScripts/ ~/.artifactory_ansible/
 
             cfn-init -v --stack ${AWS::StackName} --resource ArtifactoryLaunchConfiguration --configsets artifactory_install --region ${AWS::Region} || cfn_fail
 

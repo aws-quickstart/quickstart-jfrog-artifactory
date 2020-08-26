@@ -12,6 +12,7 @@ artifactory_license2:
 artifactory_license3:
 artifactory_license4:
 artifactory_license5:
+artifactory_license6:
 
 # whether to enable HA
 artifactory_ha_enabled: true

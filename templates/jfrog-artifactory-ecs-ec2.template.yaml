@@ -371,7 +371,7 @@ Resources:
 
             mkdir ~/.artifactory_ansible
 
-            aws s3 sync s3://${QsS3BucketName}/${QsS3KeyPrefix}scripts/ ~/.artifactory_ansible/
+            aws s3 --region ${AWS::Region} sync s3://${QsS3BucketName}/${QsS3KeyPrefix}scripts/ ~/.artifactory_ansible/
 
             cfn-init -v --stack ${AWS::StackName} --resource ArtifactoryLaunchConfiguration --configsets artifactory_install --region ${AWS::Region} || cfn_fail
 
