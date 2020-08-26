@@ -82,8 +82,8 @@ Parameters:
   InstanceOs:
     Description: The Linux distribution for the Amazon Machine Image (AMI) to be used for the bastion instances.
     AllowedValues:
-      - "CentOS7HVM"
-    Default: "CentOS7HVM"
+      - "CentOS-7-HVM"
+    Default: "CentOS-7-HVM"
     Type: String
   InstanceType:
     Description: The EC2 instance type for the AMI.
