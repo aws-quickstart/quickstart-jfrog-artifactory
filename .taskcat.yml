@@ -5,9 +5,8 @@ project:
   lambda_zip_path: functions/packages
   s3_object_acl: public-read
   s3_regional_buckets: True
-  s3_bucket: tcat-422383ecc658557f9a377abae675aac0
   regions:
-    - us-east-1
+    - us-east-2
     #- us-gov-east-1
     #- us-gov-west-1
 tests:
@@ -67,6 +66,10 @@ tests:
       MasterKey: "override"
       SmLicenseCertName: "override"
       MultiAzDatabase: "false"
+      InstallXray: "true"
+      XrayVersion: 3.6.1
+      XrayDatabasePassword: "$[taskcat_genpass_8A]"
+      XrayNumberOfSecondary: 1
     template: templates/jfrog-artifactory-ec2-master.template.yaml
     regions:
       - us-east-1

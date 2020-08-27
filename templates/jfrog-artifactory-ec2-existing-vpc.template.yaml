@@ -967,6 +967,7 @@ Resources:
         XrayDatabaseUrl: !GetAtt ArtifactoryCoreInfraStack.Outputs.XrayDatabaseUrl
         XrayFirstNode: 'true'
         XrayVersion: !Ref XrayVersion
+        XrayAmiId: !Join ['', !Split [".", !Ref XrayVersion]]
         XrayHostRole: !Ref XrayHostRole
         XrayHostProfile: !Ref XrayHostProfile
 Outputs:

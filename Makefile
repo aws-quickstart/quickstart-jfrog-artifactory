@@ -30,7 +30,7 @@ submodules:
 	git submodule foreach --recursive 'git submodule init'
 	git submodule foreach --recursive 'git submodule update --remote --recursive'
 	cd submodules/quickstart-amazon-eks
-	git checkout 1a2726d0afa653b181a783f0b929c68d5e39cc5e
+	git checkout 0b2f1a14029226d296e761e5ecedef01d89f4efb
 	git submodule init
 
 
