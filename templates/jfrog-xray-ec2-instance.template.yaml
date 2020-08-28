@@ -106,6 +106,10 @@ Mappings:
     us-west-2:
       "330": ami-03d60da4c8a146a55 # TODO: Get correct ami - provided by market place tem
       "361": ami-03d60da4c8a146a55 # TODO: Get correct ami - provided by market place tem
+    us-gov-east-1:
+      "361": ami-001d5cec1e7399f65 # TODO: Get correct ami - provided by market place tem
+    us-gov-west-1:
+      "361": ami-0eb4eecce8d5bcb80 # TODO: Get correct ami - provided by market place tem
 
 Resources:
   XrayScalingGroup:

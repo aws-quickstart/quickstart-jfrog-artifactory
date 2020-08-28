@@ -87,8 +87,8 @@ Parameters:
   InstanceOs:
     Description: The Linux distribution for the Amazon Machine Image (AMI) to be used for the bastion instances.
     AllowedValues:
-      - "CentOS-7-HVM"
-    Default: "CentOS-7-HVM"
+      - "CentOS7HVM"
+    Default: "CentOS7HVM"
     Type: String
   InstanceType:
     Description: The EC2 instance type for the AMI.
@@ -138,7 +138,7 @@ Mappings:
       CentOS7HVM: "ami-01e36b7901e884a10"
     us-gov-east-1:
       CentOS7HVM: "ami-00e30c71"
-    us-gov-east-1:
+    us-gov-west-1:
       CentOS7HVM: "ami-bbba86da"
 Conditions:
   UsingDefaultBucket: !Equals [!Ref QsS3BucketName, 'aws-quickstart']
