@@ -1,8 +1,8 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Description: 'JFrog Artifactory ECS Quick Start Deployment (qs-1qpmmjh6a)'
 Metadata:
-  QuickStartDocumentation:
-    EntrypointName: "Launch into a new VPC"
+  # QuickStartDocumentation:
+  #   EntrypointName: "Launch into a new VPC"
   AWS::CloudFormation::Interface:
     ParameterGroups:
       - Label:

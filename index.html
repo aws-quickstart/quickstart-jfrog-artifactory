@@ -767,6 +767,17 @@ table p {
 a img {
     border: 1px solid #A4A4A4;
 }
+
+#preview_mode {
+	border-color:#e0e0dc;
+	-webkit-box-shadow:0 1px 4px #e0e0dc;
+	box-shadow:0 1px 4px #e0e0dc;
+  background:#ffffb3;
+  padding-bottom: 2rem;
+}
+#preview_mode .tableblock {
+  background:#ffffb3;
+}
 </style>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 </head>
@@ -800,11 +811,7 @@ a img {
 <li><a href="#_subscribe_to_the_artifactory_ami">Subscribe to the Artifactory AMI</a></li>
 <li><a href="#_launch_the_quick_start">Launch the Quick Start</a></li>
 <li><a href="#_launch_into_an_existing_vpc">Launch into an existing VPC</a></li>
-<li><a href="#_launch_into_an_existing_vpc_2">Launch into an existing VPC</a></li>
-<li><a href="#_launch_into_an_existing_vpc_3">Launch into an existing VPC</a></li>
 <li><a href="#_launch_into_a_new_vpc">Launch into a new VPC</a></li>
-<li><a href="#_launch_into_a_new_vpc_2">Launch into a new VPC</a></li>
-<li><a href="#_launch_into_a_new_vpc_3">Launch into a new VPC</a></li>
 </ul>
 </li>
 <li><a href="#_get_started_with_jfrog_artifactory">Get started with JFrog Artifactory</a></li>
@@ -875,7 +882,30 @@ their repository manager.</p>
 <p>Amazon EC2, along with Amazon S3 and Amazon RDS, forms the foundation for the
 deployment. By using Amazon S3 and Amazon RDS as persistent storage for artifacts and
 the configuration, respectively, Artifactory can be completely redeployed, scaled up, or
-scaled down, depending on your requirements. This configuration allows organ</p>
+scaled down, depending on your requirements. This configuration allows organizations to
+save on costs for multiple secondary nodes and to pay only for storage used.</p>
+</div>
+<div class="paragraph">
+<p>The default installation creates two <a href="https://docs.aws.amazon.com/autoscaling/ec2/userguide/what-is-amazon-ec2-auto-scaling.html" target="_blank" rel="noopener">Amazon EC2 Auto Scaling</a> groups:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>The first Auto Scaling group is responsible for the primary node and ensures that the
+node.id for HA is set to <code>primary</code> and that there is always only one primary node.</p>
+</li>
+<li>
+<p>The second Auto Scaling group is responsible for ensuring that the <code>node.id</code> for the
+secondaries is unique and therefore sets it to the hostname. This Auto Scaling group is
+also responsible for scaling up or down the number of secondaries to the amount
+specified by the administrator.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>The Auto Scaling groups are monitored by the Classic Load Balancer, which is configured
+with <a href="https://docs.aws.amazon.com/elasticloadbalancing/latest/classic/elb-healthchecks.html" target="_blank" rel="noopener">health checks</a> that validate the Artifactory service is up and running. If the endpoint
+returns an error response, a new node is recovered within 10 minutes.</p>
 </div>
 <div class="admonitionblock note">
 <table>
@@ -898,7 +928,7 @@ collaborated with AWS on the content of the Quick Start.
 <div class="sectionbody">
 <div class="paragraph">
 <p>Once you deploy JFrog’s Artifactory, you can use it as a production service. For further
-information about setting up Artifactory, see the #_Getting_started_with_Artifactory section,
+information about setting up Artifactory, see the <a href="#_get_started_with_Artifactory">Get started with Artifactory</a> section,
 later in this guide.</p>
 </div>
 <div class="admonitionblock warning">
@@ -1214,9 +1244,6 @@ Cloud.</p>
 </div>
 <div class="sect3">
 <h4 id="_supported_regions">Supported Regions</h4>
-<div class="paragraph">
-<p>The following regions are currently supported by this Quick Start.</p>
-</div>
 <div class="ulist">
 <ul>
 <li>
@@ -1234,7 +1261,7 @@ Cloud.</p>
 <i class="fa icon-tip" title="Tip"></i>
 </td>
 <td class="content">
-Certain regions are available on an opt-in basis. Refer to the AWS Documentation on <a href="https://docs.aws.amazon.com/general/latest/gr/rande-manage.html" target="_blank" rel="noopener">Managing Regions</a> for more information.
+Certain Regions are available on an opt-in basis. Refer to the AWS Documentation on <a href="https://docs.aws.amazon.com/general/latest/gr/rande-manage.html" target="_blank" rel="noopener">Managing Regions</a> for more information.
 </td>
 </tr>
 </table>
@@ -1256,24 +1283,6 @@ Certain regions are available on an opt-in basis. Refer to the AWS Documentation
 </div>
 <div class="paragraph">
 <p>The <em>AdministratorAccess</em> managed policy within IAM provides sufficient permissions, although your organization may choose to use a custom policy with more restrictions.</p>
-</div>
-</div>
-<div class="sect3">
-<h4 id="_prepare_your_aws_account">Prepare your AWS account</h4>
-<div class="paragraph">
-<p><em>Describe any setup required in the AWS account prior to template launch</em></p>
-</div>
-</div>
-<div class="sect3">
-<h4 id="_prepare_your_jfrog_ltd_account">Prepare your JFrog Ltd. account</h4>
-<div class="paragraph">
-<p><em>Describe any setup required in the partner portal/account prior to template launch</em></p>
-</div>
-</div>
-<div class="sect3">
-<h4 id="_prepare_for_the_deployment">Prepare for the deployment</h4>
-<div class="paragraph">
-<p><em>Describe any preparation required to complete the product build, such as obtaining licenses or placing files in S3</em></p>
 </div>
 </div>
 <div class="sect3">
@@ -1535,802 +1544,6 @@ Region</code>, and <code>Quick Start S3 key prefix</code>. Changing these parame
 <td class="tableblock halign-left valign-top"><p class="tableblock">SSH key name
 (<code>KeyPairName</code>)</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code><strong><em>Requires input</em></strong></code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Name of an existing key pair, which allows you to securely connect to your instance after it launches.</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Permitted IP range
-(<code>AccessCidr</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code><strong><em>Requires input</em></strong></code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">CIDR IP range that is permitted to access Artifactory. We recommend that you set this value to a trusted IP range. For example, you might want to grant only your corporate network access to the software.</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Remote access CIDR
-(<code>RemoteAccessCidr</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code><strong><em>Requires input</em></strong></code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Remote CIDR range for allowing SSH into the bastion instance. We recommend that you set this value to a trusted IP range. For example, you might want to grant specific ranges inside your corporate network SSH access.</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Additional EKS admin ARN (IAM user)
-(<code>AdditionalEKSAdminUserArn</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code><strong><em>Requires input</em></strong></code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">[OPTIONAL] Amazon Resource Name (ARN): a comma-separated list of IAM users to be granted admin access to the EKS cluster.</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Additional EKS admin ARN (IAM role)
-(<code>AdditionalEKSAdminRoleArn</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code><strong><em>Requires input</em></strong></code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">[OPTIONAL] Amazon Resource Name (ARN): a comma-separated list of IAM roles to be granted admin access to the EKS cluster.</p></td>
-</tr>
-</tbody>
-</table>
-<table class="tableblock frame-all grid-all stretch">
-<caption class="title">Table 2. Network configuration</caption>
-<colgroup>
-<col style="width: 16%;">
-<col style="width: 11%;">
-<col style="width: 73%;">
-</colgroup>
-<thead>
-<tr>
-<th class="tableblock halign-left valign-top">Parameter label (name)</th>
-<th class="tableblock halign-left valign-top">Default value</th>
-<th class="tableblock halign-left valign-top">Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">VPC ID
-(<code>VpcId</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code><strong><em>Requires input</em></strong></code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">ID of your existing VPC for deployment (e.g., vpc-0343606e).</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">VPC CIDR
-(<code>VpcCidr</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>10.0.0.0/16</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">CIDR block for the VPC.</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Private subnet 1 ID
-(<code>PrivateSubnet1Id</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code><strong><em>Requires input</em></strong></code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">ID of the private subnet in Availability Zone 1 of your existing VPC (e.g., subnet-a0246dcd).</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Private subnet 2 ID
-(<code>PrivateSubnet2Id</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code><strong><em>Requires input</em></strong></code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">ID of the private subnet in Availability Zone 2 of your existing VPC (e.g., subnet-b58c3d67).</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Private subnet 3 ID
-(<code>PrivateSubnet3Id</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code><strong><em>Requires input</em></strong></code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">ID of the private subnet in Availability Zone 3 of your existing VPC (e.g., subnet-b58c3d67).</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Public subnet 1 ID
-(<code>PublicSubnet1Id</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code><strong><em>Requires input</em></strong></code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">ID of the public subnet in Availability Zone 1 of your existing VPC (e.g., subnet-z0376dab).</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Public subnet 2 ID
-(<code>PublicSubnet2Id</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code><strong><em>Requires input</em></strong></code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">ID of the public subnet in Availability Zone 2 of your existing VPC (e.g., subnet-a29c3d84).</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Public subnet 3 ID
-(<code>PublicSubnet3Id</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code><strong><em>Requires input</em></strong></code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">ID of the public subnet in Availability Zone 3 of your existing VPC (e.g., subnet-a29c3d84).</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Private subnet 1 CIDR
-(<code>PrivateSubnet1Cidr</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>10.0.0.0/19</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">CIDR of the private subnet in Availability Zone 1 of your existing VPC (e.g., 10.0.0.0/19).</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Private subnet 2 CIDR
-(<code>PrivateSubnet2Cidr</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>10.0.32.0/19</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">CIDR of the private subnet in Availability Zone 2 of your existing VPC (e.g., 10.0.32.0/19).</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Private subnet 3 CIDR
-(<code>PrivateSubnet3Cidr</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>10.0.64.0/19</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">CIDR block for private subnet 3 located in Availability Zone 3 of your existing VPC (e.g., 10.0.64.0/19).</p></td>
-</tr>
-</tbody>
-</table>
-<table class="tableblock frame-all grid-all stretch">
-<caption class="title">Table 3. Bastion configuration</caption>
-<colgroup>
-<col style="width: 16%;">
-<col style="width: 11%;">
-<col style="width: 73%;">
-</colgroup>
-<thead>
-<tr>
-<th class="tableblock halign-left valign-top">Parameter label (name)</th>
-<th class="tableblock halign-left valign-top">Default value</th>
-<th class="tableblock halign-left valign-top">Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Bastion instance
-(<code>ProvisionBastionHost</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>Enabled</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Choose Disabled to skip creating a bastion instance. Due to the Artifactory nodes being created in private subnets, the default setting of Enabled this is highly recommended.</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Bastion instance type
-(<code>BastionInstanceType</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>t2.micro</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Size of the bastion instances.</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Bastion operating system
-(<code>BastionOs</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>Amazon-Linux2-HVM</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Linux distribution for the Amazon Machine Image (AMI) to be used for the bastion instances.</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Bastion root volume size
-(<code>BastionRootVolumeSize</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>10</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Size of the root volume on the bastion instances.</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Bastion enable TCP forwarding
-(<code>BastionEnableTcpForwarding</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>true</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Choose whether to enable TCPForwarding via the bootstrapping of the bastion instance or not.</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Bastion enable X11 forwarding
-(<code>BastionEnableX11Forwarding</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>false</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Choose true to enable X11 via the bootstrapping of the bastion host. Setting this value to true will enable X Windows over SSH. X11 forwarding can be very useful but it is also a security risk, so we recommend that you keep the default (false) setting unless required.</p></td>
-</tr>
-</tbody>
-</table>
-<table class="tableblock frame-all grid-all stretch">
-<caption class="title">Table 4. JFrog Artifactory configuration</caption>
-<colgroup>
-<col style="width: 16%;">
-<col style="width: 11%;">
-<col style="width: 73%;">
-</colgroup>
-<thead>
-<tr>
-<th class="tableblock halign-left valign-top">Parameter label (name)</th>
-<th class="tableblock halign-left valign-top">Default value</th>
-<th class="tableblock halign-left valign-top">Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Artifactory product to install
-(<code>ArtifactoryProduct</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>JFrog-Artifactory-Pro</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">JFrog Artifactory product you wish to install.</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Artifactory version
-(<code>ArtifactoryVersion</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>7.2.1</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Version of Artifactory that you want to deploy into the Quick Start. Please see the release notes to select the version you want to deploy. <a href="https://www.jfrog.com/confluence/display/RTF/Release+Notes" class="bare">https://www.jfrog.com/confluence/display/RTF/Release+Notes</a></p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Release stage of the product to deploy
-(<code>ReleaseStage</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>GA</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Whether to use the upstream repository that is pre-GA.</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Default Artifactory deployment size
-(<code>DefaultDeploymentSize</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>true</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Choose false to overwrite the standard calculations of memory options to pass Java options for the deployment. If overwriting them, not to over provision the nodes.</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Artifactory deployment size
-(<code>ArtifactoryDeploymentSize</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>xSmall</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Configuration settings implemented by the Helm chart. There are currently eight supported sizes. This value is only taken into account if you choose 'false' for DefaultDeploymentSize. 'xxxLarge:' Only applicable to node InstanceType m5.24xlarge or larger - Memory request of 240 GiB, memory limit of 384GiB; CPU request of 64, CPU limit of 96; Java heap size minimum of 192 GB, maximum of 288 GB. 'xxLarge:' Only applicable to node InstanceType m5.16xlarge or larger - Memory request of 160 GiB, memory limit of 256GiB; CPU request of 48, CPU limit of 64; Java heap size minimum of 128 GB, maximum of 192 GB. 'xLarge:' Only applicable to node InstanceType m5.12xlarge or larger - Memory request of 120 GiB, memory limit of 192GiB; CPU request of 32, CPU limit of 48; Java heap size minimum of 96 GB, maximum of 144 GB. 'Large:' Only applicable to node InstanceType m5.8xlarge or larger - Memory request of 80 GiB, memory limit of 128GiB; CPU request of 16, CPU limit of 32; Java heap size minimum of 64 GB, maximum of 96 GB. 'Medium:' Only applicable to node InstanceType m5.4xlarge or larger - Memory request of 42 GiB, memory limit of 64 GiB; CPU request of 8, CPU limit of 16; Java heap size minimum of 32 GB, maximum of 48 GB. 'Small:' Only applicable to node InstanceType m5.2xlarge or larger - Memory request of 20 GiB, memory limit of 32 GiB; CPU request of 4, CPU limit of 8; Java heap size minimum of 16 GB, maximum of 24 GB. 'xSmall:' Only applicable to node InstanceType m5.xlarge or larger - Memory request of 6 GiB, memory limit of 16 GiB; CPU request of 2, CPU limit of 4; Java heap size minimum of 8 GB, maximum of 12 GB. 'xxSmall:' Applicable to all node Instance Types - Memory request of 4 GiB, memory limit of 6 GiB; CPU request of 2, CPU limit of 2; Java heap size of 4 GB.</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Number of secondary pods
-(<code>NumberOfSecondary</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>2</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Number of secondary Artifactory pods to complete your HA deployment. Minimum number of 2 to fit the Artifactory best practices. Do not select more than you license for. If you are doing a JFrog Container Registry Deployment, this will create the number of underlying nodes and NGINX containers.</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Artifactory licenses and certificate secret name
-(<code>SmLicenseCertName</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code><strong><em>Requires input</em></strong></code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Secret name created in AWS Secrets Manager, which contains the SSL certificate, certificate key, and Artifactory licenses.</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Master server key
-(<code>MasterKey</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code><strong><em>Requires input</em></strong></code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Master key for the Artifactory cluster. Generate a master key by using the command '$openssl rand -hex 16'.</p></td>
-</tr>
-</tbody>
-</table>
-<table class="tableblock frame-all grid-all stretch">
-<caption class="title">Table 5. Amazon RDS configuration</caption>
-<colgroup>
-<col style="width: 16%;">
-<col style="width: 11%;">
-<col style="width: 73%;">
-</colgroup>
-<thead>
-<tr>
-<th class="tableblock halign-left valign-top">Parameter label (name)</th>
-<th class="tableblock halign-left valign-top">Default value</th>
-<th class="tableblock halign-left valign-top">Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Database name
-(<code>DatabaseName</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>artdb</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Name for your database instance. The name must be unique across all database instances owned by your AWS account in the current AWS Region. The database instance identifier is case-insensitive, but is stored as all lowercase (as in "mydbinstance").</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Database engine
-(<code>DatabaseEngine</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>Postgres</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Database engine that you want to run.</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Database user
-(<code>DatabaseUser</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>artifactory</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Login ID for the master user of your database instance.</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Database password
-(<code>DatabasePassword</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code><strong><em>Requires input</em></strong></code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">The password for the Artifactory database user.</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Database instance type
-(<code>DatabaseInstance</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>db.m4.large</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Size of the database to be deployed as part of the Quick Start.</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Database allocated storage
-(<code>DatabaseAllocatedStorage</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>10</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Size in gigabytes of the available storage for the database instance.</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">High-available database
-(<code>MultiAzDatabase</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>true</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Choose false to create an Amazon RDS instance in a single Availability Zone.</p></td>
-</tr>
-</tbody>
-</table>
-<table class="tableblock frame-all grid-all stretch">
-<caption class="title">Table 6. EC2/EKS configuration</caption>
-<colgroup>
-<col style="width: 16%;">
-<col style="width: 11%;">
-<col style="width: 73%;">
-</colgroup>
-<thead>
-<tr>
-<th class="tableblock halign-left valign-top">Parameter label (name)</th>
-<th class="tableblock halign-left valign-top">Default value</th>
-<th class="tableblock halign-left valign-top">Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Kubernetes version
-(<code>KubernetesVersion</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>1.16</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Kubernetes control plane version.</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Node instance type
-(<code>NodeInstanceType</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>m5.xlarge</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Amazon EC2 instance type for the nodes hosting the Kubernetes pods.</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Number of secondary nodes
-(<code>NumofSecondaryNodes</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>2</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Initial number of secondary node instances to create. If you do not have large enough instances to boot the number of secondary pods, the deployment will fail.</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Node EBS volume size
-(<code>NodeVolumeSize</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>200</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Size of EBS volumes for master node instances, in gigabytes.</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Lambda zips bucket name
-(<code>LambdaZipsBucketName</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code><strong><em>Requires input</em></strong></code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">[OPTIONAL] The name of the S3 bucket where the Lambda .zip files should be placed. If you leave this parameter blank, an S3 bucket will be created.</p></td>
-</tr>
-</tbody>
-</table>
-<table class="tableblock frame-all grid-all stretch">
-<caption class="title">Table 7. AWS Quick Start configuration</caption>
-<colgroup>
-<col style="width: 16%;">
-<col style="width: 11%;">
-<col style="width: 73%;">
-</colgroup>
-<thead>
-<tr>
-<th class="tableblock halign-left valign-top">Parameter label (name)</th>
-<th class="tableblock halign-left valign-top">Default value</th>
-<th class="tableblock halign-left valign-top">Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Quick Start S3 bucket name
-(<code>QsS3BucketName</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>aws-quickstart</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">S3 bucket name for the Quick Start assets. This string can include numbers, lowercase letters, uppercase letters, and hyphens (-). It cannot start or end with a hyphen (-).</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Quick Start S3 key prefix
-(<code>QsS3KeyPrefix</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>quickstart-jfrog-artifactory/</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">S3 key prefix for the Quick Start assets. Quick Start key prefix can include numbers, lowercase letters, uppercase letters, hyphens (-), and forward slash (/).</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Quick Start S3 bucket Region
-(<code>QsS3BucketRegion</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>us-east-1</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">AWS Region where the Quick Start S3 bucket (QSS3BucketName) is hosted. When using your own bucket, you must specify this value.</p></td>
-</tr>
-</tbody>
-</table>
-</div>
-<div class="sect2">
-<h3 id="_launch_into_an_existing_vpc_2">Launch into an existing VPC</h3>
-<table class="tableblock frame-all grid-all stretch">
-<caption class="title">Table 8. Security configuration</caption>
-<colgroup>
-<col style="width: 16%;">
-<col style="width: 11%;">
-<col style="width: 73%;">
-</colgroup>
-<thead>
-<tr>
-<th class="tableblock halign-left valign-top">Parameter label (name)</th>
-<th class="tableblock halign-left valign-top">Default value</th>
-<th class="tableblock halign-left valign-top">Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">SSH key name
-(<code>KeyPairName</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code><strong><em>Requires input</em></strong></code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Name of an existing key pair, which allows you to securely connect to your instance after it launches.</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Permitted IP range
-(<code>AccessCidr</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code><strong><em>Requires input</em></strong></code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">CIDR IP range that is permitted to access Artifactory. We recommend that you set this value to a trusted IP range. For example, you might want to grant only your corporate network access to the software.</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Remote access CIDR
-(<code>RemoteAccessCidr</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code><strong><em>Requires input</em></strong></code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Remote CIDR range that allows you to connect to the bastion instance by using SSH. We recommend that you set this value to a trusted IP range. For example, you might want to grant specific ranges inside your corporate network SSH access.</p></td>
-</tr>
-</tbody>
-</table>
-<table class="tableblock frame-all grid-all stretch">
-<caption class="title">Table 9. Network configuration</caption>
-<colgroup>
-<col style="width: 16%;">
-<col style="width: 11%;">
-<col style="width: 73%;">
-</colgroup>
-<thead>
-<tr>
-<th class="tableblock halign-left valign-top">Parameter label (name)</th>
-<th class="tableblock halign-left valign-top">Default value</th>
-<th class="tableblock halign-left valign-top">Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">VPC ID
-(<code>VpcId</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code><strong><em>Requires input</em></strong></code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">ID of your existing VPC (e.g., vpc-0343606e).</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">VPC CIDR
-(<code>VpcCidr</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>10.0.0.0/16</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">CIDR block for the VPC.</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Public subnet 1 ID
-(<code>PublicSubnet1Id</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code><strong><em>Requires input</em></strong></code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">ID of the public subnet in Availability Zone 1 of your existing VPC (e.g., subnet-z0376dab).</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Public subnet 2 ID
-(<code>PublicSubnet2Id</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code><strong><em>Requires input</em></strong></code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">ID of the public subnet in Availability Zone 2 of your existing VPC (e.g., subnet-a29c3d84).</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Private subnet 1 ID
-(<code>PrivateSubnet1Id</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code><strong><em>Requires input</em></strong></code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">ID of the private subnet in Availability Zone 1 of your existing VPC (e.g., subnet-a0246dcd).</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Private subnet 2 ID
-(<code>PrivateSubnet2Id</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code><strong><em>Requires input</em></strong></code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">ID of the private subnet in Availability Zone 2 of your existing VPC (e.g., subnet-b58c3d67).</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Private subnet 1 CIDR
-(<code>PrivateSubnet1Cidr</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>10.0.0.0/19</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">CIDR of the private subnet in Availability Zone 1 of your existing VPC (e.g., 10.0.0.0/19).</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Private subnet 2 CIDR
-(<code>PrivateSubnet2Cidr</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>10.0.32.0/19</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">CIDR of the private subnet in Availability Zone 2 of your existing VPC (e.g., 10.0.32.0/19).</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Elastic Load Balancer scheme
-(<code>ElbScheme</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>internet-facing</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Choose whether this is internet facing or internal.</p></td>
-</tr>
-</tbody>
-</table>
-<table class="tableblock frame-all grid-all stretch">
-<caption class="title">Table 10. Bastion configuration</caption>
-<colgroup>
-<col style="width: 16%;">
-<col style="width: 11%;">
-<col style="width: 73%;">
-</colgroup>
-<thead>
-<tr>
-<th class="tableblock halign-left valign-top">Parameter label (name)</th>
-<th class="tableblock halign-left valign-top">Default value</th>
-<th class="tableblock halign-left valign-top">Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Bastion instance
-(<code>ProvisionBastionHost</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>Enabled</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">To skip creating a bastion instance, choose Disabled. Because Artifactory nodes are created in private subnets, it&#8217;s highly recommended to set this value to Enabled.</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Bastion instance type
-(<code>BastionInstanceType</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>t2.micro</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Size of the bastion instances.</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Bastion operating system
-(<code>BastionOs</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>Amazon-Linux2-HVM</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Linux distribution for the Amazon Machine Image (AMI) to be used for the bastion instances.</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Bastion root volume size
-(<code>BastionRootVolumeSize</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>10</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Size of the root volume on the bastion instances.</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Bastion enable TCP forwarding
-(<code>BastionEnableTcpForwarding</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>true</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Choose whether to enable TCP forwarding via the bootstrapping of the bastion instance.</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Bastion instances
-(<code>NumBastionHosts</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>1</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Number of bastion instances to create.</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Bastion enable X11 forwarding
-(<code>BastionEnableX11Forwarding</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>false</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Choose true to enable X11 via the bootstrapping of the bastion host. Setting this value to true will enable X Windows over SSH. X11 forwarding can be useful, but it is also a security risk, so it&#8217;s recommended that you keep the default (false) setting unless required.</p></td>
-</tr>
-</tbody>
-</table>
-<table class="tableblock frame-all grid-all stretch">
-<caption class="title">Table 11. ECS configuration</caption>
-<colgroup>
-<col style="width: 16%;">
-<col style="width: 11%;">
-<col style="width: 73%;">
-</colgroup>
-<thead>
-<tr>
-<th class="tableblock halign-left valign-top">Parameter label (name)</th>
-<th class="tableblock halign-left valign-top">Default value</th>
-<th class="tableblock halign-left valign-top">Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">ECS cluster name
-(<code>ClusterName</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>JFrog</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Name for your ECS cluster.</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Create new ECS cluster
-(<code>CreateNewEcsCluster</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>Enabled</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Choose whether to create a new ECS cluster with the name specified in the 'ClusterName' parameter. If you choose Disabled, an ECS cluster with the name specified in the 'CluserName' parameter must already exist.</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Create new ECS role
-(<code>CreateNewEcsRole</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>Enabled</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Choose whether to create a new ECS role or not. If you choose Disabled, the role must exist, and have the proper permissions for the ECS tasks</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">ECS role name
-(<code>RoleName</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>MyOwnecsInstanceRole</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Role name for customized role if you choose Disabled for CreateNewEcsRole.</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">ECS role ARN
-(<code>RoleArn</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>arn:aws:iam::1234567890112:role/MyOwnecsInstanceRole</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Role ARN for customized role if you choose Disabled for CreateNewEcsRole.</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">EC2 instance type
-(<code>InstanceType</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>m4.xlarge</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">EC2 instance type for the Artifactory Docker hosts.</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">EBS root volume size
-(<code>VolumeSize</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>200</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Size in gigabytes of available storage. The Quick Start creates an Amazon Elastic Block Store (Amazon EBS) volumes of this size.</p></td>
-</tr>
-</tbody>
-</table>
-<table class="tableblock frame-all grid-all stretch">
-<caption class="title">Table 12. JFrog Artifactory configuration</caption>
-<colgroup>
-<col style="width: 16%;">
-<col style="width: 11%;">
-<col style="width: 73%;">
-</colgroup>
-<thead>
-<tr>
-<th class="tableblock halign-left valign-top">Parameter label (name)</th>
-<th class="tableblock halign-left valign-top">Default value</th>
-<th class="tableblock halign-left valign-top">Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Artifactory product to install
-(<code>ArtifactoryProduct</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>JFrog-Artifactory-Pro</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">JFrog Artifactory product you wish to install.</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Artifactory version
-(<code>ArtifactoryVersion</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>7.2.1</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Version of Artifactory that you want to deploy into the Quick Start. Please see the release notes to select the version you want to deploy. <a href="https://www.jfrog.com/confluence/display/RTF/Release+Notes" class="bare">https://www.jfrog.com/confluence/display/RTF/Release+Notes</a></p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Release stage of the product to deploy
-(<code>ReleaseStage</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>GA</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Whether to use the upstream repository that is pre-GA.</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Secondary instances
-(<code>NumberOfSecondary</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>2</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Number of secondary Artifactory servers to complete your HA deployment. To fit the Artifactory best practices, the minimum number is two; the maximum is seven. Do not select more than instances than you have licenses for.</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Number of EC2 nodes
-(<code>NumberOfEC2Nodes</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>3</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Number of EC2 nodes to create for the ECS cluster. There must be enough nodes to run the number of secondaries plus the primary task.</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Artifactory licenses and certificate secret name
-(<code>SmLicenseCertName</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code><strong><em>Requires input</em></strong></code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Secret name created in AWS Secrets Manager that contains the SSL certificate, certificate key, and Artifactory licenses.</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Artifactory server name
-(<code>ArtifactoryServerName</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code><strong><em>Requires input</em></strong></code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Name of your Artifactory server. Ensure that this matches your certificate.</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Master server key
-(<code>MasterKey</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code><strong><em>Requires input</em></strong></code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Master key for the Artifactory cluster. Generate a master key by using the command '$openssl rand -hex 16'.</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Extra Java options
-(<code>ExtraJavaOptions</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>-Xss256k -XX:+UseG1GC</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Setting Java memory parameters for Artifactory. For more information, see the Artifactory system requirements. <a href="https://www.jfrog.com/confluence/display/RTF/System+Requirements#SystemRequirements-RecommendedHardware" class="bare">https://www.jfrog.com/confluence/display/RTF/System+Requirements#SystemRequirements-RecommendedHardware</a>.</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Default Java memory settings
-(<code>DefaultJavaMemSettings</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>true</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Choose false to overwrite the standard memory-calculation options to pass to the Artifactory JVM. If you plan to overwrite them, ensure they are added to the ExtraJavaOptions to prevent the stack provision from failing.</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Ansible vault password
-(<code>AnsibleVaultPass</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code><strong><em>Requires input</em></strong></code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Ansible Vault password to protect the Artifactory YAML configuration file generated during the Artifactory deployment. This YAML file is stored on the EC2 nodes and secured with this password.</p></td>
-</tr>
-</tbody>
-</table>
-<table class="tableblock frame-all grid-all stretch">
-<caption class="title">Table 13. Amazon RDS configuration</caption>
-<colgroup>
-<col style="width: 16%;">
-<col style="width: 11%;">
-<col style="width: 73%;">
-</colgroup>
-<thead>
-<tr>
-<th class="tableblock halign-left valign-top">Parameter label (name)</th>
-<th class="tableblock halign-left valign-top">Default value</th>
-<th class="tableblock halign-left valign-top">Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Database name
-(<code>DatabaseName</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>artdb</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Name for your database instance. The name must be unique across all database instances owned by your AWS account in the current AWS Region. The database instance identifier is case-insensitive, but it&#8217;s stored in lowercase (as in "mydbinstance").</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Database engine
-(<code>DatabaseEngine</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>Postgres</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">The database engine that you want to run.</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Database user
-(<code>DatabaseUser</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>artifactory</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Login ID for the master user of your database instance.</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Database password
-(<code>DatabasePassword</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code><strong><em>Requires input</em></strong></code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Password for the Artifactory database user.</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Database instance type
-(<code>DatabaseInstance</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>db.m4.large</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Size of the database to be deployed as part of the Quick Start.</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Database allocated storage
-(<code>DatabaseAllocatedStorage</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>10</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Size in gigabytes of the available storage for the database instance.</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">High-available database
-(<code>MultiAzDatabase</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>true</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Choose false to create an Amazon RDS instance in a single Availability Zone.</p></td>
-</tr>
-</tbody>
-</table>
-<table class="tableblock frame-all grid-all stretch">
-<caption class="title">Table 14. AWS Quick Start configuration</caption>
-<colgroup>
-<col style="width: 16%;">
-<col style="width: 11%;">
-<col style="width: 73%;">
-</colgroup>
-<thead>
-<tr>
-<th class="tableblock halign-left valign-top">Parameter label (name)</th>
-<th class="tableblock halign-left valign-top">Default value</th>
-<th class="tableblock halign-left valign-top">Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Quick Start S3 bucket name
-(<code>QsS3BucketName</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>aws-quickstart</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">S3 bucket name for the Quick Start assets. This string can include numbers, lowercase letters, uppercase letters, and hyphens (-). It cannot start or end with a hyphen (-).</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Quick Start S3 key prefix
-(<code>QsS3KeyPrefix</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>quickstart-jfrog-artifactory/</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">S3 key prefix for the Quick Start assets. Quick Start key prefix can include numbers, lowercase letters, uppercase letters, hyphens (-), and forward slash (/).</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Quick Start S3 bucket Region
-(<code>QsS3BucketRegion</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>us-east-1</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">AWS Region where the Quick Start S3 bucket (QSS3BucketName) is hosted. If you use your own bucket, you must specify your own value.</p></td>
-</tr>
-</tbody>
-</table>
-</div>
-<div class="sect2">
-<h3 id="_launch_into_an_existing_vpc_3">Launch into an existing VPC</h3>
-<table class="tableblock frame-all grid-all stretch">
-<caption class="title">Table 15. Security configuration</caption>
-<colgroup>
-<col style="width: 16%;">
-<col style="width: 11%;">
-<col style="width: 73%;">
-</colgroup>
-<thead>
-<tr>
-<th class="tableblock halign-left valign-top">Parameter label (name)</th>
-<th class="tableblock halign-left valign-top">Default value</th>
-<th class="tableblock halign-left valign-top">Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">SSH key name
-(<code>KeyPairName</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code><strong><em>Requires input</em></strong></code></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Name of an existing key pair, which allows you to connect securely to your instance after it launches. This is the key pair you created in your preferred Region.</p></td>
 </tr>
 <tr>
@@ -2348,7 +1561,7 @@ Region</code>, and <code>Quick Start S3 key prefix</code>. Changing these parame
 </tbody>
 </table>
 <table class="tableblock frame-all grid-all stretch">
-<caption class="title">Table 16. Network configuration</caption>
+<caption class="title">Table 2. Network configuration</caption>
 <colgroup>
 <col style="width: 16%;">
 <col style="width: 11%;">
@@ -2419,7 +1632,7 @@ Region</code>, and <code>Quick Start S3 key prefix</code>. Changing these parame
 </tbody>
 </table>
 <table class="tableblock frame-all grid-all stretch">
-<caption class="title">Table 17. Bastion configuration</caption>
+<caption class="title">Table 3. Bastion configuration</caption>
 <colgroup>
 <col style="width: 16%;">
 <col style="width: 11%;">
@@ -2478,7 +1691,7 @@ Region</code>, and <code>Quick Start S3 key prefix</code>. Changing these parame
 </tbody>
 </table>
 <table class="tableblock frame-all grid-all stretch">
-<caption class="title">Table 18. Amazon EC2 configuration</caption>
+<caption class="title">Table 4. Amazon EC2 configuration</caption>
 <colgroup>
 <col style="width: 16%;">
 <col style="width: 11%;">
@@ -2507,7 +1720,7 @@ Region</code>, and <code>Quick Start S3 key prefix</code>. Changing these parame
 </tbody>
 </table>
 <table class="tableblock frame-all grid-all stretch">
-<caption class="title">Table 19. JFrog Artifactory configuration</caption>
+<caption class="title">Table 5. JFrog Artifactory configuration</caption>
 <colgroup>
 <col style="width: 16%;">
 <col style="width: 11%;">
@@ -2584,7 +1797,7 @@ Region</code>, and <code>Quick Start S3 key prefix</code>. Changing these parame
 </tbody>
 </table>
 <table class="tableblock frame-all grid-all stretch">
-<caption class="title">Table 20. Amazon RDS configuration</caption>
+<caption class="title">Table 6. Amazon RDS configuration</caption>
 <colgroup>
 <col style="width: 16%;">
 <col style="width: 11%;">
@@ -2643,7 +1856,7 @@ Region</code>, and <code>Quick Start S3 key prefix</code>. Changing these parame
 </tbody>
 </table>
 <table class="tableblock frame-all grid-all stretch">
-<caption class="title">Table 21. AWS Quick Start configuration</caption>
+<caption class="title">Table 7. AWS Quick Start configuration</caption>
 <colgroup>
 <col style="width: 16%;">
 <col style="width: 11%;">
@@ -2681,737 +1894,7 @@ Region</code>, and <code>Quick Start S3 key prefix</code>. Changing these parame
 <div class="sect2">
 <h3 id="_launch_into_a_new_vpc">Launch into a new VPC</h3>
 <table class="tableblock frame-all grid-all stretch">
-<caption class="title">Table 22. Security configuration</caption>
-<colgroup>
-<col style="width: 16%;">
-<col style="width: 11%;">
-<col style="width: 73%;">
-</colgroup>
-<thead>
-<tr>
-<th class="tableblock halign-left valign-top">Parameter label (name)</th>
-<th class="tableblock halign-left valign-top">Default value</th>
-<th class="tableblock halign-left valign-top">Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">SSH key name
-(<code>KeyPairName</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code><strong><em>Requires input</em></strong></code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Name of an existing key pair, which allows you to securely connect to your instance after it launches.</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Permitted IP range
-(<code>AccessCidr</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code><strong><em>Requires input</em></strong></code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">CIDR IP range that is permitted to access Artifactory. It is recommend that you set this value to a trusted IP range. For example, you may want to limit software access to your corporate network.</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Remote access CIDR
-(<code>RemoteAccessCidr</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code><strong><em>Requires input</em></strong></code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Remote CIDR range that allows you to connect to the bastion instance by using SSH. It is recommended that you set this value to a trusted IP range. For example, you may want to grant specific ranges from within your corporate network that use the SSH protocol.</p></td>
-</tr>
-</tbody>
-</table>
-<table class="tableblock frame-all grid-all stretch">
-<caption class="title">Table 23. Network configuration</caption>
-<colgroup>
-<col style="width: 16%;">
-<col style="width: 11%;">
-<col style="width: 73%;">
-</colgroup>
-<thead>
-<tr>
-<th class="tableblock halign-left valign-top">Parameter label (name)</th>
-<th class="tableblock halign-left valign-top">Default value</th>
-<th class="tableblock halign-left valign-top">Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Availability Zones
-(<code>AvailabilityZones</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code><strong><em>Requires input</em></strong></code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">List of Availability Zones to use for the subnets in the VPC. Two Availability Zones are used for this deployment, and the logical order of your selections is preserved.</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">VPC CIDR
-(<code>VpcCidr</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>10.0.0.0/16</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">CIDR block for the VPC.</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Private subnet 1 CIDR
-(<code>PrivateSubnet1Cidr</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>10.0.0.0/19</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">CIDR block for private subnet 1 located in Availability Zone 1.</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Private subnet 2 CIDR
-(<code>PrivateSubnet2Cidr</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>10.0.32.0/19</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">CIDR block for private subnet 2 located in Availability Zone 2.</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Public subnet 1 CIDR
-(<code>PublicSubnet1Cidr</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>10.0.128.0/20</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">CIDR block for public (DMZ) subnet 1 located in Availability Zone 1.</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Public subnet 2 CIDR
-(<code>PublicSubnet2Cidr</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>10.0.144.0/20</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">CIDR block for public (DMZ) subnet 2 located in Availability Zone 2.</p></td>
-</tr>
-</tbody>
-</table>
-<table class="tableblock frame-all grid-all stretch">
-<caption class="title">Table 24. Bastion configuration</caption>
-<colgroup>
-<col style="width: 16%;">
-<col style="width: 11%;">
-<col style="width: 73%;">
-</colgroup>
-<thead>
-<tr>
-<th class="tableblock halign-left valign-top">Parameter label (name)</th>
-<th class="tableblock halign-left valign-top">Default value</th>
-<th class="tableblock halign-left valign-top">Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Bastion instance
-(<code>ProvisionBastionHost</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>Enabled</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">To skip creating a bastion instance, choose Disabled. Because Artifactory nodes are created in private subnets, it&#8217;s highly recommended to set this value to Enabled.</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Bastion instance type
-(<code>BastionInstanceType</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>t2.micro</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Size of the bastion instances.</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Bastion operating system
-(<code>BastionOs</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>Amazon-Linux2-HVM</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Linux distribution for the Amazon Machine Image (AMI) to be used for the bastion instances.</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Bastion root volume size
-(<code>BastionRootVolumeSize</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>10</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Size of the root volume in the bastion instances.</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Bastion enable TCP forwarding
-(<code>BastionEnableTcpForwarding</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>true</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Choose whether to enable TCP forwarding via the bootstrapping of the bastion instance.</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Bastion instances
-(<code>NumBastionHosts</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>1</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Number of bastion instances to create.</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Bastion enable X11 forwarding
-(<code>BastionEnableX11Forwarding</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>false</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Choose true to enable X11 via the bootstrapping of the bastion host. Setting this value to true enables X Windows over SSH. X11 forwarding can be very useful, but it is also a security risk, so it&#8217;s recommended that you keep the default (false) setting.</p></td>
-</tr>
-</tbody>
-</table>
-<table class="tableblock frame-all grid-all stretch">
-<caption class="title">Table 25. ECS configuration</caption>
-<colgroup>
-<col style="width: 16%;">
-<col style="width: 11%;">
-<col style="width: 73%;">
-</colgroup>
-<thead>
-<tr>
-<th class="tableblock halign-left valign-top">Parameter label (name)</th>
-<th class="tableblock halign-left valign-top">Default value</th>
-<th class="tableblock halign-left valign-top">Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">ECS cluster name
-(<code>ClusterName</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>JFrog</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">The desired name for your ECS cluster.</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">EC2 instance type
-(<code>InstanceType</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>m4.xlarge</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">EC2 type for the Artifactory Docker hosts.</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">EBS root volume size
-(<code>VolumeSize</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>200</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Size in gigabytes of available storage. The Quick Start creates an Amazon Elastic Block Store (Amazon EBS) volumes of this size.</p></td>
-</tr>
-</tbody>
-</table>
-<table class="tableblock frame-all grid-all stretch">
-<caption class="title">Table 26. JFrog Artifactory configuration</caption>
-<colgroup>
-<col style="width: 16%;">
-<col style="width: 11%;">
-<col style="width: 73%;">
-</colgroup>
-<thead>
-<tr>
-<th class="tableblock halign-left valign-top">Parameter label (name)</th>
-<th class="tableblock halign-left valign-top">Default value</th>
-<th class="tableblock halign-left valign-top">Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Artifactory product to install
-(<code>ArtifactoryProduct</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>JFrog-Artifactory-Pro</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">JFrog Artifactory product you want to install into an AMI.</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Artifactory version
-(<code>ArtifactoryVersion</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>7.2.1</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Version of Artifactory that you want to deploy into the Quick Start. To select the correct version, see the release notes at <a href="https://www.jfrog.com/confluence/display/RTF/Release+Notes" class="bare">https://www.jfrog.com/confluence/display/RTF/Release+Notes</a></p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Release stage of the product to deploy
-(<code>ReleaseStage</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>GA</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Whether to use the upstream repository that is pre-GA.</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Secondary instances
-(<code>NumberOfSecondary</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>2</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Number of secondary Artifactory servers to complete your HA deployment. To align with Artifactory best practices, the minimum number is two, adn the maximum is seven. Do not select more than instances than you have licenses for.</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Number of EC2 nodes
-(<code>NumberOfEC2Nodes</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>3</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">The number of EC2 nodes to create for the ECS cluster. There must be enough nodes to run the number of secondaries plus the primary task.</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Artifactory licenses and certificate secret name
-(<code>SmLicenseCertName</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code><strong><em>Requires input</em></strong></code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Secret name created in AWS Secrets Manager that contains the SSL certificate, certificate key, and Artifactory licenses.</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Artifactory server name
-(<code>ArtifactoryServerName</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code><strong><em>Requires input</em></strong></code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Name of your Artifactory server. Ensure that this matches your certificate.</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Master server key
-(<code>MasterKey</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code><strong><em>Requires input</em></strong></code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Master key for the Artifactory cluster. Generate a master key by using the command '$openssl rand -hex 16'.</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Extra Java options
-(<code>ExtraJavaOptions</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>-Xss256k -XX:+UseG1GC</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Set Java memory parameters for Artifactory. For more information, see the Artifactory system requirements at <a href="https://www.jfrog.com/confluence/display/RTF/System+Requirements#SystemRequirements-RecommendedHardware" class="bare">https://www.jfrog.com/confluence/display/RTF/System+Requirements#SystemRequirements-RecommendedHardware</a>.</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Default Java memory settings
-(<code>DefaultJavaMemSettings</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>true</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Choose false to overwrite the standard memory-calculation options to pass to the Artifactory JVM. If you plan to overwrite them, ensure they are added to the ExtraJavaOptions to prevent the stack provision from failing.</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Ansible Vault password
-(<code>AnsibleVaultPass</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code><strong><em>Requires input</em></strong></code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Ansible Vault password to protect the Artifactory YAML configuration file generated during the Artifactory deployment. This YAML file is stored on the EC2 nodes and secured with this password.</p></td>
-</tr>
-</tbody>
-</table>
-<table class="tableblock frame-all grid-all stretch">
-<caption class="title">Table 27. Amazon RDS configuration</caption>
-<colgroup>
-<col style="width: 16%;">
-<col style="width: 11%;">
-<col style="width: 73%;">
-</colgroup>
-<thead>
-<tr>
-<th class="tableblock halign-left valign-top">Parameter label (name)</th>
-<th class="tableblock halign-left valign-top">Default value</th>
-<th class="tableblock halign-left valign-top">Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Database name
-(<code>DatabaseName</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>artdb</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Name of your database instance. The name must be unique across all database instances owned by your AWS account in the current AWS Region. The database instance identifier is case-insensitive, but it&#8217;s stored in lowercase (as in "mydbinstance").</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Database engine
-(<code>DatabaseEngine</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>Postgres</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Database engine that you want to run.</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Database user
-(<code>DatabaseUser</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>artifactory</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Login ID for the master user of your database instance.</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Database password
-(<code>DatabasePassword</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code><strong><em>Requires input</em></strong></code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Password for the Artifactory database user.</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Database instance type
-(<code>DatabaseInstance</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>db.m4.large</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Size of the database to be deployed as part of the Quick Start.</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Database allocated storage
-(<code>DatabaseAllocatedStorage</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>10</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Size in gigabytes of the available storage for the database instance.</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">High-availability database
-(<code>MultiAzDatabase</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>true</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Choose false to create an Amazon RDS instance in a single Availability Zone.</p></td>
-</tr>
-</tbody>
-</table>
-<table class="tableblock frame-all grid-all stretch">
-<caption class="title">Table 28. AWS Quick Start configuration</caption>
-<colgroup>
-<col style="width: 16%;">
-<col style="width: 11%;">
-<col style="width: 73%;">
-</colgroup>
-<thead>
-<tr>
-<th class="tableblock halign-left valign-top">Parameter label (name)</th>
-<th class="tableblock halign-left valign-top">Default value</th>
-<th class="tableblock halign-left valign-top">Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Quick Start S3 bucket name
-(<code>QsS3BucketName</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>aws-quickstart</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">S3 bucket name for the Quick Start assets. This string can include numbers, lowercase letters, uppercase letters, and hyphens (-). It cannot start or end with a hyphen (-).</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Quick Start S3 key prefix
-(<code>QsS3KeyPrefix</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>quickstart-jfrog-artifactory/</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">S3 key prefix for the Quick Start assets. Quick Start key prefix can include numbers, lowercase letters, uppercase letters, hyphens (-), and forward slash (/).</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Quick Start S3 bucket Region
-(<code>QsS3BucketRegion</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>us-east-1</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">AWS Region where the Quick Start S3 bucket (QSS3BucketName) is hosted. If you use using your own bucket, you must specify your own value.</p></td>
-</tr>
-</tbody>
-</table>
-</div>
-<div class="sect2">
-<h3 id="_launch_into_a_new_vpc_2">Launch into a new VPC</h3>
-<table class="tableblock frame-all grid-all stretch">
-<caption class="title">Table 29. Security configuration</caption>
-<colgroup>
-<col style="width: 16%;">
-<col style="width: 11%;">
-<col style="width: 73%;">
-</colgroup>
-<thead>
-<tr>
-<th class="tableblock halign-left valign-top">Parameter label (name)</th>
-<th class="tableblock halign-left valign-top">Default value</th>
-<th class="tableblock halign-left valign-top">Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">SSH key name
-(<code>KeyPairName</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code><strong><em>Requires input</em></strong></code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Name of an existing key pair, which allows you to securely connect to your instance after it launches.</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Permitted IP range
-(<code>AccessCidr</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code><strong><em>Requires input</em></strong></code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">CIDR IP range that is permitted to access Artifactory. We recommend that you set this value to a trusted IP range. For example, you might want to grant only your corporate network access to the software.</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Remote access CIDR
-(<code>RemoteAccessCidr</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code><strong><em>Requires input</em></strong></code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Remote CIDR range for allowing SSH into the bastion instance. We recommend that you set this value to a trusted IP range. For example, you might want to grant specific ranges inside your corporate network SSH access.</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Additional EKS admin ARN (IAM user)
-(<code>AdditionalEKSAdminUserArn</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code><strong><em>Requires input</em></strong></code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">[OPTIONAL] Amazon Resource Name (ARN): a comma-separated list of IAM users to be granted admin access to the EKS cluster.</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Additional EKS admin ARN (IAM role)
-(<code>AdditionalEKSAdminRoleArn</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code><strong><em>Requires input</em></strong></code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">[OPTIONAL] Amazon Resource Name (ARN): a comma-separated list of IAM roles to be granted admin access to the EKS cluster.</p></td>
-</tr>
-</tbody>
-</table>
-<table class="tableblock frame-all grid-all stretch">
-<caption class="title">Table 30. Network configuration</caption>
-<colgroup>
-<col style="width: 16%;">
-<col style="width: 11%;">
-<col style="width: 73%;">
-</colgroup>
-<thead>
-<tr>
-<th class="tableblock halign-left valign-top">Parameter label (name)</th>
-<th class="tableblock halign-left valign-top">Default value</th>
-<th class="tableblock halign-left valign-top">Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Availability Zones
-(<code>AvailabilityZones</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code><strong><em>Requires input</em></strong></code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">List of Availability Zones to use for the VPC subnets. Three Availability Zones are used for this deployment, and the logical order of your selections is preserved.</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">VPC CIDR
-(<code>VpcCidr</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>10.0.0.0/16</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">CIDR block for the VPC.</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Private subnet 1 CIDR
-(<code>PrivateSubnet1Cidr</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>10.0.0.0/19</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">CIDR block for private subnet 1, located in Availability Zone 1.</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Private subnet 2 CIDR
-(<code>PrivateSubnet2Cidr</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>10.0.32.0/19</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">CIDR block for private subnet 2, located in Availability Zone 2.</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Private subnet 3 CIDR
-(<code>PrivateSubnet3Cidr</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>10.0.64.0/19</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">CIDR block for private subnet 3, located in Availability Zone 3.</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Public subnet 1 CIDR
-(<code>PublicSubnet1Cidr</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>10.0.128.0/20</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">CIDR block for the public (DMZ) subnet 1, located in Availability Zone 1.</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Public subnet 2 CIDR
-(<code>PublicSubnet2Cidr</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>10.0.144.0/20</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">CIDR block for the public (DMZ) subnet 2, located in Availability Zone 2.</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Public subnet 3 CIDR
-(<code>PublicSubnet3Cidr</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>10.0.160.0/20</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">CIDR block for the public (DMZ) subnet 3, located in Availability Zone 3.</p></td>
-</tr>
-</tbody>
-</table>
-<table class="tableblock frame-all grid-all stretch">
-<caption class="title">Table 31. Bastion configuration</caption>
-<colgroup>
-<col style="width: 16%;">
-<col style="width: 11%;">
-<col style="width: 73%;">
-</colgroup>
-<thead>
-<tr>
-<th class="tableblock halign-left valign-top">Parameter label (name)</th>
-<th class="tableblock halign-left valign-top">Default value</th>
-<th class="tableblock halign-left valign-top">Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Bastion instance
-(<code>ProvisionBastionHost</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>Enabled</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Choose Disabled to skip creating a bastion instance. Due to the Artifactory nodes being created in private subnets, the default setting of Enabled this is highly recommended.</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Bastion instance type
-(<code>BastionInstanceType</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>t2.micro</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Size of the bastion instances.</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Bastion operating system
-(<code>BastionOs</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>Amazon-Linux2-HVM</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Linux distribution for the Amazon Machine Image (AMI) to be used for the bastion instances.</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Bastion root volume size
-(<code>BastionRootVolumeSize</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>10</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Size of the root volume on the bastion instances.</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Bastion enable TCP forwarding
-(<code>BastionEnableTcpForwarding</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>true</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Choose whether to enable TCPForwarding via the bootstrapping of the bastion instance or not.</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Bastion enable X11 forwarding
-(<code>BastionEnableX11Forwarding</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>false</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Choose true to enable X11 via the bootstrapping of the bastion host. Setting this value to true enables X Windows over SSH. X11 forwarding can be very useful, but it is also a security risk, so it&#8217;s recommended that you keep the default (false) setting unless required.</p></td>
-</tr>
-</tbody>
-</table>
-<table class="tableblock frame-all grid-all stretch">
-<caption class="title">Table 32. JFrog Artifactory configuration</caption>
-<colgroup>
-<col style="width: 16%;">
-<col style="width: 11%;">
-<col style="width: 73%;">
-</colgroup>
-<thead>
-<tr>
-<th class="tableblock halign-left valign-top">Parameter label (name)</th>
-<th class="tableblock halign-left valign-top">Default value</th>
-<th class="tableblock halign-left valign-top">Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Artifactory product to install
-(<code>ArtifactoryProduct</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>JFrog-Artifactory-Pro</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">JFrog Artifactory product you wish to install.</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Artifactory version
-(<code>ArtifactoryVersion</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>7.2.1</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Version of Artifactory that you want to deploy into the Quick Start. Please see the release notes to select the version you want to deploy. <a href="https://www.jfrog.com/confluence/display/RTF/Release+Notes" class="bare">https://www.jfrog.com/confluence/display/RTF/Release+Notes</a></p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Release stage of the product to deploy
-(<code>ReleaseStage</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>GA</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Whether to use the upstream repository that is pre-GA.</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Default Artifactory deployment size
-(<code>DefaultDeploymentSize</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>true</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Choose false to overwrite the standard calculations of memory options to pass Java options for the deployment. If overwriting them, not to over provision the nodes.</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Artifactory deployment size
-(<code>ArtifactoryDeploymentSize</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>xSmall</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Configuration settings implemented by the Helm chart. There are currently eight supported sizes. This value is only taken into account if you choose 'false' for DefaultDeploymentSize. 'xxxLarge:' Only applicable to node InstanceType m5.24xlarge or larger - Memory request of 240 GiB, memory limit of 384GiB; CPU request of 64, CPU limit of 96; Java heap size minimum of 192 GB, maximum of 288 GB. 'xxLarge:' Only applicable to node InstanceType m5.16xlarge or larger - Memory request of 160 GiB, memory limit of 256GiB; CPU request of 48, CPU limit of 64; Java heap size minimum of 128 GB, maximum of 192 GB. 'xLarge:' Only applicable to node InstanceType m5.12xlarge or larger - Memory request of 120 GiB, memory limit of 192GiB; CPU request of 32, CPU limit of 48; Java heap size minimum of 96 GB, maximum of 144 GB. 'Large:' Only applicable to node InstanceType m5.8xlarge or larger - Memory request of 80 GiB, memory limit of 128GiB; CPU request of 16, CPU limit of 32; Java heap size minimum of 64 GB, maximum of 96 GB. 'Medium:' Only applicable to node InstanceType m5.4xlarge or larger - Memory request of 42 GiB, memory limit of 64 GiB; CPU request of 8, CPU limit of 16; Java heap size minimum of 32 GB, maximum of 48 GB. 'Small:' Only applicable to node InstanceType m5.2xlarge or larger - Memory request of 20 GiB, memory limit of 32 GiB; CPU request of 4, CPU limit of 8; Java heap size minimum of 16 GB, maximum of 24 GB. 'xSmall:' Only applicable to node InstanceType m5.xlarge or larger - Memory request of 6 GiB, memory limit of 16 GiB; CPU request of 2, CPU limit of 4; Java heap size minimum of 8 GB, maximum of 12 GB. 'xxSmall:' Applicable to all node Instance Types - Memory request of 4 GiB, memory limit of 6 GiB; CPU request of 2, CPU limit of 2; Java heap size of 4 GB.</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Number of secondary pods
-(<code>NumberOfSecondary</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>2</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Number of secondary Artifactory pods to complete your HA deployment. Minimum number of 2 to fit the Artifactory best practices. Do not select more than you license for.</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Artifactory licenses and certificate secret name
-(<code>SmLicenseCertName</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code><strong><em>Requires input</em></strong></code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Secret name created in AWS Secrets Manager, which contains the SSL certificate, certificate key, and Artifactory licenses.</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Master server key
-(<code>MasterKey</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code><strong><em>Requires input</em></strong></code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Master key for the Artifactory cluster. Generate a master key by using the command '$openssl rand -hex 16'.</p></td>
-</tr>
-</tbody>
-</table>
-<table class="tableblock frame-all grid-all stretch">
-<caption class="title">Table 33. Amazon RDS configuration</caption>
-<colgroup>
-<col style="width: 16%;">
-<col style="width: 11%;">
-<col style="width: 73%;">
-</colgroup>
-<thead>
-<tr>
-<th class="tableblock halign-left valign-top">Parameter label (name)</th>
-<th class="tableblock halign-left valign-top">Default value</th>
-<th class="tableblock halign-left valign-top">Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Database name
-(<code>DatabaseName</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>artdb</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Name for your database instance. The name must be unique across all database instances owned by your AWS account in the current AWS Region. The database instance identifier is case-insensitive, but is stored as all lowercase (as in "mydbinstance").</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Database engine
-(<code>DatabaseEngine</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>Postgres</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Database engine that you want to run.</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Database user
-(<code>DatabaseUser</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>artifactory</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Login ID for the master user of your database instance.</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Database password
-(<code>DatabasePassword</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code><strong><em>Requires input</em></strong></code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Password for the Artifactory database user.</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Database instance type
-(<code>DatabaseInstance</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>db.m4.large</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Size of the database to be deployed as part of the Quick Start.</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Database allocated storage
-(<code>DatabaseAllocatedStorage</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>10</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Size in gigabytes of the available storage for the database instance.</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">High-available database
-(<code>MultiAzDatabase</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>true</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Choose false to create an Amazon RDS instance in a single Availability Zone.</p></td>
-</tr>
-</tbody>
-</table>
-<table class="tableblock frame-all grid-all stretch">
-<caption class="title">Table 34. EC2/EKS configuration</caption>
-<colgroup>
-<col style="width: 16%;">
-<col style="width: 11%;">
-<col style="width: 73%;">
-</colgroup>
-<thead>
-<tr>
-<th class="tableblock halign-left valign-top">Parameter label (name)</th>
-<th class="tableblock halign-left valign-top">Default value</th>
-<th class="tableblock halign-left valign-top">Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Node instance type
-(<code>NodeInstanceType</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>m5.xlarge</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Amazon EC2 instance type for the nodes hosting the Kubernetes pods.</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Node EBS volume size
-(<code>NodeVolumeSize</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>200</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Size of EBS volumes for master node instances, in gigabytes.</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Number of secondary nodes
-(<code>NumofSecondaryNodes</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>2</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Initial number of secondary node instances to create. If you do not have large enough instances to boot the number of secondary pods, the deployment will fail.</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Kubernetes version
-(<code>KubernetesVersion</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>1.16</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Kubernetes control plane version.</p></td>
-</tr>
-</tbody>
-</table>
-<table class="tableblock frame-all grid-all stretch">
-<caption class="title">Table 35. AWS Quick Start configuration</caption>
-<colgroup>
-<col style="width: 16%;">
-<col style="width: 11%;">
-<col style="width: 73%;">
-</colgroup>
-<thead>
-<tr>
-<th class="tableblock halign-left valign-top">Parameter label (name)</th>
-<th class="tableblock halign-left valign-top">Default value</th>
-<th class="tableblock halign-left valign-top">Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Quick Start S3 bucket name
-(<code>QsS3BucketName</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>aws-quickstart</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">S3 bucket name for the Quick Start assets. This string can include numbers, lowercase letters, uppercase letters, and hyphens (-). It cannot start or end with a hyphen (-).</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Quick Start S3 key prefix
-(<code>QsS3KeyPrefix</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>quickstart-jfrog-artifactory/</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">S3 key prefix for the Quick Start assets. Quick Start key prefix can include numbers, lowercase letters, uppercase letters, hyphens (-), and forward slash (/).</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Quick Start S3 bucket Region
-(<code>QsS3BucketRegion</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>us-east-1</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">AWS Region where the Quick Start S3 bucket (QSS3BucketName) is hosted. When using your own bucket, you must specify this value.</p></td>
-</tr>
-</tbody>
-</table>
-</div>
-<div class="sect2">
-<h3 id="_launch_into_a_new_vpc_3">Launch into a new VPC</h3>
-<table class="tableblock frame-all grid-all stretch">
-<caption class="title">Table 36. Security configuration</caption>
+<caption class="title">Table 8. Security configuration</caption>
 <colgroup>
 <col style="width: 16%;">
 <col style="width: 11%;">
@@ -3446,7 +1929,7 @@ Region</code>, and <code>Quick Start S3 key prefix</code>. Changing these parame
 </tbody>
 </table>
 <table class="tableblock frame-all grid-all stretch">
-<caption class="title">Table 37. Network configuration</caption>
+<caption class="title">Table 9. Network configuration</caption>
 <colgroup>
 <col style="width: 16%;">
 <col style="width: 11%;">
@@ -3499,7 +1982,7 @@ Region</code>, and <code>Quick Start S3 key prefix</code>. Changing these parame
 </tbody>
 </table>
 <table class="tableblock frame-all grid-all stretch">
-<caption class="title">Table 38. Bastion configuration</caption>
+<caption class="title">Table 10. Bastion configuration</caption>
 <colgroup>
 <col style="width: 16%;">
 <col style="width: 11%;">
@@ -3558,7 +2041,7 @@ Region</code>, and <code>Quick Start S3 key prefix</code>. Changing these parame
 </tbody>
 </table>
 <table class="tableblock frame-all grid-all stretch">
-<caption class="title">Table 39. Amazon EC2 configuration</caption>
+<caption class="title">Table 11. Amazon EC2 configuration</caption>
 <colgroup>
 <col style="width: 16%;">
 <col style="width: 11%;">
@@ -3587,7 +2070,7 @@ Region</code>, and <code>Quick Start S3 key prefix</code>. Changing these parame
 </tbody>
 </table>
 <table class="tableblock frame-all grid-all stretch">
-<caption class="title">Table 40. JFrog Artifactory configuration</caption>
+<caption class="title">Table 12. JFrog Artifactory configuration</caption>
 <colgroup>
 <col style="width: 16%;">
 <col style="width: 11%;">
@@ -3664,7 +2147,7 @@ Region</code>, and <code>Quick Start S3 key prefix</code>. Changing these parame
 </tbody>
 </table>
 <table class="tableblock frame-all grid-all stretch">
-<caption class="title">Table 41. Amazon RDS configuration</caption>
+<caption class="title">Table 13. Amazon RDS configuration</caption>
 <colgroup>
 <col style="width: 16%;">
 <col style="width: 11%;">
@@ -3723,7 +2206,7 @@ Region</code>, and <code>Quick Start S3 key prefix</code>. Changing these parame
 </tbody>
 </table>
 <table class="tableblock frame-all grid-all stretch">
-<caption class="title">Table 42. AWS Quick Start configuration</caption>
+<caption class="title">Table 14. AWS Quick Start configuration</caption>
 <colgroup>
 <col style="width: 16%;">
 <col style="width: 11%;">
@@ -4196,7 +2679,7 @@ and to share your customizations with others.</p>
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2020-08-21 05:24:30 UTC
+Last updated 2020-08-28 00:59:29 UTC
 </div>
 </div>
 </body>
