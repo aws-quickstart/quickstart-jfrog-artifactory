@@ -92,30 +92,6 @@ Mappings:
       Min: 32
       Max: 48
       DeploymentSize: Medium
-    m5.10xlarge:
-      Min: 80
-      Max: 120
-      DeploymentSize: Large
-    m5.16xlarge:
-      Min: 128
-      Max: 192
-      DeploymentSize: xxLarge
-    m5.large:
-      Min: 4
-      Max: 4
-      DeploymentSize: xxSmall
-    m5.xlarge:
-      Min: 8
-      Max: 12
-      DeploymentSize: xSmall
-    m5.2xlarge:
-      Min: 16
-      Max: 24
-      DeploymentSize: Small
-    m5.4xlarge:
-      Min: 32
-      Max: 48
-      DeploymentSize: Medium
     m5.8xlarge:
       Min: 64
       Max: 96

@@ -321,6 +321,8 @@ Parameters:
       is two, and the maximum is seven. Do not select more instances than you
       have licenses for.
     AllowedValues:
+      - 0
+      - 1
       - 2
       - 3
       - 4
