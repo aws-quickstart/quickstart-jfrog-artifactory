@@ -348,6 +348,7 @@ Parameters:
     Type: String
   SmLicenseCertName:
     Description: Secret name created in AWS Secrets Manager that contains the SSL certificate, certificate key, and Artifactory licenses.
+    Default: ''
     Type: String
   ArtifactoryServerName:
     Description: Name of your Artifactory server. Ensure that this matches your certificate.

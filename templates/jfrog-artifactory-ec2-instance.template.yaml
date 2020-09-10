@@ -44,6 +44,8 @@ Parameters:
     NoEcho: 'true'
   CertificateDomain:
     Type: String
+  EnableSSL:
+    Type: String
   ArtifactoryIamAcessKey:
     Type: String
     NoEcho: 'true'
@@ -257,6 +259,7 @@ Resources:
                       certificate: ${Certificate}
                       certificate_key: ${CertificateKey}
                       certificate_domain: ${CertificateDomain}
+                      enable_ssl: ${EnableSSL}
                       ssl_dir: /etc/pki/tls/certs
                       db_type: ${DatabaseType}
                       db_driver: ${DatabaseDriver}
