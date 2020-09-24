@@ -537,7 +537,7 @@ Parameters:
     Type: String
 Conditions:
   EnableBastion: !Equals [!Ref 'ProvisionBastionHost', 'Enabled']
-  IsArtifactory: !Equals [!Ref ArtifactoryProduct, 'JFrog-Container-Registry']
+  IsArtifactory: !Not [!Equals [!Ref ArtifactoryProduct, 'JFrog-Container-Registry']]
   HasSecondaryNodes: !Not [!Equals [!Ref NumberOfSecondary, '0']]
   DefaultJava: !Equals [!Ref DefaultJavaMemSettings, "true"]
   UsingDefaultBucket: !Equals [!Ref QsS3BucketName, 'aws-quickstart']
@@ -942,7 +942,7 @@ Resources:
         PrivateSubnet1Id: !Ref PrivateSubnet1Id
         PrivateSubnet2Id: !Ref PrivateSubnet2Id
         KeyPairName: !Ref KeyPairName
-        MinScalingNodes: 1
+        MinScalingNodes: !Ref XrayNumberOfInstances
         MaxScalingNodes: !Ref XrayNumberOfInstances
         DeploymentTag: 'xray'
         QsS3BucketName: !Ref QsS3BucketName
