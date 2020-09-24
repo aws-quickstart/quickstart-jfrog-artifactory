@@ -36,6 +36,14 @@
     group: "{{ artifactory_group }}"
   become: yes
 
+- name: ensure data folder exists and has correct ownership
+  file:
+    path: "{{ artifactory_home }}/var/data"
+    state: directory
+    owner: "{{ artifactory_user }}"
+    group: "{{ artifactory_group }}"
+  become: yes
+
 - name: use specified system yaml
   copy:
     src: "{{ system_file }}"

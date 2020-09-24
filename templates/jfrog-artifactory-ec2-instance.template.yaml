@@ -157,6 +157,7 @@ Mappings:
       "Artifactory702": ami-085b1acc8e8b5b039
       "Artifactory721": ami-0d4d4252cdc2b6f11
       "Artifactory755": ami-07c0a3d7663fcafb9 # TODO: Get correct ami
+      "Artifactory773": ami-0fce5279e334cb09b
       "Jcr720": ami-05aa02eddf5f692b7
       "Jcr721": ami-04fed5fc210272dfe
     us-east-2:
@@ -192,6 +193,7 @@ Mappings:
       "702": "Artifactory702"
       "721": "Artifactory721"
       "755": "Artifactory755"
+      "773": "Artifactory773"
       product: "artifactory"
 Resources:
   ArtifactoryScalingGroup:
