@@ -157,7 +157,8 @@ Mappings:
       "Artifactory702": ami-085b1acc8e8b5b039
       "Artifactory721": ami-0d4d4252cdc2b6f11
       "Artifactory755": ami-07c0a3d7663fcafb9 # TODO: Get correct ami
-      "Artifactory773": ami-0fce5279e334cb09b
+      #"Artifactory773": ami-0cc0bfb92578ead46 # seller account
+      "Artifactory773": ami-0c28765a4985b2cde # partnership account
       "Jcr720": ami-05aa02eddf5f692b7
       "Jcr721": ami-04fed5fc210272dfe
     us-east-2:
@@ -239,7 +240,7 @@ Resources:
             - "secure-artifactory"
         config-artifactory-master:
           files:
-            /root/.artifactory_ansible/artifactory.yml:
+            /root/.jfrog_ami/artifactory.yml:
               content: !Sub
                 - |
                   # Base install for Artifactory
@@ -268,7 +269,7 @@ Resources:
                       db_url: ${DatabaseUrl}
                       db_user: ${DatabaseUser}
                       db_password: ${DatabasePassword}
-                      db_download_url: https://jdbc.postgresql.org/download/postgresql-42.2.12.jar
+                      # db_download_url: https://jdbc.postgresql.org/download/postgresql-42.2.12.jar
                       art_primary: ${ArtifactoryPrimary}
                       master_key: ${MasterKey}
                       join_key: ${MasterKey}
@@ -293,7 +294,7 @@ Resources:
               mode: "0400"
             /root/.secureit.sh:
               content:
-                ansible-vault encrypt /root/.artifactory_ansible/artifactory.yml --vault-id /root/.vault_pass.txt
+                ansible-vault encrypt /root/.jfrog_ami/artifactory.yml --vault-id /root/.vault_pass.txt
               mode: "0770"
         secure-artifactory:
           commands:
@@ -324,6 +325,7 @@ Resources:
         'Fn::Base64':
           !Sub |
             #!/bin/bash -x
+            exec > >(tee /var/log/user-data.log|logger -t user-data -s 2>/dev/console) 2>&1
 
             #CFN Functions
 
@@ -349,7 +351,7 @@ Resources:
 
             S3URI=${QsS3Uri}
 
-            yum install -y git
+            # yum install -y git
 
             echo $PATH
 
@@ -358,7 +360,7 @@ Resources:
             echo $PATH
             echo \'[Cloning: Load QuickStart Common Utils]\'
 
-            git clone https://github.com/aws-quickstart/quickstart-linux-utilities.git
+            # git clone https://github.com/aws-quickstart/quickstart-linux-utilities.git
 
             source /quickstart-linux-utilities/quickstart-cfn-tools.source
 
@@ -379,9 +381,9 @@ Resources:
             rm -f /etc/machine-id
             systemd-machine-id-setup
 
-            mkdir ~/.artifactory_ansible
+            # mkdir ~/.artifactory_ansible
 
-            aws s3 --region ${AWS::Region} sync s3://${QsS3BucketName}/${QsS3KeyPrefix}cloudInstallerScripts/ ~/.artifactory_ansible/
+            # aws s3 --region ${AWS::Region} sync s3://${QsS3BucketName}/${QsS3KeyPrefix}cloudInstallerScripts/ ~/.artifactory_ansible/
 
             cfn-init -v --stack ${AWS::StackName} --resource ArtifactoryLaunchConfiguration --configsets artifactory_install --region ${AWS::Region} || cfn_fail
 
@@ -389,7 +391,7 @@ Resources:
 
             setsebool httpd_can_network_connect 1 -P
 
-            ansible-playbook /root/.artifactory_ansible/artifactory.yml &> /var/log/userdata.artifactory.yml.log || qs_err " ansible execution failed "
+            ansible-playbook /root/.jfrog_ami/artifactory.yml || qs_err " ansible execution failed "
 
             rm -rf /root/.secureit.sh
 

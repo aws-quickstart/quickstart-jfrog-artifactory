@@ -292,7 +292,7 @@ Parameters:
     Default: '1'
     Type: String
   VolumeSize:
-    Description: Size in gigabytes of the available storage. The Quick Start creates an
+    Description: Size in gigabytes of the available storage (min 10GB). The Quick Start creates an
       Amazon Elastic Block Store (Amazon EBS) volumes of this size.
     Default: 200
     Type: Number
@@ -561,8 +561,8 @@ Resources:
             Version: '2012-10-17'
             Statement:
               - Effect: Allow
-                Action: s3:*
-                Resource: "*"
+                Action: s3:GetObject
+                Resource: !Sub "arn:${AWS::Partition}:s3:::${QsS3BucketName}/*"
               - Effect: Allow
                 Action:
                   - logs:CreateLogStream
@@ -603,7 +603,12 @@ Resources:
         EnableX11Forwarding: !Ref BastionEnableX11Forwarding
         AlternativeIAMRole: !Ref BastionRole
         NumBastionHosts: !Ref NumBastionHosts
-
+  ArtifactoryS3IAMUser:
+    Type: AWS::IAM::User
+  ArtifactoryIamAcessKey:
+    Type: AWS::IAM::AccessKey
+    Properties:
+      UserName: !Ref ArtifactoryS3IAMUser
   ArtifactoryCoreInfraStack:
     Type: AWS::CloudFormation::Stack
     Properties:
@@ -625,6 +630,7 @@ Resources:
         DatabasePassword: !Ref DatabasePassword
         DatabaseInstance: !Ref DatabaseInstance
         DatabaseName: !Ref DatabaseName
+        ArtifactoryS3IAMUser: !Ref ArtifactoryS3IAMUser
         InstanceType: !Ref InstanceType
   ArtifactoryElb:
     Type: AWS::ElasticLoadBalancingV2::LoadBalancer
@@ -816,8 +822,8 @@ Resources:
         Certificate: !If [SmLicenseCertNameExists, !Sub '{{resolve:secretsmanager:${SmLicenseCertName}:SecretString:Certificate}}', '']
         CertificateKey: !If [SmLicenseCertNameExists, !Sub '{{resolve:secretsmanager:${SmLicenseCertName}:SecretString:CertificateKey}}', '']
         CertificateDomain: !If [SmLicenseCertNameExists, !Sub '{{resolve:secretsmanager:${SmLicenseCertName}:SecretString:CertificateDomain}}', '']
-        ArtifactoryIamAcessKey: !GetAtt ArtifactoryCoreInfraStack.Outputs.ArtifactoryIamAcessKey
-        SecretAccessKey: !GetAtt ArtifactoryCoreInfraStack.Outputs.SecretAccessKey
+        ArtifactoryIamAcessKey: !Ref ArtifactoryIamAcessKey
+        SecretAccessKey: !GetAtt ArtifactoryIamAcessKey.SecretAccessKey
         ArtifactoryS3Bucket: !GetAtt ArtifactoryCoreInfraStack.Outputs.S3Bucket
         DatabaseUrl: !GetAtt ArtifactoryCoreInfraStack.Outputs.DatabaseUrl
         DatabaseDriver: !GetAtt ArtifactoryCoreInfraStack.Outputs.DatabaseDriver
@@ -870,8 +876,8 @@ Resources:
         Certificate: !If [SmLicenseCertNameExists, !Sub '{{resolve:secretsmanager:${SmLicenseCertName}:SecretString:Certificate}}', '']
         CertificateKey: !If [SmLicenseCertNameExists, !Sub '{{resolve:secretsmanager:${SmLicenseCertName}:SecretString:CertificateKey}}', '']
         CertificateDomain: !If [SmLicenseCertNameExists, !Sub '{{resolve:secretsmanager:${SmLicenseCertName}:SecretString:CertificateDomain}}', '']
-        ArtifactoryIamAcessKey: !GetAtt ArtifactoryCoreInfraStack.Outputs.ArtifactoryIamAcessKey
-        SecretAccessKey: !GetAtt ArtifactoryCoreInfraStack.Outputs.SecretAccessKey
+        ArtifactoryIamAcessKey: !Ref ArtifactoryIamAcessKey
+        SecretAccessKey: !GetAtt ArtifactoryIamAcessKey.SecretAccessKey
         ArtifactoryS3Bucket: !GetAtt ArtifactoryCoreInfraStack.Outputs.S3Bucket
         DatabaseUrl: !GetAtt ArtifactoryCoreInfraStack.Outputs.DatabaseUrl
         DatabaseDriver: !GetAtt ArtifactoryCoreInfraStack.Outputs.DatabaseDriver
