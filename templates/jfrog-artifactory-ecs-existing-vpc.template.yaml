@@ -342,7 +342,7 @@ Parameters:
     Default: m5.xlarge
     Type: String
   VolumeSize:
-    Description: Size in gigabytes of available storage. The Quick Start creates an
+    Description: Size in gigabytes of available storage (min 10GB). The Quick Start creates an
       Amazon Elastic Block Store (Amazon EBS) volumes of this size.
     Default: 200
     Type: Number

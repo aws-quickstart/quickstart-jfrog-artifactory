@@ -298,9 +298,9 @@ Resources:
 
             ansible-playbook /root/.xray_ami/xray-ami-setup.yml &> /var/log/xray-ami.log || cfn_fail
 
-            find / -name "authorized_keys" –exec rm –f {} \;
+            # find / -name 'authorized_keys' -exec rm -f {} \;
 
-            rm -rf ~/.xray_ami
+            # rm -rf ~/.xray_ami
 
             [ $(qs_status) == 0 ] && cfn_success || cfn_fail
           - S3Bucket: !If [UsingDefaultBucket, !Sub '{QsS3BucketName}-${AWS::Region}', !Ref 'QsS3BucketName']

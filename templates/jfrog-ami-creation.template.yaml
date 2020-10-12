@@ -311,7 +311,9 @@ Resources:
 
             ansible-playbook /root/.jfrog_ami/jfrog-ami-setup.yml &> /var/log/jfrog-ami.log || cfn_fail
 
-            rm -rf ~/.jfrog_ami
+            # find / -name 'authorized_keys' -exec rm -f {} \;
+
+            # rm -rf ~/.jfrog_ami
 
             [ $(qs_status) == 0 ] && cfn_success || cfn_fail
           - S3Bucket: !If [UsingDefaultBucket, !Sub '{QsS3BucketName}-${AWS::Region}', !Ref 'QsS3BucketName']

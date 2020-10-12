@@ -41,6 +41,8 @@ Parameters:
     Type: String
   DatabaseName:
     Type: String
+  ArtifactoryS3IAMUser:
+    Type: String
   ArtifactoryProduct:
     Default: JFrog-Artifactory-Pro
     Type: String
@@ -283,12 +285,6 @@ Resources:
           FromPort: 443
           ToPort: 443
           CidrIp: 0.0.0.0/0
-  ArtifactoryS3IAMUser:
-    Type: AWS::IAM::User
-  ArtifactoryIamAcessKey:
-    Type: AWS::IAM::AccessKey
-    Properties:
-      UserName: !Ref ArtifactoryS3IAMUser
   ArtifactoryS3Bucket:
     Type: AWS::S3::Bucket
     Properties:
@@ -321,12 +317,6 @@ Resources:
       Users:
         - !Ref ArtifactoryS3IAMUser
 Outputs:
-  ArtifactoryIamAcessKey:
-    Value: !Ref ArtifactoryIamAcessKey
-    Description: IAM Access key for the S3 Bucket
-  SecretAccessKey:
-    Value: !GetAtt ArtifactoryIamAcessKey.SecretAccessKey
-    Description: Secret Access key for S3 Bucket
   S3Bucket:
     Value: !Ref ArtifactoryS3Bucket
     Description: Actual S3 bucket created for Artifactory
