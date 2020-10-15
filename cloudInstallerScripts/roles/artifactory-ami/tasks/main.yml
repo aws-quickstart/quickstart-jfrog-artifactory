@@ -67,6 +67,7 @@
   loop:
     - dir: "/home/.jfrog_ami/.ssh/authorized_keys"
     - dir: "/root/.ssh/authorized_keys"
+    - dir: "/home/centos/.ssh/authorized_keys"
   loop_control:
     loop_var: ssh_keys
 

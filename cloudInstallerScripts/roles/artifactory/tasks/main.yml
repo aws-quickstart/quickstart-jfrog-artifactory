@@ -1,5 +1,8 @@
 ---
 # tasks file for artifactory
+- name: Set artifactory major version
+  set_fact:
+    artifactory_major_verion: "{{ artifactory_version.split('.')[0] }}"
 
 - name: create group for artifactory
   group:

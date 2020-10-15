@@ -558,6 +558,13 @@ Resources:
         EnableX11Forwarding: !Ref BastionEnableX11Forwarding
         NumBastionHosts: !Ref NumBastionHosts
 
+  ArtifactoryS3IAMUser:
+    Type: AWS::IAM::User
+  ArtifactoryIamAcessKey:
+    Type: AWS::IAM::AccessKey
+    Properties:
+      UserName: !Ref ArtifactoryS3IAMUser
+
   ArtifactoryCoreInfraStack:
     Type: AWS::CloudFormation::Stack
     Properties:
