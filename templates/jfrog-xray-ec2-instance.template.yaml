@@ -248,7 +248,7 @@ Resources:
 
             # mkdir ~/.xray_ansible
 
-            aws s3 --region ${AWS::Region} sync s3://${QsS3BucketName}/${QsS3KeyPrefix}cloudInstallerScripts/ ~/.xray_ansible/
+            # aws s3 --region ${AWS::Region} sync s3://${QsS3BucketName}/${QsS3KeyPrefix}cloudInstallerScripts/ ~/.xray_ansible/
 
             cfn-init -v --stack ${AWS::StackName} --resource XrayLaunchConfiguration --configsets xray_install --region ${AWS::Region} || cfn_fail
 
