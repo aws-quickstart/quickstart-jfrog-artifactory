@@ -588,6 +588,7 @@ Resources:
         DatabaseName: !Ref DatabaseName
         ArtifactoryProduct: !Ref ArtifactoryProduct
         ReleaseStage: !Ref ReleaseStage
+        ArtifactoryS3IAMUser: !Ref ArtifactoryS3IAMUser
         InstanceType: !Ref InstanceType
   ArtifactoryElb:
     Type: AWS::ElasticLoadBalancingV2::LoadBalancer
@@ -720,8 +721,8 @@ Resources:
         CertificateKey: !Sub '{{resolve:secretsmanager:${SmLicenseCertName}:SecretString:CertificateKey}}'
         CertificateDomain: !Sub '{{resolve:secretsmanager:${SmLicenseCertName}:SecretString:CertificateDomain}}'
         ArtifactoryServerName: !Ref ArtifactoryServerName
-        ArtifactoryIamAcessKey: !GetAtt ArtifactoryCoreInfraStack.Outputs.ArtifactoryIamAcessKey
-        SecretAccessKey: !GetAtt ArtifactoryCoreInfraStack.Outputs.SecretAccessKey
+        ArtifactoryIamAcessKey: !Ref ArtifactoryIamAcessKey
+        SecretAccessKey: !GetAtt ArtifactoryIamAcessKey.SecretAccessKey
         ArtifactoryS3Bucket: !GetAtt ArtifactoryCoreInfraStack.Outputs.S3Bucket
         DatabaseUrl: !GetAtt ArtifactoryCoreInfraStack.Outputs.DatabaseUrl
         DatabaseDriver: !GetAtt ArtifactoryCoreInfraStack.Outputs.DatabaseDriver

@@ -160,6 +160,7 @@ Mappings:
       "Artifactory773": ami-0e1639df4df532641  # partnership account + seller account
       "Jcr720": ami-05aa02eddf5f692b7
       "Jcr721": ami-04fed5fc210272dfe
+      "Jcr7102": ami-0725a5a24f5f563c2
     us-east-2:
       AMZNLINUXHVM: ami-0d542ef84ec55d71c
       "Artifactory721": ami-0a913af05ccdaa522
@@ -188,6 +189,7 @@ Mappings:
       "720": "Jcr720"
       "721": "Jcr721"
       "743": "Jcr743"
+      "7102": "Jcr7102"
       product: "jcr"
     JFrog-Artifactory-Pro:
       "700": "Artifactory700"
@@ -253,6 +255,7 @@ Resources:
                       artifactory_license5: ${ArtifactoryLicense5}
                       artifactory_license6: ${ArtifactoryLicense6}
                       artifactory_product: ${product}
+                      artifactory_flavour: ${product}
                       artifactory_server_name: ${ArtifactoryServerName}
                       server_name: ${ArtifactoryServerName}.${CertificateDomain}
                       s3_region: ${AWS::Region}
