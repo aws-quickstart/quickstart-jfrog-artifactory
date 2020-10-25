@@ -158,6 +158,7 @@ Mappings:
       "Artifactory721": ami-0d4d4252cdc2b6f11
       "Artifactory755": ami-07c0a3d7663fcafb9 # TODO: Get correct ami
       "Artifactory773": ami-0e1639df4df532641  # partnership account + seller account
+      "Artifactory7102": ami-0b2e637453f5e831c
       "Jcr720": ami-05aa02eddf5f692b7
       "Jcr721": ami-04fed5fc210272dfe
       "Jcr7102": ami-0725a5a24f5f563c2
@@ -197,6 +198,7 @@ Mappings:
       "721": "Artifactory721"
       "755": "Artifactory755"
       "773": "Artifactory773"
+      "7102": "Artifactory7102"
       product: "artifactory"
 Resources:
   ArtifactoryScalingGroup:
@@ -223,7 +225,7 @@ Resources:
     CreationPolicy:
       ResourceSignal:
         Count: 1
-        Timeout: PT60M
+        Timeout: PT30M
 
   ArtifactoryLaunchConfiguration:
     Type: 'AWS::AutoScaling::LaunchConfiguration'
@@ -255,7 +257,7 @@ Resources:
                       artifactory_license5: ${ArtifactoryLicense5}
                       artifactory_license6: ${ArtifactoryLicense6}
                       artifactory_product: ${product}
-                      artifactory_flavour: ${product}
+                      artifactory_flavour: "{{ 'pro' if '${product}' == 'artifactory' else 'jcr' if '${product}' == 'jcr' }}"
                       artifactory_server_name: ${ArtifactoryServerName}
                       server_name: ${ArtifactoryServerName}.${CertificateDomain}
                       s3_region: ${AWS::Region}
@@ -328,7 +330,6 @@ Resources:
         'Fn::Base64':
           !Sub |
             #!/bin/bash -x
-            exec > >(tee /var/log/user-data.log|logger -t user-data -s 2>/dev/console) 2>&1
 
             #CFN Functions
 
