@@ -161,7 +161,7 @@ Mappings:
       "Artifactory7102": ami-0b2e637453f5e831c
       "Jcr720": ami-05aa02eddf5f692b7
       "Jcr721": ami-04fed5fc210272dfe
-      "Jcr7102": ami-0725a5a24f5f563c2
+      "Jcr7102": ami-06bd18e8c3bea1085
     us-east-2:
       AMZNLINUXHVM: ami-0d542ef84ec55d71c
       "Artifactory721": ami-0a913af05ccdaa522
