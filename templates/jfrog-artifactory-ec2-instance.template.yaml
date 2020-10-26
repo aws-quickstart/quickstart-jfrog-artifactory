@@ -187,10 +187,10 @@ Resources:
         - Key: Name
           Value: !Ref DeploymentTag
           PropagateAtLaunch: true
-    CreationPolicy:
-      ResourceSignal:
-        Count: 1
-        Timeout: PT30M
+#    CreationPolicy:
+#      ResourceSignal:
+#        Count: 1
+#        Timeout: PT30M
 
   ArtifactoryLaunchConfiguration:
     Type: 'AWS::AutoScaling::LaunchConfiguration'

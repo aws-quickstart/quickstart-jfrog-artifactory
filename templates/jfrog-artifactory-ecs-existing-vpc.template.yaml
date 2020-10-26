@@ -781,4 +781,3 @@ Outputs:
     Value: !If
       - EnableBastion
       - !GetAtt BastionStack.Outputs.EIP1
-      - ""
