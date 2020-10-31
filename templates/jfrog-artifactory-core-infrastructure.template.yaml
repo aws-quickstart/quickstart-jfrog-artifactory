@@ -42,6 +42,7 @@ Parameters:
   DatabaseName:
     Type: String
   ArtifactoryS3IAMUser:
+    NoEcho: 'true'
     Type: String
   ArtifactoryProduct:
     Default: JFrog-Artifactory-Pro

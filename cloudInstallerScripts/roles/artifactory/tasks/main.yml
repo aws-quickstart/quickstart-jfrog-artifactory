@@ -95,17 +95,25 @@
     dest: "{{ artifactory_home }}/var/etc/info/installer-info.json"
   become: yes
 
+- name: "ensure {{ artifactory_home }}/var/etc/artifactory/ exists"
+  file:
+    path: "{{ artifactory_home }}/var/etc/artifactory/"
+    state: directory
+    owner: "{{ artifactory_user }}"
+    group: "{{ artifactory_group }}"
+  become: yes
+
 - name: use specified binary store
   copy:
     src: "{{ binary_store_file }}"
-    dest: "{{ artifactory_home }}/var/etc/binarystore.xml"
+    dest: "{{ artifactory_home }}/var/etc/artifactory/binarystore.xml"
   become: yes
   when: binary_store_file is defined
 
 - name: use default binary store
   template:
     src: binarystore.xml.j2
-    dest: "{{ artifactory_home }}/var/etc/binarystore.xml"
+    dest: "{{ artifactory_home }}/var/etc/artifactory/binarystore.xml"
   become: yes
   when: binary_store_file is not defined
 

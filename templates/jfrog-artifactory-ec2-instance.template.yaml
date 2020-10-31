@@ -156,12 +156,12 @@ Mappings:
       "Artifactory700": ami-06baee01fb2ef01d2
       "Artifactory702": ami-085b1acc8e8b5b039
       "Artifactory721": ami-0d4d4252cdc2b6f11
-      "Artifactory755": ami-07c0a3d7663fcafb9 # TODO: Get correct ami
+      "Artifactory755": ami-07c0a3d7663fcafb9  # TODO: Get correct ami
       "Artifactory773": ami-0e1639df4df532641  # partnership account + seller account
-      "Artifactory7102": ami-0b2e637453f5e831c
+      "Artifactory7102": ami-0d3aaf4303a264d04 # seller account (shared with partnership account)
       "Jcr720": ami-05aa02eddf5f692b7
       "Jcr721": ami-04fed5fc210272dfe
-      "Jcr7102": ami-06bd18e8c3bea1085
+      "Jcr7102": ami-0508370f82ef2e50d
     us-east-2:
       AMZNLINUXHVM: ami-0d542ef84ec55d71c
       "Artifactory721": ami-0a913af05ccdaa522
@@ -182,6 +182,7 @@ Mappings:
     us-gov-east-1:
       AMZNLINUX2: ami-7c2bc80d
       "Artifactory755": ami-0732b9134b39caf5c
+      "Artifactory7102": ami-0f5ce3b2c087a8098
     us-gov-west-1:
       AMZNLINUX2: ami-a03768c1
       "Artifactory755": ami-0b9d3e9ee5ffdc491

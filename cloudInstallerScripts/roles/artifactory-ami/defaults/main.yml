@@ -28,7 +28,10 @@ artifactory_file_store_dir: /data
 
 extra_java_opts: -server -Xms2g -Xmx14g -Xss256k -XX:+UseG1GC
 
+
+
 # Pick the Artifactory flavour to install, can be also cpp-ce, jcr, pro.
+# for Artifactory, use following values
 artifactory_flavour: pro
 artifactory_tar: https://dl.bintray.com/jfrog/artifactory-pro/org/artifactory/{{ artifactory_flavour }}/jfrog-artifactory-{{ artifactory_flavour }}/{{ artifactory_version }}/jfrog-artifactory-{{ artifactory_flavour }}-{{ artifactory_version }}-linux.tar.gz
 
