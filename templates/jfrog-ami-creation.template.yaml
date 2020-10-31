@@ -212,6 +212,8 @@ Resources:
                       db_download_url: "https://jdbc.postgresql.org/download/postgresql-42.2.12.jar"
                       db_type: "postgresql"
                       db_driver: "org.postgresql.Driver"
+                      artifactory_flavour: "{{ 'pro' if '${JFrogProduct}' == 'jfrog-artifactory-pro' else 'jcr' if '${JFrogProduct}' == 'jfrog-artifactory-jcr' }}"
+                      artifactory_tar: "{{ 'https://dl.bintray.com/jfrog/artifactory-pro/org/artifactory/pro/jfrog-artifactory-pro/${ArtifactVersion}/jfrog-artifactory-pro-${ArtifactVersion}-linux.tar.gz' if '${JFrogProduct}' == 'jfrog-artifactory-pro' else 'https://dl.bintray.com/jfrog/artifactory/org/artifactory/jcr/jfrog-artifactory-jcr/${ArtifactVersion}/jfrog-artifactory-jcr-${ArtifactVersion}-linux.tar.gz' if '${JFrogProduct}' == 'jfrog-artifactory-jcr' }}"
               mode: "0400"
     Properties:
       KeyName: !Ref KeyPairName

@@ -156,11 +156,12 @@ Mappings:
       "Artifactory700": ami-06baee01fb2ef01d2
       "Artifactory702": ami-085b1acc8e8b5b039
       "Artifactory721": ami-0d4d4252cdc2b6f11
-      "Artifactory755": ami-07c0a3d7663fcafb9 # TODO: Get correct ami
+      "Artifactory755": ami-07c0a3d7663fcafb9  # TODO: Get correct ami
       "Artifactory773": ami-0e1639df4df532641  # partnership account + seller account
+      "Artifactory7102": ami-0d3aaf4303a264d04 # seller account (shared with partnership account)
       "Jcr720": ami-05aa02eddf5f692b7
       "Jcr721": ami-04fed5fc210272dfe
-      "Jcr7102": ami-0725a5a24f5f563c2
+      "Jcr7102": ami-0508370f82ef2e50d
     us-east-2:
       AMZNLINUXHVM: ami-0d542ef84ec55d71c
       "Artifactory721": ami-0a913af05ccdaa522
@@ -181,6 +182,7 @@ Mappings:
     us-gov-east-1:
       AMZNLINUX2: ami-7c2bc80d
       "Artifactory755": ami-0732b9134b39caf5c
+      "Artifactory7102": ami-0f5ce3b2c087a8098
     us-gov-west-1:
       AMZNLINUX2: ami-a03768c1
       "Artifactory755": ami-0b9d3e9ee5ffdc491
@@ -197,6 +199,7 @@ Mappings:
       "721": "Artifactory721"
       "755": "Artifactory755"
       "773": "Artifactory773"
+      "7102": "Artifactory7102"
       product: "artifactory"
 Resources:
   ArtifactoryScalingGroup:
@@ -223,7 +226,7 @@ Resources:
     CreationPolicy:
       ResourceSignal:
         Count: 1
-        Timeout: PT60M
+        Timeout: PT30M
 
   ArtifactoryLaunchConfiguration:
     Type: 'AWS::AutoScaling::LaunchConfiguration'
@@ -255,7 +258,7 @@ Resources:
                       artifactory_license5: ${ArtifactoryLicense5}
                       artifactory_license6: ${ArtifactoryLicense6}
                       artifactory_product: ${product}
-                      artifactory_flavour: ${product}
+                      artifactory_flavour: "{{ 'pro' if '${product}' == 'artifactory' else 'jcr' if '${product}' == 'jcr' }}"
                       artifactory_server_name: ${ArtifactoryServerName}
                       server_name: ${ArtifactoryServerName}.${CertificateDomain}
                       s3_region: ${AWS::Region}
@@ -328,7 +331,6 @@ Resources:
         'Fn::Base64':
           !Sub |
             #!/bin/bash -x
-            exec > >(tee /var/log/user-data.log|logger -t user-data -s 2>/dev/console) 2>&1
 
             #CFN Functions
 
