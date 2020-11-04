@@ -183,6 +183,7 @@ Mappings:
       AMZNLINUX2: ami-7c2bc80d
       "Artifactory755": ami-0732b9134b39caf5c
       "Artifactory7102": ami-0f5ce3b2c087a8098
+      "Artifactory7105": ami-011a5a1aa6a1e6cf2
     us-gov-west-1:
       AMZNLINUX2: ami-a03768c1
       "Artifactory755": ami-0b9d3e9ee5ffdc491
@@ -200,6 +201,7 @@ Mappings:
       "755": "Artifactory755"
       "773": "Artifactory773"
       "7102": "Artifactory7102"
+      "7105": "Artifactory7105"
       product: "artifactory"
 Resources:
   ArtifactoryScalingGroup:

@@ -13,7 +13,7 @@ project:
     #- us-gov-west-1
 tests:
 
-  # jcr-ami-7102:
+  # jcr-ami-7105:
   #   auth:
   #     us-east-1: seller
   #     us-gov-west-1: gov
@@ -21,7 +21,7 @@ tests:
   #   parameters:
   #     AvailabilityZone: "$[taskcat_genaz_1]"
   #     KeyPairName: "vinaykey1"
-  #     ArtifactVersion: 7.10.2
+  #     ArtifactVersion: 7.10.5
   #     RemoteAccessCidr: "0.0.0.0/0"
   #     QsS3BucketName: "$[taskcat_autobucket]"
   #     QsS3KeyPrefix: "quickstart-jfrog-artifactory/"
@@ -30,10 +30,14 @@ tests:
   #   template: templates/jfrog-ami-master.template.yaml
   #   regions:
   #     - us-east-1
+  #     - us-east-2
+  #     - us-west-1
   #     - us-west-2
+  #     - us-gov-east-1
+  #     - us-gov-west-1
 
     
-  # rt-ami-7102:
+  # rt-ami-7105:
   #   auth:
   #     us-east-1: seller
   #     us-gov-west-1: gov
@@ -41,7 +45,7 @@ tests:
   #   parameters:
   #     AvailabilityZone: "$[taskcat_genaz_1]"
   #     KeyPairName: "vinaykey1"
-  #     ArtifactVersion: 7.10.2
+  #     ArtifactVersion: 7.10.5
   #     RemoteAccessCidr: "0.0.0.0/0"
   #     QsS3BucketName: "$[taskcat_autobucket]"
   #     QsS3KeyPrefix: "quickstart-jfrog-artifactory/"
@@ -50,28 +54,33 @@ tests:
   #   template: templates/jfrog-ami-master.template.yaml
   #   regions:
   #     - us-east-1
+  #     - us-east-2
+  #     - us-west-1
   #     - us-west-2
   #     - us-gov-east-1
+  #     - us-gov-west-1
 
-  # xray-ami-3103:
-  #   auth:
-  #     us-east-1: seller
-  #     us-gov-west-1: gov
-  #     us-gov-east-1: gov
-  #   parameters:
-  #     AvailabilityZone: "$[taskcat_genaz_1]"
-  #     KeyPairName: "vinaykey1"
-  #     # XrayVersion: 3.8.6
-  #     XrayVersion: 3.10.3
-  #     RemoteAccessCidr: "0.0.0.0/0"
-  #     QsS3BucketName: "$[taskcat_autobucket]"
-  #     QsS3KeyPrefix: "quickstart-jfrog-artifactory/"
-  #     QsS3BucketRegion: "$[taskcat_current_region]"
-  #   template: templates/ami-rt-xray-master.template.yaml
-  #   regions:
+  xray-ami-3103:
+    auth:
+      us-east-1: seller
+      us-gov-west-1: gov
+      us-gov-east-1: gov
+    parameters:
+      AvailabilityZone: "$[taskcat_genaz_1]"
+      KeyPairName: "vinaykey1"
+      XrayVersion: 3.10.3
+      RemoteAccessCidr: "0.0.0.0/0"
+      QsS3BucketName: "$[taskcat_autobucket]"
+      QsS3KeyPrefix: "quickstart-jfrog-artifactory/"
+      QsS3BucketRegion: "$[taskcat_current_region]"
+    template: templates/ami-rt-xray-master.template.yaml
+    regions:
   #     - us-east-1
+  #     - us-east-2
+      - us-west-1
   #     - us-west-2
   #     - us-gov-east-1
+  #     - us-gov-west-1
 
 
   # create-vpc:
@@ -95,14 +104,14 @@ tests:
   #     # - us-gov-east-1
 
 
-  # rt-xray-ec2-postgres:
+  # rt-xray-ec2:
   #   auth:
   #     us-east-1: default
   #     us-gov-west-1: gov
   #     us-gov-east-1: gov
   #   parameters:
   #     KeyPairName: "vinaykey1"
-  #     ArtifactoryVersion: 7.10.2
+  #     ArtifactoryVersion: 7.10.5
   #     RemoteAccessCidr: "0.0.0.0/0"
   #     DatabaseEngine: Postgres
   #     AccessCidr: "0.0.0.0/0"
@@ -137,8 +146,8 @@ tests:
   #   # template: templates/jfrog-artifactory-ec2-existing-vpc.template.yaml
 
   #   regions:
-  #     # - us-gov-east-1
-  #     - us-east-1
+  #     - us-gov-east-1
+  #     # - us-east-1
 
   # rt-xray-ec2-marketplace:
   #   parameters:
