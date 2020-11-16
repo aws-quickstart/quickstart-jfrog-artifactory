@@ -164,6 +164,8 @@ Mappings:
       "Jcr7102"        : ami-0508370f82ef2e50d
       "Artifactory7105": ami-0ebadbf3bfd796159 # partnership account
       "Jcr7105"        : ami-044f911cbd1abfa35 # partnership account
+      "Artifactory7106": ami-0f542e527dafd0e3d # partnership account
+      "Jcr7106"        : ami-0b7f63266c81c3553 # partnership account
     us-east-2:
       AMZNLINUXHVM     : ami-0d542ef84ec55d71c
       "Artifactory721" : ami-0a913af05ccdaa522
@@ -171,6 +173,8 @@ Mappings:
       "Jcr721"         : ami-0d50790b8fb747584
       "Artifactory7105": ami-0b6cf479cb95fdc0f # partnership account
       "Jcr7105"        : ami-0b36c6bc47680e08b # partnership account
+      "Artifactory7106": ami-042997e4ef1101695 # partnership account
+      "Jcr7106"        : ami-03b173a44e2d85a88 # partnership account
     us-west-1:
       AMZNLINUXHVM     : ami-04bc3da8f14823e88
       "Artifactory721" : ami-068cd684b4d3a3a86
@@ -178,6 +182,8 @@ Mappings:
       "Jcr721"         : ami-0e1cef33ea2778bd5
       "Artifactory7105": ami-08bffb00bf4bcf9e5 # partnership account
       "Jcr7105"        : ami-0c2c7f6ebd9c5f93a # partnership account
+      "Artifactory7106": ami-00b82d6b17505c50a # partnership account
+      "Jcr7106"        : ami-0f4a662601321faac # partnership account
     us-west-2:
       AMZNLINUXHVM     : ami-01460aa81365561fe
       "700"            : ami-000937e944ea194bf
@@ -187,6 +193,8 @@ Mappings:
       "Jcr721"         : ami-083542bb4f8afa3db
       "Artifactory7105": ami-00e814a57b5142b4f # partnership account
       "Jcr7105"        : ami-0d310395b75af75bd # partnership account
+      "Artifactory7106": ami-0f9acea8c8da602e0 # partnership account
+      "Jcr7106"        : ami-0d801fe01f4c03bde # partnership account
     us-gov-east-1:
       AMZNLINUX2       : ami-7c2bc80d
       "Artifactory755" : ami-0732b9134b39caf5c
@@ -203,6 +211,7 @@ Mappings:
       "743": "Jcr743"
       "7102": "Jcr7102"
       "7105": "Jcr7105"
+      "7106": "Jcr7106"
       product: "jcr"
     JFrog-Artifactory-Pro:
       "700": "Artifactory700"
@@ -212,6 +221,7 @@ Mappings:
       "773": "Artifactory773"
       "7102": "Artifactory7102"
       "7105": "Artifactory7105"
+      "7106": "Artifactory7106"
       product: "artifactory"
 Resources:
   ArtifactoryScalingGroup:
