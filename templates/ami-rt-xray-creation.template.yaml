@@ -72,7 +72,7 @@ Parameters:
       https://www.jfrog.com/confluence/display/RTF/Release+Notes
     AllowedPattern: ^(([0-9]|[1-9][0-9])\.){2}([1-9][0-9]|[0-9])(-([a-z][0-9][0-9][0-9]))?$
     ConstraintDescription: A version that matches X.X.X per Xray releases.
-    Default: 3.10.3
+    Default: 3.3.0
     Type: String
   InstanceOs:
     Description: The Linux distribution for the Amazon Machine Image (AMI) to be used for the bastion instances.
@@ -126,8 +126,6 @@ Mappings:
       CentOS7HVM: "ami-0affd4508a5d2481b"
     us-east-2:
       CentOS7HVM: "ami-01e36b7901e884a10"
-    us-west-1:
-      CentOS7HVM: "ami-098f55b4287a885ba"
     us-gov-east-1:
       CentOS7HVM: "ami-00e30c71"
     us-gov-west-1:
