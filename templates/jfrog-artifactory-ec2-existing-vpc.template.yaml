@@ -578,6 +578,8 @@ Resources:
       IpAddressType: ipv4
       Name: !Sub ${ArtifactoryProduct}-EC2-ELB
       Scheme: !Ref ELBScheme
+      SecurityGroups:
+        - !Ref ArtifactoryEc2Sg
       Subnets:
         - !Ref PublicSubnet1Id
         - !Ref PublicSubnet2Id
