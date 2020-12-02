@@ -19,7 +19,7 @@ tests:
   #   parameters:
   #     AvailabilityZone: "$[taskcat_genaz_1]"
   #     KeyPairName: "vinaykey1"
-  #     ArtifactVersion: 7.11.2
+  #     ArtifactVersion: 7.11.5
   #     RemoteAccessCidr: "0.0.0.0/0"
   #     QsS3BucketName: "$[taskcat_autobucket]"
   #     QsS3KeyPrefix: "quickstart-jfrog-artifactory/"
@@ -36,7 +36,7 @@ tests:
   #   parameters:
   #     AvailabilityZone: "$[taskcat_genaz_1]"
   #     KeyPairName: "vinaykey1"
-  #     ArtifactVersion: 7.11.2
+  #     ArtifactVersion: 7.11.5
   #     RemoteAccessCidr: "0.0.0.0/0"
   #     QsS3BucketName: "$[taskcat_autobucket]"
   #     QsS3KeyPrefix: "quickstart-jfrog-artifactory/"
@@ -54,7 +54,7 @@ tests:
   #   parameters:
   #     AvailabilityZone: "$[taskcat_genaz_1]"
   #     KeyPairName: "vinaykey1"
-  #     XrayVersion: 3.11.2
+  #     XrayVersion: 3.12.0
   #     RemoteAccessCidr: "0.0.0.0/0"
   #     QsS3BucketName: "$[taskcat_autobucket]"
   #     QsS3KeyPrefix: "quickstart-jfrog-artifactory/"
@@ -71,18 +71,15 @@ tests:
   #     us-gov-east-1 : gov
   #   parameters:
   #     KeyPairName         : "vinaykey1"
-  #     AvailabilityZones   : "us-east-1a, us-east-1b"
-  #     NumberOfAZs         : 2
-  #     VpcId               : "vpc-0cb9dc2b397cb2595"
-  #     PrivateSubnet1ACIDR : "10.0.0.0/19"
-  #     PrivateSubnet2ACIDR : "10.0.32.0/19"
-  #     PublicSubnet1CIDR   : "10.0.128.0/20"
-  #     PublicSubnet2CIDR   : "10.0.144.0/20"
-  #     VPCCIDR             : "10.0.0.0/16"
+  #     # AvailabilityZones   : "us-east-1a, us-east-1b"
+  #     AvailabilityZones: "$[taskcat_genaz_2]"
   #   template: submodules/quickstart-aws-vpc/templates/aws-vpc.template
   #   regions:
   #     - us-east-1
-  #     # - us-gov-east-1
+  #     - us-east-2
+  #     - us-west-1
+  #     - us-west-2
+  #     - us-gov-east-1
 
   # rt-xray-ec2:
   #   auth:
@@ -93,41 +90,64 @@ tests:
   #     KeyPairName: "vinaykey1"
   #     ArtifactoryVersion: 7.11.2
   #     RemoteAccessCidr: "0.0.0.0/0"
-  #     DatabaseEngine: Postgres
   #     AccessCidr: "0.0.0.0/0"
   #     DatabasePassword: "$[taskcat_genpass_8A]"
   #     QsS3BucketName: "$[taskcat_autobucket]"
   #     QsS3KeyPrefix: "quickstart-jfrog-artifactory/"
   #     QsS3BucketRegion: "$[taskcat_current_region]"
   #     DatabaseInstance: "db.m5.large"
-  #     NumberOfSecondary: "2"
+  #     NumberOfSecondary: "0"
   #     KeystorePassword: "$[taskcat_genpass_8A]"
   #     AnsibleVaultPass: "$[taskcat_genpass_8A]"
   #     ArtifactoryServerName: "artifactory"
   #     MasterKey: "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"
   #     SmLicenseCertName: "jfrog-artifactory"
   #     MultiAzDatabase: "false"
-  #     # InstallXray: "false"
+  #     InstallXray: "false"
   #     XrayVersion: 3.11.2
   #     XrayDatabasePassword: "$[taskcat_genpass_8A]"
-  #     # XrayNumberOfInstances: 2
+  #     XrayNumberOfInstances: 1
 
-    #   AvailabilityZones: "$[taskcat_genaz_2]"
-    # template: templates/jfrog-artifactory-ec2-master.template.yaml
+  #     # AvailabilityZones: "$[taskcat_genaz_2]"
+  #   # template: templates/jfrog-artifactory-ec2-master.template.yaml
 
-      # # after creating a VPC, comment line above and uncomment lines below for faster iteration
-      # # commercial account
-    #   AvailabilityZones: "us-gov-east-1a, us-gov-east-1b"
-    #   VpcId           : "vpc-0a6c8e73d1c857a0c"
-    #   PublicSubnet1Id : "subnet-0d703f8ba93b5b513"
-    #   PrivateSubnet1Id: "subnet-0a4aa965fbebd8749"
-    #   PublicSubnet2Id : "subnet-0835267871e3101f5"
-    #   PrivateSubnet2Id: "subnet-01a05690575537498"
-    # template: templates/jfrog-artifactory-ec2-existing-vpc.template.yaml
+  #     # # after creating a VPC, comment line above and uncomment lines below for faster iteration
+  #     # # commercial account
+  #     AvailabilityZones   : "us-east-1a, us-east-1b"
+  #     VpcId               : "vpc-01928d5ec0712da01"
+  #     PublicSubnet1Id     : "subnet-0aad0eef7508768aa"
+  #     PublicSubnet2Id     : "subnet-076d7c0dbc9c9154e"
+  #     PrivateSubnet1Id    : "subnet-009be877dfb92b2e8"
+  #     PrivateSubnet2Id    : "subnet-0630aedde038e886a"
 
-    regions:
-      # - us-gov-east-1
-      # - us-east-1
+  #     # AvailabilityZones   : "us-east-2a, us-east-2b"
+  #     # VpcId               : "vpc-0c34820ee493dfc50"
+  #     # PublicSubnet1Id     : "subnet-0f8245eb09eb6fe0b"
+  #     # PublicSubnet2Id     : "subnet-0488c02dfb3156a8c"
+  #     # PrivateSubnet1Id    : "subnet-04059e18aed29feb8"
+  #     # PrivateSubnet2Id    : "subnet-00fce1c2df54627c1"
+
+  #     # AvailabilityZones   : "us-west-1a, us-west-1b"
+  #     # VpcId               : "vpc-021824cc89d5a4a61"
+  #     # PublicSubnet1Id     : "subnet-0b750e980f29162ee"
+  #     # PublicSubnet2Id     : "subnet-081169f2379fcc7fc"
+  #     # PrivateSubnet1Id    : "subnet-002e4714e7f3f3f4b"
+  #     # PrivateSubnet2Id    : "subnet-0af1ccf128830f145"
+
+  #     # AvailabilityZones   : "us-west-2a, us-west-2b"
+  #     # VpcId               : "vpc-0d2100ab913ced1a2"
+  #     # PublicSubnet1Id     : "subnet-0c2f1ab3118b0de23"
+  #     # PublicSubnet2Id     : "subnet-0972dd8e6c961bfd3"
+  #     # PrivateSubnet1Id    : "subnet-03ca0426539289da3"
+  #     # PrivateSubnet2Id    : "subnet-012fc1245aca55664"
+
+  #   template: templates/jfrog-artifactory-ec2-existing-vpc.template.yaml
+  #   regions:
+  #     # - us-east-1
+  #     # - us-east-2
+  #     # - us-west-1
+  #     # - us-west-2
+
 
   # rt-xray-ec2-marketplace:
   #   parameters:
@@ -153,30 +173,42 @@ tests:
   #     XrayDatabasePassword: "$[taskcat_genpass_8A]"
   #     # XrayNumberOfInstances: 2
   #     AvailabilityZones: "us-east-1a, us-east-1b"
-
-  #     #commercial account
-      # AvailabilityZones: "us-gov-east-1a, us-gov-east-1b"
-      # VpcId           : "vpc-0d1a572e0a17e3363"
-      # PublicSubnet1Id : "subnet-02bb504e20ea462bd"
-      # PrivateSubnet1Id: "subnet-05fa322455dd9f6b6"
-      # PublicSubnet2Id : "subnet-0a10475a0698f24b6"
-      # PrivateSubnet2Id: "subnet-030af610c26cce4b5"
-
   #   template: templates/jfrog-artifactory-ec2-marketplace-master.template.yaml
   #   regions:
   #     - us-east-1
 
-  # rt-simple:
+  # jfrog-artifactory-simple-new-vpc:
   #   parameters:
-  #     KeyPairName: "vinaykey1"
-  #     AvailabilityZones: "$[taskcat_genaz_2]"
-  #     DatabasePassword: "$[taskcat_genpass_8A]"
-  #     QsS3BucketName: "$[taskcat_autobucket]"
-  #     QsS3KeyPrefix: "quickstart-jfrog-artifactory/"
-  #     QsS3BucketRegion: "$[taskcat_current_region]"
-  #   template: templates/jfrog-artifactory-ec2-simple-master.template.yaml
+  #     KeyPairName         : "vinaykey1"
+  #     InstallXray         : "true"
+  #     AvailabilityZones   : "$[taskcat_genaz_2]"
+  #     DatabasePassword    : "$[taskcat_genpass_8A]"
+  #     QsS3BucketName      : "$[taskcat_autobucket]"
+  #     QsS3KeyPrefix       : "quickstart-jfrog-artifactory/"
+  #     QsS3BucketRegion    : "$[taskcat_current_region]"
+  #     MasterKey           : "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"
+  #   template              : templates/jfrog-artifactory-ec2-simple-new-vpc-master.template.yaml
+  #   regions:
+  #     - us-west-2
+
+  # jfrog-artifactory-simple-existing-vpc:
+  #   parameters:
+  #     KeyPairName         : "vinaykey1"
+  #     InstallXray         : "true"
+  #     MasterKey           : "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"
+  #     DatabasePassword    : "$[taskcat_genpass_8A]"
+  #     QsS3BucketName      : "$[taskcat_autobucket]"
+  #     QsS3KeyPrefix       : "quickstart-jfrog-artifactory/"
+  #     QsS3BucketRegion    : "$[taskcat_current_region]"
+  #     VpcId               : "vpc-0c34820ee493dfc50"
+  #     PublicSubnet1Id     : "subnet-0f8245eb09eb6fe0b"
+  #     PublicSubnet2Id     : "subnet-0488c02dfb3156a8c"
+  #     PrivateSubnet1Id    : "subnet-04059e18aed29feb8"
+  #     PrivateSubnet2Id    : "subnet-00fce1c2df54627c1"
+  #   template              : templates/jfrog-artifactory-ec2-simple-existing-vpc-master.template.yaml
   #   regions:
   #     - us-east-2
+
 
   # rt-ecs:
   #   parameters:
