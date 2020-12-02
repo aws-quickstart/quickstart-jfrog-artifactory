@@ -164,6 +164,8 @@ Mappings:
       "Jcr7102": ami-0508370f82ef2e50d
       "Artifactory7112": ami-06347e9dbfce687da # seller account (shared with partnership account)
       "Jcr7112": ami-0a3b81d0aa82189e2 # seller account (shared with partnership account)
+      "Artifactory7115": ami-032d9d9550254f912 # seller account (shared with partnership account)
+      "Jcr7115": ami-018069c58d5283efc # seller account (shared with partnership account)
     us-east-2:
       AMZNLINUXHVM: ami-0d542ef84ec55d71c
       "Artifactory721": ami-0a913af05ccdaa522
@@ -171,6 +173,8 @@ Mappings:
       "Jcr721": ami-0d50790b8fb747584
       "Artifactory7112": ami-0f3dcf9fd88a904bc # seller account (shared with partnership account)
       "Jcr7112": ami-0336bdc0bc6e84abd # seller account (shared with partnership account)
+      "Artifactory7115": ami-0f92b53b4212eb695 # seller account (shared with partnership account)
+      "Jcr7115": ami-017047e4082896aa3 # seller account (shared with partnership account)
     us-west-1:
       AMZNLINUXHVM: ami-04bc3da8f14823e88
       "Artifactory721": ami-068cd684b4d3a3a86
@@ -178,6 +182,8 @@ Mappings:
       "Jcr721": ami-0e1cef33ea2778bd5
       "Artifactory7112": ami-0882ea734a2fa8b73 # seller account (shared with partnership account)
       "Jcr7112": ami-0210d128df9b0bc6a # seller account (shared with partnership account)
+      "Artifactory7115": ami-0018b6ec2f18150bf # seller account (shared with partnership account)
+      "Jcr7115": ami-0598492b701b601d2 # seller account (shared with partnership account)
     us-west-2:
       AMZNLINUXHVM: ami-01460aa81365561fe
       "700": ami-000937e944ea194bf
@@ -187,6 +193,8 @@ Mappings:
       "Jcr721": ami-083542bb4f8afa3db
       "Artifactory7112": ami-0474ab36192013bbd # seller account (shared with partnership account)
       "Jcr7112": ami-0f6670c5db60d15b0 # seller account (shared with partnership account)
+      "Artifactory7115": ami-0a7e5d5f3645ea6aa # seller account (shared with partnership account)
+      "Jcr7115": ami-0f2d4ec8454e4e905 # seller account (shared with partnership account)
     us-gov-east-1:
       AMZNLINUX2: ami-7c2bc80d
       "Artifactory755": ami-0732b9134b39caf5c
@@ -202,6 +210,7 @@ Mappings:
       "743": "Jcr743"
       "7102": "Jcr7102"
       "7112": "Jcr7112"
+      "7115": "Jcr7115"
       product: "jcr"
     JFrog-Artifactory-Pro:
       "700": "Artifactory700"
@@ -211,6 +220,7 @@ Mappings:
       "773": "Artifactory773"
       "7102": "Artifactory7102"
       "7112": "Artifactory7112"
+      "7115": "Artifactory7115"
       product: "artifactory"
 Resources:
   ArtifactoryScalingGroup:
