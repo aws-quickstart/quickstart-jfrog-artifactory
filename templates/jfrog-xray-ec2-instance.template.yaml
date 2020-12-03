@@ -121,6 +121,7 @@ Mappings:
       "361": ami-001d5cec1e7399f65 # TODO: Get correct ami - provided by market place tem
       "3103": ami-08d1d573a758ba6b2
       "3112": ami-06e7ce8983a50fd9c
+      "3120": ami-0f1ac45e29d0b0dd4
     us-gov-west-1:
       "361": ami-0eb4eecce8d5bcb80 # TODO: Get correct ami - provided by market place tem
 

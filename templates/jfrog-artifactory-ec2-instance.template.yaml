@@ -200,6 +200,7 @@ Mappings:
       "Artifactory755": ami-0732b9134b39caf5c
       "Artifactory7102": ami-0f5ce3b2c087a8098
       "Artifactory7112":  ami-0bd6c2a94850b75f0
+      "Artifactory7115": ami-0cbd1163138a9bda2
     us-gov-west-1:
       AMZNLINUX2: ami-a03768c1
       "Artifactory755": ami-0b9d3e9ee5ffdc491

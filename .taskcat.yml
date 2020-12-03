@@ -88,7 +88,7 @@ tests:
   #     us-gov-east-1: gov
   #   parameters:
   #     KeyPairName: "vinaykey1"
-  #     ArtifactoryVersion: 7.11.2
+  #     ArtifactoryVersion: 7.11.5
   #     RemoteAccessCidr: "0.0.0.0/0"
   #     AccessCidr: "0.0.0.0/0"
   #     DatabasePassword: "$[taskcat_genpass_8A]"
@@ -221,7 +221,7 @@ tests:
   #     QsS3BucketRegion: "$[taskcat_current_region]"
   #     # DatabaseInstance: "db.m5.large"
   #     # DatabaseEngine: MySQL
-  #     ArtifactoryVersion: "7.10.2"
+  #     ArtifactoryVersion: "7.11.5"
   #     # ReleaseStage: "GA"
   #     NumberOfSecondary: "2"
   #     AnsibleVaultPass: "$[taskcat_genpass_8A]"
