@@ -217,6 +217,7 @@ Resources:
     Type: AWS::RDS::DBInstance
     Properties:
       AllocatedStorage: !Ref DatabaseAllocatedStorage
+      AvailabilityZone: 'us-east-2a'  #TBD ALEX: We need to remove hardcoded value and pass AZ in case it is single az RDS. In case of multi az, we can let amazon decide AZs
       MultiAZ: !Ref MultiAzDatabase
       Engine: !Ref DatabaseEngine
       EngineVersion: !FindInMap

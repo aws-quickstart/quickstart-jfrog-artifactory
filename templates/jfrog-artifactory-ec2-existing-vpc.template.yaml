@@ -348,8 +348,9 @@ Parameters:
     Description: JFrog Artifactory product you want to install into an AMI.
     AllowedValues:
       - JFrog-Artifactory-Pro
+      - JFrog-Artifactory-Enterprise
       - JFrog-Container-Registry
-    Default: JFrog-Artifactory-Pro
+    Default: JFrog-Artifactory-Enterprise
     Type: String
   ArtifactoryVersion:
     Description: Version of Artifactory that you want to deploy into the Quick Start.
@@ -636,12 +637,13 @@ Resources:
     Type: AWS::ElasticLoadBalancingV2::LoadBalancer
     Properties:
       IpAddressType: ipv4
-      Name: !Sub ${ArtifactoryProduct}-EC2-ELB
+      # Name: !Sub ${ArtifactoryProduct}-EC2-ELB
       Scheme: !Ref ELBScheme
       Subnets:
         - !Ref PublicSubnet1Id
         - !Ref PublicSubnet2Id
       Type: network
+      # Type: application
   ArtifactorySslTargetGroup:
     Type: AWS::ElasticLoadBalancingV2::TargetGroup
     Properties:
@@ -692,7 +694,7 @@ Resources:
     Type: AWS::ElasticLoadBalancingV2::LoadBalancer
     Properties:
       IpAddressType: ipv4
-      Name: ArtifactoryInternal-ELB
+      # Name: ArtifactoryInternal-ELB
       Scheme: internal
       Subnets:
         - !Ref PrivateSubnet1Id
@@ -707,7 +709,7 @@ Resources:
       HealthCheckTimeoutSeconds: 10
       HealthyThresholdCount: 3
       HealthCheckPort: "8082"
-      Name: artifactory-internal-http
+      # Name: artifactory-internal-http
       Port: 80
       Protocol: TCP
       TargetType: instance
@@ -777,6 +779,26 @@ Resources:
         Version: 2012-10-17
       ManagedPolicyArns:
         - !Sub 'arn:${AWS::Partition}:iam::aws:policy/service-role/AmazonEC2RoleforSSM'
+      Policies:
+        - PolicyName: "JFrogAMI-policy"
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: "Allow"
+                Action: "ec2:Describe*"
+                Resource: "*"
+              - Effect: "Allow"
+                Action: "ec2:AttachVolume"
+                Resource: "*"
+              - Effect: "Allow"
+                Action: "ec2:DetachVolume"
+                Resource: "*"
+              - Effect: "Allow"
+                Action:
+                  - "s3:GetObject"
+                  - "s3:ListObject"
+                  - "s3:ListBucket"
+                Resource: "*"
   ArtifactoryHostProfile:
     Type: 'AWS::IAM::InstanceProfile'
     Properties:

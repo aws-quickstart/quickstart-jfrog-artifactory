@@ -335,8 +335,9 @@ Parameters:
     Description: JFrog Artifactory product you want to install into an AMI.
     AllowedValues:
       - JFrog-Artifactory-Pro
+      - JFrog-Artifactory-Enterprise
       - JFrog-Container-Registry
-    Default: JFrog-Artifactory-Pro
+    Default: JFrog-Artifactory-Enterprise
     Type: String
   ArtifactoryVersion:
     Description: Version of Artifactory that you want to deploy into the Quick Start.
