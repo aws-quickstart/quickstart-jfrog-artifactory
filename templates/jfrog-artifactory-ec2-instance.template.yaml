@@ -200,8 +200,7 @@ Resources:
         config-artifactory-master:
           files:
             /root/.jfrog_ami/artifactory.yml:
-              content: !Sub
-                - |
+              content: !Sub |
                   # Base install for Artifactory
                   - import_playbook: site-artifactory.yml
                     vars:
