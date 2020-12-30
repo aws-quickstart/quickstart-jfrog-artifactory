@@ -138,12 +138,12 @@ Mappings:
       CentOS7HVM: ""
 Resources:
   ArtifactoryScalingGroup:
-    Type: 'AWS::AutoScaling::AutoScalingGroup'
+    Type: AWS::AutoScaling::AutoScalingGroup
     Properties:
       LaunchConfigurationName: !Ref ArtifactoryLaunchConfiguration
       VPCZoneIdentifier:
         - !Ref PrivateSubnet1Id
-        - !Ref PrivateSubnet2Id   #TBD ALEX: If product is jfrog-artifactory-pro, we should pass AWS::NoValue so that instance is only created in az1
+        - !Ref PrivateSubnet2Id
       MinSize: !Ref MinScalingNodes
       MaxSize: !Ref MaxScalingNodes
       Cooldown: '300'
@@ -164,16 +164,16 @@ Resources:
         Timeout: PT60M
 
   ArtifactoryLaunchConfiguration:
-    Type: 'AWS::AutoScaling::LaunchConfiguration'
+    Type: AWS::AutoScaling::LaunchConfiguration
     Metadata:
-      'AWS::CloudFormation::Authentication':
+      AWS::CloudFormation::Authentication:
         S3AccessCreds:
           type: S3
           roleName:
             - !Ref HostRole  # !Ref ArtifactoryHostRole
           buckets:
             - !Ref QsS3BucketName
-      'AWS::CloudFormation::Init':
+      AWS::CloudFormation::Init:
         configSets:
           jfrog_ami_setup:
             - "config-ansible-art-ami"
@@ -275,7 +275,7 @@ Resources:
             VolumeType: gp2
             DeleteOnTermination: true
       UserData:
-        'Fn::Base64':
+        Fn::Base64:
           !Sub |
             #!/bin/bash -x
 

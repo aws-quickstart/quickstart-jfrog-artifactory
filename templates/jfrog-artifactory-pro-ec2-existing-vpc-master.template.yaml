@@ -291,7 +291,7 @@ Parameters:
 Conditions:
   UsingDefaultBucket: !Equals [!Ref QsS3BucketName, 'aws-quickstart']
 Resources:
-  ArtifactoryVpcStack:
+  ArtifactoryExistingVpcStack:
     Type: AWS::CloudFormation::Stack
     Properties:
       TemplateURL: !Sub

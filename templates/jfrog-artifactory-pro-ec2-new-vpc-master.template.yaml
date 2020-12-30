@@ -19,9 +19,6 @@ Metadata:
       - Label:
           default: Network configuration
         Parameters:
-          # - VpcId
-          # - PublicSubnet1Id
-          # - PublicSubnet2Id
           - AvailabilityZones
       - Label:
           default: Security configuration
@@ -60,12 +57,6 @@ Metadata:
         default: Quick Start S3 bucket region
       KeyPairName:
         default: SSH key name
-      # VpcId:
-      #   default: VPC ID
-      # PublicSubnet1Id:
-      #   default: Public subnet 1 ID
-      # PublicSubnet2Id:
-      #   default: Public subnet 2 ID
       AccessCidr:
         default: Permitted IP range
       AvailabilityZones:
@@ -124,15 +115,6 @@ Parameters:
       which allows you to connect securely to your instance after it launches.
       This is the key pair you created in your preferred Region.
     Type: AWS::EC2::KeyPair::KeyName
-  # VpcId:
-  #   Description: ID of your existing VPC (e.g., vpc-0343606e).
-  #   Type: "AWS::EC2::VPC::Id"
-  # PublicSubnet1Id:
-  #   Description: ID of the public subnet in Availability Zone 1 of your existing VPC (e.g., subnet-z0376dab).
-  #   Type: "AWS::EC2::Subnet::Id"
-  # PublicSubnet2Id:
-  #   Description: ID of the public subnet in Availability Zone 2 of your existing VPC (e.g., subnet-a29c3d84).
-  #   Type: "AWS::EC2::Subnet::Id"
   AccessCidr:
     Description: CIDR IP range that is permitted to access Artifactory.
       We recommend that you set this value to a trusted IP range.
@@ -268,7 +250,7 @@ Parameters:
 Conditions:
   UsingDefaultBucket: !Equals [!Ref QsS3BucketName, 'aws-quickstart']
 Resources:
-  ArtifactoryVpcStack:
+  ArtifactoryNewVpcStack:
     Type: AWS::CloudFormation::Stack
     Properties:
       TemplateURL: !Sub
@@ -307,4 +289,4 @@ Resources:
 Outputs:
   ArtifactoryUrl:
     Description: URL of the ELB to access Artifactory
-    Value: !Sub ${ArtifactoryVpcStack.Outputs.ArtifactoryUrl}
+    Value: !Sub ${ArtifactoryNewVpcStack.Outputs.ArtifactoryUrl}
