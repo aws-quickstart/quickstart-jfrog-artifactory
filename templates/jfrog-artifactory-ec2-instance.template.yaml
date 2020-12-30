@@ -107,23 +107,23 @@ Parameters:
 Mappings:
   AWSAMIRegionMap:
     ap-northeast-1:
-      CentOS7HVM: ""  #TBD ALEX: We need to fill in centos ids for all regions
+      CentOS7HVM: "ami-00a5245b4816c38e6"
     ap-northeast-2:
-      CentOS7HVM: ""
+      CentOS7HVM: "ami-00dc207f8ba6dc919"
     ap-south-1:
-      CentOS7HVM: ""
+      CentOS7HVM: "ami-0ad42f4f66f6c1cc9"
     ap-southeast-1:
-      CentOS7HVM: ""
+      CentOS7HVM: "ami-05b3bcf7f311194b3"
     ap-southeast-2:
-      CentOS7HVM: ""
+      CentOS7HVM: "ami-02fd0b06f06d93dfc"
     ca-central-1:
-      CentOS7HVM: ""
+      CentOS7HVM: "ami-07423fb63ea0a0930"
     eu-central-1:
-      CentOS7HVM: ""
+      CentOS7HVM: "ami-0cfbf4f6db41068ac"
     eu-west-1:
-      CentOS7HVM: ""
+      CentOS7HVM: "ami-08935252a36e25f85"
     sa-east-1:
-      CentOS7HVM: ""
+      CentOS7HVM: "ami-05145e0b28ad8e0b2"
     us-east-1:
       CentOS7HVM: "ami-0affd4508a5d2481b"
     us-east-2:
