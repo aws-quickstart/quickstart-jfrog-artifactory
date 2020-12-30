@@ -27,7 +27,6 @@ Metadata:
           default: Security configuration
         Parameters:
           - AccessCidr
-          - RemoteAccessCidr
       - Label:
           default: Amazon EC2 configuration
         Parameters:
@@ -69,8 +68,6 @@ Metadata:
       #   default: Public subnet 2 ID
       AccessCidr:
         default: Permitted IP range
-      RemoteAccessCidr:
-        default: Remote access CIDR
       AvailabilityZones:
         default: Availability Zones
       VolumeSize:
@@ -140,13 +137,6 @@ Parameters:
     Description: CIDR IP range that is permitted to access Artifactory.
       We recommend that you set this value to a trusted IP range.
       For example, you might want to grant only your corporate network access to the software.
-    AllowedPattern: ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/([0-9]|[1-2][0-9]|3[0-2]))$
-    Default: 0.0.0.0/0
-    Type: String
-  RemoteAccessCidr:
-    Description: Remote CIDR range that allows you to connect to the bastion instance by using SSH.
-      We recommend that you set this value to a trusted IP range.
-      For example, you might want to grant specific ranges inside your corporate network SSH access.
     AllowedPattern: ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/([0-9]|[1-2][0-9]|3[0-2]))$
     Default: 0.0.0.0/0
     Type: String
@@ -289,7 +279,7 @@ Resources:
         KeyPairName: !Ref KeyPairName
         ProvisionBastionHost: "Disabled"
         AccessCidr: !Ref AccessCidr
-        RemoteAccessCidr: !Ref RemoteAccessCidr
+        RemoteAccessCidr: "0.0.0.0/0" # Bastion host is disabled so this will not be used
         ArtifactoryProduct: 'JFrog-Artifactory-Pro'
         VolumeSize: !Ref VolumeSize
         InstanceType: !Ref InstanceType
