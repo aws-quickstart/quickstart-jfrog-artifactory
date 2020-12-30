@@ -60,6 +60,7 @@ Metadata:
           - DatabasePassword
           - DatabaseInstance
           - DatabaseAllocatedStorage
+          - DatabasePreferredAz
           - MultiAzDatabase
       - Label:
           default: AWS Quick Start configuration
@@ -151,6 +152,8 @@ Metadata:
         default: Database instance type
       DatabaseAllocatedStorage:
         default: Database allocated storage
+      DatabasePreferredAz:
+        default: Database preferred Availability Zone
       MultiAzDatabase:
         default: High-availability database
       QsS3BucketName:
@@ -458,6 +461,10 @@ Parameters:
     MaxValue: 1024
     Default: 10
     Type: Number
+  DatabasePreferredAz:
+    Description: Preferred availability zone for Amazon RDS primary instance
+    Default: us-west-2a
+    Type: AWS::EC2::AvailabilityZone::Name
   MultiAzDatabase:
     Description: Choose false to create an Amazon RDS instance in a single Availability Zone.
     ConstraintDescription: True or False
@@ -625,6 +632,7 @@ Resources:
         PrivateSubnet3Cidr: !Ref PrivateSubnet2Cidr  # This should end up in no new rule but required for EKS
         SubnetIds: !Join [",", [!Ref PrivateSubnet1Id, !Ref PrivateSubnet2Id]]
         DatabaseAllocatedStorage: !Ref DatabaseAllocatedStorage
+        DatabasePreferredAz: !Ref DatabasePreferredAz
         MultiAzDatabase: !Ref MultiAzDatabase
         DatabaseEngine: !Ref DatabaseEngine
         DatabaseUser: !Ref DatabaseUser
