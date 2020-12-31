@@ -16,6 +16,12 @@ Parameters:
   AmiId:
     Type: String
   ArtifactoryProduct:
+    Description: JFrog Artifactory product you want to install into an AMI.
+    AllowedValues:
+      - JFrog-Artifactory-Pro
+      - JFrog-Artifactory-Enterprise
+      - JFrog-Container-Registry
+    Default: JFrog-Artifactory-Enterprise
     Type: String
   QsS3BucketName:
     Type: String
@@ -136,14 +142,17 @@ Mappings:
       CentOS7HVM: ""
     us-gov-west-1:
       CentOS7HVM: ""
+
+Conditions:
+  IsArtifactoryPro: !Equals [!Ref ArtifactoryProduct, 'JFrog-Artifactory-Pro']
+
 Resources:
   ArtifactoryScalingGroup:
     Type: AWS::AutoScaling::AutoScalingGroup
     Properties:
       LaunchConfigurationName: !Ref ArtifactoryLaunchConfiguration
       VPCZoneIdentifier:
-        - !Ref PrivateSubnet1Id
-        - !Ref PrivateSubnet2Id
+        !If [IsArtifactoryPro, [!Ref PrivateSubnet1Id], [!Ref PrivateSubnet1Id, !Ref PrivateSubnet2Id]]
       MinSize: !Ref MinScalingNodes
       MaxSize: !Ref MaxScalingNodes
       Cooldown: '300'

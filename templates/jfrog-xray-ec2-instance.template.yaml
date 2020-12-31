@@ -13,6 +13,14 @@ Parameters:
     Type: Number
   DeploymentTag:
     Type: String
+  ArtifactoryProduct:
+    Description: JFrog Artifactory product you want to install into an AMI.
+    AllowedValues:
+      - JFrog-Artifactory-Pro
+      - JFrog-Artifactory-Enterprise
+      - JFrog-Container-Registry
+    Default: JFrog-Artifactory-Enterprise
+    Type: String
   QsS3BucketName:
     Type: String
   QsS3KeyPrefix:
@@ -100,14 +108,16 @@ Mappings:
     us-gov-west-1:
       "361": ami-0eb4eecce8d5bcb80 # TODO: Get correct ami - provided by market place tem
 
+Conditions:
+  IsArtifactoryPro: !Equals [!Ref ArtifactoryProduct, 'JFrog-Artifactory-Pro']
+
 Resources:
   XrayScalingGroup:
     Type: AWS::AutoScaling::AutoScalingGroup
     Properties:
       LaunchConfigurationName: !Ref XrayLaunchConfiguration
       VPCZoneIdentifier:
-        - !Ref PrivateSubnet1Id
-        - !Ref PrivateSubnet2Id
+        !If [IsArtifactoryPro, [!Ref PrivateSubnet1Id], [!Ref PrivateSubnet1Id, !Ref PrivateSubnet2Id]]
       MinSize: !Ref MinScalingNodes
       MaxSize: !Ref MaxScalingNodes
       Cooldown: '300'

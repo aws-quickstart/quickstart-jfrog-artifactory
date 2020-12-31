@@ -645,7 +645,6 @@ Resources:
     Type: AWS::ElasticLoadBalancingV2::LoadBalancer
     Properties:
       IpAddressType: ipv4
-      # Name: !Sub ${ArtifactoryProduct}-EC2-ELB
       Scheme: !Ref ELBScheme
       Subnets:
         - !Ref PublicSubnet1Id
@@ -981,6 +980,7 @@ Resources:
         MinScalingNodes: !Ref XrayNumberOfInstances
         MaxScalingNodes: !Ref XrayNumberOfInstances
         DeploymentTag: 'xray'
+        ArtifactoryProduct: !Ref ArtifactoryProduct
         QsS3BucketName: !Ref QsS3BucketName
         QsS3KeyPrefix: !Ref QsS3KeyPrefix
         QsS3Uri: !Sub

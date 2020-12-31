@@ -334,4 +334,4 @@ Resources:
 Outputs:
   ArtifactoryUrl:
     Description: URL of the ELB to access Artifactory
-    Value: !Sub ${ArtifactoryVpcStack.Outputs.ArtifactoryUrl}
+    Value: !Sub ${ArtifactoryExistingVpcStack.Outputs.ArtifactoryUrl}
