@@ -265,7 +265,6 @@ tests:
       InstallXray         : "true"
       XrayVersion         : 3.11.2
       DatabasePassword    : "$[taskcat_genpass_8A]"
-      DatabasePreferredAz : us-west-2a
       QsS3BucketName      : "$[taskcat_autobucket]"
       QsS3KeyPrefix       : "quickstart-jfrog-artifactory/"
       QsS3BucketRegion    : "$[taskcat_current_region]"

@@ -221,10 +221,6 @@ Parameters:
     MaxValue: 1024
     Default: 10
     Type: Number
-  DatabasePreferredAz:
-    Description: Preferred availability zone for Amazon RDS primary instance
-    Default: us-west-2a
-    Type: AWS::EC2::AvailabilityZone::Name
   InstallXray:
     Description: Choose true to install JFrog Xray instance(s).
     ConstraintDescription: True or False
@@ -274,7 +270,9 @@ Resources:
         DatabasePassword: !Ref DatabasePassword
         DatabaseInstance: !Ref DatabaseInstance
         DatabaseAllocatedStorage: !Ref DatabaseAllocatedStorage
-        DatabasePreferredAz: !Ref DatabasePreferredAz
+        DatabasePreferredAz: !Select
+          - '0'
+          - !Ref 'AvailabilityZones'
         MultiAzDatabase: false
         QsS3BucketName: !Ref QsS3BucketName
         QsS3KeyPrefix: !Ref QsS3KeyPrefix
