@@ -229,6 +229,7 @@ Resources:
             VolumeSize: !Ref VolumeSize
             VolumeType: gp2
             DeleteOnTermination: true
+            Encrypted: true
       NetworkInterfaces:
         - AssociatePublicIpAddress: True
           DeviceIndex: "0"
