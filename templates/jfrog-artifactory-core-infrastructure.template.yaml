@@ -229,7 +229,10 @@ Resources:
     Properties:
       AllocatedStorage: !Ref DatabaseAllocatedStorage
       AvailabilityZone: !If [IsMultiAzDatabase, !Ref AWS::NoValue, !Ref DatabasePreferredAz]
-      MultiAZ: !Ref MultiAzDatabase
+      BackupRetentionPeriod: 30
+      DBInstanceClass: !Ref DatabaseInstance
+      DBName: !Ref DatabaseName
+      DBSubnetGroupName: !Ref  ArtifactoryDatabaseSubnetGroup
       Engine: !Ref DatabaseEngine
       EngineVersion: !FindInMap
         - DatabaseMap
@@ -237,9 +240,8 @@ Resources:
         - DatabaseVersion
       MasterUsername: !Ref DatabaseUser
       MasterUserPassword: !Ref DatabasePassword
-      DBInstanceClass: !Ref DatabaseInstance
-      DBName: !Ref DatabaseName
-      DBSubnetGroupName: !Ref  ArtifactoryDatabaseSubnetGroup
+      MultiAZ: !Ref MultiAzDatabase
+      StorageEncrypted: true
       VPCSecurityGroups:
         - !Ref ArtifactoryDatabaseSG
   ArtifactoryDatabaseSG:
