@@ -207,6 +207,7 @@ Resources:
                   # Base install for JFrogAMIInstance
                   - import_playbook: artifactory-ami.yml
                     vars:
+                      ami_creation: true
                       artifactory_version: ${ArtifactVersion}
                       artifactory_ha_enabled: true
                       db_download_url: "https://jdbc.postgresql.org/download/postgresql-42.2.12.jar"
@@ -229,7 +230,7 @@ Resources:
             VolumeSize: !Ref VolumeSize
             VolumeType: gp2
             DeleteOnTermination: true
-            Encrypted: true
+            Encrypted: false
       NetworkInterfaces:
         - AssociatePublicIpAddress: True
           DeviceIndex: "0"

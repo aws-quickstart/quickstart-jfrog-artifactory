@@ -156,6 +156,7 @@ Resources:
                   # Base install for Xray
                   - import_playbook: xray-ami.yml
                     vars:
+                      ami_creation: false
                       db_type: postgresql
                       db_driver: org.postgresql.Driver
                       xray_version: ${XrayVersion}

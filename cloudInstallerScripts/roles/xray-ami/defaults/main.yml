@@ -3,6 +3,9 @@
 # indicates were this collection was downlaoded from (galaxy, automation_hub, standalone)
 ansible_marketplace: standalone
 
+# whether we are creating a AMI for Marketplace or just for configuring EC2 instance
+ami_creation: false
+
 # The version of xray to install
 xray_version: 3.3.0
 

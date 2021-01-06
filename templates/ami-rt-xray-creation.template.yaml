@@ -197,6 +197,7 @@ Resources:
                   # Base install for Xray
                   - import_playbook: xray-ami.yml
                     vars:
+                      ami_creation: true
                       db_type: postgresql
                       db_driver: org.postgresql.Driver
                       xray_version: ${XrayVersion}
@@ -215,7 +216,7 @@ Resources:
             VolumeSize: !Ref VolumeSize
             VolumeType: gp2
             DeleteOnTermination: true
-            Encrypted: true
+            Encrypted: false
       NetworkInterfaces:
         - AssociatePublicIpAddress: True
           DeviceIndex: "0"

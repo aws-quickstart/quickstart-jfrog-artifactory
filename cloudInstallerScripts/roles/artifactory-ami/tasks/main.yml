@@ -71,6 +71,7 @@
   loop_control:
     loop_var: ssh_keys
 
-# - name: shutdown VM
-#   command: /sbin/shutdown -h now
-#   ignore_errors: 'yes'
+- name: shutdown VM
+  command: /sbin/shutdown -h now
+  ignore_errors: 'yes'
+  when: ami_creation
