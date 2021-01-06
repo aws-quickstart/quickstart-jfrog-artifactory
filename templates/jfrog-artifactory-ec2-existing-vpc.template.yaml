@@ -546,6 +546,7 @@ Parameters:
 Conditions:
   EnableBastion: !Equals [!Ref 'ProvisionBastionHost', 'Enabled']
   IsArtifactory: !Not [!Equals [!Ref ArtifactoryProduct, 'JFrog-Container-Registry']]
+  IsArtifactoryPro: !Equals [!Ref ArtifactoryProduct, 'JFrog-Artifactory-Pro']
   HasSecondaryNodes: !Not [!Equals [!Ref NumberOfSecondary, '0']]
   DefaultJava: !Equals [!Ref DefaultJavaMemSettings, "true"]
   UsingDefaultBucket: !Equals [!Ref QsS3BucketName, 'aws-quickstart']
@@ -663,6 +664,9 @@ Resources:
       Port: 443
       Protocol: TCP
       TargetType: instance
+      TargetGroupAttributes:
+        - Key: deregistration_delay.timeout_seconds
+          Value: !If [IsArtifactoryPro, '1800', '300']  # 30 min delay for Pro, default 5 min for others
       UnhealthyThresholdCount: 3
       VpcId: !Ref VpcId
   ArtifactoryTargetGroup:
@@ -677,6 +681,9 @@ Resources:
       Port: 80
       Protocol: TCP
       TargetType: instance
+      TargetGroupAttributes:
+        - Key: deregistration_delay.timeout_seconds
+          Value: !If [IsArtifactoryPro, '1800', '300']  # 30 min delay for Pro, default 5 min for others
       UnhealthyThresholdCount: 3
       VpcId: !Ref VpcId
   ArtifactorySslElbListener:
