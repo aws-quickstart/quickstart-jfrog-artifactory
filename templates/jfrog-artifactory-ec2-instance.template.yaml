@@ -222,8 +222,8 @@ Resources:
                       artifactory_license6: ${ArtifactoryLicense6}
                       artifactory_product: "{{ 'jcr' if '${ArtifactoryProduct}' == 'JFrog-Container-Registry' else 'artifactory' }}"
                       artifactory_flavour: "{{ 'jcr' if '${ArtifactoryProduct}' == 'JFrog-Container-Registry' else 'pro' }}"
-                      artifactory_ha_enabled: "{{ 'true' if '${ArtifactoryProduct}' == 'JFrog-Artifactory-Enterprise' else 'false' }}"
-                      artifactory_is_primary: "${ArtifactoryPrimary}"
+                      artifactory_ha_enabled: "{{ true if '${ArtifactoryProduct}' == 'JFrog-Artifactory-Enterprise' else false }}"
+                      artifactory_is_primary: ${ArtifactoryPrimary}
                       artifactory_server_name: ${ArtifactoryServerName}
                       server_name: ${ArtifactoryServerName}.${CertificateDomain}
                       s3_region: ${AWS::Region}
@@ -386,8 +386,8 @@ Resources:
 
             setsebool httpd_can_network_connect 1 -P
 
-            ansible-playbook /root/.jfrog_ami/jfrog-ami-setup.yml &> /var/log/jfrog-ami.log || cfn_fail
-            ansible-playbook /root/.jfrog_ami/artifactory.yml || qs_err " ansible execution failed "
+            ansible-playbook /root/.jfrog_ami/jfrog-ami-setup.yml &> /var/log/jfrog-ami-setup.log || cfn_fail
+            ansible-playbook /root/.jfrog_ami/artifactory.yml &> /var/log/jfrog-ami-artifactory.log || qs_err " ansible execution failed "
 
             rm -rf /root/.secureit.sh
 

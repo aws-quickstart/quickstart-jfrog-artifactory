@@ -861,7 +861,7 @@ Resources:
         DatabaseType: !GetAtt ArtifactoryCoreInfraStack.Outputs.DatabaseType
         DatabaseUser: !Ref DatabaseUser
         DatabasePassword: !Ref DatabasePassword
-        ArtifactoryPrimary: 'true'
+        ArtifactoryPrimary: true
         MasterKey: !Ref MasterKey
         ExtraJavaOptions: !If [DefaultJava, !Sub "${ArtifactoryCoreInfraStack.Outputs.JavaOpts} ${ExtraJavaOptions}", !Ref ExtraJavaOptions]
         KeystorePassword: !Ref KeystorePassword
@@ -915,7 +915,7 @@ Resources:
         DatabaseType: !GetAtt ArtifactoryCoreInfraStack.Outputs.DatabaseType
         DatabaseUser: !Ref DatabaseUser
         DatabasePassword: !Ref DatabasePassword
-        ArtifactoryPrimary: 'false'
+        ArtifactoryPrimary: false
         MasterKey: !Ref MasterKey
         ExtraJavaOptions: !If [DefaultJava, !Sub "${ArtifactoryCoreInfraStack.Outputs.JavaOpts} ${ExtraJavaOptions}", !Ref ExtraJavaOptions]
         KeystorePassword: !Ref KeystorePassword
