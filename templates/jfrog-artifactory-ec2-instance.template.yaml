@@ -167,6 +167,9 @@ Resources:
         - Key: Name
           Value: !Ref DeploymentTag
           PropagateAtLaunch: true
+        - Key: ArtifactoryVersion
+          Value: !Ref ArtifactoryVersion
+          PropagateAtLaunch: true
     CreationPolicy:
       ResourceSignal:
         Count: 1
