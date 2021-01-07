@@ -450,7 +450,6 @@ Parameters:
     Type: Number
   DatabasePreferredAz:
     Description: Preferred availability zone for Amazon RDS primary instance
-    Default: us-west-2a
     Type: AWS::EC2::AvailabilityZone::Name
   MultiAzDatabase:
     Description: Choose false to create an Amazon RDS instance in a single Availability Zone.
