@@ -10,8 +10,8 @@ project:
 
   parameters:
     KeyPairName         : "<set your key in override yml>"
-    ArtifactoryVersion  : 7.11.2
-    XrayVersion         : 3.11.2
+    ArtifactoryVersion  : 7.12.5
+    XrayVersion         : 3.15.1
     QsS3BucketName      : "$[taskcat_autobucket]"
     QsS3KeyPrefix       : "quickstart-jfrog-artifactory/"
     QsS3BucketRegion    : "$[taskcat_current_region]"
@@ -20,18 +20,19 @@ project:
     - us-east-1
     #- us-gov-east-1
     #- us-gov-west-1
+
 tests:
 
-  # jcr-ami:
-  #   auth:
-  #     us-east-1: seller
-  #   parameters:
-  #     AvailabilityZone: "$[taskcat_genaz_1]"
-  #     RemoteAccessCidr: "0.0.0.0/0"
-  #     JFrogProduct: "jfrog-artifactory-jcr"
-  #   template: templates/jfrog-ami-master.template.yaml
-  #   regions:
-  #     - us-east-1
+  jcr-ami:
+    auth:
+      us-east-1: seller
+    parameters:
+      AvailabilityZone: "$[taskcat_genaz_1]"
+      RemoteAccessCidr: "0.0.0.0/0"
+      JFrogProduct: "jfrog-artifactory-jcr"
+    template: templates/jfrog-ami-master.template.yaml
+    regions:
+      - us-east-1
 
   rt-ami:
     auth:
@@ -275,8 +276,8 @@ tests:
       PrivateSubnet1Id    : "subnet-03ca0426539289da3"
       PrivateSubnet2Id    : "subnet-012fc1245aca55664"
 
-      PrivateSubnet1Cidr  : "10.0.128.0/20"
-      PrivateSubnet2Cidr  : "10.0.144.0/20"
+      PrivateSubnet1Cidr  : "10.0.0.0/19"
+      PrivateSubnet2Cidr  : "10.0.32.0/19"
     template              : templates/jfrog-artifactory-pro-ec2-existing-vpc-master.template.yaml
     regions:
       # - us-east-2
