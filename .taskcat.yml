@@ -1,8 +1,6 @@
 project:
   name: quickstart-jfrog-artifactory
   owner: quickstart-eng@amazon.com
-  #lambda_source_path: functions/source
-  #lambda_zip_path: functions/packages
   s3_object_acl: public-read
   s3_regional_buckets: True
   s3_bucket: tcat-422383ecc658557f9a377abae675aac0  # commercial accounts
@@ -16,6 +14,11 @@ project:
     QsS3KeyPrefix       : "quickstart-jfrog-artifactory/"
     QsS3BucketRegion    : "$[taskcat_current_region]"
     MasterKey           : "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"
+
+    # Set this to your home intenet gateway public IP in override file
+    # e.g. "24.4.228.4/32"
+    RemoteAccessCidr    : "63.238.166.122/29" # JFrog network
+
   regions:
     - us-east-1
     #- us-gov-east-1
@@ -28,7 +31,6 @@ tests:
       us-east-1: seller
     parameters:
       AvailabilityZone: "$[taskcat_genaz_1]"
-      RemoteAccessCidr: "0.0.0.0/0"
       JFrogProduct: "jfrog-artifactory-jcr"
     template: templates/jfrog-ami-master.template.yaml
     regions:
@@ -40,7 +42,6 @@ tests:
       us-gov-east-1 : gov
     parameters:
       AvailabilityZone: "$[taskcat_genaz_1]"
-      RemoteAccessCidr: "0.0.0.0/0"
       JFrogProduct: "jfrog-artifactory-pro"
     template: templates/jfrog-ami-master.template.yaml
     regions:
@@ -54,7 +55,6 @@ tests:
       us-gov-east-1 : gov
     parameters:
       AvailabilityZone: "$[taskcat_genaz_1]"
-      RemoteAccessCidr: "0.0.0.0/0"
     template: templates/ami-rt-xray-master.template.yaml
     regions:
       # - us-east-1
@@ -109,7 +109,6 @@ tests:
       us-gov-east-1: gov
     parameters:
       ArtifactoryProduct: "JFrog-Artifactory-Enterprise"
-      RemoteAccessCidr: "0.0.0.0/0"
       AccessCidr: "0.0.0.0/0"
       DatabaseInstance: "db.m5.large"
       DatabasePassword: "$[taskcat_genpass_8A]"
@@ -118,7 +117,6 @@ tests:
       KeystorePassword: "$[taskcat_genpass_8A]"
       AnsibleVaultPass: "$[taskcat_genpass_8A]"
       ArtifactoryServerName: "artifactory"
-      MasterKey: "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"
       SmLicenseCertName: "jfrog-artifactory"
       InstallXray: "true"
       XrayDatabasePassword: "$[taskcat_genpass_8A]"
@@ -139,7 +137,6 @@ tests:
       us-gov-east-1: gov
     parameters:
       ArtifactoryProduct: "JFrog-Artifactory-Enterprise"
-      RemoteAccessCidr: "0.0.0.0/0"
       AccessCidr: "0.0.0.0/0"
       DatabasePassword: "$[taskcat_genpass_8A]"
       MultiAzDatabase: "true"
@@ -148,7 +145,6 @@ tests:
       KeystorePassword: "$[taskcat_genpass_8A]"
       AnsibleVaultPass: "$[taskcat_genpass_8A]"
       ArtifactoryServerName: "artifactory"
-      MasterKey: "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"
       SmLicenseCertName: "jfrog-artifactory"
       InstallXray: "true"
       XrayDatabasePassword: "$[taskcat_genpass_8A]"
@@ -213,33 +209,25 @@ tests:
       - us-west-2
 
 
-  # rt-xray-ec2-marketplace:
-  #   parameters:
-  #     KeyPairName: "vinaykey1"
-  #     ArtifactoryVersion: 7.10.2
-  #     RemoteAccessCidr: "0.0.0.0/0"
-  #     DatabaseEngine: Postgres
-  #     AccessCidr: "0.0.0.0/0"
-  #     DatabasePassword: "$[taskcat_genpass_8A]"
-  #     QsS3BucketName: "$[taskcat_autobucket]"
-  #     QsS3KeyPrefix: "quickstart-jfrog-artifactory/"
-  #     QsS3BucketRegion: "$[taskcat_current_region]"
-  #     DatabaseInstance: "db.m5.large"
-  #     NumberOfSecondary: "2"
-  #     KeystorePassword: "$[taskcat_genpass_8A]"
-  #     AnsibleVaultPass: "$[taskcat_genpass_8A]"
-  #     ArtifactoryServerName: "artifactory"
-  #     MasterKey: "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"
-  #     SmLicenseCertName: "jfrog-artifactory"
-  #     MultiAzDatabase: "true"
-  #     # InstallXray: "false"
-  #     XrayVersion: 3.10.3
-  #     XrayDatabasePassword: "$[taskcat_genpass_8A]"
-  #     # XrayNumberOfInstances: 2
-  #     AvailabilityZones: "us-east-1a, us-east-1b"
-  #   template: templates/jfrog-artifactory-ec2-marketplace-master.template.yaml
-  #   regions:
-  #     - us-east-1
+  rt-xray-ec2-marketplace:
+    parameters:
+      DatabaseEngine: Postgres
+      AccessCidr: "0.0.0.0/0"
+      DatabasePassword: "$[taskcat_genpass_8A]"
+      DatabaseInstance: "db.m5.large"
+      NumberOfSecondary: "2"
+      KeystorePassword: "$[taskcat_genpass_8A]"
+      AnsibleVaultPass: "$[taskcat_genpass_8A]"
+      ArtifactoryServerName: "artifactory"
+      SmLicenseCertName: "jfrog-artifactory"
+      MultiAzDatabase: "true"
+      # InstallXray: "false"
+      XrayDatabasePassword: "$[taskcat_genpass_8A]"
+      # XrayNumberOfInstances: 2
+      AvailabilityZones: "us-east-1a, us-east-1b"
+    template: templates/jfrog-artifactory-ec2-marketplace-master.template.yaml
+    regions:
+      - us-east-1
 
   artifactory-pro-new-vpc:
     parameters:
@@ -287,21 +275,14 @@ tests:
 
   # rt-ecs:
   #   parameters:
-  #     KeyPairName: "vinaykey1"
-  #     RemoteAccessCidr: "0.0.0.0/0"
   #     AccessCidr: "0.0.0.0/0"
   #     DatabasePassword: "$[taskcat_genpass_8A]"
-  #     QsS3BucketName: "$[taskcat_autobucket]"
-  #     QsS3KeyPrefix: "quickstart-jfrog-artifactory/"
-  #     QsS3BucketRegion: "$[taskcat_current_region]"
   #     # DatabaseInstance: "db.m5.large"
   #     # DatabaseEngine: MySQL
-  #     ArtifactoryVersion: "7.10.2"
   #     # ReleaseStage: "GA"
   #     NumberOfSecondary: "2"
   #     AnsibleVaultPass: "$[taskcat_genpass_8A]"
   #     ArtifactoryServerName: "artifactory"
-  #     MasterKey: "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"
   #     SmLicenseCertName: "jfrog-artifactory"
   #     MultiAzDatabase: "false"
 
@@ -325,19 +306,12 @@ tests:
   #   auth:
   #     default: temp
   #   parameters:
-  #     KeyPairName: "vinaykey1"
-  #     RemoteAccessCidr: "0.0.0.0/0"
   #     AccessCidr: "0.0.0.0/0"
   #     AvailabilityZones: "$[taskcat_genaz_3]"
   #     DatabasePassword: "$[taskcat_genpass_8A]"
-  #     QsS3BucketName: "$[taskcat_autobucket]"
-  #     QsS3KeyPrefix: "quickstart-jfrog-artifactory/"
-  #     QsS3BucketRegion: "$[taskcat_current_region]"
   #     DatabaseInstance: "db.m5.large"
-  #     ArtifactoryVersion: "7.10.2"
   #     NumberOfSecondary: "2"
   #     ArtifactoryServerName: "artifactory"
-  #     MasterKey: "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"
   #     SmLicenseCertName: "jfrog-artifactory"
   #     MultiAzDatabase: "false"
   #     InstallXray: "true"
@@ -352,7 +326,6 @@ tests:
   # rt-eks-core:
   #   parameters:
   #     ArtifactoryDeploymentSize: Medium
-  #     ArtifactoryVersion: 7.2.1
   #     DatabaseEngine: Postgres
   #     DatabaseName: artdb
   #     DatabaseUser: artifactory
