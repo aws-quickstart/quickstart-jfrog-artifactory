@@ -162,7 +162,7 @@ Resources:
         - !Ref SSLTargetGroupARN
         - !Ref InternalTargetGroupARN
       HealthCheckType: ELB
-      HealthCheckGracePeriod: 900
+      HealthCheckGracePeriod: 1800
       Tags:
         - Key: Name
           Value: !Ref DeploymentTag
@@ -170,9 +170,12 @@ Resources:
         - Key: ArtifactoryVersion
           Value: !Ref ArtifactoryVersion
           PropagateAtLaunch: true
+      TerminationPolicies:
+        - OldestInstance
+        - Default
     CreationPolicy:
       ResourceSignal:
-        Count: 1
+        Count: !Ref MinScalingNodes
         Timeout: PT60M
 
   ArtifactoryLaunchConfiguration:

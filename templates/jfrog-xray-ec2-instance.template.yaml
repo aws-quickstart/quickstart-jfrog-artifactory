@@ -123,7 +123,7 @@ Resources:
       Cooldown: '300'
       DesiredCapacity: !Ref MinScalingNodes
       HealthCheckType: EC2
-      HealthCheckGracePeriod: 900
+      HealthCheckGracePeriod: 1800
       Tags:
         - Key: Name
           Value: !Ref DeploymentTag
@@ -131,9 +131,15 @@ Resources:
         - Key: XrayVersion
           Value: !Ref XrayVersion
           PropagateAtLaunch: true
+        - Key: XrayVersion
+          Value: !Ref XrayVersion
+          PropagateAtLaunch: true
+      TerminationPolicies:
+        - OldestInstance
+        - Default
     CreationPolicy:
       ResourceSignal:
-        Count: 1
+        Count: !Ref MinScalingNodes
         Timeout: PT60M
   XrayLaunchConfiguration:
     Type: AWS::AutoScaling::LaunchConfiguration
