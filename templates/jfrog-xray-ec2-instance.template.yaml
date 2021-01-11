@@ -148,10 +148,37 @@ Resources:
       AWS::CloudFormation::Init:
         configSets:
           xray_ami_setup:
+            - "config-cloudwatch"
             - "config-ansible-xray-ami"
           xray_install:
+            - "config-cloudwatch"
             - "config-ansible-xray-ami"
             - "config-xray"
+        config-cloudwatch:
+          files:
+            /root/cloudwatch.conf:
+              content: |
+                [general]
+                state_file = /var/awslogs/state/agent-state
+
+                [/var/log/messages]
+                file = /var/log/messages
+                log_group_name = /xray/instances/{instance_id}
+                log_stream_name = /var/log/messages/
+                datetime_format = %b %d %H:%M:%S
+
+                [/var/log/xray-ami-setup.log]
+                file = /var/log/messages
+                log_group_name = /xray/instances/{instance_id}
+                log_stream_name = /var/log/xray-ami-setup.log
+                datetime_format = %b %d %H:%M:%S
+
+                [/var/log/xray.log]
+                file = /var/log/messages
+                log_group_name = /xray/instances/{instance_id}
+                log_stream_name = /var/log/xray.log
+                datetime_format = %b %d %H:%M:%S
+              mode: "0400"
         config-ansible-xray-ami:
           files:
             /root/.xray_ami/xray-ami-setup.yml:
@@ -271,21 +298,20 @@ Resources:
 
             setsebool httpd_can_network_connect 1 -P
 
-            yum update --security -y &> /var/log/userdata.yum_security_update.log || qs_err " ansible install failed "
+            yum update --security -y &> /var/log/userdata.yum_security_update.log || qs_err " security install failed "
 
-             mkdir ~/.xray_ami
+            mkdir ~/.xray_ami
 
             aws s3 --region ${AWS::Region} sync s3://${QsS3BucketName}/${QsS3KeyPrefix}cloudInstallerScripts/ ~/.xray_ami/
 
-
             source ~/venv/bin/activate &> /var/log/userdata.activate_venv.log || qs_err " activate venv failed "
 
-            # mkdir ~/.xray_ansible
-
-            # aws s3 --region ${AWS::Region} sync s3://${QsS3BucketName}/${QsS3KeyPrefix}cloudInstallerScripts/ ~/.xray_ansible/
-
-            # cfn-init -v --stack ${AWS::StackName} --resource JFrogAMIInstance --configsets xray_ami_setup --region ${AWS::Region} || cfn_fail
             cfn-init -v --stack ${AWS::StackName} --resource XrayLaunchConfiguration --configsets xray_install --region ${AWS::Region} || cfn_fail
+
+            # Setup CloudWatch Agent
+            curl https://s3.amazonaws.com/aws-cloudwatch/downloads/latest/awslogs-agent-setup.py -O
+            chmod +x ./awslogs-agent-setup.py
+            ./awslogs-agent-setup.py -n -r ${AWS::Region} -c /root/cloudwatch.conf
 
             # CentOS cloned virtual machines do not create a new machine id
             # https://www.thegeekdiary.com/centos-rhel-7-how-to-change-the-machine-id/
@@ -300,8 +326,8 @@ Resources:
                 psql postgresql://${DatabaseUser}:${DatabasePassword}@${XrayMasterDatabaseUrl} -c "GRANT ALL PRIVILEGES ON DATABASE xraydb TO ${XrayDatabaseUser}" &>> /var/log/userdata.xray_database.log;
             fi
 
-            ansible-playbook /root/.xray_ami/xray-ami-setup.yml &> /var/log/xray-ami.log || cfn_fail
-            ansible-playbook /root/.xray_ami/xray.yml || qs_err " ansible execution failed "
+            ansible-playbook /root/.xray_ami/xray-ami-setup.yml 2>&1 | tee /var/log/xray-ami.log || cfn_fail
+            ansible-playbook /root/.xray_ami/xray.yml 2>&1 | tee /var/log/xray.log || qs_err " ansible execution failed "
 
             $(qs_status) &> /var/log/qs_status.log
             cfn_success &> /var/log/cfn_success.log
