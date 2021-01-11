@@ -70,6 +70,7 @@
     - dir: "/home/centos/.ssh/authorized_keys"
   loop_control:
     loop_var: ssh_keys
+  when: ami_creation
 
 - name: shutdown VM
   command: /sbin/shutdown -h now
