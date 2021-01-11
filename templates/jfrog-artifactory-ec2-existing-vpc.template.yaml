@@ -545,7 +545,6 @@ Parameters:
 Conditions:
   EnableBastion: !Equals [!Ref 'ProvisionBastionHost', 'Enabled']
   IsArtifactory: !Not [!Equals [!Ref ArtifactoryProduct, 'JFrog-Container-Registry']]
-  IsArtifactoryPro: !Equals [!Ref ArtifactoryProduct, 'JFrog-Artifactory-Pro']
   HasSecondaryNodes: !Not [!Equals [!Ref NumberOfSecondary, '0']]
   DefaultJava: !Equals [!Ref DefaultJavaMemSettings, "true"]
   UsingDefaultBucket: !Equals [!Ref QsS3BucketName, 'aws-quickstart']
@@ -862,7 +861,7 @@ Resources:
         ArtifactoryLicense5: !If [SmLicenseCertNameExists, !Sub '{{resolve:secretsmanager:${SmLicenseCertName}:SecretString:ArtifactoryLicense5}}', '']
         ArtifactoryLicense6: !If [SmLicenseCertNameExists, !Sub '{{resolve:secretsmanager:${SmLicenseCertName}:SecretString:ArtifactoryLicense6}}', '']
         ArtifactoryServerName: !Ref ArtifactoryServerName
-        EnableSSL: !If [SmLicenseCertNameExists, 'true' , 'false']
+        EnableSSL: !If [SmLicenseCertNameExists, true, false]
         Certificate: !If [SmLicenseCertNameExists, !Sub '{{resolve:secretsmanager:${SmLicenseCertName}:SecretString:Certificate}}', '']
         CertificateKey: !If [SmLicenseCertNameExists, !Sub '{{resolve:secretsmanager:${SmLicenseCertName}:SecretString:CertificateKey}}', '']
         CertificateDomain: !If [SmLicenseCertNameExists, !Sub '{{resolve:secretsmanager:${SmLicenseCertName}:SecretString:CertificateDomain}}', '']
@@ -907,7 +906,6 @@ Resources:
         MaxScalingNodes: !Ref NumberOfSecondary
         DeploymentTag: ArtifactorySecondary
         HostRole: !Ref ArtifactoryHostRole
-        AmiId: !Join ['', !Split [".", !Ref ArtifactoryVersion]]
         ArtifactoryProduct: !Ref ArtifactoryProduct
         ArtifactoryLicense1: !If [SmLicenseCertNameExists, !Sub '{{resolve:secretsmanager:${SmLicenseCertName}:SecretString:ArtifactoryLicense1}}', '']
         ArtifactoryLicense2: !If [SmLicenseCertNameExists, !Sub '{{resolve:secretsmanager:${SmLicenseCertName}:SecretString:ArtifactoryLicense2}}', '']
@@ -916,7 +914,7 @@ Resources:
         ArtifactoryLicense5: !If [SmLicenseCertNameExists, !Sub '{{resolve:secretsmanager:${SmLicenseCertName}:SecretString:ArtifactoryLicense5}}', '']
         ArtifactoryLicense6: !If [SmLicenseCertNameExists, !Sub '{{resolve:secretsmanager:${SmLicenseCertName}:SecretString:ArtifactoryLicense6}}', '']
         ArtifactoryServerName: !Ref ArtifactoryServerName
-        EnableSSL: !If [SmLicenseCertNameExists, 'true' , 'false']
+        EnableSSL: !If [SmLicenseCertNameExists, true, false]
         Certificate: !If [SmLicenseCertNameExists, !Sub '{{resolve:secretsmanager:${SmLicenseCertName}:SecretString:Certificate}}', '']
         CertificateKey: !If [SmLicenseCertNameExists, !Sub '{{resolve:secretsmanager:${SmLicenseCertName}:SecretString:CertificateKey}}', '']
         CertificateDomain: !If [SmLicenseCertNameExists, !Sub '{{resolve:secretsmanager:${SmLicenseCertName}:SecretString:CertificateDomain}}', '']
@@ -1040,7 +1038,6 @@ Resources:
         XrayDatabaseUrl: !GetAtt ArtifactoryCoreInfraStack.Outputs.XrayDatabaseUrl
         XrayFirstNode: 'true'
         XrayVersion: !Ref XrayVersion
-        XrayAmiId: !Join ['', !Split [".", !Ref XrayVersion]]
         XrayHostRole: !Ref XrayHostRole
         XrayHostProfile: !Ref XrayHostProfile
 Outputs:

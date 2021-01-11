@@ -69,8 +69,7 @@ Parameters:
     Type: String
   XrayVersion:
     Type: String
-  XrayAmiId:
-    Type: String
+
 # To populate additional mappings use the following with the desired --region
 # aws --region us-west-2 ec2 describe-images --owners amazon --filters 'Name=name,Values=amzn-ami-hvm-2018.03.0.20181129-x86_64-gp2' 'Name=state,Values=available' --output json | jq -r '.Images | sort_by(.CreationDate) | last(.[]).ImageId'
 Mappings:

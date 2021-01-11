@@ -13,8 +13,6 @@ Parameters:
     Type: String
   HostRole:
     Type: String
-  AmiId:
-    Type: String
   ArtifactoryProduct:
     Description: JFrog Artifactory product you want to install into an AMI.
     AllowedValues:
