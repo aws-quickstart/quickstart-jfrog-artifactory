@@ -818,7 +818,7 @@ Resources:
   ArtifactoryHostProfile:
     Type: AWS::IAM::InstanceProfile
     Properties:
-      InstanceProfileName: ArtifactoryHostProfile
+      InstanceProfileName: !Ref ArtifactoryHostRole
       Roles:
         - !Ref ArtifactoryHostRole
       Path: /
@@ -981,7 +981,7 @@ Resources:
     Condition: EnableXray
     Type: AWS::IAM::InstanceProfile
     Properties:
-      InstanceProfileName: XrayHostProfile
+      InstanceProfileName: !Ref XrayHostRole
       Roles:
         - !Ref XrayHostRole
       Path: /
