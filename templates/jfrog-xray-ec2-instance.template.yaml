@@ -130,9 +130,6 @@ Resources:
         - Key: XrayVersion
           Value: !Ref XrayVersion
           PropagateAtLaunch: true
-        - Key: XrayVersion
-          Value: !Ref XrayVersion
-          PropagateAtLaunch: true
       TerminationPolicies:
         - OldestInstance
         - Default
