@@ -3,6 +3,9 @@
 # indicates were this collection was downlaoded from (galaxy, automation_hub, standalone)
 ansible_marketplace: standalone
 
+# whether we are creating a AMI for Marketplace or just for configuring EC2 instance
+ami_creation: false
+
 # The version of Artifactory to install
 artifactory_version: 7.10.2
 

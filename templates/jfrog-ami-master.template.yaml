@@ -19,7 +19,7 @@ Metadata:
           - InstanceType
           - VolumeSize
           - JFrogProduct
-          - ArtifactVersion
+          - ArtifactoryVersion
       - Label:
           default: AWS Quick Start Configuration
         Parameters:
@@ -41,7 +41,7 @@ Metadata:
         default: EBS root volume size
       JFrogProduct:
         default: JFrog Product to install
-      ArtifactVersion:
+      ArtifactoryVersion:
         default: Artifact version
       QsS3BucketName:
         default: Quick Start S3 bucket name
@@ -71,13 +71,13 @@ Parameters:
       - jfrog-artifactory-jcr
     Default: jfrog-artifactory-pro
     Type: String
-  ArtifactVersion:
+  ArtifactoryVersion:
     Description: The version of the Jfrog product line that you want to deploy into an AMI.
       Please see the release notes to select the version you want to deploy.
       https://www.jfrog.com/confluence/display/RTF/Release+Notes
     AllowedPattern: ^(([0-9]|[1-9][0-9])\.){2}([1-9][0-9]|[0-9])(-([a-z][0-9][0-9][0-9]))?$
     ConstraintDescription: A version that matches X.X.X per Artifactory releases.
-    Default: 7.6.1
+    Default: 7.12.5
     Type: String
   InstanceOs:
     Description: The Linux distribution for the Amazon Machine Image (AMI) to be used for the bastion instances.
@@ -151,7 +151,7 @@ Resources:
         InstanceType: !Ref InstanceType
         VolumeSize: !Ref VolumeSize
         JFrogProduct: !Ref JFrogProduct
-        ArtifactVersion: !Ref ArtifactVersion
+        ArtifactoryVersion: !Ref ArtifactoryVersion
         QsS3BucketName: !Ref QsS3BucketName
         QsS3KeyPrefix: !Ref QsS3KeyPrefix
         QsS3BucketRegion: !Ref QsS3BucketRegion

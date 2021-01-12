@@ -57,6 +57,7 @@ Metadata:
           - DatabasePassword
           - DatabaseInstance
           - DatabaseAllocatedStorage
+          - DatabasePreferredAz
           - MultiAzDatabase
       - Label:
           default: AWS Quick Start configuration
@@ -142,6 +143,8 @@ Metadata:
         default: Database instance type
       DatabaseAllocatedStorage:
         default: Database allocated storage
+      DatabasePreferredAz:
+        default: Database preferred Availability Zone
       MultiAzDatabase:
         default: High-availability database
       QsS3BucketName:
@@ -335,8 +338,9 @@ Parameters:
     Description: JFrog Artifactory product you want to install into an AMI.
     AllowedValues:
       - JFrog-Artifactory-Pro
+      - JFrog-Artifactory-Enterprise
       - JFrog-Container-Registry
-    Default: JFrog-Artifactory-Pro
+    Default: JFrog-Artifactory-Enterprise
     Type: String
   ArtifactoryVersion:
     Description: Version of Artifactory that you want to deploy into the Quick Start.
@@ -444,6 +448,9 @@ Parameters:
     MaxValue: 1024
     Default: 10
     Type: Number
+  DatabasePreferredAz:
+    Description: Preferred availability zone for Amazon RDS primary instance
+    Type: AWS::EC2::AvailabilityZone::Name
   MultiAzDatabase:
     Description: Choose false to create an Amazon RDS instance in a single Availability Zone.
     ConstraintDescription: True or False
@@ -594,6 +601,7 @@ Resources:
         DatabasePassword: !Ref DatabasePassword
         DatabaseInstance: !Ref DatabaseInstance
         DatabaseAllocatedStorage: !Ref DatabaseAllocatedStorage
+        DatabasePreferredAz: !Ref DatabasePreferredAz
         MultiAzDatabase: !Ref MultiAzDatabase
         QsS3BucketName: !Ref QsS3BucketName
         QsS3KeyPrefix: !Ref QsS3KeyPrefix

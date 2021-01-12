@@ -28,7 +28,14 @@ Parameters:
     Type: List<AWS::EC2::Subnet::Id>
   DatabaseAllocatedStorage:
     Type: Number
+  DatabasePreferredAz:
+    Type: AWS::EC2::AvailabilityZone::Name
   MultiAzDatabase:
+    Description: Choose false to create an Amazon RDS instance in a single Availability Zone.
+    ConstraintDescription: True or False
+    AllowedValues:
+      - "true"
+      - "false"
     Type: String
   DatabaseEngine:
     Type: String
@@ -207,6 +214,10 @@ Mappings:
       Min: 192
       Max: 288
       DeploymentSize: xxxLarge
+
+Conditions:
+  IsMultiAzDatabase: !Equals [!Ref MultiAzDatabase, 'true']
+
 Resources:
   ArtifactoryDatabaseSubnetGroup:
     Type: AWS::RDS::DBSubnetGroup
@@ -217,7 +228,11 @@ Resources:
     Type: AWS::RDS::DBInstance
     Properties:
       AllocatedStorage: !Ref DatabaseAllocatedStorage
-      MultiAZ: !Ref MultiAzDatabase
+      AvailabilityZone: !If [IsMultiAzDatabase, !Ref AWS::NoValue, !Ref DatabasePreferredAz]
+      BackupRetentionPeriod: 30
+      DBInstanceClass: !Ref DatabaseInstance
+      DBName: !Ref DatabaseName
+      DBSubnetGroupName: !Ref  ArtifactoryDatabaseSubnetGroup
       Engine: !Ref DatabaseEngine
       EngineVersion: !FindInMap
         - DatabaseMap
@@ -225,9 +240,8 @@ Resources:
         - DatabaseVersion
       MasterUsername: !Ref DatabaseUser
       MasterUserPassword: !Ref DatabasePassword
-      DBInstanceClass: !Ref DatabaseInstance
-      DBName: !Ref DatabaseName
-      DBSubnetGroupName: !Ref  ArtifactoryDatabaseSubnetGroup
+      MultiAZ: !Ref MultiAzDatabase
+      StorageEncrypted: true
       VPCSecurityGroups:
         - !Ref ArtifactoryDatabaseSG
   ArtifactoryDatabaseSG:
