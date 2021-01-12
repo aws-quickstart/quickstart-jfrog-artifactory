@@ -136,10 +136,6 @@ Mappings:
       CentOS7HVM: "ami-098f55b4287a885ba"
     us-west-2:
       CentOS7HVM: "ami-0bc06212a56393ee1"
-    us-gov-east-1:
-      CentOS7HVM: ""
-    us-gov-west-1:
-      CentOS7HVM: ""
 
 Conditions:
   IsArtifactoryPro: !Equals [!Ref ArtifactoryProduct, 'JFrog-Artifactory-Pro']
