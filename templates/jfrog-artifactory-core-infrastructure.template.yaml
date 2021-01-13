@@ -48,9 +48,6 @@ Parameters:
     Type: String
   DatabaseName:
     Type: String
-  ArtifactoryS3IAMUser:
-    NoEcho: 'true'
-    Type: String
   ArtifactoryProduct:
     Default: JFrog-Artifactory-Pro
     Type: String
@@ -59,6 +56,8 @@ Parameters:
     Type: String
   InstanceType:
     Default: m5.xlarge
+    Type: String
+  ArtifactoryHostRole:
     Type: String
 
 Mappings:
@@ -329,8 +328,8 @@ Resources:
                 - - !Sub "arn:${AWS::Partition}:s3:::"
                   - !Ref ArtifactoryS3Bucket
                   - "/*"
-      Users:
-        - !Ref ArtifactoryS3IAMUser
+      Roles:
+        - !Ref ArtifactoryHostRole
 Outputs:
   S3Bucket:
     Value: !Ref ArtifactoryS3Bucket

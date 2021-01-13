@@ -610,12 +610,7 @@ Resources:
         EnableX11Forwarding: !Ref BastionEnableX11Forwarding
         AlternativeIAMRole: !Ref BastionRole
         NumBastionHosts: !Ref NumBastionHosts
-  ArtifactoryS3IAMUser:
-    Type: AWS::IAM::User
-  ArtifactoryIamAcessKey:
-    Type: AWS::IAM::AccessKey
-    Properties:
-      UserName: !Ref ArtifactoryS3IAMUser
+
   ArtifactoryCoreInfraStack:
     Type: AWS::CloudFormation::Stack
     Properties:
@@ -638,8 +633,8 @@ Resources:
         DatabasePassword: !Ref DatabasePassword
         DatabaseInstance: !Ref DatabaseInstance
         DatabaseName: !Ref DatabaseName
-        ArtifactoryS3IAMUser: !Ref ArtifactoryS3IAMUser
         InstanceType: !Ref InstanceType
+        ArtifactoryHostRole: !Ref ArtifactoryHostRole
   ArtifactoryElb:
     Type: AWS::ElasticLoadBalancingV2::LoadBalancer
     Properties:
@@ -771,7 +766,7 @@ Resources:
         - IpProtocol: "-1"
           CidrIp: 0.0.0.0/0
   ArtifactoryHostRole:
-    Type: 'AWS::IAM::Role'
+    Type: AWS::IAM::Role
     Properties:
       Path: /
       AssumeRolePolicyDocument:
@@ -821,8 +816,9 @@ Resources:
                   - "s3:GetObject"
                 Resource: "*"
   ArtifactoryHostProfile:
-    Type: 'AWS::IAM::InstanceProfile'
+    Type: AWS::IAM::InstanceProfile
     Properties:
+      InstanceProfileName: !Ref ArtifactoryHostRole
       Roles:
         - !Ref ArtifactoryHostRole
       Path: /
@@ -852,7 +848,6 @@ Resources:
               - UsingDefaultBucket
               - !Ref 'AWS::Region'
               - !Ref 'QsS3BucketRegion'
-        AmiId: !Join ['', !Split [".", !Ref ArtifactoryVersion]]
         ArtifactoryProduct: !Ref ArtifactoryProduct
         ArtifactoryLicense1: !If [SmLicenseCertNameExists, !Sub '{{resolve:secretsmanager:${SmLicenseCertName}:SecretString:ArtifactoryLicense1}}', '']
         ArtifactoryLicense2: !If [SmLicenseCertNameExists, !Sub '{{resolve:secretsmanager:${SmLicenseCertName}:SecretString:ArtifactoryLicense2}}', '']
@@ -865,8 +860,6 @@ Resources:
         Certificate: !If [SmLicenseCertNameExists, !Sub '{{resolve:secretsmanager:${SmLicenseCertName}:SecretString:Certificate}}', '']
         CertificateKey: !If [SmLicenseCertNameExists, !Sub '{{resolve:secretsmanager:${SmLicenseCertName}:SecretString:CertificateKey}}', '']
         CertificateDomain: !If [SmLicenseCertNameExists, !Sub '{{resolve:secretsmanager:${SmLicenseCertName}:SecretString:CertificateDomain}}', '']
-        ArtifactoryIamAcessKey: !Ref ArtifactoryIamAcessKey
-        SecretAccessKey: !GetAtt ArtifactoryIamAcessKey.SecretAccessKey
         ArtifactoryS3Bucket: !GetAtt ArtifactoryCoreInfraStack.Outputs.S3Bucket
         DatabaseUrl: !GetAtt ArtifactoryCoreInfraStack.Outputs.DatabaseUrl
         DatabaseDriver: !GetAtt ArtifactoryCoreInfraStack.Outputs.DatabaseDriver
@@ -918,8 +911,6 @@ Resources:
         Certificate: !If [SmLicenseCertNameExists, !Sub '{{resolve:secretsmanager:${SmLicenseCertName}:SecretString:Certificate}}', '']
         CertificateKey: !If [SmLicenseCertNameExists, !Sub '{{resolve:secretsmanager:${SmLicenseCertName}:SecretString:CertificateKey}}', '']
         CertificateDomain: !If [SmLicenseCertNameExists, !Sub '{{resolve:secretsmanager:${SmLicenseCertName}:SecretString:CertificateDomain}}', '']
-        ArtifactoryIamAcessKey: !Ref ArtifactoryIamAcessKey
-        SecretAccessKey: !GetAtt ArtifactoryIamAcessKey.SecretAccessKey
         ArtifactoryS3Bucket: !GetAtt ArtifactoryCoreInfraStack.Outputs.S3Bucket
         DatabaseUrl: !GetAtt ArtifactoryCoreInfraStack.Outputs.DatabaseUrl
         DatabaseDriver: !GetAtt ArtifactoryCoreInfraStack.Outputs.DatabaseDriver
@@ -956,7 +947,7 @@ Resources:
               - !Ref 'QsS3BucketRegion'
   XrayHostRole:
     Condition: EnableXray
-    Type: 'AWS::IAM::Role'
+    Type: AWS::IAM::Role
     Properties:
       Path: /
       AssumeRolePolicyDocument:
@@ -988,8 +979,9 @@ Resources:
                 Resource: "*"
   XrayHostProfile:
     Condition: EnableXray
-    Type: 'AWS::IAM::InstanceProfile'
+    Type: AWS::IAM::InstanceProfile
     Properties:
+      InstanceProfileName: !Ref XrayHostRole
       Roles:
         - !Ref XrayHostRole
       Path: /

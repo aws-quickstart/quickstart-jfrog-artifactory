@@ -16,13 +16,11 @@
     </provider>
     <provider id="s3-storage-v3" type="s3-storage-v3">
         <testConnection>false</testConnection>
-        <identity>{{ s3_access_key }}</identity>
-        <credential>{{ s3_access_secret_key }}</credential>
         <region>{{ s3_region }}</region>
         <bucketName>{{ s3_bucket }}</bucketName>
         <path>artifactory/filestore</path>
         <endpoint></endpoint>
-        <useInstanceCredentials>false</useInstanceCredentials>
+        <useInstanceCredentials>true</useInstanceCredentials>
         <usePresigning>false</usePresigning>
         <signatureExpirySeconds>300</signatureExpirySeconds>
     </provider>

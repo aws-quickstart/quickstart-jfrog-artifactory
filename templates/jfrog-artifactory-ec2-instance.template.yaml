@@ -50,12 +50,6 @@ Parameters:
     Type: String
   EnableSSL:
     Type: String
-  ArtifactoryIamAcessKey:
-    Type: String
-    NoEcho: 'true'
-  SecretAccessKey:
-    Type: String
-    NoEcho: 'true'
   ArtifactoryS3Bucket:
     Type: String
   DatabaseUrl:
@@ -254,8 +248,6 @@ Resources:
                       artifactory_server_name: ${ArtifactoryServerName}
                       server_name: ${ArtifactoryServerName}.${CertificateDomain}
                       s3_region: ${AWS::Region}
-                      s3_access_key: ${ArtifactoryIamAcessKey}
-                      s3_access_secret_key: ${SecretAccessKey}
                       s3_bucket: ${ArtifactoryS3Bucket}
                       certificate: ${Certificate}
                       certificate_key: ${CertificateKey}

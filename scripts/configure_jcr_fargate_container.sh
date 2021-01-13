@@ -38,8 +38,6 @@ echo "Creating required directories for Artifactory configuration" | tee ${start
 mkdir -p /var/opt/jfrog/artifactory/etc/artifactory
 
 echo "Updating binarystore.xml with correct parameters" | tee ${startup_log}
-sed -i -e "s/{{ s3_access_key }}/${S3_ACCESS_KEY}/g" ${binarystore_temp}
-sed -i -e "s#{{ s3_access_secret_key }}#${S3_ACCESS_SECRET_KEY}#g" ${binarystore_temp}
 sed -i -e "s/{{ s3_region }}/${S3_REGION}/g" ${binarystore_temp}
 sed -i -e "s/{{ s3_bucket }}/${S3_BUCKET}/g" ${binarystore_temp}
 mv ${binarystore_temp} /var/opt/jfrog/artifactory/etc/artifactory
