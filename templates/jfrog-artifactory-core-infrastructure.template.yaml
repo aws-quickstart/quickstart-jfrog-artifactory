@@ -1,6 +1,10 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Description: 'JFrog Artifactory Quick Start Deployment (qs-1qpmmjh61)'
 Parameters:
+  AvailabilityZones:
+    Description: List of Availability Zones to use for the subnets in the VPC. Two
+      Availability Zones are used for this deployment.
+    Type: List<AWS::EC2::AvailabilityZone::Name>
   VpcId:
     Type: AWS::EC2::VPC::Id
   VpcCidr:
@@ -59,6 +63,8 @@ Parameters:
     Type: String
   ArtifactoryHostRole:
     Type: String
+  VolumeSize:
+    Type: Number
 
 Mappings:
   DatabaseMap:
@@ -330,6 +336,42 @@ Resources:
                   - "/*"
       Roles:
         - !Ref ArtifactoryHostRole
+  ArtifactoryEbsVolume:
+    Type: AWS::EC2::Volume
+    Properties:
+      AvailabilityZone:
+        !If
+          - IsMultiAzDatabase
+          - !Select
+            - '0'
+            - !Ref AvailabilityZones
+          - !Ref DatabasePreferredAz
+      Encrypted: false
+      Size: !Ref VolumeSize
+      Tags:
+        - Key: Name
+          Value: !Sub "Artifactory-${AWS::StackName}"
+      VolumeType: gp2
+    DeletionPolicy: Snapshot
+    UpdateReplacePolicy: Snapshot
+  XrayEbsVolume:
+    Type: AWS::EC2::Volume
+    Properties:
+      AvailabilityZone:
+        !If
+          - IsMultiAzDatabase
+          - !Select
+            - '0'
+            - !Ref AvailabilityZones
+          - !Ref DatabasePreferredAz
+      Encrypted: false
+      Size: !Ref VolumeSize
+      Tags:
+        - Key: Name
+          Value: !Sub "Xray-${AWS::StackName}"
+      VolumeType: gp2
+    DeletionPolicy: Snapshot
+    UpdateReplacePolicy: Snapshot
 Outputs:
   S3Bucket:
     Value: !Ref ArtifactoryS3Bucket
@@ -389,3 +431,7 @@ Outputs:
       }
   DeploymentSize:
     Value: !FindInMap [JavaOptionstoInstance, !Ref InstanceType, DeploymentSize]
+  ArtifactoryEbsVolume:
+    Value: !Ref ArtifactoryEbsVolume
+  XrayEbsVolume:
+    Value: !Ref XrayEbsVolume

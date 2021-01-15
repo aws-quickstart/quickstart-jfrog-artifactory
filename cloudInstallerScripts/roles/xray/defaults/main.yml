@@ -12,6 +12,12 @@ xray_ha_enabled: true
 # The location where xray should install.
 xray_download_directory: /opt/jfrog
 
+# whether to customer data directory
+use_custom_data_directory: false
+
+# location for customer directory. Will be symlink to as artifactory/var
+custom_data_directory:
+
 # The remote xray download file
 xray_tar: https://bintray.com/standAloneDownload/downloadArtifact?agree=true&artifactPath=/jfrog/jfrog-xray/xray-linux/{{ xray_version }}/jfrog-xray-{{ xray_version }}-linux.tar.gz&callback_id=anonymous&product=xray
 

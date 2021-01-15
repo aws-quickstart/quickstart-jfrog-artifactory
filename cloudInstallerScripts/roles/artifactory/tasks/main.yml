@@ -31,20 +31,23 @@
     group: "{{ artifactory_group }}"
   become: yes
 
-- name: ensure etc exists
-  file:
-    path: "{{ artifactory_home }}/var/etc"
-    state: directory
-    owner: "{{ artifactory_user }}"
-    group: "{{ artifactory_group }}"
-  become: yes
+- name: setup directory symlink for using custom data directory/volume
+  include_tasks: custom-data-directory.yml
+  when: use_custom_data_directory and custom_data_directory is defined
 
-- name: ensure data folder exists and has correct ownership
+- name: ensure data subdirectories exist and have correct ownership
   file:
-    path: "{{ artifactory_home }}/var/data"
+    path: "{{ artifactory_home }}/var/{{ item }}"
     state: directory
     owner: "{{ artifactory_user }}"
     group: "{{ artifactory_group }}"
+  loop:
+    - "bootstrap"
+    - "etc"
+    - "data"
+    - "etc/info"
+    - "etc/security"
+    - "etc/artifactory"
   become: yes
 
 - name: use specified system yaml
@@ -61,14 +64,6 @@
   become: yes
   when: system_file is not defined
 
-- name: ensure {{ artifactory_home }}/var/etc/security/ exists
-  file:
-    path: "{{ artifactory_home }}/var/etc/security/"
-    state: directory
-    owner: "{{ artifactory_user }}"
-    group: "{{ artifactory_group }}"
-  become: yes
-
 - name: configure master key
   template:
     src: master.key.j2
@@ -81,26 +76,10 @@
     dest: "{{ artifactory_home }}/var/etc/security/join.key"
   become: yes
 
-- name: ensure {{ artifactory_home }}/var/etc/info/ exists
-  file:
-    path: "{{ artifactory_home }}/var/etc/info/"
-    state: directory
-    owner: "{{ artifactory_user }}"
-    group: "{{ artifactory_group }}"
-  become: yes
-
 - name: configure installer info
   template:
     src: installer-info.json.j2
     dest: "{{ artifactory_home }}/var/etc/info/installer-info.json"
-  become: yes
-
-- name: "ensure {{ artifactory_home }}/var/etc/artifactory/ exists"
-  file:
-    path: "{{ artifactory_home }}/var/etc/artifactory/"
-    state: directory
-    owner: "{{ artifactory_user }}"
-    group: "{{ artifactory_group }}"
   become: yes
 
 - name: use specified binary store

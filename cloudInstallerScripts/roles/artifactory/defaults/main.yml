@@ -26,6 +26,12 @@ artifactory_download_directory: /opt/jfrog
 # The location where Artifactory should store data.
 artifactory_file_store_dir: /data
 
+# whether to customer data directory
+use_custom_data_directory: false
+
+# location for customer directory. Will be symlink to as artifactory/var
+custom_data_directory:
+
 # Pick the Artifactory flavour to install, can be also cpp-ce, jcr, pro.
 artifactory_flavour: pro
 

@@ -14,6 +14,7 @@ Metadata:
       - Label:
           default: Network configuration
         Parameters:
+          - AvailabilityZones
           - VpcId
           - VpcCidr
           - PublicSubnet1Id
@@ -78,6 +79,8 @@ Metadata:
           - XrayDatabaseUser
           - XrayDatabasePassword
     ParameterLabels:
+      AvailabilityZones:
+        default: Availability Zones
       KeyPairName:
         default: SSH key name
       VpcId:
@@ -175,6 +178,10 @@ Metadata:
       XrayDatabasePassword:
         default: Xray Database password
 Parameters:
+  AvailabilityZones:
+    Description: List of Availability Zones to use for the subnets in the VPC. Two
+      Availability Zones are used for this deployment.
+    Type: List<AWS::EC2::AvailabilityZone::Name>
   KeyPairName:
     Description: Name of an existing key pair,
       which allows you to connect securely to your instance after it launches.
@@ -619,6 +626,10 @@ Resources:
         - S3Bucket: !If [UsingDefaultBucket, !Sub '${QsS3BucketName}-${AWS::Region}', !Ref 'QsS3BucketName']
           S3Region: !If [UsingDefaultBucket, !Ref 'AWS::Region', !Ref 'QsS3BucketRegion']
       Parameters:
+        AvailabilityZones:
+          Fn::Join:
+            - ','
+            - Ref: AvailabilityZones
         VpcId: !Ref VpcId
         VpcCidr: !Ref VpcCidr
         PrivateSubnet1Cidr: !Ref PrivateSubnet1Cidr
@@ -635,6 +646,7 @@ Resources:
         DatabaseName: !Ref DatabaseName
         InstanceType: !Ref InstanceType
         ArtifactoryHostRole: !Ref ArtifactoryHostRole
+        VolumeSize: !Ref VolumeSize
   ArtifactoryElb:
     Type: AWS::ElasticLoadBalancingV2::LoadBalancer
     Properties:
@@ -877,7 +889,7 @@ Resources:
         HostProfile: !Ref ArtifactoryHostProfile
         SecurityGroups: !Ref ArtifactoryEc2Sg
         InstanceType: !Ref InstanceType
-        VolumeSize: !Ref VolumeSize
+        Volume: !GetAtt ArtifactoryCoreInfraStack.Outputs.ArtifactoryEbsVolume
         TargetGroupARN: !Ref ArtifactoryTargetGroup
         SSLTargetGroupARN: !Ref ArtifactorySslTargetGroup
         InternalTargetGroupARN: !Ref ArtifactoryInternalTargetGroup
@@ -928,7 +940,7 @@ Resources:
         HostProfile: !Ref ArtifactoryHostProfile
         SecurityGroups: !Ref ArtifactoryEc2Sg
         InstanceType: !Ref InstanceType
-        VolumeSize: !Ref VolumeSize
+        Volume: !GetAtt ArtifactoryCoreInfraStack.Outputs.ArtifactoryEbsVolume
         TargetGroupARN: !Ref ArtifactoryTargetGroup
         SSLTargetGroupARN: !Ref ArtifactorySslTargetGroup
         InternalTargetGroupARN: !Ref ArtifactoryInternalTargetGroup
@@ -962,6 +974,25 @@ Resources:
       ManagedPolicyArns:
         - !Sub 'arn:${AWS::Partition}:iam::aws:policy/service-role/AmazonEC2RoleforSSM'
       Policies:
+        - PolicyName: "JFrogAMI-policy"
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: "Allow"
+                Action: "ec2:Describe*"
+                Resource: "*"
+              - Effect: "Allow"
+                Action: "ec2:AttachVolume"
+                Resource: "*"
+              - Effect: "Allow"
+                Action: "ec2:DetachVolume"
+                Resource: "*"
+              - Effect: "Allow"
+                Action:
+                  - "s3:GetObject"
+                  - "s3:ListObject"
+                  - "s3:ListBucket"
+                Resource: "*"
         - PolicyName: 'CloudWatch-policy'
           PolicyDocument:
             Version: "2012-10-17"
@@ -1020,7 +1051,7 @@ Resources:
         DatabasePassword: !Ref DatabasePassword
         MasterKey: !Ref MasterKey
         SecurityGroups: !Ref ArtifactoryEc2Sg
-        VolumeSize: !Ref VolumeSize
+        Volume: !GetAtt ArtifactoryCoreInfraStack.Outputs.XrayEbsVolume
         XrayInstanceType: !Ref XrayInstanceType
         JfrogInternalUrl: !Sub "http://${ArtifactoryInternalElb.DNSName}"
         AnsibleVaultPass: !Ref AnsibleVaultPass

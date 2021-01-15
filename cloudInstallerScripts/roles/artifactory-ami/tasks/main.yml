@@ -44,12 +44,15 @@
     group: "{{ artifactory_group }}"
   become: yes
 
-- name: ensure etc exists
+- name: ensure data subdirectories exist
   file:
-    path: "{{ artifactory_home }}/var/etc"
+    path: "{{ artifactory_home }}/var/{{ item }}"
     state: directory
     owner: "{{ artifactory_user }}"
     group: "{{ artifactory_group }}"
+  loop:
+    - "bootstrap"
+    - "etc"
   become: yes
 
 - name: download database driver
@@ -60,19 +63,20 @@
     group: "{{ artifactory_group }}"
   become: yes
 
-- name: Remove SSH keys
-  file:
-    path: "{{ ssh_keys.dir }}"
-    state: absent
-  loop:
-    - dir: "/home/.jfrog_ami/.ssh/authorized_keys"
-    - dir: "/root/.ssh/authorized_keys"
-    - dir: "/home/centos/.ssh/authorized_keys"
-  loop_control:
-    loop_var: ssh_keys
-  when: ami_creation
+- name: clean up after creating ami
+  block:
+    - name: Remove SSH keys
+      file:
+        path: "{{ ssh_keys.dir }}"
+        state: absent
+      loop:
+        - dir: "/home/.jfrog_ami/.ssh/authorized_keys"
+        - dir: "/root/.ssh/authorized_keys"
+        - dir: "/home/centos/.ssh/authorized_keys"
+      loop_control:
+        loop_var: ssh_keys
 
-- name: shutdown VM
-  command: /sbin/shutdown -h now
-  ignore_errors: 'yes'
+    - name: shutdown VM
+      command: /sbin/shutdown -h now
+      ignore_errors: 'yes'
   when: ami_creation
