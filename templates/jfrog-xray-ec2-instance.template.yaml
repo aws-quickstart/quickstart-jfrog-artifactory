@@ -138,7 +138,7 @@ Resources:
   XrayLaunchConfiguration:
     Type: AWS::AutoScaling::LaunchConfiguration
     Metadata:
-      'AWS::CloudFormation::Authentication':
+      AWS::CloudFormation::Authentication:
         S3AccessCreds:
           type: S3
           roleName:
@@ -216,7 +216,6 @@ Resources:
                 ${AnsibleVaultPass}
               mode: "0400"
     Properties:
-      AssociatePublicIpAddress: true
       KeyName: !Ref KeyPairName
       IamInstanceProfile: !Ref XrayHostProfile
       ImageId: !FindInMap

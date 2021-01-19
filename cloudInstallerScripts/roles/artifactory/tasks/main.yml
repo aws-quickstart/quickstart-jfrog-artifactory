@@ -96,19 +96,39 @@
   become: yes
   when: binary_store_file is not defined
 
-- name: use license file
-  copy:
-    src: "{{ artifactory_license_file }}"
-    dest: "{{ artifactory_home }}/var/etc/artifactory/artifactory.cluster.license"
-  become: yes
-  when: artifactory_license_file is defined and artifactory_is_primary == true
+- name: set license for Enterprise
+  block:
+    - name: use license file
+      copy:
+        src: "{{ artifactory_license_file }}"
+        dest: "{{ artifactory_home }}/var/etc/artifactory/artifactory.cluster.license"
+      become: yes
+      when: artifactory_license_file is defined and artifactory_is_primary == true
 
-- name: use license strings
-  template:
-    src: artifactory.cluster.license.j2
-    dest: "{{ artifactory_home }}/var/etc/artifactory/artifactory.cluster.license"
-  become: yes
-  when: artifactory_license_file is not defined and artifactory_is_primary == true
+    - name: use license strings
+      template:
+        src: artifactory.cluster.license.j2
+        dest: "{{ artifactory_home }}/var/etc/artifactory/artifactory.cluster.license"
+      become: yes
+      when: artifactory_license_file is not defined and artifactory_is_primary == true
+  when: artifactory_ha_enabled
+
+- name: set license for Pro
+  block:
+    - name: use license file
+      copy:
+        src: "{{ artifactory_license_file }}"
+        dest: "{{ artifactory_home }}/var/etc/artifactory/artifactory.lic"
+      become: yes
+      when: artifactory_license_file is defined
+
+    - name: use license strings
+      template:
+        src: artifactory.pro.license.j2
+        dest: "{{ artifactory_home }}/var/etc/artifactory/artifactory.lic"
+      become: yes
+      when: artifactory_license_file is not defined
+  when: not artifactory_ha_enabled
 
 - name: create artifactory service
   shell: "{{ artifactory_home }}/app/bin/installService.sh"
