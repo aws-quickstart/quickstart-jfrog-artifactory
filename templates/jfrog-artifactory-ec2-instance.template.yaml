@@ -393,10 +393,11 @@ Resources:
             # Get instance id from AWS
             INSTANCE_ID=$(curl -s http://169.254.169.254/latest/meta-data/instance-id)
             # Attach the volume created by another CFT
-            # the device name should become /dev/nvme1n1 because why not
+            # the device name should become /dev/nvme1n1
+            # See: https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/nvme-ebs-volumes.html
             /var/awslogs/bin/aws ec2 attach-volume --volume-id ${Volume} --instance-id $INSTANCE_ID --device /dev/xvdf --region ${AWS::Region} || cfn_fail
             echo "Wait for volume to attach"
-            sleep 10
+            sleep 30 # Give volume time to attach
             lsblk # debug
 
             export ANSIBLE_VAULT_PASSWORD_FILE="/root/.vault_pass.txt"
