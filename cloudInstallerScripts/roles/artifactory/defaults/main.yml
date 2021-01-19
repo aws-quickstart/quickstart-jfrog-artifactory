@@ -4,7 +4,7 @@
 ansible_marketplace: standalone
 
 # The version of Artifactory to install
-artifactory_version: 7.10.2
+artifactory_version: 7.12.5
 
 # licenses file - specify a licenses file or specify up to 6 licenses
 artifactory_license1:
@@ -30,7 +30,7 @@ artifactory_file_store_dir: /data
 use_custom_data_directory: false
 
 # location for customer directory. Will be symlink to as artifactory/var
-custom_data_directory:
+custom_data_directory: /artifactory-user-data
 
 # Pick the Artifactory flavour to install, can be also cpp-ce, jcr, pro.
 artifactory_flavour: pro
