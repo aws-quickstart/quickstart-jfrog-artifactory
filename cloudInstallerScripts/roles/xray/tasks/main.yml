@@ -18,30 +18,30 @@
     state: directory
   become: yes
 
+- name: setup directory symlink for using custom data directory/volume
+  include_tasks: custom-data-directory.yml
+  when: use_custom_data_directory and custom_data_directory is defined
 
 - name: perform prerequisite installation
   include_tasks: "{{ ansible_os_family }}.yml"
 
-- name: ensure etc exists
+- name: ensure data subdirectories exist and have correct ownership
   file:
-    path: "{{ xray_home }}/var/etc"
+    path: "{{ xray_home }}/var/{{ item }}"
     state: directory
     owner: "{{ xray_user }}"
     group: "{{ xray_group }}"
+  loop:
+    - "etc"
+    - "data"
+    - "etc/info"
+    - "etc/security"
   become: yes
 
 - name: configure system yaml
   template:
     src: system.yaml.j2
     dest: "{{ xray_home }}/var/etc/system.yaml"
-  become: yes
-
-- name: ensure {{ xray_home }}/var/etc/security/ exists
-  file:
-    path: "{{ xray_home }}/var/etc/security/"
-    state: directory
-    owner: "{{ xray_user }}"
-    group: "{{ xray_group }}"
   become: yes
 
 - name: configure master key
@@ -54,14 +54,6 @@
   template:
     src: join.key.j2
     dest: "{{ xray_home }}/var/etc/security/join.key"
-  become: yes
-
-- name: ensure {{ xray_home }}/var/etc/info/ exists
-  file:
-    path: "{{ xray_home }}/var/etc/info/"
-    state: directory
-    owner: "{{ xray_user }}"
-    group: "{{ xray_group }}"
   become: yes
 
 - name: configure installer info

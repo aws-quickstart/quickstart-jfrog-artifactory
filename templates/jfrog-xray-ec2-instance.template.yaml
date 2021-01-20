@@ -41,8 +41,6 @@ Parameters:
     NoEcho: 'true'
   SecurityGroups:
     Type: String
-  VolumeSize:
-    Type: Number
   XrayHostProfile:
     Type: String
   XrayHostRole:
@@ -55,6 +53,8 @@ Parameters:
     Description: Ansiblevault Password to secure the artifactory.yml
     Type: String
     NoEcho: 'true'
+  Volume:
+    Type: String
   XrayDatabaseUser:
     Type: String
   XrayDatabasePassword:
@@ -69,6 +69,10 @@ Parameters:
     Type: String
   XrayVersion:
     Type: String
+  UserDataDirectory:
+    Description: Directory to store Artifactory data. Can be used to store data (via symlink) in detachable volume
+    Type: String
+    Default: '/xray-user-data'
 
 # To populate additional mappings use the following with the desired --region
 # aws --region us-west-2 ec2 describe-images --owners amazon --filters 'Name=name,Values=amzn-ami-hvm-2018.03.0.20181129-x86_64-gp2' 'Name=state,Values=available' --output json | jq -r '.Images | sort_by(.CreationDate) | last(.[]).ImageId'
@@ -134,7 +138,7 @@ Resources:
   XrayLaunchConfiguration:
     Type: AWS::AutoScaling::LaunchConfiguration
     Metadata:
-      'AWS::CloudFormation::Authentication':
+      AWS::CloudFormation::Authentication:
         S3AccessCreds:
           type: S3
           roleName:
@@ -186,6 +190,7 @@ Resources:
                       db_type: postgresql
                       db_driver: org.postgresql.Driver
                       xray_version: ${XrayVersion}
+                      xray_ha_enabled: false
               mode: "0400"
         config-xray:
           files:
@@ -195,6 +200,8 @@ Resources:
                   - import_playbook: site-xray.yml
                     vars:
                       jfrog_url: ${JfrogInternalUrl}
+                      use_custom_data_directory: true
+                      custom_data_directory: "${UserDataDirectory}"
                       master_key: ${MasterKey}
                       join_key: ${MasterKey}
                       db_type: ${DatabaseType}
@@ -209,7 +216,6 @@ Resources:
                 ${AnsibleVaultPass}
               mode: "0400"
     Properties:
-      AssociatePublicIpAddress: true
       KeyName: !Ref KeyPairName
       IamInstanceProfile: !Ref XrayHostProfile
       ImageId: !FindInMap
@@ -219,13 +225,6 @@ Resources:
       SecurityGroups:
         - !Ref SecurityGroups
       InstanceType: !Ref XrayInstanceType
-      BlockDeviceMappings:
-        - DeviceName: /dev/xvda
-          Ebs:
-            VolumeSize: !Ref VolumeSize
-            VolumeType: gp2
-            DeleteOnTermination: true
-            Encrypted: true
       UserData:
         Fn::Base64:
           !Sub |
@@ -309,6 +308,16 @@ Resources:
             chmod +x ./awslogs-agent-setup.py
             ./awslogs-agent-setup.py -n -r ${AWS::Region} -c /root/cloudwatch.conf
 
+            # Get instance id from AWS
+            INSTANCE_ID=$(curl -s http://169.254.169.254/latest/meta-data/instance-id)
+            # Attach the volume created by another CFT
+            # the device name should become /dev/nvme1n1
+            # See: https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/nvme-ebs-volumes.html
+            /var/awslogs/bin/aws ec2 attach-volume --volume-id ${Volume} --instance-id $INSTANCE_ID --device /dev/xvdf --region ${AWS::Region} || cfn_fail
+            echo "Wait for volume to attach"
+            sleep 30 # Give volume time to attach
+            lsblk # debug
+
             # CentOS cloned virtual machines do not create a new machine id
             # https://www.thegeekdiary.com/centos-rhel-7-how-to-change-the-machine-id/
             rm -f /etc/machine-id
@@ -321,6 +330,8 @@ Resources:
                 psql postgresql://${DatabaseUser}:${DatabasePassword}@${XrayMasterDatabaseUrl} -c "CREATE DATABASE xraydb WITH OWNER=${XrayDatabaseUser} ENCODING='UTF8'" &>> /var/log/userdata.xray_database.log;
                 psql postgresql://${DatabaseUser}:${DatabasePassword}@${XrayMasterDatabaseUrl} -c "GRANT ALL PRIVILEGES ON DATABASE xraydb TO ${XrayDatabaseUser}" &>> /var/log/userdata.xray_database.log;
             fi
+
+            ansible-galaxy collection install community.general ansible.posix
 
             ansible-playbook /root/.xray_ami/xray-ami-setup.yml 2>&1 | tee /var/log/xray-ami.log || cfn_fail
             ansible-playbook /root/.xray_ami/xray.yml 2>&1 | tee /var/log/xray.log || qs_err " ansible execution failed "

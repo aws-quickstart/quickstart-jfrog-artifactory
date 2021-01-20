@@ -14,10 +14,13 @@ project:
     QsS3KeyPrefix       : "quickstart-jfrog-artifactory/"
     QsS3BucketRegion    : "$[taskcat_current_region]"
     MasterKey           : "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"
+    SmLicenseCertName   : "jfrog-artifactory"
 
     # Set this to your home intenet gateway public IP in override file
     # e.g. "24.4.228.4/32"
+    AccessCidr          : "63.238.166.122/29" # JFrog network
     RemoteAccessCidr    : "63.238.166.122/29" # JFrog network
+
 
   regions:
     - us-east-1
@@ -109,7 +112,6 @@ tests:
       us-gov-east-1: gov
     parameters:
       ArtifactoryProduct: "JFrog-Artifactory-Enterprise"
-      AccessCidr: "0.0.0.0/0"
       DatabaseInstance: "db.m5.large"
       DatabasePassword: "$[taskcat_genpass_8A]"
       MultiAzDatabase: "true"
@@ -137,7 +139,6 @@ tests:
       us-gov-east-1: gov
     parameters:
       ArtifactoryProduct: "JFrog-Artifactory-Enterprise"
-      AccessCidr: "0.0.0.0/0"
       DatabasePassword: "$[taskcat_genpass_8A]"
       MultiAzDatabase: "true"
       DatabaseInstance: "db.m5.large"
@@ -212,7 +213,6 @@ tests:
   rt-xray-ec2-marketplace:
     parameters:
       DatabaseEngine: Postgres
-      AccessCidr: "0.0.0.0/0"
       DatabasePassword: "$[taskcat_genpass_8A]"
       DatabaseInstance: "db.m5.large"
       NumberOfSecondary: "2"
@@ -275,7 +275,6 @@ tests:
 
   # rt-ecs:
   #   parameters:
-  #     AccessCidr: "0.0.0.0/0"
   #     DatabasePassword: "$[taskcat_genpass_8A]"
   #     # DatabaseInstance: "db.m5.large"
   #     # DatabaseEngine: MySQL
@@ -301,34 +300,3 @@ tests:
 
   #   regions:
   #     - us-east-2
-
-  # rt-eks:
-  #   auth:
-  #     default: temp
-  #   parameters:
-  #     AccessCidr: "0.0.0.0/0"
-  #     AvailabilityZones: "$[taskcat_genaz_3]"
-  #     DatabasePassword: "$[taskcat_genpass_8A]"
-  #     DatabaseInstance: "db.m5.large"
-  #     NumberOfSecondary: "2"
-  #     ArtifactoryServerName: "artifactory"
-  #     SmLicenseCertName: "jfrog-artifactory"
-  #     MultiAzDatabase: "false"
-  #     InstallXray: "true"
-  #     XrayHelmChartVersion: 3.10.3
-  #     XrayDatabasePassword: "$[taskcat_genpass_8A]"
-  #     XrayNumberOfSecondary: 1
-  #     RabbitMQPassword: "$[taskcat_genpass_8A]"
-  #   template: templates/jfrog-artifactory-eks-master.template.yaml
-  #   regions:
-  #     - us-west-2
-
-  # rt-eks-core:
-  #   parameters:
-  #     ArtifactoryDeploymentSize: Medium
-  #     DatabaseEngine: Postgres
-  #     DatabaseName: artdb
-  #     DatabaseUser: artifactory
-  #     KubeConfigKmsContext: JFrogArtifactory
-  #     NumberOfSecondary: 2
-  #   template: templates/jfrog-artifactory-eks-core-workload.template.yaml

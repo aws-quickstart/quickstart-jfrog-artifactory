@@ -90,8 +90,8 @@ Parameters:
     Type: String
   InstanceType:
     Type: String
-  VolumeSize:
-    Type: Number
+  Volume:
+    Type: String
   KeystorePassword:
     Description: Default Keystore from Java in which we upgrade.
     Type: String
@@ -100,6 +100,11 @@ Parameters:
     Description: Ansiblevault Password to secure the artifactory.yml
     Type: String
     NoEcho: 'true'
+  UserDataDirectory:
+    Description: Directory to store Artifactory data. Can be used to store data (via symlink) in detachable volume
+    Type: String
+    Default: '/artifactory-user-data'
+
 # To populate additional mappings use the following with the desired --region
 # aws --region us-west-2 ec2 describe-images --owners amazon --filters 'Name=name,Values=amzn-ami-hvm-2018.03.0.20181129-x86_64-gp2' 'Name=state,Values=available' --output json | jq -r '.Images | sort_by(.CreationDate) | last(.[]).ImageId'
 Mappings:
@@ -220,13 +225,13 @@ Resources:
                   - import_playbook: artifactory-ami.yml
                     vars:
                       ami_creation: false
+                      artifactory_flavour: "pro"
+                      artifactory_ha_enabled: false
+                      artifactory_tar: "https://dl.bintray.com/jfrog/artifactory-pro/org/artifactory/pro/jfrog-artifactory-pro/${ArtifactoryVersion}/jfrog-artifactory-pro-${ArtifactoryVersion}-linux.tar.gz"
                       artifactory_version: ${ArtifactoryVersion}
-                      artifactory_ha_enabled: true
                       db_download_url: "https://jdbc.postgresql.org/download/postgresql-42.2.12.jar"
                       db_type: "postgresql"
                       db_driver: "org.postgresql.Driver"
-                      artifactory_flavour: "pro"
-                      artifactory_tar: "https://dl.bintray.com/jfrog/artifactory-pro/org/artifactory/pro/jfrog-artifactory-pro/${ArtifactoryVersion}/jfrog-artifactory-pro-${ArtifactoryVersion}-linux.tar.gz"
               mode: "0400"
         config-artifactory-master:
           files:
@@ -247,6 +252,8 @@ Resources:
                       artifactory_is_primary: ${ArtifactoryPrimary}
                       artifactory_server_name: ${ArtifactoryServerName}
                       server_name: ${ArtifactoryServerName}.${CertificateDomain}
+                      use_custom_data_directory: true
+                      custom_data_directory: "${UserDataDirectory}"
                       s3_region: ${AWS::Region}
                       s3_bucket: ${ArtifactoryS3Bucket}
                       certificate: ${Certificate}
@@ -297,13 +304,6 @@ Resources:
       SecurityGroups:
         - !Ref SecurityGroups
       InstanceType: !Ref InstanceType
-      BlockDeviceMappings:
-        - DeviceName: /dev/xvda
-          Ebs:
-            VolumeSize: !Ref VolumeSize
-            VolumeType: gp2
-            DeleteOnTermination: true
-            Encrypted: true
       UserData:
         Fn::Base64:
           !Sub |
@@ -390,7 +390,19 @@ Resources:
             chmod +x ./awslogs-agent-setup.py
             ./awslogs-agent-setup.py -n -r ${AWS::Region} -c /root/cloudwatch.conf
 
+            # Get instance id from AWS
+            INSTANCE_ID=$(curl -s http://169.254.169.254/latest/meta-data/instance-id)
+            # Attach the volume created by another CFT
+            # the device name should become /dev/nvme1n1
+            # See: https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/nvme-ebs-volumes.html
+            /var/awslogs/bin/aws ec2 attach-volume --volume-id ${Volume} --instance-id $INSTANCE_ID --device /dev/xvdf --region ${AWS::Region} || cfn_fail
+            echo "Wait for volume to attach"
+            sleep 30 # Give volume time to attach
+            lsblk # debug
+
             export ANSIBLE_VAULT_PASSWORD_FILE="/root/.vault_pass.txt"
+
+            ansible-galaxy collection install community.general ansible.posix
 
             setsebool httpd_can_network_connect 1 -P
 
