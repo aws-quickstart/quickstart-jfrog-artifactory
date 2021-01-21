@@ -1,7 +1,7 @@
 project:
   name: quickstart-jfrog-artifactory
   owner: quickstart-eng@amazon.com
-  s3_object_acl: public-read
+  s3_object_acl: private
   s3_regional_buckets: True
   s3_bucket: tcat-422383ecc658557f9a377abae675aac0  # commercial accounts
   # s3_bucket: tcat-a3e80b6745b2547da1c745b16adf2a66    # aws-seller accounts
