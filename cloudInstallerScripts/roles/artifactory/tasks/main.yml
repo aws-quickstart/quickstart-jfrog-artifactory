@@ -82,19 +82,26 @@
     dest: "{{ artifactory_home }}/var/etc/info/installer-info.json"
   become: yes
 
-- name: use specified binary store
+- name: use specified binary store file
   copy:
     src: "{{ binary_store_file }}"
     dest: "{{ artifactory_home }}/var/etc/artifactory/binarystore.xml"
   become: yes
   when: binary_store_file is defined
 
-- name: use default binary store
+- name: set default binary store for Enterprise
   template:
-    src: binarystore.xml.j2
+    src: binarystore.enterprise.xml.j2
     dest: "{{ artifactory_home }}/var/etc/artifactory/binarystore.xml"
   become: yes
-  when: binary_store_file is not defined
+  when: binary_store_file is not defined and artifactory_ha_enabled
+
+- name: set default binary store for Pro
+  template:
+    src: binarystore.pro.xml.j2
+    dest: "{{ artifactory_home }}/var/etc/artifactory/binarystore.xml"
+  become: yes
+  when: binary_store_file is not defined and not artifactory_ha_enabled
 
 - name: set license for Enterprise
   block:
