@@ -10,6 +10,7 @@ project:
     KeyPairName         : "<set your key in override yml>"
     ArtifactoryVersion  : 7.12.5
     XrayVersion         : 3.15.1
+    AccessCidr          : "0.0.0.0/0"
     QsS3BucketName      : "$[taskcat_autobucket]"
     QsS3KeyPrefix       : "quickstart-jfrog-artifactory/"
     QsS3BucketRegion    : "$[taskcat_current_region]"
@@ -18,7 +19,6 @@ project:
 
     # Set this to your home intenet gateway public IP in override file
     # e.g. "24.4.228.4/32"
-    AccessCidr          : "63.238.166.122/29" # JFrog network
     RemoteAccessCidr    : "63.238.166.122/29" # JFrog network
 
 
