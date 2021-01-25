@@ -7,7 +7,7 @@ project:
   # s3_bucket: tcat-a3e80b6745b2547da1c745b16adf2a66    # aws-seller accounts
 
   parameters:
-    KeyPairName         : "<set your key in override yml>"
+    KeyPairName         : "Anup"
     ArtifactoryVersion  : 7.12.5
     XrayVersion         : 3.15.1
     AccessCidr          : "0.0.0.0/0"
