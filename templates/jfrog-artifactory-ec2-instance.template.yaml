@@ -333,50 +333,40 @@ Resources:
 
             S3URI=${QsS3Uri}
 
-            yum install -y git
+            # Update OS
+            yum update -y
+
+            # Install git
+            yum install -y git policycoreutils-python
+
+            yum update --security -y 2>&1 | tee /var/log/userdata.yum_security_update.log
+
+            yum install -y python3 libselinux-python3
 
             echo $PATH
 
             PATH=/opt/aws/bin:$PATH
 
             echo $PATH
-            echo \'[Cloning: Load QuickStart Common Utils]\'
 
-            git clone https://github.com/aws-quickstart/quickstart-linux-utilities.git
+            # Create virtual env and activate
+            python3 -m venv ~/venv --system-site-packages
+            source ~/venv/bin/activate
 
-            source /quickstart-linux-utilities/quickstart-cfn-tools.source
+            pip install --upgrade pip
 
-            echo \'[Loaded: Load QuickStart Common Utils]\'
+            # Install Cloudformation helper scripts
+            pip install https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-py3-latest.tar.gz 2>&1 | tee /var/log/userdata.aws_cfn_bootstrap_install.log
 
-            echo \'[Update Operating System]\'
+            pip install awscli 2>&1 | tee /var/log/userdata.awscli_install.log
 
-            qs_update-os || qs_err
-
-            qs_bootstrap_pip || qs_err
-
-            qs_aws-cfn-bootstrap || qs_err
-
-            pip install virtualenv 2>&1 | tee /var/log/userdata.virtualenv_install.log || qs_err " virtualenv install failed "
-
-            virtualenv --system-site-packages ~/venv 2>&1 | tee /var/log/userdata.create_venv.log || qs_err " creating venv failed "
-
-            source ~/venv/bin/activate 2>&1 | tee /var/log/userdata.activate_venv.log || qs_err " activate venv failed "
-
-            pip install awscli 2>&1 | tee /var/log/userdata.awscli_install.log || qs_err " awscli install failed "
-
-            pip install ansible 2>&1 | tee /var/log/userdata.ansible_install.log || qs_err " ansible install failed "
-
-            pip install selinux 2>&1 | tee /var/log/userdata.selinux_install.log || qs_err " selinux install failed "
-
-            yum update --security -y 2>&1 | tee /var/log/userdata.yum_security_update.log || qs_err " security install failed "
+            pip install ansible 2>&1 | tee /var/log/userdata.ansible_install.log
 
             mkdir ~/.jfrog_ami
 
-            aws s3 --region ${AWS::Region} sync s3://${QsS3BucketName}/${QsS3KeyPrefix}cloudInstallerScripts/ ~/.jfrog_ami/
+            aws s3 --region ${AWS::Region} sync s3://${QsS3BucketName}/${QsS3KeyPrefix}cloudInstallerScripts/ ~/.jfrog_ami/ || cfn_fail
 
             setsebool httpd_can_network_connect 1 -P
-
-            source ~/venv/bin/activate 2>&1 | tee /var/log/userdata.activate_venv.log || qs_err " activate venv failed "
 
             # CentOS cloned virtual machines do not create a new machine id
             # https://www.thegeekdiary.com/centos-rhel-7-how-to-change-the-machine-id/
@@ -388,7 +378,7 @@ Resources:
             # Setup CloudWatch Agent
             curl https://s3.amazonaws.com/aws-cloudwatch/downloads/latest/awslogs-agent-setup.py -O
             chmod +x ./awslogs-agent-setup.py
-            ./awslogs-agent-setup.py -n -r ${AWS::Region} -c /root/cloudwatch.conf
+            ./awslogs-agent-setup.py -n -r ${AWS::Region} -c /root/cloudwatch.conf 2>&1 | tee /var/log/userdata.cloudwatch_agent_install.log
 
             # Get instance id from AWS
             INSTANCE_ID=$(curl -s http://169.254.169.254/latest/meta-data/instance-id)
@@ -407,10 +397,9 @@ Resources:
             setsebool httpd_can_network_connect 1 -P
 
             ansible-playbook /root/.jfrog_ami/jfrog-ami-setup.yml 2>&1 | tee /var/log/jfrog-ami-setup.log || cfn_fail
-            ansible-playbook /root/.jfrog_ami/artifactory.yml 2>&1 | tee /var/log/jfrog-ami-artifactory.log || qs_err " ansible execution failed "
+            ansible-playbook /root/.jfrog_ami/artifactory.yml 2>&1 | tee /var/log/jfrog-ami-artifactory.log || cfn_fail
 
             rm -rf /root/.secureit.sh
 
-            $(qs_status) &> /var/log/qs_status.log
             cfn_success &> /var/log/cfn_success.log
-            [ $(qs_status) == 0 ] && cfn_success || cfn_fail
+            cfn_success || cfn_fail
