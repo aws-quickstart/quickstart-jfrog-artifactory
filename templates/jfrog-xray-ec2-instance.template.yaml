@@ -322,8 +322,8 @@ Resources:
 
             ansible-galaxy collection install community.general ansible.posix
 
-            ansible-playbook /root/.xray_ami/xray-ami-setup.yml --vault-password-file /root/.vault_pass.txt 2>&1 | tee /var/log/xray-ami.log || cfn_fail
-            ansible-playbook /root/.xray_ami/xray.yml --vault-password-file /root/.vault_pass.txt 2>&1 | tee /var/log/xray.log || cfn_fail
+            ansible-playbook /root/.xray_ami/xray-ami-setup.yml --vault-id /root/.vault_pass.txt 2>&1 | tee /var/log/xray-ami.log || cfn_fail
+            ansible-playbook /root/.xray_ami/xray.yml --vault-id /root/.vault_pass.txt 2>&1 | tee /var/log/xray.log || cfn_fail
 
             rm -rf /root/.secureit.sh
 
