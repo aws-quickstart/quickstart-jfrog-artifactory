@@ -937,7 +937,7 @@ Resources:
       Path: /
   XrayExistingVpcStack:
     Condition: EnableXray
-    DependsOn: ArtifactorySecondary
+    DependsOn: ArtifactoryMaster
     Type: AWS::CloudFormation::Stack
     Properties:
       TemplateURL: !Sub

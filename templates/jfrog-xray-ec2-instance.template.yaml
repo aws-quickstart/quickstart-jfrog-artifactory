@@ -119,7 +119,6 @@ Mappings:
       "330": ami-03d60da4c8a146a55 # TODO: Get correct ami - provided by market place tem
       "361": ami-03d60da4c8a146a55 # TODO: Get correct ami - provided by market place tem
       "3112": ami-0e48dd6310c205c33
-
 Resources:
   XrayScalingGroup:
     Type: 'AWS::AutoScaling::AutoScalingGroup'
