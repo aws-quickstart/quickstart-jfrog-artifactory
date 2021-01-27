@@ -154,6 +154,7 @@ Resources:
             - "config-cloudwatch"
             - "config-ansible-xray-ami"
             - "config-xray"
+            - "secure-xray"
         config-cloudwatch:
           files:
             /root/cloudwatch.conf:
@@ -202,11 +203,14 @@ Resources:
                       jfrog_url: ${JfrogInternalUrl}
                       use_custom_data_directory: true
                       custom_data_directory: "${UserDataDirectory}"
+                      is_first_node: ${XrayFirstNode}
                       master_key: ${MasterKey}
                       join_key: ${MasterKey}
                       db_type: ${DatabaseType}
                       db_driver: ${DatabaseDriver}
+                      db_master_url: postgresql://${DatabaseUser}:${DatabasePassword}@${XrayMasterDatabaseUrl}
                       db_url: postgres://${XrayDatabaseUrl}
+                      db_master_user: ${DatabaseUser}
                       db_user: ${XrayDatabaseUser}
                       db_password: ${XrayDatabasePassword}
                       xray_version: ${XrayVersion}
@@ -215,6 +219,15 @@ Resources:
               content: !Sub |
                 ${AnsibleVaultPass}
               mode: "0400"
+            /root/.secureit.sh:
+              content:
+                ansible-vault encrypt /root/.xray_ami/xray.yml --vault-id /root/.vault_pass.txt
+              mode: "0770"
+        secure-xray:
+          commands:
+            'secure ansible playbook':
+              command: '/root/.secureit.sh'
+              ignoreErrors: 'false'
     Properties:
       KeyName: !Ref KeyPairName
       IamInstanceProfile: !Ref XrayHostProfile
@@ -307,18 +320,12 @@ Resources:
             rm -f /etc/machine-id
             systemd-machine-id-setup
 
-            if "true" == "${XrayFirstNode}"
-            then
-                psql postgresql://${DatabaseUser}:${DatabasePassword}@${XrayMasterDatabaseUrl} -c "CREATE USER ${XrayDatabaseUser} WITH PASSWORD '${XrayDatabasePassword}'" &>> /var/log/userdata.xray_database.log;
-                psql postgresql://${DatabaseUser}:${DatabasePassword}@${XrayMasterDatabaseUrl} -c "grant ${XrayDatabaseUser} to ${DatabaseUser}" &>> /var/log/userdata.xray_database.log;
-                psql postgresql://${DatabaseUser}:${DatabasePassword}@${XrayMasterDatabaseUrl} -c "CREATE DATABASE xraydb WITH OWNER=${XrayDatabaseUser} ENCODING='UTF8'" &>> /var/log/userdata.xray_database.log;
-                psql postgresql://${DatabaseUser}:${DatabasePassword}@${XrayMasterDatabaseUrl} -c "GRANT ALL PRIVILEGES ON DATABASE xraydb TO ${XrayDatabaseUser}" &>> /var/log/userdata.xray_database.log;
-            fi
-
             ansible-galaxy collection install community.general ansible.posix
 
-            ansible-playbook /root/.xray_ami/xray-ami-setup.yml 2>&1 | tee /var/log/xray-ami.log || cfn_fail
-            ansible-playbook /root/.xray_ami/xray.yml 2>&1 | tee /var/log/xray.log || cfn_fail
+            ansible-playbook /root/.xray_ami/xray-ami-setup.yml --vault-password-file /root/.vault_pass.txt 2>&1 | tee /var/log/xray-ami.log || cfn_fail
+            ansible-playbook /root/.xray_ami/xray.yml --vault-password-file /root/.vault_pass.txt 2>&1 | tee /var/log/xray.log || cfn_fail
+
+            rm -rf /root/.secureit.sh
 
             cfn_success &> /var/log/cfn_success.log
             cfn_success || cfn_fail

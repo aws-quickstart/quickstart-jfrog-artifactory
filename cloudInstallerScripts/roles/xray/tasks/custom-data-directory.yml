@@ -1,6 +1,6 @@
 - name: setup directory symlink for using custom data directory/volume
   block:
-    - name: Create a xfs filesystem on /dev/nvme1n1
+    - name: create a xfs filesystem on /dev/nvme1n1
       # See: https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/nvme-ebs-volumes.html
       community.general.filesystem:
         dev: /dev/nvme1n1
@@ -11,7 +11,7 @@
         path: "{{ custom_data_directory }}"
         state: directory
 
-    - name: Mount the EBS volume
+    - name: mount the EBS volume
       ansible.posix.mount:
         path: "{{ custom_data_directory }}"
         src: /dev/nvme1n1

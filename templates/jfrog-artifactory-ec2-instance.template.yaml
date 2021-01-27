@@ -390,14 +390,12 @@ Resources:
             sleep 30 # Give volume time to attach
             lsblk # debug
 
-            export ANSIBLE_VAULT_PASSWORD_FILE="/root/.vault_pass.txt"
-
             ansible-galaxy collection install community.general ansible.posix
 
             setsebool httpd_can_network_connect 1 -P
 
-            ansible-playbook /root/.jfrog_ami/jfrog-ami-setup.yml 2>&1 | tee /var/log/jfrog-ami-setup.log || cfn_fail
-            ansible-playbook /root/.jfrog_ami/artifactory.yml 2>&1 | tee /var/log/jfrog-ami-artifactory.log || cfn_fail
+            ansible-playbook /root/.jfrog_ami/jfrog-ami-setup.yml --vault-password-file /root/.vault_pass.txt 2>&1 | tee /var/log/jfrog-ami-setup.log || cfn_fail
+            ansible-playbook /root/.jfrog_ami/artifactory.yml --vault-password-file /root/.vault_pass.txt 2>&1 | tee /var/log/jfrog-ami-artifactory.log || cfn_fail
 
             rm -rf /root/.secureit.sh
 

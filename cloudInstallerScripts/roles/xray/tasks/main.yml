@@ -1,4 +1,8 @@
 ---
+- name: initialize postgres database
+  include_tasks: initialize-pg-db.yml
+  when: is_first_node
+
 - name: create group for xray
   group:
     name: "{{ xray_group }}"
