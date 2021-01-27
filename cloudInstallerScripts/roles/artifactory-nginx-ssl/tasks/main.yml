@@ -38,6 +38,8 @@
     target: '/var/opt/jfrog/nginx/ssl/cert.pem'
     setype: httpd_sys_content_t
     state: present
+  vars:
+    ansible_python_interpreter: /bin/python2
   become: yes
 
 - name: Apply new SELinux file context to filesystem
