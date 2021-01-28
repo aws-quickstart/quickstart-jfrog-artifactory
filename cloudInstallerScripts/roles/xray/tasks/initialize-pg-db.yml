@@ -1,0 +1,15 @@
+- name: initialize Postgres DB
+  block:
+    - name: create user
+      command: psql {{db_master_url}} -c "CREATE USER {{db_user}} WITH PASSWORD '{{db_password}}'"
+
+    - name: grant membership role
+      command: psql {{db_master_url}} -c "GRANT {{db_user}} TO {{db_master_user}}"
+
+    - name: create xraydb database
+      command: psql {{db_master_url}} -c "CREATE DATABASE xraydb WITH OWNER={{db_user}} ENCODING='UTF8'"
+
+    - name: grant xraydb privileges to role
+      command: psql {{db_master_url}} -c "GRANT ALL PRIVILEGES ON DATABASE xraydb TO {{db_user}}"
+  become: yes
+  when: is_first_node
