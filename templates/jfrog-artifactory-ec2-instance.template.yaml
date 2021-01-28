@@ -227,7 +227,7 @@ Resources:
                       ami_creation: false
                       artifactory_flavour: "pro"
                       artifactory_ha_enabled: false
-                      artifactory_tar: "https://dl.bintray.com/jfrog/artifactory-pro/org/artifactory/pro/jfrog-artifactory-pro/${ArtifactoryVersion}/jfrog-artifactory-pro-${ArtifactoryVersion}-linux.tar.gz"
+                      artifactory_tar: "https://releases.jfrog.io/artifactory/artifactory-pro/org/artifactory/pro/jfrog-artifactory-pro/${ArtifactoryVersion}/jfrog-artifactory-pro-${ArtifactoryVersion}-linux.tar.gz"
                       artifactory_version: ${ArtifactoryVersion}
                       db_download_url: "https://jdbc.postgresql.org/download/postgresql-42.2.12.jar"
                       db_type: "postgresql"
