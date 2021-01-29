@@ -214,7 +214,7 @@ Resources:
                       db_type: "postgresql"
                       db_driver: "org.postgresql.Driver"
                       artifactory_flavour: "{{ 'pro' if '${JFrogProduct}' == 'jfrog-artifactory-pro' else 'jcr' if '${JFrogProduct}' == 'jfrog-artifactory-jcr' }}"
-                      artifactory_tar: "{{ 'https://dl.bintray.com/jfrog/artifactory-pro/org/artifactory/pro/jfrog-artifactory-pro/${ArtifactoryVersion}/jfrog-artifactory-pro-${ArtifactoryVersion}-linux.tar.gz' if '${JFrogProduct}' == 'jfrog-artifactory-pro' else 'https://dl.bintray.com/jfrog/artifactory/org/artifactory/jcr/jfrog-artifactory-jcr/${ArtifactoryVersion}/jfrog-artifactory-jcr-${ArtifactoryVersion}-linux.tar.gz' if '${JFrogProduct}' == 'jfrog-artifactory-jcr' }}"
+                      artifactory_tar: "{{ 'https://releases.jfrog.io/artifactory/artifactory-pro/org/artifactory/pro/jfrog-artifactory-pro/${ArtifactoryVersion}/jfrog-artifactory-pro-${ArtifactoryVersion}-linux.tar.gz' if '${JFrogProduct}' == 'jfrog-artifactory-pro' else 'https://releases.jfrog.io/artifactory/bintray-artifactory/org/artifactory/jcr/jfrog-artifactory-jcr/${ArtifactoryVersion}/jfrog-artifactory-jcr-${ArtifactoryVersion}-linux.tar.gz' if '${JFrogProduct}' == 'jfrog-artifactory-jcr' }}"
               mode: "0400"
     Properties:
       KeyName: !Ref KeyPairName

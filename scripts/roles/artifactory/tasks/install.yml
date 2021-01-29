@@ -4,7 +4,7 @@
   yum_repository:
     name: bintray--jfrog-artifactory-pro-rpms
     description: bintray--jfrog-artifactory-pro-rpms
-    baseurl: https://jfrog.bintray.com/artifactory-pro-rpms
+    baseurl: https://releases.jfrog.io/artifactory/artifactory-pro-rpms
     gpgcheck: no
     enabled: yes
 
