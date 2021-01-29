@@ -105,6 +105,18 @@ tests:
   #     # - us-west-2
   #     # - us-gov-east-1
 
+  create-bastion-with-existing-vpc:
+    parameters:
+      # us-west-2
+      VPCID               : "vpc-0d2100ab913ced1a2"
+      PublicSubnet1ID     : "subnet-0c2f1ab3118b0de23"
+      PublicSubnet2ID     : "subnet-0972dd8e6c961bfd3"
+      RemoteAccessCIDR    : "24.4.228.4/32"
+      EnableTCPForwarding : 'true'
+    template: submodules/quickstart-linux-bastion/templates/linux-bastion.template
+    regions:
+      - us-west-2
+
   artifactory-enterprise-new-vpc:
     auth:
       us-east-1: default
