@@ -30,6 +30,7 @@ Metadata:
           default: Security configuration
         Parameters:
           - AccessCidr
+          - RemoteAccessCidr
       - Label:
           default: Amazon EC2 configuration
         Parameters:
@@ -79,6 +80,8 @@ Metadata:
         default: Private subnet 2 CIDR
       AccessCidr:
         default: Permitted IP range
+      RemoteAccessCidr:
+        default: Remote access CIDR
       VolumeSize:
         default: EBS root volume size
       InstanceType:
@@ -166,6 +169,12 @@ Parameters:
       For example, you might want to grant only your corporate network access to the software.
     AllowedPattern: ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/([0-9]|[1-2][0-9]|3[0-2]))$
     Default: 0.0.0.0/0
+    Type: String
+  RemoteAccessCidr:
+    Description: Remote CIDR range that allows you to connect to the bastion instance by using SSH.
+      It is recommended that you set this value to a trusted IP range.
+      For example, you may want to grant specific ranges from within your corporate network that use the SSH protocol.
+    AllowedPattern: ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/([0-9]|[1-2][0-9]|3[0-2]))$
     Type: String
   VolumeSize:
     Description: Size in gigabytes of the available storage (min 10GB); the Quick Start will create an
@@ -301,9 +310,9 @@ Resources:
       Parameters:
         AvailabilityZones: !Join [',', [!Ref DatabasePreferredAz]]
         KeyPairName: !Ref KeyPairName
-        ProvisionBastionHost: "Disabled"
+        ProvisionBastionHost: "Enabled"
         AccessCidr: !Ref AccessCidr
-        RemoteAccessCidr: "0.0.0.0/0" # Bastion host is disabled so this will not be used
+        RemoteAccessCidr: !Ref RemoteAccessCidr
         ArtifactoryProduct: 'JFrog-Artifactory-Pro'
         ArtifactoryVersion: !Ref ArtifactoryVersion
         VolumeSize: !Ref VolumeSize

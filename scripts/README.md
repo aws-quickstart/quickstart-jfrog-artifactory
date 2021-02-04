@@ -17,6 +17,12 @@ The transformed templates will be written to `templates/.transformed_output` dir
 Run `upload_to_s3.sh <S3 bucket name> <S3 prefix>` to upload the transformed templates to S3 bucket
 
 ```sh
+$ ./upload_to_s3.sh
+```
+
+Override S3 bucket name and prefix using arguments:
+
+```sh
 $ ./upload_to_s3.sh jfrog-aws-test "artifactory7/pro/v7125"
 ```
 
