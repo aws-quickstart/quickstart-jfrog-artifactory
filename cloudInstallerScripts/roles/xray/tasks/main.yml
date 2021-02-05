@@ -1,7 +1,6 @@
 ---
 - name: initialize postgres database
   include_tasks: initialize-pg-db.yml
-  when: is_first_node
 
 - name: create group for xray
   group:
@@ -21,10 +20,6 @@
     path: "{{ xray_download_directory }}"
     state: directory
   become: yes
-
-- name: setup directory symlink for using custom data directory/volume
-  include_tasks: custom-data-directory.yml
-  when: use_custom_data_directory and custom_data_directory is defined
 
 - name: perform prerequisite installation
   include_tasks: "{{ ansible_os_family }}.yml"

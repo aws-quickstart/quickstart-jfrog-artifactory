@@ -1051,7 +1051,7 @@ Resources:
         DatabasePassword: !Ref DatabasePassword
         MasterKey: !Ref MasterKey
         SecurityGroups: !Ref ArtifactoryEc2Sg
-        Volume: !GetAtt ArtifactoryCoreInfraStack.Outputs.XrayEbsVolume
+        VolumeSize: !Ref VolumeSize
         XrayInstanceType: !Ref XrayInstanceType
         JfrogInternalUrl: !Sub "http://${ArtifactoryInternalElb.DNSName}"
         AnsibleVaultPass: !Ref AnsibleVaultPass
@@ -1059,7 +1059,6 @@ Resources:
         XrayDatabasePassword: !Ref XrayDatabasePassword
         XrayMasterDatabaseUrl: !GetAtt ArtifactoryCoreInfraStack.Outputs.XrayMasterDatabaseUrl
         XrayDatabaseUrl: !GetAtt ArtifactoryCoreInfraStack.Outputs.XrayDatabaseUrl
-        XrayFirstNode: 'true'
         XrayVersion: !Ref XrayVersion
         XrayHostRole: !Ref XrayHostRole
         XrayHostProfile: !Ref XrayHostProfile

@@ -354,24 +354,6 @@ Resources:
       VolumeType: gp2
     DeletionPolicy: Snapshot
     UpdateReplacePolicy: Snapshot
-  XrayEbsVolume:
-    Type: AWS::EC2::Volume
-    Properties:
-      AvailabilityZone:
-        !If
-          - IsMultiAzDatabase
-          - !Select
-            - '0'
-            - !Ref AvailabilityZones
-          - !Ref DatabasePreferredAz
-      Encrypted: false
-      Size: !Ref VolumeSize
-      Tags:
-        - Key: Name
-          Value: !Sub "Xray-${AWS::StackName}"
-      VolumeType: gp2
-    DeletionPolicy: Snapshot
-    UpdateReplacePolicy: Snapshot
 Outputs:
   S3Bucket:
     Value: !Ref ArtifactoryS3Bucket
@@ -433,5 +415,3 @@ Outputs:
     Value: !FindInMap [JavaOptionstoInstance, !Ref InstanceType, DeploymentSize]
   ArtifactoryEbsVolume:
     Value: !Ref ArtifactoryEbsVolume
-  XrayEbsVolume:
-    Value: !Ref XrayEbsVolume
