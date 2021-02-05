@@ -46,24 +46,28 @@
   template:
     src: system.yaml.j2
     dest: "{{ xray_home }}/var/etc/system.yaml"
+    force: no # only create if file doesn't exist
   become: yes
 
 - name: configure master key
   template:
     src: master.key.j2
     dest: "{{ xray_home }}/var/etc/security/master.key"
+    force: no # only create if file doesn't exist
   become: yes
 
 - name: configure join key
   template:
     src: join.key.j2
     dest: "{{ xray_home }}/var/etc/security/join.key"
+    force: no # only create if file doesn't exist
   become: yes
 
 - name: configure installer info
   template:
     src: installer-info.json.j2
     dest: "{{ xray_home }}/var/etc/info/installer-info.json"
+    force: no # only create if file doesn't exist
   become: yes
 
 - name: create xray service

@@ -54,6 +54,7 @@
   copy:
     src: "{{ system_file }}"
     dest: "{{ artifactory_home }}/var/etc/system.yaml"
+    force: no # only copy if file doesn't exist
   become: yes
   when: system_file is defined
 
@@ -61,6 +62,7 @@
   template:
     src: system.yaml.j2
     dest: "{{ artifactory_home }}/var/etc/system.yaml"
+    force: no # only create if file doesn't exist
   become: yes
   when: system_file is not defined
 
@@ -68,24 +70,28 @@
   template:
     src: master.key.j2
     dest: "{{ artifactory_home }}/var/etc/security/master.key"
+    force: no # only create if file doesn't exist
   become: yes
 
 - name: configure join key
   template:
     src: join.key.j2
     dest: "{{ artifactory_home }}/var/etc/security/join.key"
+    force: no # only create if file doesn't exist
   become: yes
 
 - name: configure installer info
   template:
     src: installer-info.json.j2
     dest: "{{ artifactory_home }}/var/etc/info/installer-info.json"
+    force: no # only create if file doesn't exist
   become: yes
 
 - name: use specified binary store file
   copy:
     src: "{{ binary_store_file }}"
     dest: "{{ artifactory_home }}/var/etc/artifactory/binarystore.xml"
+    force: no # only copy if file doesn't exist
   become: yes
   when: binary_store_file is defined
 
@@ -93,6 +99,7 @@
   template:
     src: binarystore.enterprise.xml.j2
     dest: "{{ artifactory_home }}/var/etc/artifactory/binarystore.xml"
+    force: no # only create if file doesn't exist
   become: yes
   when: binary_store_file is not defined and artifactory_ha_enabled
 
@@ -100,6 +107,7 @@
   template:
     src: binarystore.pro.xml.j2
     dest: "{{ artifactory_home }}/var/etc/artifactory/binarystore.xml"
+    force: no # only create if file doesn't exist
   become: yes
   when: binary_store_file is not defined and not artifactory_ha_enabled
 
@@ -109,6 +117,7 @@
       copy:
         src: "{{ artifactory_license_file }}"
         dest: "{{ artifactory_home }}/var/etc/artifactory/artifactory.cluster.license"
+        force: no # only copy if file doesn't exist
       become: yes
       when: artifactory_license_file is defined and artifactory_is_primary == true
 
@@ -116,6 +125,7 @@
       template:
         src: artifactory.cluster.license.j2
         dest: "{{ artifactory_home }}/var/etc/artifactory/artifactory.cluster.license"
+        force: no # only create if file doesn't exist
       become: yes
       when: artifactory_license_file is not defined and artifactory_is_primary == true
   when: artifactory_ha_enabled
@@ -126,6 +136,7 @@
       copy:
         src: "{{ artifactory_license_file }}"
         dest: "{{ artifactory_home }}/var/etc/artifactory/artifactory.lic"
+        force: no # only create if file doesn't exist
       become: yes
       when: artifactory_license_file is defined
 
@@ -133,6 +144,7 @@
       template:
         src: artifactory.pro.license.j2
         dest: "{{ artifactory_home }}/var/etc/artifactory/artifactory.lic"
+        force: no # only create if file doesn't exist
       become: yes
       when: artifactory_license_file is not defined
   when: not artifactory_ha_enabled
