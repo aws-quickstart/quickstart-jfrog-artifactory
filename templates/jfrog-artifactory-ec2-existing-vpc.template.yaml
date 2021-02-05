@@ -556,6 +556,7 @@ Conditions:
   DefaultJava: !Equals [!Ref DefaultJavaMemSettings, "true"]
   UsingDefaultBucket: !Equals [!Ref QsS3BucketName, 'aws-quickstart']
   EnableXray: !Equals [!Ref InstallXray, 'true']
+  SmLicenseCertNameNotExists: !Equals [!Ref 'SmLicenseCertName', '']
   SmLicenseCertNameExists: !Not [!Equals [!Ref 'SmLicenseCertName', '']]
 Resources:
   BastionRole:
@@ -696,6 +697,7 @@ Resources:
       Protocol: TCP
   ArtifactoryElbListener:
     Type: AWS::ElasticLoadBalancingV2::Listener
+    Condition: SmLicenseCertNameNotExists
     Properties:
       DefaultActions:
         - TargetGroupArn: !Ref ArtifactoryTargetGroup
