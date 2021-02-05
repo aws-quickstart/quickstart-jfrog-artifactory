@@ -2,6 +2,8 @@
 
 ### Transform CFTs and upload to S3
 
+#### Transform CFTs and replace QuickStart parameter values with hardcoded values
+
 * Set environment variables (`S3_BUCKET_NAME`, `S3_BUCKET_REGION`, `S3_PREFIX`)
 * Run `transformed_templates_for_qs.sh` to replace parameters with hardcoded values.
 
@@ -13,6 +15,17 @@ $ ./transformed_templates_for_qs.sh
 ```
 
 The transformed templates will be written to `templates/.transformed_output` directory.
+
+#### Remove QuickStart parameters from root templates
+
+Manually remove the following parameters (easier than regex!) from the transformed root templates (`jfrog-artifactory-pro-ec2-new-vpc-master.template.yaml` and `jfrog-artifactory-pro-ec2-existing-vpc-master.template.yaml`) so they don't appear in CloudFormation console:
+- `QsS3BucketName`
+- `QsS3KeyPrefix`
+- `QsS3BucketRegion`
+
+They appears in `Metadata` and `Parameters` sections
+
+#### Upload templates to S3
 
 Run `upload_to_s3.sh <S3 bucket name> <S3 prefix>` to upload the transformed templates to S3 bucket
 
@@ -32,14 +45,14 @@ Create a new stack using the URL from the S3 bucket, e.g. `https://jfrog-aws-tes
 
 Enter the appropriate parameters e.g.
 ```
-stack name: artifactory7 # append with some unique number
-ssh key name: <your key>
+Stack name: artifactory7 # append with some unique number
+SSH key name: <your key>
 Permitted IP range: 0.0.0.0/0
 Remote access CIDR:	0.0.0.0/0
 SmLicenseCertName: jfrog-artifactory
 Artifactory server name:	artifactory
 masterkey: FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
-various passwords: artifactory
+Various passwords: artifactory
 ```
 
 Verify the stack is created successfully, and both Artifactory and Xray are up and running.
@@ -70,7 +83,7 @@ Logs (not all) are sent to CloudWatch so that's the best starting point. They ar
 - `/artifactory/instances/<instance ID>`
 - `/xray/instances/<instance ID>`
 
-To SSH into the EC2 instance but there is no bastion, run this taskcat test (`create-bastion-with-existing-vpc`) to create the bastion stack. Adjust network parameters to suit the region. Change the `RemoteAccessCIDR` parameter to match your ISP public IP. *Don't* use `0.0.0.0/0`!
+To SSH into the EC2 instance when there is no bastion, run this taskcat test (`create-bastion-with-existing-vpc`) to create the bastion stack. Adjust network parameters to suit the region. Change the `RemoteAccessCIDR` parameter to match your ISP public IP. *Don't* use `0.0.0.0/0`!
 
 To decrypt Ansible playbook:
 ```sh
