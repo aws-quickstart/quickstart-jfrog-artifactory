@@ -39,6 +39,8 @@ Parameters:
   MasterKey:
     Type: String
     NoEcho: 'true'
+  ExtraJavaOptions:
+    Type: String
   SecurityGroups:
     Type: String
   XrayHostProfile:
@@ -202,6 +204,7 @@ Resources:
                       custom_data_directory: "${UserDataDirectory}"
                       master_key: ${MasterKey}
                       join_key: ${MasterKey}
+                      extra_java_opts: ${ExtraJavaOptions}
                       db_type: ${DatabaseType}
                       db_driver: ${DatabaseDriver}
                       db_master_url: postgresql://${DatabaseUser}:${DatabasePassword}@${XrayMasterDatabaseUrl}

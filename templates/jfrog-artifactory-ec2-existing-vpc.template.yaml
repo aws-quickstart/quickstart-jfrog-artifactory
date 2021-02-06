@@ -1062,6 +1062,7 @@ Resources:
         MasterKey: !Ref MasterKey
         SecurityGroups: !Ref ArtifactoryEc2Sg
         VolumeSize: !Ref VolumeSize
+        ExtraJavaOptions: !GetAtt ArtifactoryCoreInfraStack.Outputs.JavaOpts
         XrayInstanceType: !Ref XrayInstanceType
         JfrogInternalUrl: !Sub "http://${ArtifactoryInternalElb.DNSName}"
         AnsibleVaultPass: !Ref AnsibleVaultPass

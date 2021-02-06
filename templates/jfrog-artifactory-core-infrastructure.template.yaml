@@ -91,6 +91,14 @@ Mappings:
     JFrog-Artifactory-Pro:
       RepoName: ProDockerRepo
   JavaOptionstoInstance:
+    c5.2xlarge:
+      Min: 8
+      Max: 12
+      DeploymentSize: Small
+    c5.4xlarge:
+      Min: 16
+      Max: 24
+      DeploymentSize: Large
     m5.large:
       Min: 4
       Max: 4
