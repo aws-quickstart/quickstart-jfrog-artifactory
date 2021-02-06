@@ -40,7 +40,8 @@ Metadata:
           default: JFrog Artifactory configuration
         Parameters:
           - ArtifactoryVersion
-          - SmLicenseCertName
+          - SmLicenseName
+          - SmCertName
           - ArtifactoryServerName
           - MasterKey
       - Label:
@@ -88,8 +89,10 @@ Metadata:
         default: EC2 instance type
       ArtifactoryVersion:
         default: Artifactory version
-      SmLicenseCertName:
-        default: Artifactory licenses and certificate secret name
+      SmLicenseName:
+        default: Artifactory licenses secret name
+      SmCertName:
+        default: Artifactory certificate secret name
       ArtifactoryServerName:
         default: Artifactory server name
       MasterKey:
@@ -221,8 +224,12 @@ Parameters:
     ConstraintDescription: A version that matches X.X.X per Artifactory releases.
     Default: 7.12.5
     Type: String
-  SmLicenseCertName:
-    Description: Secret name created in AWS Secrets Manager, which contains the SSL certificate, certificate key, and Artifactory licenses.
+  SmLicenseName:
+    Description: Secret name created in AWS Secrets Manager, which contains the Artifactory licenses.
+    Default: ''
+    Type: String
+  SmCertName:
+    Description: Secret name created in AWS Secrets Manager, which contains the SSL certificate and certificate key.
     Default: ''
     Type: String
   ArtifactoryServerName:
@@ -318,7 +325,8 @@ Resources:
         VolumeSize: !Ref VolumeSize
         InstanceType: !Ref InstanceType
         NumberOfSecondary: 0
-        SmLicenseCertName: !Ref SmLicenseCertName
+        SmLicenseName: !Ref SmLicenseName
+        SmCertName: !Ref SmCertName
         ArtifactoryServerName: !Ref ArtifactoryServerName
         MasterKey: !Ref MasterKey
         KeystorePassword: !Ref DatabasePassword

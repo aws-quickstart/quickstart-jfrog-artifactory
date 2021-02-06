@@ -11,7 +11,7 @@
 $ export S3_BUCKET_NAME=jfrog-aws-test
 $ export S3_BUCKET_REGION=us-east-1
 $ export S3_PREFIX="artifactory7/pro/v7125"
-$ ./transformed_templates_for_qs.sh
+$ ./transform_templates_for_qs.sh
 ```
 
 The transformed templates will be written to `templates/.transformed_output` directory.
