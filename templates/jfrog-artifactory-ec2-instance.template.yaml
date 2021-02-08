@@ -354,6 +354,7 @@ Resources:
             source ~/venv/bin/activate
 
             pip install --upgrade pip
+            pip install wheel
 
             # Install Cloudformation helper scripts
             pip install https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-py3-latest.tar.gz 2>&1 | tee /var/log/userdata.aws_cfn_bootstrap_install.log
