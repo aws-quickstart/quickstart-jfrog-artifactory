@@ -50,21 +50,24 @@
     - "etc/artifactory"
   become: yes
 
+- name: check if system yaml file exits
+  stat:
+    path: "{{ artifactory_home }}/var/etc/system.yaml"
+  register: system_yaml
+
 - name: use specified system yaml
   copy:
     src: "{{ system_file }}"
     dest: "{{ artifactory_home }}/var/etc/system.yaml"
-    force: no # only copy if file doesn't exist
   become: yes
-  when: system_file is defined
+  when: system_file is defined and not system_yaml.stat.exists
 
 - name: configure system yaml
   template:
     src: system.yaml.j2
     dest: "{{ artifactory_home }}/var/etc/system.yaml"
-    force: no # only create if file doesn't exist
   become: yes
-  when: system_file is not defined
+  when: system_file is not defined and not system_yaml.stat.exists
 
 - name: configure master key
   template:
