@@ -45,7 +45,8 @@ Metadata:
           - ArtifactoryProduct
           - ArtifactoryVersion
           - NumberOfSecondary
-          - SmLicenseCertName
+          - SmLicenseName
+          - SmCertName
           - ArtifactoryServerName
           - MasterKey
           - ExtraJavaOptions
@@ -129,8 +130,10 @@ Metadata:
         default: Artifactory product to install
       ArtifactoryVersion:
         default: Artifactory version
-      SmLicenseCertName:
-        default: Artifactory licenses and certificate secret name
+      SmLicenseName:
+        default: Artifactory licenses secret name
+      SmCertName:
+        default: Artifactory certificate secret name
       ArtifactoryServerName:
         default: Artifactory server name
       MasterKey:
@@ -370,8 +373,12 @@ Parameters:
     ConstraintDescription: A version that matches X.X.X per Artifactory releases
     Default: 7.11.2
     Type: String
-  SmLicenseCertName:
-    Description: Secret name created in AWS Secrets Manager, which contains the SSL certificate, certificate key, and Artifactory licenses.
+  SmLicenseName:
+    Description: Secret name created in AWS Secrets Manager, which contains the Artifactory licenses.
+    Default: ''
+    Type: String
+  SmCertName:
+    Description: Secret name created in AWS Secrets Manager, which contains the SSL certificate and certificate key.
     Default: ''
     Type: String
   ArtifactoryServerName:
@@ -556,7 +563,9 @@ Conditions:
   DefaultJava: !Equals [!Ref DefaultJavaMemSettings, "true"]
   UsingDefaultBucket: !Equals [!Ref QsS3BucketName, 'aws-quickstart']
   EnableXray: !Equals [!Ref InstallXray, 'true']
-  SmLicenseCertNameExists: !Not [!Equals [!Ref 'SmLicenseCertName', '']]
+  SmCertNameNotExists: !Equals [!Ref 'SmCertName', '']
+  SmLicenseNameExists: !Not [!Equals [!Ref 'SmLicenseName', '']]
+  SmCertNameExists: !Not [!Equals [!Ref 'SmCertName', '']]
 Resources:
   BastionRole:
     Condition: EnableBastion
@@ -696,6 +705,7 @@ Resources:
       Protocol: TCP
   ArtifactoryElbListener:
     Type: AWS::ElasticLoadBalancingV2::Listener
+    Condition: SmCertNameNotExists
     Properties:
       DefaultActions:
         - TargetGroupArn: !Ref ArtifactoryTargetGroup
@@ -861,17 +871,17 @@ Resources:
               - !Ref 'AWS::Region'
               - !Ref 'QsS3BucketRegion'
         ArtifactoryProduct: !Ref ArtifactoryProduct
-        ArtifactoryLicense1: !If [SmLicenseCertNameExists, !Sub '{{resolve:secretsmanager:${SmLicenseCertName}:SecretString:ArtifactoryLicense1}}', '']
-        ArtifactoryLicense2: !If [SmLicenseCertNameExists, !Sub '{{resolve:secretsmanager:${SmLicenseCertName}:SecretString:ArtifactoryLicense2}}', '']
-        ArtifactoryLicense3: !If [SmLicenseCertNameExists, !Sub '{{resolve:secretsmanager:${SmLicenseCertName}:SecretString:ArtifactoryLicense3}}', '']
-        ArtifactoryLicense4: !If [SmLicenseCertNameExists, !Sub '{{resolve:secretsmanager:${SmLicenseCertName}:SecretString:ArtifactoryLicense4}}', '']
-        ArtifactoryLicense5: !If [SmLicenseCertNameExists, !Sub '{{resolve:secretsmanager:${SmLicenseCertName}:SecretString:ArtifactoryLicense5}}', '']
-        ArtifactoryLicense6: !If [SmLicenseCertNameExists, !Sub '{{resolve:secretsmanager:${SmLicenseCertName}:SecretString:ArtifactoryLicense6}}', '']
+        ArtifactoryLicense1: !If [SmLicenseNameExists, !Sub '{{resolve:secretsmanager:${SmLicenseName}:SecretString:ArtifactoryLicense1}}', '']
+        ArtifactoryLicense2: !If [SmLicenseNameExists, !Sub '{{resolve:secretsmanager:${SmLicenseName}:SecretString:ArtifactoryLicense2}}', '']
+        ArtifactoryLicense3: !If [SmLicenseNameExists, !Sub '{{resolve:secretsmanager:${SmLicenseName}:SecretString:ArtifactoryLicense3}}', '']
+        ArtifactoryLicense4: !If [SmLicenseNameExists, !Sub '{{resolve:secretsmanager:${SmLicenseName}:SecretString:ArtifactoryLicense4}}', '']
+        ArtifactoryLicense5: !If [SmLicenseNameExists, !Sub '{{resolve:secretsmanager:${SmLicenseName}:SecretString:ArtifactoryLicense5}}', '']
+        ArtifactoryLicense6: !If [SmLicenseNameExists, !Sub '{{resolve:secretsmanager:${SmLicenseName}:SecretString:ArtifactoryLicense6}}', '']
         ArtifactoryServerName: !Ref ArtifactoryServerName
-        EnableSSL: !If [SmLicenseCertNameExists, true, false]
-        Certificate: !If [SmLicenseCertNameExists, !Sub '{{resolve:secretsmanager:${SmLicenseCertName}:SecretString:Certificate}}', '']
-        CertificateKey: !If [SmLicenseCertNameExists, !Sub '{{resolve:secretsmanager:${SmLicenseCertName}:SecretString:CertificateKey}}', '']
-        CertificateDomain: !If [SmLicenseCertNameExists, !Sub '{{resolve:secretsmanager:${SmLicenseCertName}:SecretString:CertificateDomain}}', '']
+        EnableSSL: !If [SmCertNameExists, true, false]
+        Certificate: !If [SmCertNameExists, !Sub '{{resolve:secretsmanager:${SmCertName}:SecretString:Certificate}}', '']
+        CertificateKey: !If [SmCertNameExists, !Sub '{{resolve:secretsmanager:${SmCertName}:SecretString:CertificateKey}}', '']
+        CertificateDomain: !If [SmCertNameExists, !Sub '{{resolve:secretsmanager:${SmCertName}:SecretString:CertificateDomain}}', '']
         ArtifactoryS3Bucket: !GetAtt ArtifactoryCoreInfraStack.Outputs.S3Bucket
         DatabaseUrl: !GetAtt ArtifactoryCoreInfraStack.Outputs.DatabaseUrl
         DatabaseDriver: !GetAtt ArtifactoryCoreInfraStack.Outputs.DatabaseDriver
@@ -912,17 +922,17 @@ Resources:
         DeploymentTag: ArtifactorySecondary
         HostRole: !Ref ArtifactoryHostRole
         ArtifactoryProduct: !Ref ArtifactoryProduct
-        ArtifactoryLicense1: !If [SmLicenseCertNameExists, !Sub '{{resolve:secretsmanager:${SmLicenseCertName}:SecretString:ArtifactoryLicense1}}', '']
-        ArtifactoryLicense2: !If [SmLicenseCertNameExists, !Sub '{{resolve:secretsmanager:${SmLicenseCertName}:SecretString:ArtifactoryLicense2}}', '']
-        ArtifactoryLicense3: !If [SmLicenseCertNameExists, !Sub '{{resolve:secretsmanager:${SmLicenseCertName}:SecretString:ArtifactoryLicense3}}', '']
-        ArtifactoryLicense4: !If [SmLicenseCertNameExists, !Sub '{{resolve:secretsmanager:${SmLicenseCertName}:SecretString:ArtifactoryLicense4}}', '']
-        ArtifactoryLicense5: !If [SmLicenseCertNameExists, !Sub '{{resolve:secretsmanager:${SmLicenseCertName}:SecretString:ArtifactoryLicense5}}', '']
-        ArtifactoryLicense6: !If [SmLicenseCertNameExists, !Sub '{{resolve:secretsmanager:${SmLicenseCertName}:SecretString:ArtifactoryLicense6}}', '']
+        ArtifactoryLicense1: !If [SmLicenseNameExists, !Sub '{{resolve:secretsmanager:${SmLicenseName}:SecretString:ArtifactoryLicense1}}', '']
+        ArtifactoryLicense2: !If [SmLicenseNameExists, !Sub '{{resolve:secretsmanager:${SmLicenseName}:SecretString:ArtifactoryLicense2}}', '']
+        ArtifactoryLicense3: !If [SmLicenseNameExists, !Sub '{{resolve:secretsmanager:${SmLicenseName}:SecretString:ArtifactoryLicense3}}', '']
+        ArtifactoryLicense4: !If [SmLicenseNameExists, !Sub '{{resolve:secretsmanager:${SmLicenseName}:SecretString:ArtifactoryLicense4}}', '']
+        ArtifactoryLicense5: !If [SmLicenseNameExists, !Sub '{{resolve:secretsmanager:${SmLicenseName}:SecretString:ArtifactoryLicense5}}', '']
+        ArtifactoryLicense6: !If [SmLicenseNameExists, !Sub '{{resolve:secretsmanager:${SmLicenseName}:SecretString:ArtifactoryLicense6}}', '']
         ArtifactoryServerName: !Ref ArtifactoryServerName
-        EnableSSL: !If [SmLicenseCertNameExists, true, false]
-        Certificate: !If [SmLicenseCertNameExists, !Sub '{{resolve:secretsmanager:${SmLicenseCertName}:SecretString:Certificate}}', '']
-        CertificateKey: !If [SmLicenseCertNameExists, !Sub '{{resolve:secretsmanager:${SmLicenseCertName}:SecretString:CertificateKey}}', '']
-        CertificateDomain: !If [SmLicenseCertNameExists, !Sub '{{resolve:secretsmanager:${SmLicenseCertName}:SecretString:CertificateDomain}}', '']
+        EnableSSL: !If [SmCertNameExists, true, false]
+        Certificate: !If [SmCertNameExists, !Sub '{{resolve:secretsmanager:${SmCertName}:SecretString:Certificate}}', '']
+        CertificateKey: !If [SmCertNameExists, !Sub '{{resolve:secretsmanager:${SmCertName}:SecretString:CertificateKey}}', '']
+        CertificateDomain: !If [SmCertNameExists, !Sub '{{resolve:secretsmanager:${SmCertName}:SecretString:CertificateDomain}}', '']
         ArtifactoryS3Bucket: !GetAtt ArtifactoryCoreInfraStack.Outputs.S3Bucket
         DatabaseUrl: !GetAtt ArtifactoryCoreInfraStack.Outputs.DatabaseUrl
         DatabaseDriver: !GetAtt ArtifactoryCoreInfraStack.Outputs.DatabaseDriver
@@ -1051,7 +1061,8 @@ Resources:
         DatabasePassword: !Ref DatabasePassword
         MasterKey: !Ref MasterKey
         SecurityGroups: !Ref ArtifactoryEc2Sg
-        Volume: !GetAtt ArtifactoryCoreInfraStack.Outputs.XrayEbsVolume
+        VolumeSize: !Ref VolumeSize
+        ExtraJavaOptions: !GetAtt ArtifactoryCoreInfraStack.Outputs.JavaOpts
         XrayInstanceType: !Ref XrayInstanceType
         JfrogInternalUrl: !Sub "http://${ArtifactoryInternalElb.DNSName}"
         AnsibleVaultPass: !Ref AnsibleVaultPass
@@ -1059,14 +1070,13 @@ Resources:
         XrayDatabasePassword: !Ref XrayDatabasePassword
         XrayMasterDatabaseUrl: !GetAtt ArtifactoryCoreInfraStack.Outputs.XrayMasterDatabaseUrl
         XrayDatabaseUrl: !GetAtt ArtifactoryCoreInfraStack.Outputs.XrayDatabaseUrl
-        XrayFirstNode: 'true'
         XrayVersion: !Ref XrayVersion
         XrayHostRole: !Ref XrayHostRole
         XrayHostProfile: !Ref XrayHostProfile
 Outputs:
   ArtifactoryUrl:
     Description: URL of the ELB to access Artifactory
-    Value: !If [SmLicenseCertNameExists, !Sub "https://${ArtifactoryElb.DNSName}", !Sub "http://${ArtifactoryElb.DNSName}"]
+    Value: !If [SmCertNameExists, !Sub "https://${ArtifactoryElb.DNSName}", !Sub "http://${ArtifactoryElb.DNSName}"]
     Export:
       Name: !Sub '${AWS::StackName}-ArtifactoryUrl'
   ArtifactoryInternalUrl:

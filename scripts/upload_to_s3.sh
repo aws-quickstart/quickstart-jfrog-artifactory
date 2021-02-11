@@ -3,8 +3,8 @@ echo $BASH_VERSION
 
 SCRIPT_DIR=$(dirname "$0")
 
-S3_BUCKET_NAME=${1:-"jfrog-aws-test"}
-S3_PREFIX=${2:-"artifactory7/pro/v7125"}
+S3_BUCKET_NAME=${1:-$S3_BUCKET_NAME}
+S3_PREFIX=${2:-$S3_PREFIX}
 
 TEMPLATE_OUTPUT_DIR=$SCRIPT_DIR/../templates/.transformed_output
 

@@ -1,7 +1,6 @@
 ---
 - name: initialize postgres database
   include_tasks: initialize-pg-db.yml
-  when: is_first_node
 
 - name: create group for xray
   group:
@@ -21,10 +20,6 @@
     path: "{{ xray_download_directory }}"
     state: directory
   become: yes
-
-- name: setup directory symlink for using custom data directory/volume
-  include_tasks: custom-data-directory.yml
-  when: use_custom_data_directory and custom_data_directory is defined
 
 - name: perform prerequisite installation
   include_tasks: "{{ ansible_os_family }}.yml"
@@ -46,24 +41,28 @@
   template:
     src: system.yaml.j2
     dest: "{{ xray_home }}/var/etc/system.yaml"
+    force: no # only create if file doesn't exist
   become: yes
 
 - name: configure master key
   template:
     src: master.key.j2
     dest: "{{ xray_home }}/var/etc/security/master.key"
+    force: no # only create if file doesn't exist
   become: yes
 
 - name: configure join key
   template:
     src: join.key.j2
     dest: "{{ xray_home }}/var/etc/security/join.key"
+    force: no # only create if file doesn't exist
   become: yes
 
 - name: configure installer info
   template:
     src: installer-info.json.j2
     dest: "{{ xray_home }}/var/etc/info/installer-info.json"
+    force: no # only create if file doesn't exist
   become: yes
 
 - name: create xray service

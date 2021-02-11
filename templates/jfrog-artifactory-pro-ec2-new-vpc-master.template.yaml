@@ -24,6 +24,7 @@ Metadata:
           default: Security configuration
         Parameters:
           - AccessCidr
+          - RemoteAccessCidr
       - Label:
           default: Amazon EC2 configuration
         Parameters:
@@ -33,7 +34,8 @@ Metadata:
           default: JFrog Artifactory configuration
         Parameters:
           - ArtifactoryVersion
-          - SmLicenseCertName
+          - SmLicenseName
+          - SmCertName
           - ArtifactoryServerName
           - MasterKey
       - Label:
@@ -58,6 +60,8 @@ Metadata:
         default: SSH key name
       AccessCidr:
         default: Permitted IP range
+      RemoteAccessCidr:
+        default: Remote access CIDR
       AvailabilityZones:
         default: Availability Zones
       VolumeSize:
@@ -66,8 +70,10 @@ Metadata:
         default: EC2 instance type
       ArtifactoryVersion:
         default: Artifactory version
-      SmLicenseCertName:
-        default: Artifactory licenses and certificate secret name
+      SmLicenseName:
+        default: Artifactory licenses secret name
+      SmCertName:
+        default: Artifactory certificate secret name
       ArtifactoryServerName:
         default: Artifactory server name
       MasterKey:
@@ -119,6 +125,12 @@ Parameters:
     AllowedPattern: ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/([0-9]|[1-2][0-9]|3[0-2]))$
     Default: 0.0.0.0/0
     Type: String
+  RemoteAccessCidr:
+    Description: Remote CIDR range that allows you to connect to the bastion instance by using SSH.
+      It is recommended that you set this value to a trusted IP range.
+      For example, you may want to grant specific ranges from within your corporate network that use the SSH protocol.
+    AllowedPattern: ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/([0-9]|[1-2][0-9]|3[0-2]))$
+    Type: String
   AvailabilityZones:
     Description: List of Availability Zones to use for the subnets in the VPC. Two
       Availability Zones are used for this deployment.
@@ -168,8 +180,12 @@ Parameters:
     ConstraintDescription: A version that matches X.X.X per Artifactory releases.
     Default: 7.12.5
     Type: String
-  SmLicenseCertName:
-    Description: Secret name created in AWS Secrets Manager, which contains the SSL certificate, certificate key, and Artifactory licenses.
+  SmLicenseName:
+    Description: Secret name created in AWS Secrets Manager, which contains the Artifactory licenses.
+    Default: ''
+    Type: String
+  SmCertName:
+    Description: Secret name created in AWS Secrets Manager, which contains the SSL certificate and certificate key.
     Default: ''
     Type: String
   ArtifactoryServerName:
@@ -252,15 +268,16 @@ Resources:
           S3Region: !If [UsingDefaultBucket, !Ref 'AWS::Region', !Ref 'QsS3BucketRegion']
       Parameters:
         KeyPairName: !Ref KeyPairName
-        ProvisionBastionHost: "Disabled"
+        ProvisionBastionHost: "Enabled"
         AccessCidr: !Ref AccessCidr
-        RemoteAccessCidr: "0.0.0.0/0" # Bastion host is disabled so this will not be used
+        RemoteAccessCidr: !Ref RemoteAccessCidr
         ArtifactoryProduct: 'JFrog-Artifactory-Pro'
         ArtifactoryVersion: !Ref ArtifactoryVersion
         VolumeSize: !Ref VolumeSize
         InstanceType: !Ref InstanceType
         NumberOfSecondary: 0
-        SmLicenseCertName: !Ref SmLicenseCertName
+        SmLicenseName: !Ref SmLicenseName
+        SmCertName: !Ref SmCertName
         ArtifactoryServerName: !Ref ArtifactoryServerName
         MasterKey: !Ref MasterKey
         KeystorePassword: !Ref DatabasePassword

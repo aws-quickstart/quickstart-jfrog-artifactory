@@ -91,6 +91,14 @@ Mappings:
     JFrog-Artifactory-Pro:
       RepoName: ProDockerRepo
   JavaOptionstoInstance:
+    c5.2xlarge:
+      Min: 8
+      Max: 12
+      DeploymentSize: Small
+    c5.4xlarge:
+      Min: 16
+      Max: 24
+      DeploymentSize: Large
     m5.large:
       Min: 4
       Max: 4
@@ -354,24 +362,6 @@ Resources:
       VolumeType: gp2
     DeletionPolicy: Snapshot
     UpdateReplacePolicy: Snapshot
-  XrayEbsVolume:
-    Type: AWS::EC2::Volume
-    Properties:
-      AvailabilityZone:
-        !If
-          - IsMultiAzDatabase
-          - !Select
-            - '0'
-            - !Ref AvailabilityZones
-          - !Ref DatabasePreferredAz
-      Encrypted: false
-      Size: !Ref VolumeSize
-      Tags:
-        - Key: Name
-          Value: !Sub "Xray-${AWS::StackName}"
-      VolumeType: gp2
-    DeletionPolicy: Snapshot
-    UpdateReplacePolicy: Snapshot
 Outputs:
   S3Bucket:
     Value: !Ref ArtifactoryS3Bucket
@@ -433,5 +423,3 @@ Outputs:
     Value: !FindInMap [JavaOptionstoInstance, !Ref InstanceType, DeploymentSize]
   ArtifactoryEbsVolume:
     Value: !Ref ArtifactoryEbsVolume
-  XrayEbsVolume:
-    Value: !Ref XrayEbsVolume

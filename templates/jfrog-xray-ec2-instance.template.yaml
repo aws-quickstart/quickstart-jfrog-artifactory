@@ -39,6 +39,8 @@ Parameters:
   MasterKey:
     Type: String
     NoEcho: 'true'
+  ExtraJavaOptions:
+    Type: String
   SecurityGroups:
     Type: String
   XrayHostProfile:
@@ -53,8 +55,8 @@ Parameters:
     Description: Ansiblevault Password to secure the artifactory.yml
     Type: String
     NoEcho: 'true'
-  Volume:
-    Type: String
+  VolumeSize:
+    Type: Number
   XrayDatabaseUser:
     Type: String
   XrayDatabasePassword:
@@ -63,9 +65,6 @@ Parameters:
   XrayMasterDatabaseUrl:
     Type: String
   XrayDatabaseUrl:
-    Type: String
-  XrayFirstNode:
-    Description: Runs database scripts if this is the first node
     Type: String
   XrayVersion:
     Type: String
@@ -203,9 +202,9 @@ Resources:
                       jfrog_url: ${JfrogInternalUrl}
                       use_custom_data_directory: true
                       custom_data_directory: "${UserDataDirectory}"
-                      is_first_node: ${XrayFirstNode}
                       master_key: ${MasterKey}
                       join_key: ${MasterKey}
+                      extra_java_opts: ${ExtraJavaOptions}
                       db_type: ${DatabaseType}
                       db_driver: ${DatabaseDriver}
                       db_master_url: postgresql://${DatabaseUser}:${DatabasePassword}@${XrayMasterDatabaseUrl}
@@ -238,6 +237,13 @@ Resources:
       SecurityGroups:
         - !Ref SecurityGroups
       InstanceType: !Ref XrayInstanceType
+      BlockDeviceMappings:
+        - DeviceName: /dev/xvda
+          Ebs:
+            VolumeSize: !Ref VolumeSize
+            VolumeType: gp2
+            DeleteOnTermination: true
+            Encrypted: true
       UserData:
         Fn::Base64:
           !Sub |
@@ -304,16 +310,6 @@ Resources:
             curl https://s3.amazonaws.com/aws-cloudwatch/downloads/latest/awslogs-agent-setup.py -O
             chmod +x ./awslogs-agent-setup.py
             ./awslogs-agent-setup.py -n -r ${AWS::Region} -c /root/cloudwatch.conf
-
-            # Get instance id from AWS
-            INSTANCE_ID=$(curl -s http://169.254.169.254/latest/meta-data/instance-id)
-            # Attach the volume created by another CFT
-            # the device name should become /dev/nvme1n1
-            # See: https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/nvme-ebs-volumes.html
-            /var/awslogs/bin/aws ec2 attach-volume --volume-id ${Volume} --instance-id $INSTANCE_ID --device /dev/xvdf --region ${AWS::Region} || cfn_fail
-            echo "Wait for volume to attach"
-            sleep 30 # Give volume time to attach
-            lsblk # debug
 
             # CentOS cloned virtual machines do not create a new machine id
             # https://www.thegeekdiary.com/centos-rhel-7-how-to-change-the-machine-id/

@@ -7,7 +7,7 @@ project:
   # s3_bucket: tcat-a3e80b6745b2547da1c745b16adf2a66    # aws-seller accounts
 
   parameters:
-    KeyPairName         : "Anup"
+    KeyPairName         : "<use .taskcat_overrides.yml to set this value>"
     ArtifactoryVersion  : 7.12.5
     XrayVersion         : 3.15.1
     AccessCidr          : "0.0.0.0/0"
@@ -15,7 +15,8 @@ project:
     QsS3KeyPrefix       : "quickstart-jfrog-artifactory/"
     QsS3BucketRegion    : "$[taskcat_current_region]"
     MasterKey           : "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"
-    SmLicenseCertName   : "jfrog-artifactory"
+    SmLicenseName       : "jfrog-artifactory"
+    SmCertName          : "jfrog.tech-certificates"
 
     # Set this to your home intenet gateway public IP in override file
     # e.g. "24.4.228.4/32"
