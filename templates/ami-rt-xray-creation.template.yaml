@@ -16,7 +16,6 @@ Metadata:
       - Label:
           default: JFrog Product AMI info
         Parameters:
-          - InstanceOs
           - InstanceType
           - VolumeSize
           - XrayVersion
@@ -35,8 +34,6 @@ Metadata:
         default: VPC ID
       PublicSubnet1Id:
         default: Public subnet 1 ID
-      InstanceOs:
-        default: EC2 instance OS
       InstanceType:
         default: EC2 instance type
       VolumeSize:
@@ -74,19 +71,13 @@ Parameters:
     ConstraintDescription: A version that matches X.X.X per Xray releases.
     Default: 3.15.1
     Type: String
-  InstanceOs:
-    Description: The Linux distribution for the Amazon Machine Image (AMI) to be used for the bastion instances.
-    AllowedValues:
-      - "CentOS7HVM"
-    Default: "CentOS7HVM"
-    Type: String
   InstanceType:
     Description: The EC2 instance type for the AMI.
     AllowedValues:
       - m5.xlarge
       - m5.2xlarge
       - m5.4xlarge
-      - m5.10xlarge
+      - m5.8xlarge
     ConstraintDescription: Must contain valid instance type.
     Default: m5.xlarge
     Type: String
@@ -121,15 +112,15 @@ Parameters:
 Mappings:
   AWSAMIRegionMap:
     us-west-2:
-      CentOS7HVM: "ami-0bc06212a56393ee1"
+      AMI: "ami-0bc06212a56393ee1"
     us-east-1:
-      CentOS7HVM: "ami-0affd4508a5d2481b"
+      AMI: "ami-0affd4508a5d2481b"
     us-east-2:
-      CentOS7HVM: "ami-01e36b7901e884a10"
+      AMI: "ami-01e36b7901e884a10"
     us-gov-east-1:
-      CentOS7HVM: "ami-00e30c71"
+      AMI: "ami-00e30c71"
     us-gov-west-1:
-      CentOS7HVM: "ami-bbba86da"
+      AMI: "ami-bbba86da"
 Conditions:
   UsingDefaultBucket: !Equals [!Ref QsS3BucketName, 'aws-quickstart']
 Resources:
@@ -207,7 +198,7 @@ Resources:
       ImageId: !FindInMap
         - AWSAMIRegionMap
         - !Ref AWS::Region
-        - !Ref InstanceOs
+        - AMI
       IamInstanceProfile: !Ref JFrogAMIInstanceProfile
       InstanceType: !Ref InstanceType
       BlockDeviceMappings:
@@ -252,7 +243,10 @@ Resources:
 
             S3URI=https://${S3Bucket}.s3.${S3Region}.${AWS::URLSuffix}/${QsS3KeyPrefix}
 
-            yum install -y git
+            yum update --security -y &> /var/log/userdata.yum_security_update.log
+
+            yum install -y git python3 libselinux-python3
+
             yum install -y postgresql-server postgresql-devel
 
             echo $PATH
@@ -260,51 +254,34 @@ Resources:
             PATH=/opt/aws/bin:$PATH
 
             echo $PATH
-            echo \'[Cloning: Load QuickStart Common Utils]\'
 
-            git clone https://github.com/aws-quickstart/quickstart-linux-utilities.git
+            # Create virtual env and activate
 
-            source /quickstart-linux-utilities/quickstart-cfn-tools.source
+            python3 -m venv ~/venv --system-site-packages
 
-            echo \'[Loaded: Load QuickStart Common Utils]\'
+            source ~/venv/bin/activate
 
-            echo \'[Update Operating System]\'
+            pip install --upgrade pip
 
-            qs_update-os || qs_err
+            # Install Cloudformation helper scripts
 
-            qs_bootstrap_pip || qs_err
-
-            qs_aws-cfn-bootstrap || qs_err
-
-            pip install virtualenv &> /var/log/userdata.virtualenv_install.log || qs_err " virtualenv install failed "
-
-            virtualenv --system-site-packages ~/venv &> /var/log/userdata.create_venv.log || qs_err " creating venv failed "
-
-            source ~/venv/bin/activate &> /var/log/userdata.activate_venv.log || qs_err " activate venv failed "
-
-            pip install awscli &> /var/log/userdata.awscli_install.log || qs_err " awscli install failed "
-
-            pip install ansible &> /var/log/userdata.ansible_install.log || qs_err " ansible install failed "
-
-            pip install selinux &> /var/log/userdata.selinux_install.log || qs_err " selinux install failed "
-
-            setsebool httpd_can_network_connect 1 -P
-
-            yum update --security -y &> /var/log/userdata.yum_security_update.log || qs_err " ansible install failed "
-
-             mkdir ~/.xray_ami
-
-            aws s3 --region ${AWS::Region} sync s3://${QsS3BucketName}/${QsS3KeyPrefix}cloudInstallerScripts/ ~/.xray_ami/
+            pip install https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-py3-latest.tar.gz 2>&1 | tee /var/log/userdata.aws_cfn_bootstrap_install.log
 
             cfn-init -v --stack ${AWS::StackName} --resource JFrogAMIInstance --configsets xray_ami_setup --region ${AWS::Region} || cfn_fail
 
+            pip install awscli &> /var/log/userdata.awscli_install.log || cfn_fail
+
+            pip install ansible &> /var/log/userdata.ansible_install.log || cfn_fail
+
+            mkdir -p ~/.xray_ami
+
+            aws s3 --region ${AWS::Region} sync s3://${QsS3BucketName}/${QsS3KeyPrefix}cloudInstallerScripts/ ~/.xray_ami/
+
+            setsebool httpd_can_network_connect 1 -P
+
             ansible-playbook /root/.xray_ami/xray-ami-setup.yml &> /var/log/xray-ami.log || cfn_fail
 
-            # find / -name 'authorized_keys' -exec rm -f {} \;
-
-            # rm -rf ~/.xray_ami
-
-            [ $(qs_status) == 0 ] && cfn_success || cfn_fail
+            cfn_success &> /var/log/cfn_success.log || cfn_fail
           - S3Bucket: !If [UsingDefaultBucket, !Sub '{QsS3BucketName}-${AWS::Region}', !Ref 'QsS3BucketName']
             S3Region: !If [UsingDefaultBucket, !Ref 'AWS::Region', !Ref 'QsS3BucketRegion']
       Tags:
