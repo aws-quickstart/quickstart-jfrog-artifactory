@@ -98,59 +98,16 @@
   become: yes
   when: binary_store_file is defined
 
-- name: set default binary store for Enterprise
+- name: set default binary store
   template:
-    src: binarystore.enterprise.xml.j2
+    src: binarystore.xml.j2
     dest: "{{ artifactory_home }}/var/etc/artifactory/binarystore.xml"
     force: no # only create if file doesn't exist
   become: yes
-  when: binary_store_file is not defined and artifactory_ha_enabled
+  when: binary_store_file is not defined
 
-- name: set default binary store for Pro
-  template:
-    src: binarystore.pro.xml.j2
-    dest: "{{ artifactory_home }}/var/etc/artifactory/binarystore.xml"
-    force: no # only create if file doesn't exist
-  become: yes
-  when: binary_store_file is not defined and not artifactory_ha_enabled
-
-- name: set license for Enterprise
-  block:
-    - name: use license file
-      copy:
-        src: "{{ artifactory_license_file }}"
-        dest: "{{ artifactory_home }}/var/etc/artifactory/artifactory.cluster.license"
-        force: no # only copy if file doesn't exist
-      become: yes
-      when: artifactory_license_file is defined and artifactory_is_primary == true
-
-    - name: use license strings
-      template:
-        src: artifactory.cluster.license.j2
-        dest: "{{ artifactory_home }}/var/etc/artifactory/artifactory.cluster.license"
-        force: no # only create if file doesn't exist
-      become: yes
-      when: artifactory_license_file is not defined and artifactory_is_primary == true
-  when: artifactory_ha_enabled
-
-- name: set license for Pro
-  block:
-    - name: use license file
-      copy:
-        src: "{{ artifactory_license_file }}"
-        dest: "{{ artifactory_home }}/var/etc/artifactory/artifactory.lic"
-        force: no # only create if file doesn't exist
-      become: yes
-      when: artifactory_license_file is defined
-
-    - name: use license strings
-      template:
-        src: artifactory.pro.license.j2
-        dest: "{{ artifactory_home }}/var/etc/artifactory/artifactory.lic"
-        force: no # only create if file doesn't exist
-      become: yes
-      when: artifactory_license_file is not defined
-  when: not artifactory_ha_enabled
+- name: configure licenses
+  include_tasks: configure-licenses.yml
 
 - name: create artifactory service
   shell: "{{ artifactory_home }}/app/bin/installService.sh"

@@ -47,8 +47,6 @@ Metadata:
           - MasterKey
           - ExtraJavaOptions
           - DefaultJavaMemSettings
-          - KeystorePassword
-          - AnsibleVaultPass
       - Label:
           default: Amazon RDS configuration
         Parameters:
@@ -130,10 +128,6 @@ Metadata:
         default: Extra Java options
       DefaultJavaMemSettings:
         default: Default Java memory settings
-      KeystorePassword:
-        default: Java keystore password
-      AnsibleVaultPass:
-        default: Ansible Vault password
       DatabaseName:
         default: Database name
       DatabaseEngine:
@@ -387,17 +381,6 @@ Parameters:
       - "false"
     Default: "true"
     Type: String
-  KeystorePassword:
-    Description: Java key store password. For better security, the password that you specify will
-      replace the default Java key store password.
-    NoEcho: 'true'
-    Type: String
-  AnsibleVaultPass:
-    Description: Ansible Vault password to protect the Artifactory YAML configuration file
-      generated during the Artifactory deployment. This YAML file is stored on the EC2 nodes
-      and secured with this password.
-    NoEcho: 'true'
-    Type: String
   DatabaseName:
     Description: Name of your database instance. The name must be unique across all instances
       owned by your AWS account in the current Region. The database instance identifier is case-insensitive,
@@ -457,7 +440,8 @@ Parameters:
     Type: Number
   DatabasePreferredAz:
     Description: Preferred availability zone for Amazon RDS primary instance
-    Type: AWS::EC2::AvailabilityZone::Name
+    Type: String
+    Default: ''
   MultiAzDatabase:
     Description: Choose false to create an Amazon RDS instance in a single Availability Zone.
     ConstraintDescription: True or False
@@ -538,6 +522,7 @@ Parameters:
     Type: String
 Conditions:
   UsingDefaultBucket: !Equals [!Ref QsS3BucketName, 'aws-quickstart']
+
 Resources:
   ArtifactoryVpcStack:
     Type: AWS::CloudFormation::Stack
@@ -605,8 +590,6 @@ Resources:
         MasterKey: !Ref MasterKey
         ExtraJavaOptions: !Ref ExtraJavaOptions
         DefaultJavaMemSettings: !Ref DefaultJavaMemSettings
-        KeystorePassword: !Ref KeystorePassword
-        AnsibleVaultPass: !Ref AnsibleVaultPass
         DatabaseName: !Ref DatabaseName
         DatabaseEngine: !Ref DatabaseEngine
         DatabaseUser: !Ref DatabaseUser

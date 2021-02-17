@@ -6,13 +6,8 @@ ansible_marketplace: standalone
 # The version of Artifactory to install
 artifactory_version: 7.12.5
 
-# licenses file - specify a licenses file or specify up to 6 licenses
-artifactory_license1:
-artifactory_license2:
-artifactory_license3:
-artifactory_license4:
-artifactory_license5:
-artifactory_license6:
+# licenses - cluster license content in json
+artifactory_licenses:
 
 # whether to enable HA
 artifactory_ha_enabled: true

@@ -280,8 +280,6 @@ Resources:
         SmCertName: !Ref SmCertName
         ArtifactoryServerName: !Ref ArtifactoryServerName
         MasterKey: !Ref MasterKey
-        KeystorePassword: !Ref DatabasePassword
-        AnsibleVaultPass: !Ref DatabasePassword
         DatabasePassword: !Ref DatabasePassword
         DatabaseInstance: !Ref DatabaseInstance
         DatabaseAllocatedStorage: !Ref DatabaseAllocatedStorage

@@ -235,9 +235,9 @@ Resources:
           GroupSet:
             - !Ref "JFrogAMISecurityGroup"
           SubnetId: !Ref "PublicSubnet1Id"
-      UserData: !Base64
-        'Fn::Sub':
-          - >
+      UserData:
+        Fn::Base64:
+          !Sub |
             #!/bin/bash -x
 
             #CFN Functions
@@ -265,11 +265,9 @@ Resources:
             S3URI=https://${S3Bucket}.s3.${S3Region}.${AWS::URLSuffix}/${QsS3KeyPrefix}
 
             # Update OS
-
             yum update -y
 
             # Install git, policycoreutils python
-
             yum install -y git policycoreutils-python
 
             yum update --security -y 2>&1 | tee /var/log/userdata.yum_security_update.log
@@ -283,21 +281,17 @@ Resources:
             echo $PATH
 
             # Create virtual env and activate
-
             python3 -m venv ~/venv --system-site-packages
-
             source ~/venv/bin/activate
 
             pip install --upgrade pip
 
             # Install Cloudformation helper scripts
-
             pip install https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-py3-latest.tar.gz 2>&1 | tee /var/log/userdata.aws_cfn_bootstrap_install.log
 
             cfn-init -v --stack ${AWS::StackName} --resource JFrogAMIInstance --configsets jfrog_ami_setup --region ${AWS::Region} || cfn_fail
 
             pip install awscli &> /var/log/userdata.awscli_install.log || cfn_fail
-
             pip install ansible &> /var/log/userdata.ansible_install.log || cfn_fail
 
             mkdir -p ~/.jfrog_ami

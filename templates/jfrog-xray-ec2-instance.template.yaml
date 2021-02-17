@@ -51,10 +51,6 @@ Parameters:
     Type: String
   JfrogInternalUrl:
     Type: String
-  AnsibleVaultPass:
-    Description: Ansiblevault Password to secure the artifactory.yml
-    Type: String
-    NoEcho: 'true'
   VolumeSize:
     Type: Number
   XrayDatabaseUser:
@@ -216,7 +212,7 @@ Resources:
               mode: "0400"
             /root/.vault_pass.txt:
               content: !Sub |
-                ${AnsibleVaultPass}
+                ${DatabasePassword}
               mode: "0400"
             /root/.secureit.sh:
               content:

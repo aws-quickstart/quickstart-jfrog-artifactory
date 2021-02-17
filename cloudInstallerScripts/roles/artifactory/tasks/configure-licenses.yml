@@ -1,0 +1,48 @@
+- name: set license for Enterprise
+  block:
+    - name: use license file
+      copy:
+        src: "{{ artifactory_license_file }}"
+        dest: "{{ artifactory_home }}/var/etc/artifactory/artifactory.cluster.license"
+        force: no # only copy if file doesn't exist
+      become: yes
+      when: artifactory_license_file is defined and artifactory_is_primary == true
+
+    - name: set fact
+      set_fact:
+        artifactory_licenses_dict: "{{ artifactory_licenses | from_json | json_query('SecretString') }}"
+      when: artifactory_licenses is defined
+
+    - debug: var=artifactory_licenses_dict
+
+    - name: use license strings
+      vars:
+        artifactory_licenses_dict: "{{ artifactory_licenses | default('{}') | from_json | json_query('SecretString') }}"
+
+      template:
+        src: ../templates/artifactory.cluster.license.j2
+        dest: artifactory.cluster.license
+        # dest: "{{ artifactory_home }}/var/etc/artifactory/artifactory.cluster.license"
+        # force: no # only create if file doesn't exist
+      # become:  yes
+      when: artifactory_license_file is not defined and artifactory_is_primary == true
+  when: artifactory_ha_enabled
+
+- name: set license for Pro
+  block:
+    - name: use license file
+      copy:
+        src: "{{ artifactory_license_file }}"
+        dest: "{{ artifactory_home }}/var/etc/artifactory/artifactory.lic"
+        force: no # only create if file doesn't exist
+      become: yes
+      when: artifactory_license_file is defined
+
+    - name: use license strings
+      template:
+        src: artifactory.pro.license.j2
+        dest: "{{ artifactory_home }}/var/etc/artifactory/artifactory.lic"
+        force: no # only create if file doesn't exist
+      become: yes
+      when: artifactory_license_file is not defined
+  when: not artifactory_ha_enabled
