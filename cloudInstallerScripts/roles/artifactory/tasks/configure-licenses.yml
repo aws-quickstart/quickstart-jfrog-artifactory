@@ -8,23 +8,15 @@
       become: yes
       when: artifactory_license_file is defined and artifactory_is_primary == true
 
-    - name: set fact
-      set_fact:
-        artifactory_licenses_dict: "{{ artifactory_licenses | from_json | json_query('SecretString') }}"
-      when: artifactory_licenses is defined
-
-    - debug: var=artifactory_licenses_dict
-
     - name: use license strings
       vars:
-        artifactory_licenses_dict: "{{ artifactory_licenses | default('{}') | from_json | json_query('SecretString') }}"
+        artifactory_licenses_dict: "{{ artifactory_licenses | default('{}') | from_json }}"
 
       template:
-        src: ../templates/artifactory.cluster.license.j2
-        dest: artifactory.cluster.license
-        # dest: "{{ artifactory_home }}/var/etc/artifactory/artifactory.cluster.license"
-        # force: no # only create if file doesn't exist
-      # become:  yes
+        src: artifactory.cluster.license.j2
+        dest: "{{ artifactory_home }}/var/etc/artifactory/artifactory.cluster.license"
+        force: no # only create if file doesn't exist
+      become:  yes
       when: artifactory_license_file is not defined and artifactory_is_primary == true
   when: artifactory_ha_enabled
 
