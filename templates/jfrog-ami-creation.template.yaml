@@ -206,7 +206,7 @@ Resources:
                     vars:
                       ami_creation: true
                       artifactory_version: ${ArtifactoryVersion}
-                      artifactory_ha_enabled: false
+                      artifactory_ha_enabled: true
                       db_download_url: "https://jdbc.postgresql.org/download/postgresql-42.2.12.jar"
                       db_type: "postgresql"
                       db_driver: "org.postgresql.Driver"
