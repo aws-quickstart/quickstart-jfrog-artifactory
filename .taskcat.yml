@@ -156,9 +156,9 @@ tests:
       NumberOfSecondary: 1
       ArtifactoryServerName: "artifactory"
       SmLicenseCertName: "jfrog-artifactory"
-      InstallXray: "false"
+      InstallXray: "true"
       XrayDatabasePassword: "$[taskcat_genpass_8A]"
-      XrayNumberOfInstances: 1
+      XrayNumberOfInstances: 2
 
   #     # # GOV account
   #     # AvailabilityZones   : "us-east-1a, us-east-1b"
