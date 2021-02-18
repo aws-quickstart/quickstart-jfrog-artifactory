@@ -41,7 +41,8 @@ Metadata:
           - ArtifactoryProduct
           - ArtifactoryVersion
           - NumberOfSecondary
-          - SmLicenseCertName
+          - SmLicenseName
+          - SmCertName
           - ArtifactoryServerName
           - MasterKey
           - ExtraJavaOptions
@@ -117,8 +118,10 @@ Metadata:
         default: Artifactory product to install
       ArtifactoryVersion:
         default: Artifactory version
-      SmLicenseCertName:
-        default: Artifactory licenses and certificate secret name
+      SmLicenseName:
+        default: Artifactory licenses secret name
+      SmCertName:
+        default: Artifactory certificate secret name
       ArtifactoryServerName:
         default: Artifactory server name
       MasterKey:
@@ -350,8 +353,12 @@ Parameters:
     ConstraintDescription: A version that matches X.X.X per Artifactory releases.
     Default: 7.11.2
     Type: String
-  SmLicenseCertName:
-    Description: Secret name created in AWS Secrets Manager that contains the SSL certificate, certificate key, and Artifactory licenses.
+  SmLicenseName:
+    Description: Secret name created in AWS Secrets Manager, which contains the Artifactory licenses.
+    Default: ''
+    Type: String
+  SmCertName:
+    Description: Secret name created in AWS Secrets Manager, which contains the SSL certificate and certificate key.
     Default: ''
     Type: String
   ArtifactoryServerName:
@@ -592,7 +599,8 @@ Resources:
         NumberOfSecondary: !Ref NumberOfSecondary
         ArtifactoryProduct: !Ref ArtifactoryProduct
         ArtifactoryVersion: !Ref ArtifactoryVersion
-        SmLicenseCertName: !Ref SmLicenseCertName
+        SmLicenseName: !Ref SmLicenseName
+        SmCertName: !Ref SmCertName
         ArtifactoryServerName: !Ref ArtifactoryServerName
         MasterKey: !Ref MasterKey
         ExtraJavaOptions: !Ref ExtraJavaOptions

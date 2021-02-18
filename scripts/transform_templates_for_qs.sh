@@ -96,3 +96,6 @@ for file in "${TEMPLATE_FILES[@]}"; do
     #   QSS3KeyPrefix: !Sub 'artifactory7/$FOLDER_NAME/submodules/quickstart-linux-bastion/'
     sed -i "s/QSS3KeyPrefix: !Sub '\${QsS3KeyPrefix}\(.*\)'/QSS3KeyPrefix: '${S3_PREFIX//\//\\/}\/\1'/g" $TEMPLATE_OUTPUT_DIR/$file
 done
+
+cp $TEMPLATE_SOURCE_DIR/jfrog-artifactory-core-infrastructure.template.yaml $TEMPLATE_OUTPUT_DIR/jfrog-artifactory-core-infrastructure.template.yaml
+cp $TEMPLATE_SOURCE_DIR/jfrog-artifactory-ec2-instance.template.yaml $TEMPLATE_OUTPUT_DIR/jfrog-artifactory-ec2-instance.template.yaml
