@@ -8,7 +8,7 @@ project:
 
   parameters:
     KeyPairName         : "<use .taskcat_overrides.yml to set this value>"
-    ArtifactoryVersion  : 7.12.8
+    ArtifactoryVersion  : 7.15.3
     XrayVersion         : 3.17.2
     AccessCidr          : "0.0.0.0/0"
     QsS3BucketName      : "$[taskcat_autobucket]"
