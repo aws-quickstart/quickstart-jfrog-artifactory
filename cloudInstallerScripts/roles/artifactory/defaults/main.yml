@@ -4,7 +4,7 @@
 ansible_marketplace: standalone
 
 # The version of Artifactory to install
-artifactory_version: 7.12.5
+artifactory_version: 7.15.3
 
 # licenses - cluster license content in json
 artifactory_licenses:
