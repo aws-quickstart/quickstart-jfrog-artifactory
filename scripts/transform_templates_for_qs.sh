@@ -98,3 +98,4 @@ for file in "${TEMPLATE_FILES[@]}"; do
 done
 
 cp $TEMPLATE_SOURCE_DIR/jfrog-artifactory-core-infrastructure.template.yaml $TEMPLATE_OUTPUT_DIR/jfrog-artifactory-core-infrastructure.template.yaml
+cp $TEMPLATE_SOURCE_DIR/jfrog-artifactory-ec2-instance.template.yaml $TEMPLATE_OUTPUT_DIR/jfrog-artifactory-ec2-instance.template.yaml
