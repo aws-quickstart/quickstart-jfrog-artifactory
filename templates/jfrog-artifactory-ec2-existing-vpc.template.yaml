@@ -820,6 +820,14 @@ Resources:
                 Action:
                   - "s3:GetObject"
                 Resource: "*"
+        - PolicyName: 'SecretsMaanger-policy'
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: "Allow"
+                Action:
+                  - "secretsmanager:GetSecretValue"
+                Resource: "arn:aws:secretsmanager:*:*:secret:*"
   ArtifactoryHostProfile:
     Type: AWS::IAM::InstanceProfile
     Properties:

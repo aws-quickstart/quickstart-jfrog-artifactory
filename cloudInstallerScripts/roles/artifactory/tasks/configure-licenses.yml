@@ -10,7 +10,7 @@
 
     - name: use license strings
       vars:
-        artifactory_licenses_dict: "{{ artifactory_licenses | default('{}') | from_json }}"
+        artifactory_licenses_dict: "{{ artifactory_licenses | default('{}') }}"
 
       template:
         src: artifactory.cluster.license.j2
