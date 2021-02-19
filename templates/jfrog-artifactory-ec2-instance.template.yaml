@@ -1,10 +1,8 @@
 AWSTemplateFormatVersion: "2010-09-09"
 Description: "Deploys the EC2 Autoscaling, LaunchConfig and Instance for Artifactory (qs-1qpmmjh5o)"
 Parameters:
-  PrivateSubnet1Id:
-    Type: 'AWS::EC2::Subnet::Id'
-  PrivateSubnet2Id:
-    Type: 'AWS::EC2::Subnet::Id'
+  PrivateSubnetIds:
+    Type: List<AWS::EC2::Subnet::Id>
   MinScalingNodes:
     Type: Number
   MaxScalingNodes:
@@ -27,17 +25,7 @@ Parameters:
     Type: String
   QsS3Uri:
     Type: String
-  ArtifactoryLicense1:
-    Type: String
-  ArtifactoryLicense2:
-    Type: String
-  ArtifactoryLicense3:
-    Type: String
-  ArtifactoryLicense4:
-    Type: String
-  ArtifactoryLicense5:
-    Type: String
-  ArtifactoryLicense6:
+  ArtifactoryLicensesSecretName:
     Type: String
   ArtifactoryServerName:
     Type: String
@@ -90,16 +78,10 @@ Parameters:
     Type: String
   InstanceType:
     Type: String
-  Volume:
+  PrimaryVolume:
     Type: String
-  KeystorePassword:
-    Description: Default Keystore from Java in which we upgrade.
-    Type: String
-    NoEcho: 'true'
-  AnsibleVaultPass:
-    Description: Ansiblevault Password to secure the artifactory.yml
-    Type: String
-    NoEcho: 'true'
+  VolumeSize:
+    Type: Number
   UserDataDirectory:
     Description: Directory to store Artifactory data. Can be used to store data (via symlink) in detachable volume
     Type: String
@@ -137,15 +119,14 @@ Mappings:
       CentOS7HVM: "ami-0bc06212a56393ee1"
 
 Conditions:
-  IsArtifactoryPro: !Equals [!Ref ArtifactoryProduct, 'JFrog-Artifactory-Pro']
+  IsSecondary: !Equals [!Ref ArtifactoryPrimary, 'false']
 
 Resources:
   ArtifactoryScalingGroup:
     Type: AWS::AutoScaling::AutoScalingGroup
     Properties:
       LaunchConfigurationName: !Ref ArtifactoryLaunchConfiguration
-      VPCZoneIdentifier:
-        !If [IsArtifactoryPro, [!Ref PrivateSubnet1Id], [!Ref PrivateSubnet1Id, !Ref PrivateSubnet2Id]]
+      VPCZoneIdentifier: !Ref PrivateSubnetIds
       MinSize: !Ref MinScalingNodes
       MaxSize: !Ref MaxScalingNodes
       Cooldown: '300'
@@ -186,11 +167,11 @@ Resources:
           jfrog_ami_setup:
             - "config-cloudwatch"
             - "config-ansible-art-ami"
-            - "config-artifactory-master"
+            - "config-artifactory-primary"
             - "secure-artifactory"
           artifactory_install:
             - "config-cloudwatch"
-            - "config-artifactory-master"
+            - "config-artifactory-primary"
             - "secure-artifactory"
         config-cloudwatch:
           files:
@@ -233,57 +214,82 @@ Resources:
                       db_type: "postgresql"
                       db_driver: "org.postgresql.Driver"
               mode: "0400"
-        config-artifactory-master:
+        config-artifactory-primary:
           files:
+            /root/attach_volume.sh:
+              content: !Sub |
+                #!/usr/bin/env bash
+                IS_PRIMARY="${ArtifactoryPrimary}"
+
+                if [[ $IS_PRIMARY != "true" ]]; then
+                  echo 'Not primary node. Skipping EBS volume attachment.'
+                  exit 0
+                fi
+
+                echo "Using primary volume ID ${PrimaryVolume}"
+                VOLUME_ID="${PrimaryVolume}"
+                echo "VOLUME_ID: $VOLUME_ID"
+                if [[ -z "$VOLUME_ID" ]]; then
+                  echo 'Invalid $VOLUME_ID'
+                  exit 1
+                fi
+
+                # Get instance id from AWS
+                INSTANCE_ID=$(curl -s http://169.254.169.254/latest/meta-data/instance-id)
+
+                # Attach the volume created by another CFT
+                # the device name should become /dev/nvme1n1
+                # See: https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/nvme-ebs-volumes.html
+                echo "Attaching volume $VOLUME_ID to instance $INSTANCE_ID"
+                /var/awslogs/bin/aws ec2 attach-volume --volume-id $VOLUME_ID --instance-id $INSTANCE_ID --device /dev/xvdf --region ${AWS::Region}
+
+                echo "Wait for volume $VOLUME_ID to attach"
+                sleep 30 # Give volume time to attach
+                lsblk # debug
+              mode: "0770"
             /root/.jfrog_ami/artifactory.yml:
               content: !Sub |
-                  # Base install for Artifactory
-                  - import_playbook: site-artifactory.yml
-                    vars:
-                      artifactory_license1: ${ArtifactoryLicense1}
-                      artifactory_license2: ${ArtifactoryLicense2}
-                      artifactory_license3: ${ArtifactoryLicense3}
-                      artifactory_license4: ${ArtifactoryLicense4}
-                      artifactory_license5: ${ArtifactoryLicense5}
-                      artifactory_license6: ${ArtifactoryLicense6}
-                      artifactory_product: "{{ 'jcr' if '${ArtifactoryProduct}' == 'JFrog-Container-Registry' else 'artifactory' }}"
-                      artifactory_flavour: "{{ 'jcr' if '${ArtifactoryProduct}' == 'JFrog-Container-Registry' else 'pro' }}"
-                      artifactory_ha_enabled: "{{ true if '${ArtifactoryProduct}' == 'JFrog-Artifactory-Enterprise' else false }}"
-                      artifactory_is_primary: ${ArtifactoryPrimary}
-                      artifactory_server_name: ${ArtifactoryServerName}
-                      server_name: ${ArtifactoryServerName}.${CertificateDomain}
-                      use_custom_data_directory: true
-                      custom_data_directory: "${UserDataDirectory}"
-                      s3_region: ${AWS::Region}
-                      s3_bucket: ${ArtifactoryS3Bucket}
-                      certificate: ${Certificate}
-                      certificate_key: ${CertificateKey}
-                      certificate_domain: ${CertificateDomain}
-                      enable_ssl: ${EnableSSL}
-                      ssl_dir: /etc/pki/tls/certs
-                      db_type: ${DatabaseType}
-                      db_driver: ${DatabaseDriver}
-                      db_url: ${DatabaseUrl}
-                      db_user: ${DatabaseUser}
-                      db_password: ${DatabasePassword}
-                      # db_download_url: https://jdbc.postgresql.org/download/postgresql-42.2.12.jar
-                      master_key: ${MasterKey}
-                      join_key: ${MasterKey}
-                      extra_java_opts: ${ExtraJavaOptions}
-                      artifactory_version: ${ArtifactoryVersion}
-                      artifactory_keystore:
-                        path: /opt/jfrog/artifactory/app/third-party/java/lib/security/cacerts
-                        default_password: changeit
-                        new_keystore_pass: ${KeystorePassword}
-                      artifactory_java_db_drivers:
-                        - name: ${DatabasePlugin}
-                          url: ${DatabasePluginUrl}
-                          owner: artifactory
-                          group: artifactory
+                # Base install for Artifactory
+                - import_playbook: site-artifactory.yml
+                  vars:
+                    artifactory_product: "{{ 'jcr' if '${ArtifactoryProduct}' == 'JFrog-Container-Registry' else 'artifactory' }}"
+                    artifactory_flavour: "{{ 'jcr' if '${ArtifactoryProduct}' == 'JFrog-Container-Registry' else 'pro' }}"
+                    artifactory_ha_enabled: "{{ true if '${ArtifactoryProduct}' == 'JFrog-Artifactory-Enterprise' else false }}"
+                    artifactory_is_primary: ${ArtifactoryPrimary}
+                    artifactory_server_name: ${ArtifactoryServerName}
+                    server_name: ${ArtifactoryServerName}.${CertificateDomain}
+                    use_custom_data_directory: true
+                    custom_data_directory: "${UserDataDirectory}"
+                    s3_region: ${AWS::Region}
+                    s3_bucket: ${ArtifactoryS3Bucket}
+                    certificate: ${Certificate}
+                    certificate_key: ${CertificateKey}
+                    certificate_domain: ${CertificateDomain}
+                    enable_ssl: ${EnableSSL}
+                    ssl_dir: /etc/pki/tls/certs
+                    db_type: ${DatabaseType}
+                    db_driver: ${DatabaseDriver}
+                    db_url: ${DatabaseUrl}
+                    db_user: ${DatabaseUser}
+                    db_password: ${DatabasePassword}
+                    # db_download_url: https://jdbc.postgresql.org/download/postgresql-42.2.12.jar
+                    master_key: ${MasterKey}
+                    join_key: ${MasterKey}
+                    extra_java_opts: ${ExtraJavaOptions}
+                    artifactory_version: ${ArtifactoryVersion}
+                    artifactory_keystore:
+                      path: /opt/jfrog/artifactory/app/third-party/java/lib/security/cacerts
+                      default_password: changeit
+                      new_keystore_pass: ${DatabasePassword}
+                    artifactory_java_db_drivers:
+                      - name: ${DatabasePlugin}
+                        url: ${DatabasePluginUrl}
+                        owner: artifactory
+                        group: artifactory
               mode: "0400"
             /root/.vault_pass.txt:
               content: !Sub |
-                ${AnsibleVaultPass}
+                ${DatabasePassword}
               mode: "0400"
             /root/.secureit.sh:
               content:
@@ -303,6 +309,16 @@ Resources:
         - 'CentOS7HVM'
       SecurityGroups:
         - !Ref SecurityGroups
+      BlockDeviceMappings:
+        !If
+          - IsSecondary
+          - - DeviceName: /dev/xvda
+              Ebs:
+                VolumeSize: !Ref VolumeSize
+                VolumeType: gp2
+                DeleteOnTermination: true
+                Encrypted: true
+          - !Ref AWS::NoValue
       InstanceType: !Ref InstanceType
       UserData:
         Fn::Base64:
@@ -337,11 +353,11 @@ Resources:
             yum update -y
 
             # Install git
-            yum install -y git policycoreutils-python
+            yum install -y epel-release git policycoreutils-python
 
             yum update --security -y 2>&1 | tee /var/log/userdata.yum_security_update.log
 
-            yum install -y python3 libselinux-python3
+            yum install -y jq python3 libselinux-python3
 
             echo $PATH
 
@@ -354,7 +370,7 @@ Resources:
             source ~/venv/bin/activate
 
             pip install --upgrade pip
-            pip install wheel
+            pip install jmespath wheel
 
             # Install Cloudformation helper scripts
             pip install https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-py3-latest.tar.gz 2>&1 | tee /var/log/userdata.aws_cfn_bootstrap_install.log
@@ -381,22 +397,16 @@ Resources:
             chmod +x ./awslogs-agent-setup.py
             ./awslogs-agent-setup.py -n -r ${AWS::Region} -c /root/cloudwatch.conf 2>&1 | tee /var/log/userdata.cloudwatch_agent_install.log
 
-            # Get instance id from AWS
-            INSTANCE_ID=$(curl -s http://169.254.169.254/latest/meta-data/instance-id)
-            # Attach the volume created by another CFT
-            # the device name should become /dev/nvme1n1
-            # See: https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/nvme-ebs-volumes.html
-            /var/awslogs/bin/aws ec2 attach-volume --volume-id ${Volume} --instance-id $INSTANCE_ID --device /dev/xvdf --region ${AWS::Region} || cfn_fail
-            echo "Wait for volume to attach"
-            sleep 30 # Give volume time to attach
-            lsblk # debug
+            /root/attach_volume.sh || cfn_fail
 
             ansible-galaxy collection install community.general ansible.posix
 
             setsebool httpd_can_network_connect 1 -P
 
+            aws secretsmanager get-secret-value --secret-id ${ArtifactoryLicensesSecretName} --region ${AWS::Region} | jq -r '{"artifactory_licenses":(.SecretString | fromjson )}' > ~/.jfrog_ami/licenses.json || cfn_fail
+
             ansible-playbook /root/.jfrog_ami/jfrog-ami-setup.yml --vault-id /root/.vault_pass.txt 2>&1 | tee /var/log/jfrog-ami-setup.log || cfn_fail
-            ansible-playbook /root/.jfrog_ami/artifactory.yml --vault-id /root/.vault_pass.txt 2>&1 | tee /var/log/jfrog-ami-artifactory.log || cfn_fail
+            ansible-playbook /root/.jfrog_ami/artifactory.yml -e "@~/.jfrog_ami/licenses.json" --vault-id /root/.vault_pass.txt 2>&1 | tee /var/log/jfrog-ami-artifactory.log || cfn_fail
 
             rm -rf /root/.secureit.sh
 

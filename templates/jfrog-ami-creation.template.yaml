@@ -16,7 +16,6 @@ Metadata:
       - Label:
           default: JFrog Product AMI info
         Parameters:
-          - InstanceOs
           - InstanceType
           - VolumeSize
           - JFrogProduct
@@ -36,8 +35,6 @@ Metadata:
         default: VPC ID
       PublicSubnet1Id:
         default: Public subnet 1 ID
-      InstanceOs:
-        default: EC2 instance OS
       InstanceType:
         default: EC2 instance type
       VolumeSize:
@@ -82,13 +79,7 @@ Parameters:
       https://www.jfrog.com/confluence/display/RTF/Release+Notes
     AllowedPattern: ^(([0-9]|[1-9][0-9])\.){2}([1-9][0-9]|[0-9])(-([a-z][0-9][0-9][0-9]))?$
     ConstraintDescription: A version that matches X.X.X per Artifactory releases.
-    Default: 7.12.5
-    Type: String
-  InstanceOs:
-    Description: The Linux distribution for the Amazon Machine Image (AMI) to be used for the bastion instances.
-    AllowedValues:
-      - "CentOS7HVM"
-    Default: "CentOS7HVM"
+    Default: 7.15.3
     Type: String
   InstanceType:
     Description: The EC2 instance type for the AMI.
@@ -131,15 +122,20 @@ Parameters:
 Mappings:
   AWSAMIRegionMap:
     us-west-2:
-      CentOS7HVM: "ami-0bc06212a56393ee1"
+      AMI: "ami-0bc06212a56393ee1"
     us-east-1:
-      CentOS7HVM: "ami-0affd4508a5d2481b"
+      AMI: "ami-0affd4508a5d2481b"
     us-east-2:
-      CentOS7HVM: "ami-01e36b7901e884a10"
+      AMI: "ami-01e36b7901e884a10"
     us-gov-east-1:
-      CentOS7HVM: "ami-00e30c71"
+      AMI: "ami-00e30c71"
     us-gov-west-1:
-      CentOS7HVM: "ami-bbba86da"
+      AMI: "ami-bbba86da"
+  JFrogProductMap:
+    jfrog-artifactory-pro:
+      Flavor: "pro"
+    jfrog-container-registry:
+      Flavor: "jcr"
 Conditions:
   UsingDefaultBucket: !Equals [!Ref QsS3BucketName, 'aws-quickstart']
 Resources:
@@ -203,7 +199,8 @@ Resources:
         config-ansible-art-ami:
           files:
             /root/.jfrog_ami/jfrog-ami-setup.yml:
-              content: !Sub |
+              content: !Sub
+                - |
                   # Base install for JFrogAMIInstance
                   - import_playbook: artifactory-ami.yml
                     vars:
@@ -213,15 +210,16 @@ Resources:
                       db_download_url: "https://jdbc.postgresql.org/download/postgresql-42.2.12.jar"
                       db_type: "postgresql"
                       db_driver: "org.postgresql.Driver"
-                      artifactory_flavour: "{{ 'pro' if '${JFrogProduct}' == 'jfrog-artifactory-pro' else 'jcr' if '${JFrogProduct}' == 'jfrog-artifactory-jcr' }}"
+                      artifactory_flavour: ${Flavor}
                       artifactory_tar: "{{ 'https://releases.jfrog.io/artifactory/artifactory-pro/org/artifactory/pro/jfrog-artifactory-pro/${ArtifactoryVersion}/jfrog-artifactory-pro-${ArtifactoryVersion}-linux.tar.gz' if '${JFrogProduct}' == 'jfrog-artifactory-pro' else 'https://releases.jfrog.io/artifactory/bintray-artifactory/org/artifactory/jcr/jfrog-artifactory-jcr/${ArtifactoryVersion}/jfrog-artifactory-jcr-${ArtifactoryVersion}-linux.tar.gz' if '${JFrogProduct}' == 'jfrog-artifactory-jcr' }}"
+                - Flavor: !FindInMap [JFrogProductMap, !Ref JFrogProduct, Flavor]
               mode: "0400"
     Properties:
       KeyName: !Ref KeyPairName
       ImageId: !FindInMap
         - AWSAMIRegionMap
         - !Ref AWS::Region
-        - !Ref InstanceOs
+        - AMI
       IamInstanceProfile: !Ref JFrogAMIInstanceProfile
       InstanceType: !Ref InstanceType
       BlockDeviceMappings:
@@ -237,9 +235,9 @@ Resources:
           GroupSet:
             - !Ref "JFrogAMISecurityGroup"
           SubnetId: !Ref "PublicSubnet1Id"
-      UserData: !Base64
-        'Fn::Sub':
-          - >
+      UserData:
+        Fn::Base64: !Sub
+          - |
             #!/bin/bash -x
 
             #CFN Functions
@@ -266,58 +264,45 @@ Resources:
 
             S3URI=https://${S3Bucket}.s3.${S3Region}.${AWS::URLSuffix}/${QsS3KeyPrefix}
 
-            yum install -y git
+            # Update OS
+            yum update -y
+
+            # Install git, policycoreutils python
+            yum install -y git policycoreutils-python
+
+            yum update --security -y 2>&1 | tee /var/log/userdata.yum_security_update.log
+
+            yum install -y python3 libselinux-python3
 
             echo $PATH
 
             PATH=/opt/aws/bin:$PATH
 
             echo $PATH
-            echo \'[Cloning: Load QuickStart Common Utils]\'
 
-            git clone https://github.com/aws-quickstart/quickstart-linux-utilities.git
+            # Create virtual env and activate
+            python3 -m venv ~/venv --system-site-packages
+            source ~/venv/bin/activate
 
-            source /quickstart-linux-utilities/quickstart-cfn-tools.source
+            pip install --upgrade pip
 
-            echo \'[Loaded: Load QuickStart Common Utils]\'
-
-            echo \'[Update Operating System]\'
-
-            qs_update-os || qs_err
-
-            qs_bootstrap_pip || qs_err
-
-            qs_aws-cfn-bootstrap || qs_err
-
-            pip install virtualenv &> /var/log/userdata.virtualenv_install.log || qs_err " virtualenv install failed "
-
-            virtualenv --system-site-packages ~/venv &> /var/log/userdata.create_venv.log || qs_err " creating venv failed "
-
-            source ~/venv/bin/activate &> /var/log/userdata.activate_venv.log || qs_err " activate venv failed "
-
-            pip install awscli &> /var/log/userdata.awscli_install.log || qs_err " awscli install failed "
-
-            pip install ansible &> /var/log/userdata.ansible_install.log || qs_err " ansible install failed "
-
-            pip install selinux &> /var/log/userdata.selinux_install.log || qs_err " selinux install failed "
-
-            yum update --security -y &> /var/log/userdata.yum_security_update.log || qs_err " ansible install failed "
-
-            mkdir ~/.jfrog_ami
-
-            aws s3 --region ${AWS::Region} sync s3://${QsS3BucketName}/${QsS3KeyPrefix}cloudInstallerScripts/ ~/.jfrog_ami/
+            # Install Cloudformation helper scripts
+            pip install https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-py3-latest.tar.gz 2>&1 | tee /var/log/userdata.aws_cfn_bootstrap_install.log
 
             cfn-init -v --stack ${AWS::StackName} --resource JFrogAMIInstance --configsets jfrog_ami_setup --region ${AWS::Region} || cfn_fail
 
-            find / -name "authorized_keys" –exec rm –f {} \;
+            pip install awscli &> /var/log/userdata.awscli_install.log || cfn_fail
+            pip install ansible &> /var/log/userdata.ansible_install.log || cfn_fail
+
+            mkdir -p ~/.jfrog_ami
+
+            aws s3 --region ${AWS::Region} sync s3://${QsS3BucketName}/${QsS3KeyPrefix}cloudInstallerScripts/ ~/.jfrog_ami/
 
             setsebool httpd_can_network_connect 1 -P
 
             ansible-playbook /root/.jfrog_ami/jfrog-ami-setup.yml 2>&1 | tee /var/log/jfrog-ami.log || cfn_fail
 
-            # rm -rf ~/.jfrog_ami
-
-            [ $(qs_status) == 0 ] && cfn_success || cfn_fail
+            cfn_success &> /var/log/cfn_success.log || cfn_fail
           - S3Bucket: !If [UsingDefaultBucket, !Sub '{QsS3BucketName}-${AWS::Region}', !Ref 'QsS3BucketName']
             S3Region: !If [UsingDefaultBucket, !Ref 'AWS::Region', !Ref 'QsS3BucketRegion']
       Tags:

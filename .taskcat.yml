@@ -3,13 +3,13 @@ project:
   owner: quickstart-eng@amazon.com
   s3_object_acl: private
   s3_regional_buckets: True
-  s3_bucket: tcat-422383ecc658557f9a377abae675aac0  # commercial accounts
-  # s3_bucket: tcat-a3e80b6745b2547da1c745b16adf2a66    # aws-seller accounts
+  # s3_bucket: tcat-422383ecc658557f9a377abae675aac0  # commercial accounts (also for GovCloud)
+  s3_bucket: tcat-a3e80b6745b2547da1c745b16adf2a66    # aws-seller accounts (MarketPlace)
 
   parameters:
     KeyPairName         : "<use .taskcat_overrides.yml to set this value>"
-    ArtifactoryVersion  : 7.12.5
-    XrayVersion         : 3.15.1
+    ArtifactoryVersion  : 7.15.3
+    XrayVersion         : 3.17.4
     AccessCidr          : "0.0.0.0/0"
     QsS3BucketName      : "$[taskcat_autobucket]"
     QsS3KeyPrefix       : "quickstart-jfrog-artifactory/"
@@ -49,8 +49,8 @@ tests:
       JFrogProduct: "jfrog-artifactory-pro"
     template: templates/jfrog-ami-master.template.yaml
     regions:
-      # - us-east-1
-      - us-west-2
+      - us-east-1
+      # - us-west-2
       # - us-gov-east-1
 
   xray-ami:
@@ -61,8 +61,8 @@ tests:
       AvailabilityZone: "$[taskcat_genaz_1]"
     template: templates/ami-rt-xray-master.template.yaml
     regions:
-      # - us-east-1
-      - us-west-2
+      - us-east-1
+      # - us-west-2
       # - us-gov-east-1
 
   # create-vpc:
@@ -125,12 +125,11 @@ tests:
       us-gov-east-1: gov
     parameters:
       ArtifactoryProduct: "JFrog-Artifactory-Enterprise"
+      ProvisionBastionHost: "Disabled"
       DatabaseInstance: "db.m5.large"
       DatabasePassword: "$[taskcat_genpass_8A]"
       MultiAzDatabase: "true"
       NumberOfSecondary: "1"
-      KeystorePassword: "$[taskcat_genpass_8A]"
-      AnsibleVaultPass: "$[taskcat_genpass_8A]"
       ArtifactoryServerName: "artifactory"
       SmLicenseCertName: "jfrog-artifactory"
       InstallXray: "true"
@@ -152,12 +151,11 @@ tests:
       us-gov-east-1: gov
     parameters:
       ArtifactoryProduct: "JFrog-Artifactory-Enterprise"
+      ProvisionBastionHost: "Disabled"
       DatabasePassword: "$[taskcat_genpass_8A]"
       MultiAzDatabase: "true"
       DatabaseInstance: "db.m5.large"
-      NumberOfSecondary: "1"
-      KeystorePassword: "$[taskcat_genpass_8A]"
-      AnsibleVaultPass: "$[taskcat_genpass_8A]"
+      NumberOfSecondary: 1
       ArtifactoryServerName: "artifactory"
       SmLicenseCertName: "jfrog-artifactory"
       InstallXray: "true"
@@ -229,8 +227,6 @@ tests:
       DatabasePassword: "$[taskcat_genpass_8A]"
       DatabaseInstance: "db.m5.large"
       NumberOfSecondary: "2"
-      KeystorePassword: "$[taskcat_genpass_8A]"
-      AnsibleVaultPass: "$[taskcat_genpass_8A]"
       ArtifactoryServerName: "artifactory"
       SmLicenseCertName: "jfrog-artifactory"
       MultiAzDatabase: "true"
@@ -293,7 +289,6 @@ tests:
   #     # DatabaseEngine: MySQL
   #     # ReleaseStage: "GA"
   #     NumberOfSecondary: "2"
-  #     AnsibleVaultPass: "$[taskcat_genpass_8A]"
   #     ArtifactoryServerName: "artifactory"
   #     SmLicenseCertName: "jfrog-artifactory"
   #     MultiAzDatabase: "false"

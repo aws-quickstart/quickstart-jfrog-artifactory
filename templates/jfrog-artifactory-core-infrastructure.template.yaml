@@ -33,7 +33,7 @@ Parameters:
   DatabaseAllocatedStorage:
     Type: Number
   DatabasePreferredAz:
-    Type: AWS::EC2::AvailabilityZone::Name
+    Type: String
   MultiAzDatabase:
     Description: Choose false to create an Amazon RDS instance in a single Availability Zone.
     ConstraintDescription: True or False
