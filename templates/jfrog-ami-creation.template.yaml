@@ -17,7 +17,6 @@ Metadata:
           default: JFrog Product AMI info
         Parameters:
           - InstanceType
-          - VolumeSize
           - JFrogProduct
           - ArtifactoryVersion
       - Label:
@@ -37,8 +36,6 @@ Metadata:
         default: Public subnet 1 ID
       InstanceType:
         default: EC2 instance type
-      VolumeSize:
-        default: EBS root volume size
       JFrogProduct:
         default: JFrog Product to install
       ArtifactoryVersion:
@@ -91,11 +88,6 @@ Parameters:
     ConstraintDescription: Must contain valid instance type.
     Default: m5.xlarge
     Type: String
-  VolumeSize:
-    Description: The size in GB of the available storage; the Quick Start will create an
-      Amazon Elastic Block Store (Amazon EBS) volumes of this size.
-    Default: 10
-    Type: Number
   QsS3BucketName:
     Description: S3 bucket name for the Quick Start assets. This string can include
       numbers, lowercase letters, uppercase letters, and hyphens (-). It cannot start
@@ -161,12 +153,6 @@ Resources:
                 Action: "ec2:Describe*"
                 Resource: "*"
               - Effect: "Allow"
-                Action: "ec2:AttachVolume"
-                Resource: "*"
-              - Effect: "Allow"
-                Action: "ec2:DetachVolume"
-                Resource: "*"
-              - Effect: "Allow"
                 Action:
                   - "s3:GetObject"
                   - "s3:ListObject"
@@ -222,13 +208,6 @@ Resources:
         - AMI
       IamInstanceProfile: !Ref JFrogAMIInstanceProfile
       InstanceType: !Ref InstanceType
-      BlockDeviceMappings:
-        - DeviceName: /dev/xvda
-          Ebs:
-            VolumeSize: !Ref VolumeSize
-            VolumeType: gp2
-            DeleteOnTermination: true
-            Encrypted: false
       NetworkInterfaces:
         - AssociatePublicIpAddress: True
           DeviceIndex: "0"
@@ -285,6 +264,7 @@ Resources:
             source ~/venv/bin/activate
 
             pip install --upgrade pip
+            pip install wheel
 
             # Install Cloudformation helper scripts
             pip install https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-py3-latest.tar.gz 2>&1 | tee /var/log/userdata.aws_cfn_bootstrap_install.log

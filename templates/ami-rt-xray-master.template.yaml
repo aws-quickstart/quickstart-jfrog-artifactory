@@ -16,7 +16,6 @@ Metadata:
           default: JFrog Product AMI info
         Parameters:
           - InstanceType
-          - VolumeSize
           - XrayVersion
       - Label:
           default: AWS Quick Start Configuration
@@ -33,8 +32,6 @@ Metadata:
         default: Availability zone
       InstanceType:
         default: EC2 instance type
-      VolumeSize:
-        default: EBS root volume size
       XrayVersion:
         default: Xray version
       QsS3BucketName:
@@ -76,11 +73,6 @@ Parameters:
     ConstraintDescription: Must contain valid instance type.
     Default: m5.xlarge
     Type: String
-  VolumeSize:
-    Description: The size in GB of the available storage; the Quick Start will create an
-      Amazon Elastic Block Store (Amazon EBS) volumes of this size.
-    Default: 10
-    Type: Number
   QsS3BucketName:
     Description: S3 bucket name for the Quick Start assets. This string can include
       numbers, lowercase letters, uppercase letters, and hyphens (-). It cannot start
@@ -129,7 +121,6 @@ Resources:
         VpcId: !GetAtt VPCStack.Outputs.VpcId
         PublicSubnet1Id: !GetAtt VPCStack.Outputs.PublicSubnetID
         InstanceType: !Ref InstanceType
-        VolumeSize: !Ref VolumeSize
         XrayVersion: !Ref XrayVersion
         QsS3BucketName: !Ref QsS3BucketName
         QsS3KeyPrefix: !Ref QsS3KeyPrefix
