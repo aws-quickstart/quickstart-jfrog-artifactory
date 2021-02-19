@@ -223,6 +223,7 @@ Resources:
 
                 if [[ $IS_PRIMARY != "true" ]]; then
                   echo 'Not primary node. Skipping EBS volume attachment.'
+                  lsblk # debug
                   exit 0
                 fi
 
@@ -370,7 +371,7 @@ Resources:
             source ~/venv/bin/activate
 
             pip install --upgrade pip
-            pip install jmespath wheel
+            pip install wheel
 
             # Install Cloudformation helper scripts
             pip install https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-py3-latest.tar.gz 2>&1 | tee /var/log/userdata.aws_cfn_bootstrap_install.log
@@ -400,8 +401,6 @@ Resources:
             /root/attach_volume.sh || cfn_fail
 
             ansible-galaxy collection install community.general ansible.posix
-
-            setsebool httpd_can_network_connect 1 -P
 
             aws secretsmanager get-secret-value --secret-id ${ArtifactoryLicensesSecretName} --region ${AWS::Region} | jq -r '{"artifactory_licenses":(.SecretString | fromjson )}' > ~/.jfrog_ami/licenses.json || cfn_fail
 

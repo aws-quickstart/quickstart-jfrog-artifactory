@@ -286,6 +286,7 @@ Resources:
             source ~/venv/bin/activate
 
             pip install --upgrade pip
+            pip install wheel
 
             # Install Cloudformation helper scripts
             pip install https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-py3-latest.tar.gz 2>&1 | tee /var/log/userdata.aws_cfn_bootstrap_install.log
@@ -294,11 +295,16 @@ Resources:
 
             pip install ansible &> /var/log/userdata.ansible_install.log
 
-            setsebool httpd_can_network_connect 1 -P
-
             mkdir ~/.xray_ami
 
             aws s3 --region ${AWS::Region} sync s3://${QsS3BucketName}/${QsS3KeyPrefix}cloudInstallerScripts/ ~/.xray_ami/
+
+            setsebool httpd_can_network_connect 1 -P
+
+            # CentOS cloned virtual machines do not create a new machine id
+            # https://www.thegeekdiary.com/centos-rhel-7-how-to-change-the-machine-id/
+            rm -f /etc/machine-id
+            systemd-machine-id-setup
 
             cfn-init -v --stack ${AWS::StackName} --resource XrayLaunchConfiguration --configsets xray_install --region ${AWS::Region} || cfn_fail
 
@@ -307,10 +313,7 @@ Resources:
             chmod +x ./awslogs-agent-setup.py
             ./awslogs-agent-setup.py -n -r ${AWS::Region} -c /root/cloudwatch.conf
 
-            # CentOS cloned virtual machines do not create a new machine id
-            # https://www.thegeekdiary.com/centos-rhel-7-how-to-change-the-machine-id/
-            rm -f /etc/machine-id
-            systemd-machine-id-setup
+            lsblk # debug
 
             ansible-galaxy collection install community.general ansible.posix
 
