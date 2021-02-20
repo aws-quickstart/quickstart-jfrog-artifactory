@@ -31,6 +31,9 @@
       when: artifactory_license_file is defined
 
     - name: use license strings
+      vars:
+        artifactory_licenses_dict: "{{ artifactory_licenses | default('{}') }}"
+
       template:
         src: artifactory.pro.license.j2
         dest: "{{ artifactory_home }}/var/etc/artifactory/artifactory.lic"
