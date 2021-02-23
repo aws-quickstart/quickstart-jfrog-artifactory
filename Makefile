@@ -29,6 +29,10 @@ submodules:
 	git submodule update --remote --recursive
 	git submodule foreach --recursive 'git submodule init'
 	git submodule foreach --recursive 'git submodule update --remote --recursive'
+	cd submodules/quickstart-amazon-eks
+	git checkout 0b2f1a14029226d296e761e5ecedef01d89f4efb
+	git submodule init
+
 
 help:
 	@echo   "make test  : executes ${VENVBIN}/taskcat"

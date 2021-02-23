@@ -10,8 +10,6 @@ db_user: artuser
 db_password: badpassword
 
 s3_region: needs_to_be_passed
-s3_access_key: needs_to_be_passed
-s3_access_secret_key: needs_to_be_passed
 s3_bucket: needs_to_be_passed
 
 # Differences required for nginx as a container.
@@ -63,4 +61,3 @@ artifactory_keystore:
 artifactory_keystore_path: /etc/alternatives/jre_1.8.0/lib/security/cacerts
 artifactory_keystore_default: changeit
 artifactory_keystore_pass: needs_to_be_passed
-
