@@ -5,7 +5,7 @@
     </provider>
   </chain>
   <provider id="s3-storage-v3" type="s3-storage-v3">
-    <endpoint>s3.amazonaws.com</endpoint>
+    <endpoint>s3.{{ s3_region }}.amazonaws.com</endpoint>
     <bucketName>{{ s3_bucket }}</bucketName>
     <path>artifactory/filestore</path>
     <region>{{ s3_region }}</region>
