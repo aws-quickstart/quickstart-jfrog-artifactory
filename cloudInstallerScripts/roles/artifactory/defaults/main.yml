@@ -48,3 +48,5 @@ service_list:
     status_pattern: artifactory
     user_name: "{{ artifactory_user }}"
     group_name: "{{ artifactory_group }}"
+
+product_id: CloudFormation_QS_EC2/1.0.0
