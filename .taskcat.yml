@@ -8,7 +8,7 @@ project:
 
   parameters:
     #KeyPairName         : "<use .taskcat_overrides.yml to set this value>"
-    KeyPairName         : "Anup"
+    KeyPairName         : "keyname"
     ArtifactoryVersion  : 7.15.3
     XrayVersion         : 3.17.4
     AccessCidr          : "0.0.0.0/0"
