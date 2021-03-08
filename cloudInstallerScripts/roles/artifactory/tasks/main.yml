@@ -87,7 +87,6 @@
   template:
     src: installer-info.json.j2
     dest: "{{ artifactory_home }}/var/etc/info/installer-info.json"
-    force: no # only create if file doesn't exist
   become: yes
 
 - name: use specified binary store file
