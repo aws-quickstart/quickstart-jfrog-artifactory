@@ -540,6 +540,7 @@ Parameters:
       symbols.
     NoEcho: 'true'
     Type: String
+
 Conditions:
   EnableBastion: !Equals [!Ref 'ProvisionBastionHost', 'Enabled']
   IsArtifactory: !Not [!Equals [!Ref ArtifactoryProduct, 'JFrog-Container-Registry']]
@@ -549,6 +550,7 @@ Conditions:
   EnableXray: !Equals [!Ref InstallXray, 'true']
   SmCertNameNotExists: !Equals [!Ref 'SmCertName', '']
   SmCertNameExists: !Not [!Equals [!Ref 'SmCertName', '']]
+
 Resources:
   BastionRole:
     Condition: EnableBastion
