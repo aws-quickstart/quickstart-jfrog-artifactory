@@ -2,7 +2,8 @@
 // Briefly describe the software. Use consistent and clear branding. 
 // Include the benefits of using the software on AWS, and provide details on usage scenarios.
 
-Once you deploy JFrog’s Artifactory, you can use it as a production service. For further
+//TODO
+Once you deploy JFrog’s Artifactory with the option to install Xray, you can use it as a production service. For further
 information about setting up Artifactory, see the <<#_get_started_with_Artifactory, Get started with Artifactory>> section,
 later in this guide.
 

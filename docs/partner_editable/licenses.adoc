@@ -13,15 +13,12 @@
 // _<AMI information>The Quick Start requires a subscription to the Amazon Machine Image (AMI) for {partner-product-name}, which is available from https://aws.amazon.com/marketplace/[AWS Marketplace^]. Additional pricing, terms, and conditions may apply. For instructions, see link:#step-2.-subscribe-to-the-software-ami[step 2] in the deployment section._
 
 
-This Quick Start requires an Enterprise or Enterprise+ license for Artifactory. It also
-requires a subscription to the http://aws.amazon.com/marketplace/pp/B086PTRY8G[JFrog Enterprise EC2 (Enterprise Artifact Repository, SelfHosted)^] Amazon Machine Image (AMI) in https://aws.amazon.com/marketplace[AWS Marketplace^]. To use the Quick Start in
-your production environment, sign up for a https://jfrog.com/artifactory/free-trial-aws/#enterprise[free trial license^], which includes three
-Artifactory Enterprise licenses. Place the license keys in the specified fields when you
-launch the Quick Start. Enterprise or Enterprise+ licenses are required due to the following
-features of this deployment:
+This Quick Start requires subscribing to the CentOS AMI which can be found on the https://aws.amazon.com/marketplace/pp/B00O7WM7QW?ref_=aws-mp-console-subscription-detail[AWS CentOS Marketplace^], page, as well as, an Enterprise or Enterprise+ license for Artifactory. If you choose to install Xray, you will require an Enterprise+ license or an Enterprise license with the Xray add on.
+To use the Quick Start in your production environment, sign up for a https://jfrog.com/artifactory/free-trial-aws/#enterprise[free trial license^], which includes three
+//TODO anchor to Deployment Steps
+Artifactory Enterprise licenses. Add the license keys to AWS Secrets Manager as described in the Deployment Steps in this guide. Enterprise or Enterprise+ licenses are required due to the following features of this deployment:
 
 * High availability
-* Storing S3 objects
 
 NOTE: If the license isn’t an Enterprise or Enterprise+ license, the license is invalid,
 or the license is not included, the deployment will fail. Also, ensure that the number

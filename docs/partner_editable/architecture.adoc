@@ -18,6 +18,8 @@ provide you with your own virtual network on AWS.*
 * A Network Load Balancer attached to the public subnets connecting via port 80 or 443
 to the Artifactory primary and secondary nodes in the private subnets.
 
+* A Network Load Balancer attached to the public subnets for Xray to connect via port 80 to the Artifactory primary and secondary nodes residing in the private subnets.
+
 In the public subnets:
 
 * Managed network address translation (NAT) gateways to allow outbound
@@ -29,10 +31,11 @@ and private subnets.
 In the private subnets:
 
 // Add bullet points for any additional components that are included in the deployment. Make sure that the additional components are also represented in the architecture diagram.
-** A https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/CHAP_MySQL.html[MySQL^] or https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/CHAP_PostgreSQL.html[PostgreSQL^] instance on Amazon RDS that’s accessible from the
+** A https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/CHAP_PostgreSQL.html[PostgreSQL^] instance on Amazon RDS that’s accessible from the
 private subnets on port 3306 or 5532, respectively.
 ** Two Amazon EC2 https://aws.amazon.com/autoscaling/[Auto Scaling^] groups, one for the primary node and one for the
 secondary nodes.
+** [Optional] One Amazon EC2 https://aws.amazon.com/autoscaling/[Auto Scaling^] group for the Xray node(s).
 
 
 NOTE: The purpose of the Automatic Scaling groups is for automatic deployment of
@@ -51,9 +54,9 @@ instances. For this reason, all configurations are done on boot and result in a 
 data that are not stored in the Amazon RDS instance or S3 bucket.
 
 === Ansible init script
-
+//TODO
 Ansible is installed and configured to run only on initial boot. Ansible, in cooperation with
-the Auto Scaling group, initiates the required configuration and runs Artifactory. As a part
+the Auto Scaling group, initiates the required configuration to configure, install and run Artifactory and Xray. As a part
 of this configuration, the nodes automatically join the HA cluster.
 
 WARNING: Do not change the master key of the stack when updating the stack.

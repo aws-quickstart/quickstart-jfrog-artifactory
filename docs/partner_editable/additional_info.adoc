@@ -83,21 +83,59 @@ image::../images/get_started_7.png[image_placeholder,width=648,height=439]
 
 NOTE: Backups save to the local file system and do not persist if the EC2 instance is terminated. It is recommended to create snapshots of the primary instance.
 
-== Updating Artifactory
+== Updating { partner-product-short-name }
 // If Post-deployment steps are required, add them here. If not, remove the heading
 
 If maintenance must be performed on the stack, ensure that you update the
 CloudFormation stack rather than updating the infrastructure manually (this also applies to
-updating Artifactory). The Artifactory version for this Quick Start is *7.0.x* (see <<update_1>>).
+updating Artifactory). The Artifactory version for this Quick Start is *7.15.x* and the Xray version is *3.17.x* (see <<update_1>>).
 
-NOTE: Because the instances are backed by an AWS Marketplace AMI, the version you update must be available in AWS Marketplace, and a new map must be created
-in the CloudFormation templates. Otherwise, the update will fail.
+NOTE: If you plan to upgrade Artifactory and Xray, it is recommended to update Xray first.
 
 :xrefstyle: short
 [#update_1]
 .JFrog Artifactory status page shows the current version
 [link=../{quickstart-project-name}/images/update_1.png]
 image::../images/update_1.png[image_placeholder,width=648,height=439]
+
+=== Xray upgrade
+
+. Choose the Xray stack, and then choose *Update* (see <<xray_update_1>>).
+
+[#xray_update_1]
+.JFrog Artifactory status page shows the current version
+[link=../{quickstart-project-name}/images/xray_update_1.png]
+image::../images/xray_update_1.png[image_placeholder,width=648,height=439]
+
+. Choose Update nested stack, and then choose *Update stack* (see <<xray_update_2>>).
+
+[#xray_update_2]
+.JFrog Artifactory status page shows the current version
+[link=../{quickstart-project-name}/images/xray_update_2.png]
+image::../images/xray_update_2.png[image_placeholder,width=648,height=439]
+
+. Choose *Use current template*, and then choose *Next*  (see <<xray_update_3>>).
+
+[#xray_update_3]
+.JFrog Artifactory status page shows the current version
+[link=../{quickstart-project-name}/images/xray_update_3.png]
+image::../images/xray_update_3.png[image_placeholder,width=648,height=439]
+
+. Modify the Xray version that is supported by the template, and then choose *Next* twice, choose the two *I acknowledge* check boxes, and choose *Update Stack*  (see <<xray_update_4>>).
+
+[#xray_update_4]
+.JFrog Artifactory status page shows the current version
+[link=../{quickstart-project-name}/images/xray_update_4.png]
+image::../images/xray_update_4.png[image_placeholder,width=648,height=439]
+
+. Shut down the Xray nodes one by one. The correct process is to shut down the nodes one at a time.  This will trigger a health check failure on the load balancer. The load balancer will then delete the current running node and deploy a net new primary node with the updated version.  (see <<xray_update_5>>).
+
+[#xray_update_5]
+.JFrog Artifactory status page shows the current version
+[link=../{quickstart-project-name}/images/xray_update_5.png]
+image::../images/xray_update_5.png[image_placeholder,width=648,height=439]
+
+=== Artifactory upgrade
 
 . Choose the root stack, and then choose *Update* (see <<update_2>>).
 
