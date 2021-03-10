@@ -30,7 +30,7 @@ tests:
 
   jcr-ami:
     auth:
-      us-east-1: seller
+      REGION: seller
     parameters:
       AvailabilityZone: "$[taskcat_genaz_1]"
       JFrogProduct: "jfrog-artifactory-jcr"
@@ -38,7 +38,7 @@ tests:
 
   rt-ami:
     auth:
-      us-east-1: seller
+      REGION: seller
       us-gov-east-1 : gov
     parameters:
       AvailabilityZone: "$[taskcat_genaz_1]"
@@ -47,7 +47,7 @@ tests:
 
   xray-ami:
     auth:
-      us-east-1: seller
+      REGION: seller
       us-gov-east-1 : gov
     parameters:
       AvailabilityZone: "$[taskcat_genaz_1]"
@@ -64,7 +64,7 @@ tests:
 
   artifactory-enterprise-new-vpc:
     auth:
-      us-east-1: default
+      REGION: default
       us-gov-west-1: gov
       us-gov-east-1: gov
     parameters:
@@ -85,7 +85,7 @@ tests:
 
   artifactory-enterprise-existing-vpc:
     auth:
-      us-east-1: default
+      REGION: default
       us-gov-west-1: gov
       us-gov-east-1: gov
     parameters:
