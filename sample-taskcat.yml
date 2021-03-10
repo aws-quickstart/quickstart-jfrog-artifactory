@@ -24,7 +24,7 @@ project:
 
 
   regions:
-    - us-east-1
+    - REGION
 
 tests:
 
