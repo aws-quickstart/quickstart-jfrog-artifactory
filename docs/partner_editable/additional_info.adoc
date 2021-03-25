@@ -83,7 +83,7 @@ image::../images/get_started_7.png[image_placeholder,width=648,height=439]
 
 NOTE: Backups save to the local file system and do not persist if the EC2 instance is terminated. It is recommended to create snapshots of the primary instance.
 
-== Updating { partner-product-short-name }
+== Updating {partner-product-short-name}
 // If Post-deployment steps are required, add them here. If not, remove the heading
 
 If maintenance must be performed on the stack, ensure that you update the
@@ -211,15 +211,15 @@ By default, the load balancer does not match your certificate. You must configur
 according to your organization’s configuration, which is highly recommended for a
 production deployment.
 When you create a new VPC, the private subnet CIDR is automatically provided to the
-database security group `ArtifactoryBDSG`. In the new VPC, the private subnet is accessible
+database security group `Artifactory-rds-sg`. In the new VPC, the private subnet is accessible
 only from the public subnet.
 When you deploy to an existing VPC, ensure similar rules are followed so that your
 Artifactory nodes are not accessible directly from the internet. Also, ensure that the private
 CIDR is correct and locked down. Avoid using `0.0.0.0/0`. If the subnet is a public subnet, it
-will allow your MySQL database to be available from the internet.
+will allow your Postgres database to be available from the internet.
 
 == Storage
 //Provide any other information of interest to users, especially focusing on areas where AWS or cloud usage differs from on-premises usage.
 
 A major difference between running on-premises and on AWS is storage. Because S3 is
-used, you are charged for what is currently in use rather than what may be allocated onpremises. Ensure to https://www.jfrog.com/confluence/display/RTF/Monitoring+Storage[monitor your usage^].
+used, you are charged for what is currently in use rather than what may be allocated on premises. Ensure to https://www.jfrog.com/confluence/display/RTF/Monitoring+Storage[monitor your usage^].

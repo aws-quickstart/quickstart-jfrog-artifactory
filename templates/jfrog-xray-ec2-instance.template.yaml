@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: "2010-09-09"
-Description: "Deploys the EC2 Autoscaling, LaunchConfig and Instance for Xray"
+Description: "Xray: Deploys the EC2 Autoscaling, LaunchConfig and instances"
 Parameters:
   PrivateSubnet1Id:
     Type: 'AWS::EC2::Subnet::Id'
