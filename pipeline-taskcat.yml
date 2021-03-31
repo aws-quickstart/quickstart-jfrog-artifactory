@@ -138,7 +138,7 @@ tests:
     parameters:
       InstallXray         : "true"
       DatabasePassword    : "$[taskcat_genpass_8A]"
-      DatabasePreferredAz : us-east-2a
+      DatabasePreferredAz : us-east-1a
 
       # us-east-1
       VpcId               : "vpc-026af7cc6049df7df"
