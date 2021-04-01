@@ -2,310 +2,61 @@ project:
   name: quickstart-jfrog-artifactory
   owner: quickstart-eng@amazon.com
   s3_object_acl: private
-  s3_regional_buckets: True
-  s3_bucket: tcat-422383ecc658557f9a377abae675aac0  # commercial accounts (also for GovCloud)
-  #s3_bucket: tcat-a3e80b6745b2547da1c745b16adf2a66    # aws-seller accounts (MarketPlace)
-
+  s3_regional_buckets: true
+  shorten_stack_name: true
+  regions:
+      - us-east-1
+      - us-west-2
+      - us-east-2
+      - us-west-1
+      - eu-central-1
+      - eu-west-1
+      - eu-west-2
+      - eu-west-3
+      - ap-southeast-2
+      - eu-north-1
+      - ca-central-1
+      - sa-east-1
+      - eu-south-1
+      - af-south-1
   parameters:
     #KeyPairName         : "<use .taskcat_overrides.yml to set this value>"
-    KeyPairName         : "keyname"
     ArtifactoryVersion  : 7.15.3
     XrayVersion         : 3.17.4
-    AccessCidr          : "0.0.0.0/0"
+    AccessCidr          : "10.0.0.0/0"
     QsS3BucketName      : "$[taskcat_autobucket]"
     QsS3KeyPrefix       : "quickstart-jfrog-artifactory/"
     QsS3BucketRegion    : "$[taskcat_current_region]"
-    MasterKey           : "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"
-    SmLicenseName       : "jfrog-artifactory"
-    SmCertName          : "jfrog.tech-certificates"
-
-    # Set this to your home intenet gateway public IP in override file
-    # e.g. "24.4.228.4/32"
-    RemoteAccessCidr    : "63.238.166.122/29" # JFrog network
-
-
-  regions:
-    - us-east-1
-    #- us-gov-east-1
-    #- us-gov-west-1
-
 tests:
-
-  jcr-ami:
-    auth:
-      us-east-1: seller
+  jfrog-artifactory-ec2-xray:
     parameters:
-      AvailabilityZone: "$[taskcat_genaz_1]"
-      JFrogProduct: "jfrog-artifactory-jcr"
-    template: templates/jfrog-ami-master.template.yaml
-    regions:
-      - us-east-1
-
-  rt-ami:
-    auth:
-      us-east-1: seller
-      us-gov-east-1 : gov
-    parameters:
-      AvailabilityZone: "$[taskcat_genaz_1]"
-      JFrogProduct: "jfrog-artifactory-pro"
-    template: templates/jfrog-ami-master.template.yaml
-    regions:
-      - us-east-1
-      # - us-west-2
-      # - us-gov-east-1
-
-  xray-ami:
-    auth:
-      us-east-1: seller
-      us-gov-east-1 : gov
-    parameters:
-      AvailabilityZone: "$[taskcat_genaz_1]"
-    template: templates/ami-rt-xray-master.template.yaml
-    regions:
-      - us-east-1
-      # - us-west-2
-      # - us-gov-east-1
-
-  # create-vpc:
-  #   auth:
-  #     us-east-1     : default
-  #     us-gov-west-1 : gov
-  #     us-gov-east-1 : gov
-  #   parameters:
-  #     KeyPairName         : "vinaykey1"
-  #     # AvailabilityZones: "$[taskcat_genaz_2]"
-
-  #     AvailabilityZones   : "us-east-1a, us-east-1b"
-  #     NumberOfAZs: 2
-  #     # result: success but created 4 subnets
-
-  #     # AvailabilityZones   : "us-east-2a, us-east-2b"
-  #     # NumberOfAZs: 1
-  #     # result: success but created 4 subnets
-
-  #     # AvailabilityZones   : "us-east-2a, us-east-2a"
-  #     # NumberOfAZs: 1
-  #     # result: success but created 0 subnets
-
-  #     # AvailabilityZones   : "us-west-1b, test"
-  #     # NumberOfAZs: 1
-  #     # Failed parameter value test invalid
-
-  #     # AvailabilityZones   : "us-east-2a, AWS::NoValue"
-  #     # NumberOfAZs: 1
-  #     # changed default value to 1 in VPC templates
-
-  #     # AvailabilityZones   : "us-east-1a"
-  #     # NumberOfAZs: 1
-  #     # changed default value to 1 in VPC templates and passed in only 1 subnet
-
-  #   template: submodules/quickstart-aws-vpc/templates/aws-vpc.template
-  #   regions:
-  #     - us-east-1
-  #     # - us-east-2
-  #     # - us-west-1
-  #     # - us-west-2
-  #     # - us-gov-east-1
-
-  create-bastion-with-existing-vpc:
-    parameters:
-      # us-west-2
-      VPCID               : "vpc-0d2100ab913ced1a2"
-      PublicSubnet1ID     : "subnet-0c2f1ab3118b0de23"
-      PublicSubnet2ID     : "subnet-0972dd8e6c961bfd3"
-      RemoteAccessCIDR    : "24.4.228.4/32"
-      EnableTCPForwarding : 'true'
-    template: submodules/quickstart-linux-bastion/templates/linux-bastion.template
-    regions:
-      - us-west-2
-
-  artifactory-enterprise-new-vpc:
-    auth:
-      us-east-1: default
-      us-gov-west-1: gov
-      us-gov-east-1: gov
-    parameters:
-      ArtifactoryProduct: "JFrog-Artifactory-Enterprise"
-      ProvisionBastionHost: "Disabled"
-      DatabaseInstance: "db.m5.large"
-      DatabasePassword: "$[taskcat_genpass_8A]"
-      MultiAzDatabase: "true"
-      NumberOfSecondary: "1"
-      ArtifactoryServerName: "artifactory"
-      SmLicenseCertName: "jfrog-artifactory"
-      InstallXray: "true"
-      XrayDatabasePassword: "$[taskcat_genpass_8A]"
-      XrayNumberOfInstances: 2
+      KeyPairName: "$[taskcat_getkeypair]"
+      RemoteAccessCidr: "10.0.0.0/0"
       AvailabilityZones: "$[taskcat_genaz_2]"
-    template: templates/jfrog-artifactory-ec2-master.template.yaml
-    regions:
-      # - us-east-1
-      # - us-east-2
-      # - us-west-1
-      - us-west-2
-
-
-  artifactory-enterprise-existing-vpc:
-    auth:
-      us-east-1: default
-      us-gov-west-1: gov
-      us-gov-east-1: gov
-    parameters:
+      DatabasePassword: "$[taskcat_genpass_8A]"
       ArtifactoryProduct: "JFrog-Artifactory-Enterprise"
       ProvisionBastionHost: "Disabled"
-      DatabasePassword: "$[taskcat_genpass_8A]"
-      MultiAzDatabase: "true"
-      DatabaseInstance: "db.m5.large"
-      NumberOfSecondary: 1
-      ArtifactoryServerName: "artifactory"
-      SmLicenseCertName: "jfrog-artifactory"
-      InstallXray: "true"
-      XrayDatabasePassword: "$[taskcat_genpass_8A]"
-      XrayNumberOfInstances: 2
-
-  #     # # GOV account
-  #     # AvailabilityZones   : "us-east-1a, us-east-1b"
-  #     # VpcId               : "vpc-031647840254062fd"
-  #     # PublicSubnet1Id     : "subnet-00b1a385a75f61548"
-  #     # PublicSubnet2Id     : "subnet-022db8a65807a8587"
-  #     # PrivateSubnet1Id    : "subnet-05d9e9ab2bc1687ff"
-  #     # PrivateSubnet2Id    : "subnet-0a5a485ae05f3d371"
-
-
-  #     # # after creating a VPC, comment line above and uncomment lines below for faster iteration
-  #     # # commercial account
-  #     # AvailabilityZones   : "us-east-1a, us-east-1b"
-  #     # VpcId               : "vpc-07796cf327607df8d"
-  #     # PublicSubnet1Id     : "subnet-08352ca6ea1dd6b2e"
-  #     # PublicSubnet2Id     : "subnet-0aa9b504676ff9bcf"
-  #     # PrivateSubnet1Id    : "subnet-0be62632bb475135b"
-  #     # PrivateSubnet2Id    : "subnet-086dfbffcaa1b16b0"
-
-  #     # AvailabilityZones   : "us-east-2a, us-east-2b"
-  #     # VpcId               : "vpc-0c34820ee493dfc50"
-  #     # PublicSubnet1Id     : "subnet-0f8245eb09eb6fe0b"
-  #     # PublicSubnet2Id     : "subnet-0488c02dfb3156a8c"
-  #     # PrivateSubnet1Id    : "subnet-04059e18aed29feb8"
-  #     # PrivateSubnet2Id    : "subnet-00fce1c2df54627c1"
-
-  #     # AvailabilityZones   : "us-west-1a, us-west-1b"
-  #     # VpcId               : "vpc-021824cc89d5a4a61"
-  #     # PublicSubnet1Id     : "subnet-0b750e980f29162ee"
-  #     # PublicSubnet2Id     : "subnet-081169f2379fcc7fc"
-  #     # PrivateSubnet1Id    : "subnet-002e4714e7f3f3f4b"
-  #     # PrivateSubnet2Id    : "subnet-0af1ccf128830f145"
-
-  #     VpcId               : "vpc-021824cc89d5a4a61"
-  #     PublicSubnet1Id     : "subnet-0b750e980f29162ee"
-  #     PublicSubnet2Id     : "subnet-081169f2379fcc7fc"
-  #     PrivateSubnet1Id    : "subnet-0b750e980f29162ee"
-  #     PrivateSubnet2Id    : "subnet-081169f2379fcc7fc"
-
-      AvailabilityZones   : "us-west-2a, us-west-2b"
-      VpcId               : "vpc-0d2100ab913ced1a2"
-      PublicSubnet1Id     : "subnet-0c2f1ab3118b0de23"
-      PublicSubnet2Id     : "subnet-0972dd8e6c961bfd3"
-      PrivateSubnet1Id    : "subnet-03ca0426539289da3"
-      PrivateSubnet2Id    : "subnet-012fc1245aca55664"
-
-      # VpcId               : "vpc-0d2100ab913ced1a2"
-      # PublicSubnet1Id     : "subnet-0c2f1ab3118b0de23"
-      # PublicSubnet2Id     : "subnet-0c2f1ab3118b0de23"
-      # PrivateSubnet1Id    : "subnet-0c2f1ab3118b0de23"
-      # PrivateSubnet2Id    : "subnet-0c2f1ab3118b0de23"
-
-    template: templates/jfrog-artifactory-ec2-existing-vpc.template.yaml
-    regions:
-      # - us-east-1
-      # - us-east-2
-      # - us-west-1
-      - us-west-2
-
-
-  rt-xray-ec2-marketplace:
-    parameters:
-      DatabaseEngine: Postgres
-      DatabasePassword: "$[taskcat_genpass_8A]"
-      DatabaseInstance: "db.m5.large"
       NumberOfSecondary: "2"
       ArtifactoryServerName: "artifactory"
-      SmLicenseCertName: "jfrog-artifactory"
-      MultiAzDatabase: "true"
-      # InstallXray: "false"
+      InstallXray: "true"
       XrayDatabasePassword: "$[taskcat_genpass_8A]"
-      # XrayNumberOfInstances: 2
-      AvailabilityZones: "us-east-1a, us-east-1b"
-    template: templates/jfrog-artifactory-ec2-marketplace-master.template.yaml
+      XrayNumberOfInstances: 2
+      MasterKey: "override"
+      SmLicenseName: "override"
+      SmCertName: "override"
+    template: templates/jfrog-artifactory-ec2-master.template.yaml
     regions:
-      - us-east-1
-
-  artifactory-pro-new-vpc:
-    parameters:
-      InstallXray         : "true"
-      DatabasePassword    : "$[taskcat_genpass_8A]"
-      AvailabilityZones   : "$[taskcat_genaz_2]"
-    template              : templates/jfrog-artifactory-pro-ec2-new-vpc-master.template.yaml
-    regions:
-      # - us-east-1
-      - us-west-2
-
-  artifactory-pro-existing-vpc:
-    parameters:
-      InstallXray         : "true"
-      DatabasePassword    : "$[taskcat_genpass_8A]"
-      DatabasePreferredAz : us-west-2a
-
-      # us-east-2
-      # VpcId               : "vpc-0c34820ee493dfc50"
-      # PublicSubnet1Id     : "subnet-0f8245eb09eb6fe0b"
-      # PublicSubnet2Id     : "subnet-0488c02dfb3156a8c"
-
-      # us-west-1
-      # VpcId               : "vpc-021824cc89d5a4a61"
-      # PublicSubnet1Id     : "subnet-0b750e980f29162ee"
-      # PublicSubnet2Id     : "subnet-081169f2379fcc7fc"
-      # PrivateSubnet1Id    : "subnet-002e4714e7f3f3f4b"
-      # PrivateSubnet2Id    : "subnet-0af1ccf128830f145"
-
-      # us-west-2
-      VpcId               : "vpc-0d2100ab913ced1a2"
-      PublicSubnet1Id     : "subnet-0c2f1ab3118b0de23"
-      PublicSubnet2Id     : "subnet-0972dd8e6c961bfd3"
-      PrivateSubnet1Id    : "subnet-03ca0426539289da3"
-      PrivateSubnet2Id    : "subnet-012fc1245aca55664"
-
-      PrivateSubnet1Cidr  : "10.0.0.0/19"
-      PrivateSubnet2Cidr  : "10.0.32.0/19"
-    template              : templates/jfrog-artifactory-pro-ec2-existing-vpc-master.template.yaml
-    regions:
-      # - us-east-2
-      # - us-west-1
-      - us-west-2
-
-
-  # rt-ecs:
-  #   parameters:
-  #     DatabasePassword: "$[taskcat_genpass_8A]"
-  #     # DatabaseInstance: "db.m5.large"
-  #     # DatabaseEngine: MySQL
-  #     # ReleaseStage: "GA"
-  #     NumberOfSecondary: "2"
-  #     ArtifactoryServerName: "artifactory"
-  #     SmLicenseCertName: "jfrog-artifactory"
-  #     MultiAzDatabase: "false"
-
-  #   #   AvailabilityZones: "$[taskcat_genaz_2]"
-  #   # template: templates/jfrog-artifactory-ecs-master.template.yaml
-
-  #     # after creating a VPC, comment line above and uncomment lines below for faster iteration
-  #     # commercial account
-  #     AvailabilityZones: "us-east-2a, us-east-2b"
-  #     VpcId           : "vpc-0f1ba9d9e6125f50e"
-  #     PublicSubnet1Id : "subnet-0428a0b682504e234"
-  #     PrivateSubnet1Id: "subnet-08b2941d6a9a85579"
-  #     PublicSubnet2Id : "subnet-0dd6c76f09924a8c1"
-  #     PrivateSubnet2Id: "subnet-05a004086f004dfa1"
-  #   template: templates/jfrog-artifactory-ecs-existing-vpc.template.yaml
-
-  #   regions:
-  #     - us-east-2
+        - us-east-1
+        - us-west-2
+        - us-east-2
+        - us-west-1
+        - eu-central-1
+        - eu-west-1
+        - eu-west-2
+        - eu-west-3
+        - ap-southeast-2
+        - eu-north-1
+        - ca-central-1
+        - sa-east-1
+        - eu-south-1
+        - af-south-1
