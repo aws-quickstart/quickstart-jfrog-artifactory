@@ -101,18 +101,13 @@ tests:
       XrayDatabasePassword: "$[taskcat_genpass_8A]"
       XrayNumberOfInstances: 2
 
-      AvailabilityZones   : "us-west-2a, us-west-2b"
-      VpcId               : "vpc-0d2100ab913ced1a2"
-      PublicSubnet1Id     : "subnet-0c2f1ab3118b0de23"
-      PublicSubnet2Id     : "subnet-0972dd8e6c961bfd3"
-      PrivateSubnet1Id    : "subnet-03ca0426539289da3"
-      PrivateSubnet2Id    : "subnet-012fc1245aca55664"
-
-      # VpcId               : "vpc-0d2100ab913ced1a2"
-      # PublicSubnet1Id     : "subnet-0c2f1ab3118b0de23"
-      # PublicSubnet2Id     : "subnet-0c2f1ab3118b0de23"
-      # PrivateSubnet1Id    : "subnet-0c2f1ab3118b0de23"
-      # PrivateSubnet2Id    : "subnet-0c2f1ab3118b0de23"
+      # us-east-1
+      AvailabilityZones   : "us-east-1a, us-east-1b"
+      VpcId               : "vpc-026af7cc6049df7df"
+      PublicSubnet1Id     : "subnet-0636a7357406a39cf"
+      PublicSubnet2Id     : "subnet-0374ac2e5bd029e8b"
+      PrivateSubnet1Id    : "subnet-05dc5384c74fbdffb"
+      PrivateSubnet2Id    : "subnet-066ff5e45624de906"
 
     template: templates/jfrog-artifactory-ec2-existing-vpc.template.yaml
 
@@ -143,14 +138,14 @@ tests:
     parameters:
       InstallXray         : "true"
       DatabasePassword    : "$[taskcat_genpass_8A]"
-      DatabasePreferredAz : us-west-2a
+      DatabasePreferredAz : us-east-1a
 
-      # us-west-2
-      VpcId               : "vpc-0d2100ab913ced1a2"
-      PublicSubnet1Id     : "subnet-0c2f1ab3118b0de23"
-      PublicSubnet2Id     : "subnet-0972dd8e6c961bfd3"
-      PrivateSubnet1Id    : "subnet-03ca0426539289da3"
-      PrivateSubnet2Id    : "subnet-012fc1245aca55664"
+      # us-east-1
+      VpcId               : "vpc-026af7cc6049df7df"
+      PublicSubnet1Id     : "subnet-0636a7357406a39cf"
+      PublicSubnet2Id     : "subnet-0374ac2e5bd029e8b"
+      PrivateSubnet1Id    : "subnet-05dc5384c74fbdffb"
+      PrivateSubnet2Id    : "subnet-066ff5e45624de906"
 
       PrivateSubnet1Cidr  : "10.0.0.0/19"
       PrivateSubnet2Cidr  : "10.0.32.0/19"
