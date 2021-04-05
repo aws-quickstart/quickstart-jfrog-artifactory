@@ -303,7 +303,7 @@ Resources:
                           url: ${DatabasePluginUrl}
                           owner: artifactory
                           group: artifactory
-                      product_id: ''
+                      product_id: 'CloudFormation_QS_EC2/1.0.0'
                 - flavor: !FindInMap [ArtifactoryProductMap, !Ref ArtifactoryProduct, flavor]
                   ha_enabled: !FindInMap [ArtifactoryProductMap, !Ref ArtifactoryProduct, haEabled]
                   product: !FindInMap [ArtifactoryProductMap, !Ref ArtifactoryProduct, product]
