@@ -5,4 +5,3 @@ venv/
 taskcat_outputs/
 templates/.*output
 .DS_Store
-/docs/index.html
