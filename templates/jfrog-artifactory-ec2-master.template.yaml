@@ -3,6 +3,7 @@ Description: 'JFrog Artifactory Quick Start Deployment (qs-1qpmmjh2f)'
 Metadata:
   QuickStartDocumentation:
     EntrypointName: "Launch into a new VPC"
+    Order: "1"
   AWS::CloudFormation::Interface:
     ParameterGroups:
       - Label:
