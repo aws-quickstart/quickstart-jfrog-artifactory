@@ -1,8 +1,8 @@
 :quickstart-project-name: quickstart-jfrog-artifactory
-:partner-product-name: JFrog Artifactory Enterprise and Xray (optional)
-:partner-product-short-name: Artifactory and Xray (optional)
+:partner-product-name: JFrog Artifactory Enterprise and Xray 
+:partner-product-short-name: Artifactory and Xray
 :partner-company-name: JFrog Ltd.
-:doc-month: March
+:doc-month: April
 :doc-year: 2021
 :partner-contributors: Vinay Aggarwal and Alex Hung, JFrog
 :quickstart-contributors: Dylan Owen, AWS Quick Start team
@@ -14,5 +14,3 @@
 :marketplace_subscription:
 :marketplace_listing_url: https://aws.amazon.com/marketplace/pp/B00O7WM7QW?ref_=aws-mp-console-subscription-detail
 :parameters_as_appendix:
-
-//
