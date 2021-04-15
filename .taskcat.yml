@@ -22,7 +22,7 @@ project:
   parameters:
     ArtifactoryVersion  : 7.15.3
     XrayVersion         : 3.17.4
-    AccessCidr          : "0.0.0.0/0"
+    AccessCidr          : "10.0.0.0/0"
     QsS3BucketName      : "$[taskcat_autobucket]"
     QsS3KeyPrefix       : "quickstart-jfrog-artifactory/"
     QsS3BucketRegion    : "$[taskcat_current_region]"
@@ -30,7 +30,7 @@ tests:
   jfrog-artifactory-ec2-xray:
     parameters:
       KeyPairName: "$[taskcat_getkeypair]"
-      RemoteAccessCidr: "0.0.0.0/0"
+      RemoteAccessCidr: "10.0.0.0/0"
       AvailabilityZones: "$[taskcat_genaz_2]"
       DatabasePassword: "$[taskcat_genpass_8A]"
       ArtifactoryProduct: "JFrog-Artifactory-Enterprise"
@@ -40,9 +40,9 @@ tests:
       InstallXray: "true"
       XrayDatabasePassword: "$[taskcat_genpass_8A]"
       XrayNumberOfInstances: 2
-      MasterKey: "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"
-      SmLicenseName: "JFrog-License-Feb-21"
-      SmCertName: "JFrog-Certificates-Feb-21"
+      MasterKey: "override"
+      SmLicenseName: "override"
+      SmCertName: "override"
     template: templates/jfrog-artifactory-ec2-master.template.yaml
     regions:
         # - us-east-1
