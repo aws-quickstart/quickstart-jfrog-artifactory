@@ -1,5 +1,5 @@
 project:
-  name: quickstart-jfrog-artifactory-eks
+  name: quickstart-jfrog-artifactory
   owner: quickstart-eng@amazon.com
   s3_object_acl: private
   s3_regional_buckets: true
