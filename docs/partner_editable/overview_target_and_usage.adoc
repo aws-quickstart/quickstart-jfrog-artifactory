@@ -6,17 +6,14 @@ https://jfrog.com/artifactory/[JFrog’s Artifactory^] is an enterprise universa
 your binaries in one place. This Quick Start deploys Artifactory Enterprise in a highly
 available (HA) configuration into AWS.
 
-//TODO: Review
 https://jfrog.com/xray/[JFrog Xray^] works with JFrog Artifactory to perform universal analysis of binary software components 
-at any stage of the application lifecycle providing radical transparency that leads to trust in your software. 
+at any stage of the application lifecycle, providing radical transparency that leads to trust in your software. Xray is an optional installation that you can choose during the Quick Start deployment.  
 
 This Quick Start is for administrators who want the flexibility, scale, and availability of
 AWS through products such as virtual private clouds (VPCs), Amazon Elastic Compute
 Cloud (Amazon EC2), Amazon Simple Storage Service (Amazon S3), Elastic Load Balancing
 (ELB), and Amazon Relational Database Service (Amazon RDS) to deploy Artifactory as
 their repository manager. 
-//TODO
-Xray is an optional install that is able to be selected during the Quick Start deployment. 
 
 Amazon EC2, along with Amazon S3 and Amazon RDS, forms the foundation for the
 deployment. By using Amazon S3 and Amazon RDS as persistent storage for artifacts and
@@ -33,12 +30,11 @@ secondaries is unique and therefore sets it to the hostname. This Auto Scaling g
 also responsible for scaling up or down the number of secondaries to the amount
 specified by the administrator.
 
-//TODO
-The optional Xray installation creates two additional https://docs.aws.amazon.com/autoscaling/ec2/userguide/what-is-amazon-ec2-auto-scaling.html[Amazon EC2 Auto Scaling^] groups:
+The optional Xray installation creates two additional Amazon EC2 Auto Scaling groups:
 
-* The first Auto Scaling group is responsible for the primary node.  This will install Xray into the primary subnet. 
-* The second Auto Scaling group is responsible installing Xray into the secondary subnet. This Auto Scaling group is also responsible for scaling up or down the number of secondaries to the amount specified by the Administrator.
+* The first Auto Scaling group is responsible for the primary node. Xray is installed into the primary subnet. 
+* The second Auto Scaling group is responsible installing Xray into the secondary subnet. This Auto Scaling group is also responsible for scaling up or down the number of secondaries to the amount specified by the administrator.
 
 The Auto Scaling groups are monitored by the Network Load Balancer, which is configured
-with https://docs.aws.amazon.com/elasticloadbalancing/latest/classic/elb-healthchecks.html[health checks^] that validate the Artifactory service is up and running. If the endpoint
+with https://docs.aws.amazon.com/elasticloadbalancing/latest/classic/elb-healthchecks.html[health checks^] that validate that the Artifactory service is up and running. If the endpoint
 returns an error response, a new node is recovered within 10 minutes.
