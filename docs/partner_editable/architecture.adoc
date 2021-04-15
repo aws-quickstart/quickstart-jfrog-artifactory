@@ -10,7 +10,7 @@ image::../images/jfrog-architecture-diagram.png[Architecture,width=648,height=43
 
 As shown in Figure 1, the Quick Start sets up the following:
 
-* A high availability architecture that spans two Availability Zones.*
+* A highly available architecture that spans two Availability Zones.*
 * A VPC configured with public and private subnets, according to AWS best practices, to
 provide you with your own virtual network on AWS.*
 * A Network Load Balancer attached to the public subnets connecting via port 80 or 443
