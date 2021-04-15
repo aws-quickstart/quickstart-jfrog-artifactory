@@ -4,3 +4,4 @@ venv/
 .taskcat/
 taskcat_outputs/
 templates/.*output
+.DS_Store
