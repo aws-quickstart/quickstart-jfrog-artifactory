@@ -1,0 +1,57 @@
+---
+
+# Tasks to configure Artifactory version 7
+- name: Template of the properties and certs as requires for Artifactory
+  template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    owner: artifactory
+    group: artifactory
+    mode: '0664'
+  loop:
+    - src: "{{ binarystore_file }}"
+      dest: /var/opt/jfrog/artifactory/etc/artifactory/binarystore.xml
+    - src: artifactory.cluster.license.j2
+      dest: /var/opt/jfrog/artifactory/etc/artifactory/artifactory.cluster.license
+    - src: system.yaml.j2
+      dest: /var/opt/jfrog/artifactory/etc/system.yaml
+    - src: master.key.j2
+      dest: /var/opt/jfrog/artifactory/etc/security/master.key
+    - src: certificate.pem.j2
+      dest: "{{ ssl_dir }}/cert.pem"
+    - src: certificate.key.j2
+      dest: "{{ key_dir }}/cert.key"
+  notify:
+    - enable artifactory
+    - restart artifactory
+    - restart nginx
+
+- name: All File/Folders required for Artifactory configuration
+  file:
+    path: "{{ item.path }}"
+    state: "{{ item.state }}"
+    owner: artifactory
+    group: artifactory
+  loop:
+    - path: /var/opt/jfrog/artifactory/etc/artifactory/info/
+      state: directory
+
+- name: Copy all static files required for Artifactory
+  copy:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    owner: artifactory
+    group: artifactory
+    mode: "{{ item.mode }}"
+  loop:
+    - src: inactiveServerCleaner.groovy
+      dest: /var/opt/jfrog/artifactory/etc/artifactory/plugins/inactiveServerCleaner.groovy
+      mode: '0660'
+    - src: "{{ artifactory_installer_file }}"
+      dest: "/var/opt/jfrog/artifactory/etc/artifactory/info/installer-info.json"
+      mode: '0660'
+
+- name: Cleanup AMI from original Artifactory start
+  file:
+    path: /var/opt/jfrog/artifactory/etc/security/join.key
+    state: absent

@@ -1,0 +1,7 @@
+.ignore/
+venv/
+.taskcat_overrides.*
+.taskcat/
+taskcat_outputs/
+templates/.*output
+.DS_Store

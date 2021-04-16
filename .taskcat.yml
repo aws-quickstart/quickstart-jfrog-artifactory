@@ -1,0 +1,63 @@
+project:
+  name: quickstart-jfrog-artifactory
+  owner: quickstart-eng@amazon.com
+  s3_object_acl: private
+  s3_regional_buckets: true
+  shorten_stack_name: true
+  regions:
+      - us-east-1
+      - us-west-2
+      - us-east-2
+      - us-west-1
+      - eu-central-1
+      - eu-west-1
+      - eu-west-2
+      - eu-west-3
+      - ap-southeast-2
+      - eu-north-1
+      - ca-central-1
+      - sa-east-1
+      - eu-south-1
+      - af-south-1
+  parameters:
+    #KeyPairName         : "<use .taskcat_overrides.yml to set this value>"
+    ArtifactoryVersion  : 7.15.3
+    XrayVersion         : 3.17.4
+    AccessCidr          : "10.0.0.0/0"
+    QsS3BucketName      : "$[taskcat_autobucket]"
+    QsS3KeyPrefix       : "quickstart-jfrog-artifactory/"
+    QsS3BucketRegion    : "$[taskcat_current_region]"
+tests:
+  jfrog-artifactory-ec2-xray:
+    parameters:
+      KeyPairName: "$[taskcat_getkeypair]"
+      RemoteAccessCidr: "10.0.0.0/0"
+      AvailabilityZones: "$[taskcat_genaz_2]"
+      DatabasePassword: "$[taskcat_genpass_8A]"
+      ArtifactoryProduct: "JFrog-Artifactory-Enterprise"
+      ProvisionBastionHost: "Disabled"
+      NumberOfSecondary: "2"
+      ArtifactoryServerName: "artifactory"
+      InstallXray: "true"
+      XrayDatabasePassword: "$[taskcat_genpass_8A]"
+      XrayNumberOfInstances: 2
+      MasterKey: "override"
+      SmLicenseName: "override"
+      SmCertName: "override"
+    template: templates/jfrog-artifactory-ec2-master.template.yaml
+    regions:
+        # - us-east-1
+        # - us-west-2
+        - us-east-2
+        # - us-west-1
+        # - eu-central-1
+        # - eu-west-1
+        # - eu-west-2
+        # - eu-west-3
+        # - ap-southeast-2
+        # - eu-north-1
+        # - ca-central-1
+        # - sa-east-1
+        # - eu-south-1
+        # - af-south-1
+        

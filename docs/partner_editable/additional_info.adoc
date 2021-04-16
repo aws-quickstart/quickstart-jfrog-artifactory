@@ -83,21 +83,63 @@ image::../images/get_started_7.png[image_placeholder,width=648,height=439]
 
 NOTE: Backups save to the local file system and do not persist if the EC2 instance is terminated. It is recommended to create snapshots of the primary instance.
 
-== Updating Artifactory
+== Update {partner-product-short-name}
 // If Post-deployment steps are required, add them here. If not, remove the heading
 
-If maintenance must be performed on the stack, ensure that you update the
+If you perform maintenance on the stack, update the
 CloudFormation stack rather than updating the infrastructure manually (this also applies to
-updating Artifactory). The Artifactory version for this Quick Start is *7.0.x* (see <<update_1>>).
+updating Artifactory). The Artifactory version for this Quick Start is *7.15.x*, and the Xray version is *3.17.x* (see <<update_1>>).
 
-NOTE: Because the instances are backed by an AWS Marketplace AMI, the version you update must be available in AWS Marketplace, and a new map must be created
-in the CloudFormation templates. Otherwise, the update will fail.
+NOTE: If you plan to upgrade Artifactory and Xray, update Xray first.
 
 :xrefstyle: short
 [#update_1]
 .JFrog Artifactory status page shows the current version
 [link=../{quickstart-project-name}/images/update_1.png]
 image::../images/update_1.png[image_placeholder,width=648,height=439]
+
+=== Upgrade Xray 
+
+. Choose the Xray stack, and then choose *Update* (see <<xray_update_1>>).
+
+[#xray_update_1]
+.JFrog Artifactory status page shows the current version
+[link=../{quickstart-project-name}/images/xray_update_1.png]
+image::../images/xray_update_1.png[image_placeholder,width=648,height=439]
+
+[start=2]
+. Choose *Update nested stack*, and then choose *Update stack* (see <<xray_update_2>>).
+
+[#xray_update_2]
+.JFrog Artifactory status page shows the current version
+[link=../{quickstart-project-name}/images/xray_update_2.png]
+image::../images/xray_update_2.png[image_placeholder,width=648,height=439]
+
+[start=3]
+. Choose *Use current template*, and then choose *Next*  (see <<xray_update_3>>).
+
+[#xray_update_3]
+.JFrog Artifactory status page shows the current version
+[link=../{quickstart-project-name}/images/xray_update_3.png]
+image::../images/xray_update_3.png[image_placeholder,width=648,height=439]
+
+[start=4]
+. Modify the Xray version that is supported by the template, and then choose *Next* twice, the two *I acknowledge* check boxes, and *Update Stack*  (see <<xray_update_4>>).
+
+[#xray_update_4]
+.JFrog Artifactory status page shows the current version
+[link=../{quickstart-project-name}/images/xray_update_4.png]
+image::../images/xray_update_4.png[image_placeholder,width=648,height=439]
+
+[start=5]
+. Shut down the Xray nodes one by one. Shutting down the nodes one at a time initiates a health check failure on the load balancer. The load balancer then deletes the current running node and deploys a net new primary node with the updated version.  (see <<xray_update_5>>).
+
+[#xray_update_5]
+.JFrog Artifactory status page shows the current version
+[link=../{quickstart-project-name}/images/xray_update_5.png]
+image::../images/xray_update_5.png[image_placeholder,width=648,height=439]
+
+=== Upgrade Artifactory
 
 . Choose the root stack, and then choose *Update* (see <<update_2>>).
 
@@ -108,7 +150,7 @@ image::../images/update_1.png[image_placeholder,width=648,height=439]
 image::../images/update_2.png[image_placeholder,width=648,height=439]
 
 [start=2]
-. On the *Prerequisite* screen, Choose *Use current template*, and then choose *Next*
+. On the *Prerequisite* screen, choose *Use current template*, and then choose *Next*
 (see <<update_3>>).
 
 :xrefstyle: short
@@ -118,7 +160,7 @@ image::../images/update_2.png[image_placeholder,width=648,height=439]
 image::../images/update_3.png[image_placeholder,width=648,height=439]
 
 [start=3]
-. Find the *Artifactory version* field by scrolling down (see <<update_4>>).
+. Scroll down the page and locate the *Artifactory version* field (see <<update_4>>).
 
 :xrefstyle: short
 [#update_4]
@@ -145,8 +187,8 @@ image::../images/update_5.png[image_placeholder,width=648,height=439]
 image::../images/update_6.png[image_placeholder,width=648,height=439]
 
 [start=6]
-. Shut down the *ArtifactoryMaster* node. The proper process shuts down the nodes one at a time, starting with the Artifactory primary node. This will trigger a health check
-failure on the load balancer. The load balancer will then delete the current running primary node and deploy a new primary node with the updated version (see <<update_7>>).
+. Shut down the *ArtifactoryMaster* node. The proper process shuts down the nodes one at a time, starting with the Artifactory primary node. This shutdown initiates a health check
+failure on the load balancer. The load balancer then deletes the current running primary node and deploys a new primary node with the updated version (see <<update_7>>).
 
 :xrefstyle: short
 [#update_7]
@@ -154,7 +196,7 @@ failure on the load balancer. The load balancer will then delete the current run
 [link=../{quickstart-project-name}/images/update_7.png]
 image::../images/update_7.png[image_placeholder,width=648,height=439]
 
-The Artifactory status page shows which instances are off-line (see <<update_8>>).
+The Artifactory status page shows which instances are offline (see <<update_8>>).
 
 :xrefstyle: short
 [#update_8]
@@ -162,8 +204,8 @@ The Artifactory status page shows which instances are off-line (see <<update_8>>
 [link=../{quickstart-project-name}/images/update_8.png]
 image::../images/update_8.png[image_placeholder,width=648,height=439]
 
-IMPORTANT: To prevent issues and downtime, update only one node at a time. Ensure that you begin by shutting down the ArtifactoryPrimary node first. When
-the new version starts up, shut down the secondary nodes one by one.
+IMPORTANT: To prevent issues and downtime, update only one node at a time. Shut down the *ArtifactoryPrimary* node first. When
+the new version starts, shut down the secondary nodes one by one.
 
 
 == Security
@@ -173,15 +215,15 @@ By default, the load balancer does not match your certificate. You must configur
 according to your organization’s configuration, which is highly recommended for a
 production deployment.
 When you create a new VPC, the private subnet CIDR is automatically provided to the
-database security group `ArtifactoryBDSG`. In the new VPC, the private subnet is accessible
+database security group *Artifactory-rds-sg*. In the new VPC, the private subnet is accessible
 only from the public subnet.
 When you deploy to an existing VPC, ensure similar rules are followed so that your
 Artifactory nodes are not accessible directly from the internet. Also, ensure that the private
 CIDR is correct and locked down. Avoid using `0.0.0.0/0`. If the subnet is a public subnet, it
-will allow your MySQL database to be available from the internet.
+will allow your SQL database to be available from the internet.
 
 == Storage
 //Provide any other information of interest to users, especially focusing on areas where AWS or cloud usage differs from on-premises usage.
 
-A major difference between running on-premises and on AWS is storage. Because S3 is
-used, you are charged for what is currently in use rather than what may be allocated onpremises. Ensure to https://www.jfrog.com/confluence/display/RTF/Monitoring+Storage[monitor your usage^].
+A major difference between running on-premises and on AWS is storage. Because Amazon S3 is
+used, you are charged for what is currently in use rather than what may be allocated on premises. Ensure to https://www.jfrog.com/confluence/display/RTF/Monitoring+Storage[monitor your usage^].

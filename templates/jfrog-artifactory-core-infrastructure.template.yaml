@@ -1,6 +1,10 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Description: 'JFrog Artifactory Quick Start Deployment (qs-1qpmmjh61)'
 Parameters:
+  AvailabilityZones:
+    Description: List of Availability Zones to use for the subnets in the VPC. Two
+      Availability Zones are used for this deployment.
+    Type: List<AWS::EC2::AvailabilityZone::Name>
   VpcId:
     Type: AWS::EC2::VPC::Id
   VpcCidr:
@@ -28,7 +32,14 @@ Parameters:
     Type: List<AWS::EC2::Subnet::Id>
   DatabaseAllocatedStorage:
     Type: Number
+  DatabasePreferredAz:
+    Type: String
   MultiAzDatabase:
+    Description: Choose false to create an Amazon RDS instance in a single Availability Zone.
+    ConstraintDescription: True or False
+    AllowedValues:
+      - "true"
+      - "false"
     Type: String
   DatabaseEngine:
     Type: String
@@ -48,8 +59,12 @@ Parameters:
     Default: GA
     Type: String
   InstanceType:
-    Default: m4.xlarge
+    Default: m5.xlarge
     Type: String
+  ArtifactoryHostRole:
+    Type: String
+  VolumeSize:
+    Type: Number
 
 Mappings:
   DatabaseMap:
@@ -61,14 +76,6 @@ Mappings:
       PluginURL: https://jdbc.postgresql.org/download/
       port: "5432"
       extraDatabaseOps: ""
-    MySQL:
-      Name: mysql
-      DatabaseVersion: 5.7
-      Driver: "com.mysql.jdbc.Driver"
-      Plugin: mysql-connector-java-8.0.19.jar
-      PluginURL: https://bintray.com/artifact/download/bintray/jcenter/mysql/mysql-connector-java/8.0.19/
-      port: "3306"
-      extraDatabaseOps: "?characterEncoding=UTF-8&elideSetAutoCommits=true"
   ReleaseStageMap:
     BETA:
       ProDockerRepo: "earlyaccess-docker.jfrog.io/jfrog/artifactory-pro"
@@ -84,30 +91,14 @@ Mappings:
     JFrog-Artifactory-Pro:
       RepoName: ProDockerRepo
   JavaOptionstoInstance:
-    m4.large:
-      Min: 4
-      Max: 4
-      DeploymentSize: xxSmall
-    m4.xlarge:
+    c5.2xlarge:
       Min: 8
       Max: 12
-      DeploymentSize: xSmall
-    m4.2xlarge:
+      DeploymentSize: Small
+    c5.4xlarge:
       Min: 16
       Max: 24
-      DeploymentSize: Small
-    m4.4xlarge:
-      Min: 32
-      Max: 48
-      DeploymentSize: Medium
-    m4.10xlarge:
-      Min: 80
-      Max: 120
       DeploymentSize: Large
-    m4.16xlarge:
-      Min: 128
-      Max: 192
-      DeploymentSize: xxLarge
     m5.large:
       Min: 4
       Max: 4
@@ -236,6 +227,10 @@ Mappings:
       Min: 192
       Max: 288
       DeploymentSize: xxxLarge
+
+Conditions:
+  IsMultiAzDatabase: !Equals [!Ref MultiAzDatabase, 'true']
+
 Resources:
   ArtifactoryDatabaseSubnetGroup:
     Type: AWS::RDS::DBSubnetGroup
@@ -246,7 +241,11 @@ Resources:
     Type: AWS::RDS::DBInstance
     Properties:
       AllocatedStorage: !Ref DatabaseAllocatedStorage
-      MultiAZ: !Ref MultiAzDatabase
+      AvailabilityZone: !If [IsMultiAzDatabase, !Ref AWS::NoValue, !Ref DatabasePreferredAz]
+      BackupRetentionPeriod: 30
+      DBInstanceClass: !Ref DatabaseInstance
+      DBName: !Ref DatabaseName
+      DBSubnetGroupName: !Ref  ArtifactoryDatabaseSubnetGroup
       Engine: !Ref DatabaseEngine
       EngineVersion: !FindInMap
         - DatabaseMap
@@ -254,9 +253,8 @@ Resources:
         - DatabaseVersion
       MasterUsername: !Ref DatabaseUser
       MasterUserPassword: !Ref DatabasePassword
-      DBInstanceClass: !Ref DatabaseInstance
-      DBName: !Ref DatabaseName
-      DBSubnetGroupName: !Ref  ArtifactoryDatabaseSubnetGroup
+      MultiAZ: !Ref MultiAzDatabase
+      StorageEncrypted: true
       VPCSecurityGroups:
         - !Ref ArtifactoryDatabaseSG
   ArtifactoryDatabaseSG:
@@ -315,12 +313,6 @@ Resources:
           FromPort: 443
           ToPort: 443
           CidrIp: 0.0.0.0/0
-  ArtifactoryS3IAMUser:
-    Type: AWS::IAM::User
-  ArtifactoryIamAcessKey:
-    Type: AWS::IAM::AccessKey
-    Properties:
-      UserName: !Ref ArtifactoryS3IAMUser
   ArtifactoryS3Bucket:
     Type: AWS::S3::Bucket
     Properties:
@@ -343,22 +335,34 @@ Resources:
             Resource:
               - Fn::Join:
                 - ''
-                - - "arn:aws:s3:::"
+                - - !Sub "arn:${AWS::Partition}:s3:::"
                   - !Ref ArtifactoryS3Bucket
               - Fn::Join:
                 - ''
-                - - "arn:aws:s3:::"
+                - - !Sub "arn:${AWS::Partition}:s3:::"
                   - !Ref ArtifactoryS3Bucket
                   - "/*"
-      Users:
-        - !Ref ArtifactoryS3IAMUser
+      Roles:
+        - !Ref ArtifactoryHostRole
+  ArtifactoryEbsVolume:
+    Type: AWS::EC2::Volume
+    Properties:
+      AvailabilityZone:
+        !If
+          - IsMultiAzDatabase
+          - !Select
+            - '0'
+            - !Ref AvailabilityZones
+          - !Ref DatabasePreferredAz
+      Encrypted: false
+      Size: !Ref VolumeSize
+      Tags:
+        - Key: Name
+          Value: !Sub "Artifactory-${AWS::StackName}"
+      VolumeType: gp2
+    DeletionPolicy: Snapshot
+    UpdateReplacePolicy: Snapshot
 Outputs:
-  ArtifactoryIamAcessKey:
-    Value: !Ref ArtifactoryIamAcessKey
-    Description: IAM Access key for the S3 Bucket
-  SecretAccessKey:
-    Value: !GetAtt ArtifactoryIamAcessKey.SecretAccessKey
-    Description: Secret Access key for S3 Bucket
   S3Bucket:
     Value: !Ref ArtifactoryS3Bucket
     Description: Actual S3 bucket created for Artifactory
@@ -384,6 +388,20 @@ Outputs:
         port: !FindInMap [DatabaseMap, !Ref DatabaseEngine, port],
         extraDatabaseOps: !FindInMap [DatabaseMap, !Ref DatabaseEngine, extraDatabaseOps],
         }
+  XrayMasterDatabaseUrl:
+    Value: !Sub
+      - "${ArtifactoryDatabaseEndpointAddress}:${port}/${DatabaseName}?sslmode=disable"
+      - {
+        ArtifactoryDatabaseEndpointAddress: !GetAtt ArtifactoryDatabase.Endpoint.Address,
+        port: !FindInMap [DatabaseMap, !Ref DatabaseEngine, port],
+        }
+  XrayDatabaseUrl:
+    Value: !Sub
+      - "${ArtifactoryDatabaseEndpointAddress}:${port}/xraydb?sslmode=disable"
+      - {
+        ArtifactoryDatabaseEndpointAddress: !GetAtt ArtifactoryDatabase.Endpoint.Address,
+        port: !FindInMap [DatabaseMap, !Ref DatabaseEngine, port],
+        }
   ProDockerRepo:
     Value: !FindInMap
       - ReleaseStageMap
@@ -403,3 +421,5 @@ Outputs:
       }
   DeploymentSize:
     Value: !FindInMap [JavaOptionstoInstance, !Ref InstanceType, DeploymentSize]
+  ArtifactoryEbsVolume:
+    Value: !Ref ArtifactoryEbsVolume

@@ -1,0 +1,14 @@
+---
+# tasks file for quickstart-jfrog-artifactory/scripts/roles/artifactory
+
+- name: Set tomcat location
+  set_fact:
+    artifactory_major_verion: "{{ artifactory_version.split('.')[0] }}"
+
+- name: Artifactory 6 install
+  include: artifactory_6_main.yml
+  when: artifactory_major_verion|int == 6
+
+- name: Artifactory 7 install
+  include: artifactory_7_main.yml
+  when: artifactory_major_verion|int == 7
