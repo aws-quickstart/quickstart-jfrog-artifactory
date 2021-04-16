@@ -20,7 +20,6 @@ project:
       - eu-south-1
       - af-south-1
   parameters:
-    #KeyPairName         : "<use .taskcat_overrides.yml to set this value>"
     ArtifactoryVersion  : 7.15.3
     XrayVersion         : 3.17.4
     AccessCidr          : "10.0.0.0/0"
@@ -52,7 +51,7 @@ tests:
         - us-west-1
         - eu-central-1
         - eu-west-1
-        - eu-west-2
+        # - eu-west-2
         # - eu-west-3
         # - ap-southeast-2
         # - eu-north-1
