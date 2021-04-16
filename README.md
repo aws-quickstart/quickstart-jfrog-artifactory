@@ -1,4 +1,4 @@
-JFrog Artifactory and Xray on the AWS Cloud—Quick Start
+## JFrog Artifactory and Xray on the AWS Cloud—Quick Start
 
 For architectural details, step-by-step instructions, and customization options, see the [deployment guide](https://aws-quickstart.github.io/quickstart-jfrog-artifactory/).
 
