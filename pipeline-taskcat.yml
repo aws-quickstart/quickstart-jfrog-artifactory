@@ -102,12 +102,12 @@ tests:
       XrayNumberOfInstances: 2
 
       # us-east-1
-      AvailabilityZones   : "us-east-1a, us-east-1b"
-      VpcId               : "vpc-026af7cc6049df7df"
-      PublicSubnet1Id     : "subnet-0636a7357406a39cf"
-      PublicSubnet2Id     : "subnet-0374ac2e5bd029e8b"
-      PrivateSubnet1Id    : "subnet-05dc5384c74fbdffb"
-      PrivateSubnet2Id    : "subnet-066ff5e45624de906"
+      AvailabilityZones   : "us-west-1b, us-west-1c"
+      VpcId               : "vpc-0d5806917ae9d5aae"
+      PublicSubnet1Id     : "subnet-05e6d5d00b0743b24"
+      PublicSubnet2Id     : "subnet-012e67d537e962d6e"
+      PrivateSubnet1Id    : "subnet-0b1da4b9fbbe67cf2"
+      PrivateSubnet2Id    : "subnet-05b1ea54d37dce2ee"
 
     template: templates/jfrog-artifactory-ec2-existing-vpc.template.yaml
 
