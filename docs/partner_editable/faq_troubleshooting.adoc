@@ -1,0 +1,34 @@
+// Add any tips or answers to anticipated questions. This could include the following troubleshooting information. If you don’t have any other Q&A to add, change “FAQ” to “Troubleshooting.”
+
+== FAQ
+
+*Q.* . I provisioned more secondary nodes than I have licenses, and I cannot access
+Artifactory. What do I do?
+
+*A.* In the AWS CloudFormation console, choose **Update stack**, and reduce the number of
+secondary nodes to the number of licenses you purchased, minus one license for the master.
+
+*Q.* My license ran out and Artifactory is unresponsive. How do I fix this?
+
+*A.* Reduce the number of secondary nodes to zero, and contact JFrog for a new license.
+
+*Q.* My certificate is out of date. How do I update it?
+
+*A.* The certificate is handled via Ansible or Helm. In the AWS CloudFormation console,
+choose **Update stack**, change the certificate and certificate key values. Then, by rolling
+restart, update the master node first, and then, one at a time, the secondary nodes. This will
+rebuild each node with the correct certificate.
+
+
+*Q.* I encountered a *CREATE_FAILED* error when I launched the Quick Start.
+
+*A.* If AWS CloudFormation fails to create the stack, we recommend that you relaunch the template with *Rollback on failure* set to *No*. This setting is under *Advanced* in the AWS CloudFormation console on the *Configure stack options* page. With this setting, the stack’s state is retained and the instance is left running, so you can troubleshoot the issue. (For Windows, look at the log files in %ProgramFiles%\Amazon\EC2ConfigService and C:\cfn\log.)
+// If you’re deploying on Linux instances, provide the location for log files on Linux, or omit this sentence.
+
+WARNING: When you set *Rollback on failure* to *Disabled*, you continue to incur AWS charges for this stack. Please make sure to delete the stack when you finish troubleshooting.
+
+For additional information, see https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/troubleshooting.html[Troubleshooting AWS CloudFormation^] on the AWS website.
+
+*Q.* I encountered a size limitation error when I deployed the AWS CloudFormation templates.
+
+*A.* Launch the Quick Start templates from the links in this guide or from another S3 bucket. If you deploy the templates from a local copy on your computer or from a location other than an S3 bucket, you might encounter template size limitations. For more information about AWS CloudFormation quotas, see the http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/cloudformation-limits.html[AWS documentation^].

@@ -1,72 +1,21 @@
-Artifactory Master
-=========
+# quickstart-jfrog-artifactory
+## JFrog Artifactory on the AWS Cloud
 
-A configuration for Artifactory through Cloud Formation. This assumes it will be tied to an AutoScale group, the
-environment will have 2 boot groups. 1 with `art_primary=True` and the other `art_primary=False`. Note: The MasterKey
-must match in both boot groups or they will not connect.
+Three new Quick Starts deploy JFrog Artifactory on the Amazon Web Services (AWS) Cloud in 30-45 minutes. The available options for deployment use your choice of Amazon Elastic Compute Cloud (Amazon EC2), Amazon Elastic Container Service (Amazon ECS), or Amazon Elastic Kubernetes Service (Amazon EKS).
 
-Requirements
-------------
+This Quick Start is for administrators who want to use JFrog Artifactory with the flexibility, scale, and availability of AWS.
 
-This role is dependent on specific inputs, but does not require any other roles.
+Note that if you are using the Amazon EKS option, Amazon EKS is not available in all AWS Regions. For a current list of supported Regions, see the [AWS Regions and Endpoints webpage](https://docs.aws.amazon.com/general/latest/gr/rande.html#eks_region).
 
-Role Variables
---------------
+You can use the AWS CloudFormation templates included with the Quick Start to deploy JFrog Artifactory into a new or existing virtual private cloud (VPC) in your AWS account. The Quick Starts automates the following:
 
-artifactory_licesnes is expected as a list of Artifactory licesnse.
-artifactory_server_name is the DNS name of the Artifactory instance.
-certificate_domain: Domain name for the DNS name of the Artifactory instance.
-s3_endpoint: S3 URL endpoint for backend storage.
-s3_access_key: S3 Access key for the S3 Endpoint + Bucket.
-s3_access_secret_key: S3 Secret key for the S3 Endpoint + Bucket.
-s3_bucket: S3 bucket for backend storage.
-certificate_key: Private Certificate Key used for NGINX to terminate SSL
-certificate: Certificate used by NGINX to terminate SSL
-db_type: Currently only MySQL is supported.
-db_ipaddr: MySQL endpoint for the DB connection.
-db_name: Name of the Database.
-db_user: User with write/read permission on the `db_name`
-db_password: Password for the `db_user`
-art_primary: True or False (Very important that only one node is art_primary=True)
-artifactory_keystore_pass: Java Keystore new Password
-master_key: Master Cluster key to join the Artifactory cluster.
-artifactory_version: Version of Artifactory to install.
+- Deploying JFrog Artifactory with Amazon EC2
+- Deploying JFrog Artifactory with Amazon ECS
+- Deploying JFrog Artifactory with Amazon EKS
 
-Dependencies
-------------
+![Quick Start architecture for JFrog Artifactory with Amazon EC2 on the AWS Cloud](https://d1.awsstatic.com/partner-network/QuickStart/datasheets/jfrog-artifactory-with-amazon-ec2-on-aws-diagram.099b374684667c4c22afa54e04f593651deec980.png)
 
-None
+For architectural details, best practices, and step-by-step instructions, see the deployment guide for JFrog Artifactory with [Amazon EC2](https://fwd.aws/dBWPz), [Amazon ECS](https://fwd.aws/Erdv5), or [Amazon EKS](https://fwd.aws/K87wK).
 
-Example Playbook
-----------------
-
-```yaml
-- import_playbook: site-artifactory.yml
-  vars:
-    artifactory_licenses: ${ArtifactoryLicense}
-    artifactory_server_name: ${ArtifactoryServerName}
-    certificate_domain: ${CertificateDomain}
-    s3_endpoint: s3.${AWS::Region}.amazonaws.com
-    s3_access_key: ${ArtifactoryIAMAcessKey}
-    s3_access_secret_key: ${SecretAccessKey}
-    s3_bucket: ${ArtifactoryS3Bucket}
-    certificate_key: ${CertificateKey}
-    certificate: ${Certificate}
-    db_type: ${DBType}
-    db_ipaddr: ${ArtifactoryDBEndpointAddress}
-    db_name: ${DatabaseName}
-    db_user: ${DatabaseUser}
-    db_password: ${DatabasePassword}
-    art_primary: ${ArtifactoryPrimary}
-    artifactory_keystore_pass: ${KeystorePassword}
-    master_key: ${MasterKey}
-    artifactory_version: ${ArtifactoryVersion}
-```
-
-License
--------
-
-BSD
-
-Author Information
-------------------
+To post feedback, submit feature ideas, or report bugs, use the **Issues** section of this GitHub repo.
+If you'd like to submit code for this Quick Start, please review the [AWS Quick Start Contributor's Kit](https://aws-quickstart.github.io/).

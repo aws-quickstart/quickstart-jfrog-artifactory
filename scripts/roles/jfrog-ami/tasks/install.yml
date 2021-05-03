@@ -1,0 +1,51 @@
+---
+# Install Artifactory
+
+- name: Add Artifactory Repo
+  yum_repository:
+    name: bintray-jfrog-artifactory-pro-rpms
+    description: bintray-jfrog-artifactory-pro-rpms
+    baseurl: "{{ jfrog_ami_repo_url }}"
+    gpgcheck: no
+    enabled: yes
+
+- name: Change to host python for Yum
+  set_fact:
+    ansible_python_interpreter: /usr/bin/python
+
+- name: debug
+  debug:
+    msg: "orig is {{ orig_python_interpreter }} and the other is {{ ansible_python_interpreter }}"
+    verbosity: 4
+
+- name: Install Artifactory from RPM and EPEL
+  yum:
+    name:
+      - "{{ jfrog_product }}-{{ jfrog_ami_version }}"
+      - epel-release
+    state: installed
+    enablerepo: bintray-jfrog-artifactory-pro-rpms
+
+- name: Update Java and install NGinx
+  package:
+   name:
+    - "{{ jfrog_ami_java_version }}"
+    - nginx
+   state: present
+
+- name: Set ansible python back
+  set_fact:
+    ansible_python_interpreter: "{{ orig_python_interpreter }}"
+
+- name: debug the change back
+  debug:
+    msg: "orig is {{ orig_python_interpreter }} and the other is {{ ansible_python_interpreter }}"
+    verbosity: 4
+
+- name: Disable Artifactory Repo so we don't upgrade on next boot
+  yum_repository:
+    name: bintray-jfrog-artifactory-pro-rpms
+    description: bintray-jfrog-artifactory-pro-rpms
+    baseurl: "{{ jfrog_ami_repo_url }}"
+    gpgcheck: no
+    enabled: no
