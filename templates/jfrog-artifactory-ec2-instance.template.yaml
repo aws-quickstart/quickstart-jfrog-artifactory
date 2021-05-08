@@ -89,55 +89,53 @@ Parameters:
 
 # To populate additional mappings use following link
 # https://raw.githubusercontent.com/aws-quickstart/quickstart-linux-bastion/master/templates/linux-bastion.template
-
-Mappings:
-  AWSAMIRegionMap:
+  AWSAMIRegionMap1:
     ap-northeast-1:
-      CENTOS7HVM: "ami-06a46da680048c8ae"
+      CentOS7HVM: "ami-06a46da680048c8ae"
     ap-northeast-2:
-      CENTOS7HVM: "ami-06e83aceba2cb0907"
+      CentOS7HVM: "ami-06e83aceba2cb0907"
     ap-south-1:
-      CENTOS7HVM: "ami-026f33d38b6410e30"
+      CentOS7HVM: "ami-026f33d38b6410e30"
     ap-southeast-1:
-      CENTOS7HVM: "ami-07f65177cb990d65b"
+      CentOS7HVM: "ami-07f65177cb990d65b"
     ap-southeast-2:
-      CENTOS7HVM: "ami-0b2045146eb00b617"
+      CentOS7HVM: "ami-0b2045146eb00b617"
     ca-central-1:
-      CENTOS7HVM: "ami-04a25c39dc7a8aebb"
+      CentOS7HVM: "ami-04a25c39dc7a8aebb"
     eu-central-1:
-      CENTOS7HVM: "ami-0e8286b71b81c3cc1"
+      CentOS7HVM: "ami-0e8286b71b81c3cc1"
     me-south-1:
-      CENTOS7HVM: "ami-011c71a894b10f35b"
+      CentOS7HVM: "ami-011c71a894b10f35b"
     ap-east-1:
-      CENTOS7HVM: "ami-0e5c29e6c87a9644f"
+      CentOS7HVM: "ami-0e5c29e6c87a9644f"
     eu-north-1:
-      CENTOS7HVM: "ami-05788af9005ef9a93"
+      CentOS7HVM: "ami-05788af9005ef9a93"
     eu-south-1:
-      CENTOS7HVM: "ami-0a84267606bcea16b"
+      CentOS7HVM: "ami-0a84267606bcea16b"
     eu-west-1:
-      CENTOS7HVM: "ami-0b850cf02cc00fdc8"
+      CentOS7HVM: "ami-0b850cf02cc00fdc8"
     eu-west-2:
-      CENTOS7HVM: "ami-09e5afc68eed60ef4"
+      CentOS7HVM: "ami-09e5afc68eed60ef4"
     eu-west-3:
-      CENTOS7HVM: "ami-0cb72d2e599cffbf9"
+      CentOS7HVM: "ami-0cb72d2e599cffbf9"
     sa-east-1:
-      CENTOS7HVM: "ami-0b30f38d939dd4b54"
+      CentOS7HVM: "ami-0b30f38d939dd4b54"
     us-east-1:
-      CENTOS7HVM: "ami-0affd4508a5d2481b"
+      CentOS7HVM: "ami-0affd4508a5d2481b"
     us-east-2:
-      CENTOS7HVM: "ami-01e36b7901e884a10"
+      CentOS7HVM: "ami-01e36b7901e884a10"
     us-west-1:
-      CENTOS7HVM: "ami-098f55b4287a885ba"
+      CentOS7HVM: "ami-098f55b4287a885ba"
     us-west-2:
-      CENTOS7HVM: "ami-0bc06212a56393ee1"
+      CentOS7HVM: "ami-0bc06212a56393ee1"
     cn-north-1:
-      CENTOS7HVM: "ami-0e02aaefeb74c3373"
+      CentOS7HVM: "ami-0e02aaefeb74c3373"
     cn-northwest-1:
-      CENTOS7HVM: "ami-07183a7702633260b"
+      CentOS7HVM: "ami-07183a7702633260b"
     us-gov-east-1:
-      CENTOS7HVM: "ami-00e30c71"
+      CentOS7HVM: "ami-00e30c71"
     us-gov-west-1:
-      CENTOS7HVM: "ami-bbba86da"
+      CentOS7HVM: "ami-bbba86da"
 
   ArtifactoryProductMap:
     JFrog-Container-Registry:
