@@ -134,9 +134,9 @@ Mappings:
       CENTOS7HVM: "ami-0e02aaefeb74c3373"
     cn-northwest-1:
       CENTOS7HVM: "ami-07183a7702633260b"
-  	us-gov-east-1:
+    us-gov-east-1:
       CENTOS7HVM: "ami-00e30c71"
-	  us-gov-west-1:
+    us-gov-west-1:
       CENTOS7HVM: "ami-bbba86da"
 
   ArtifactoryProductMap:
