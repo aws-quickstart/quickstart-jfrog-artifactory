@@ -254,7 +254,7 @@ Resources:
                 lsblk # debug
               mode: "0770"
             /root/.jfrog_ami/artifactory.yml:
-              content: |
+              content: !Sub |
                 # Base install for Artifactory
                 - import_playbook: site-artifactory.yml
                   vars:

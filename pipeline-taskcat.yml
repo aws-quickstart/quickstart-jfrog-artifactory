@@ -60,9 +60,10 @@ tests:
 
   create-bastion-with-existing-vpc:
     parameters:
-      VPCID               : "vpc-0d2100ab913ced1a2"
-      PublicSubnet1ID     : "subnet-0c2f1ab3118b0de23"
-      PublicSubnet2ID     : "subnet-0972dd8e6c961bfd3"
+      # us-west-1
+      VpcId               : "vpc-0d5806917ae9d5aae"
+      PublicSubnet1Id     : "subnet-05e6d5d00b0743b24"
+      PublicSubnet2Id     : "subnet-012e67d537e962d6e"
       RemoteAccessCIDR    : "24.4.228.4/32"
       EnableTCPForwarding : 'true'
     template: submodules/quickstart-linux-bastion/templates/linux-bastion.template
@@ -88,7 +89,7 @@ tests:
       InstallXray: "true"
       XrayNumberOfInstances: 2
 
-      # us-east-1
+      # us-west-1
       AvailabilityZones   : "us-west-1b, us-west-1c"
       VpcId               : "vpc-0d5806917ae9d5aae"
       PublicSubnet1Id     : "subnet-05e6d5d00b0743b24"
@@ -117,7 +118,7 @@ tests:
       InstallXray         : "true"
       DatabasePreferredAz : us-west-1b
 
-      # us-east-1
+      # us-west-1
       VpcId               : "vpc-0d5806917ae9d5aae"
       PublicSubnet1Id     : "subnet-05e6d5d00b0743b24"
       PublicSubnet2Id     : "subnet-012e67d537e962d6e"
