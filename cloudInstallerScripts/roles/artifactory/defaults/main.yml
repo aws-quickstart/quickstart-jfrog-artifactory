@@ -27,13 +27,10 @@ use_custom_data_directory: false
 # location for customer directory. Will be symlink to as artifactory/var
 custom_data_directory: /artifactory-user-data
 
-# Pick the Artifactory flavour to install, can be also cpp-ce, jcr, pro.
-artifactory_flavour: pro
-
 extra_java_opts: -server -Xms2g -Xmx14g -Xss256k -XX:+UseG1GC
 
-artifactory_tar: https://releases.jfrog.io/artifactory/artifactory-pro/org/artifactory/{{ artifactory_flavour }}/jfrog-artifactory-{{ artifactory_flavour }}/{{ artifactory_version }}/jfrog-artifactory-{{ artifactory_flavour }}-{{ artifactory_version }}-linux.tar.gz
-artifactory_home: "{{ artifactory_download_directory }}/artifactory-{{ artifactory_flavour }}-{{ artifactory_version }}"
+artifactory_tar: https://releases.jfrog.io/artifactory/artifactory-pro/org/artifactory/pro/jfrog-artifactory-pro/{{ artifactory_version }}/jfrog-artifactory-pro-{{ artifactory_version }}-linux.tar.gz
+artifactory_home: "{{ artifactory_download_directory }}/artifactory-pro-{{ artifactory_version }}"
 
 artifactory_user: artifactory
 artifactory_group: artifactory

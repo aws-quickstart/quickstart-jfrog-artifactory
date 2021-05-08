@@ -176,7 +176,7 @@ Parameters:
     Description: Version of Artifactory that you want to deploy into the Quick Start.
       To select the correct version, see the release notes at
       https://www.jfrog.com/confluence/display/RTF/Release+Notes.
-    Default: 7.17.4
+    Default: 7.18.6
     Type: String
   SmLicenseName:
     Description: Secret name created in AWS Secrets Manager, which contains the Artifactory licenses.
@@ -215,13 +215,10 @@ Parameters:
       - db.m5.large
       - db.m5.xlarge
       - db.m5.2xlarge
-      - db.m5.10xlarge
-      - db.m5.16xlarge
-      - db.m5.large
-      - db.m5.xlarge
-      - db.m5.2xlarge
       - db.m5.4xlarge
+      - db.m5.8xlarge
       - db.m5.12xlarge
+      - db.m5.16xlarge
       - db.m5.24xlarge
     ConstraintDescription: Must be a valid database Instance Type.
     Default: db.m5.large
@@ -242,7 +239,7 @@ Parameters:
     Type: String
   XrayVersion:
     Description: The version of Xray that you want to deploy into the Quick Start.
-    Default: 3.21.2
+    Default: 3.24.2
     Type: String
   XrayInstanceType:
     Description: The EC2 instance type for the Xray instances.
@@ -271,7 +268,7 @@ Resources:
         ArtifactoryVersion: !Ref ArtifactoryVersion
         VolumeSize: !Ref VolumeSize
         InstanceType: !Ref InstanceType
-        NumberOfSecondary: 0
+        NumberOfInstances: 1
         SmLicenseName: !Ref SmLicenseName
         SmCertName: !Ref SmCertName
         ArtifactoryServerName: !Ref ArtifactoryServerName

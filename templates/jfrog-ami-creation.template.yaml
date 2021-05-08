@@ -123,11 +123,6 @@ Mappings:
       AMI: "ami-00e30c71"
     us-gov-west-1:
       AMI: "ami-bbba86da"
-  JFrogProductMap:
-    jfrog-artifactory-pro:
-      Flavor: "pro"
-    jfrog-container-registry:
-      Flavor: "jcr"
 Conditions:
   UsingDefaultBucket: !Equals [!Ref QsS3BucketName, 'aws-quickstart']
 Resources:
@@ -196,9 +191,8 @@ Resources:
                       db_download_url: "https://jdbc.postgresql.org/download/postgresql-42.2.12.jar"
                       db_type: "postgresql"
                       db_driver: "org.postgresql.Driver"
-                      artifactory_flavour: ${Flavor}
                       artifactory_tar: "{{ 'https://releases.jfrog.io/artifactory/artifactory-pro/org/artifactory/pro/jfrog-artifactory-pro/${ArtifactoryVersion}/jfrog-artifactory-pro-${ArtifactoryVersion}-linux.tar.gz' if '${JFrogProduct}' == 'jfrog-artifactory-pro' else 'https://releases.jfrog.io/artifactory/bintray-artifactory/org/artifactory/jcr/jfrog-artifactory-jcr/${ArtifactoryVersion}/jfrog-artifactory-jcr-${ArtifactoryVersion}-linux.tar.gz' if '${JFrogProduct}' == 'jfrog-artifactory-jcr' }}"
-                - Flavor: !FindInMap [JFrogProductMap, !Ref JFrogProduct, Flavor]
+                      product_id: CloudFormation_MP_EC2/1.0.0
               mode: "0400"
     Properties:
       KeyName: !Ref KeyPairName

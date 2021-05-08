@@ -16,7 +16,6 @@ Parameters:
     AllowedValues:
       - JFrog-Artifactory-Pro
       - JFrog-Artifactory-Enterprise
-      - JFrog-Container-Registry
     Default: JFrog-Artifactory-Enterprise
     Type: String
   QsS3BucketName:
@@ -55,8 +54,6 @@ Parameters:
   DatabasePassword:
     Type: String
     NoEcho: 'true'
-  ArtifactoryPrimary:
-    Type: String
   MasterKey:
     Type: String
     NoEcho: 'true'
@@ -87,28 +84,40 @@ Parameters:
     Type: String
     Default: '/artifactory-user-data'
 
-# To populate additional mappings use the following with the desired --region
-# aws --region us-west-2 ec2 describe-images --owners amazon --filters 'Name=name,Values=amzn-ami-hvm-2018.03.0.20181129-x86_64-gp2' 'Name=state,Values=available' --output json | jq -r '.Images | sort_by(.CreationDate) | last(.[]).ImageId'
+# To populate additional mappings use following link
+# https://raw.githubusercontent.com/aws-quickstart/quickstart-linux-bastion/master/templates/linux-bastion.template
 Mappings:
   AWSAMIRegionMap:
     ap-northeast-1:
-      CentOS7HVM: "ami-00a5245b4816c38e6"
+      CentOS7HVM: "ami-06a46da680048c8ae"
     ap-northeast-2:
-      CentOS7HVM: "ami-00dc207f8ba6dc919"
+      CentOS7HVM: "ami-06e83aceba2cb0907"
     ap-south-1:
-      CentOS7HVM: "ami-0ad42f4f66f6c1cc9"
+      CentOS7HVM: "ami-026f33d38b6410e30"
     ap-southeast-1:
-      CentOS7HVM: "ami-05b3bcf7f311194b3"
+      CentOS7HVM: "ami-07f65177cb990d65b"
     ap-southeast-2:
-      CentOS7HVM: "ami-02fd0b06f06d93dfc"
+      CentOS7HVM: "ami-0b2045146eb00b617"
     ca-central-1:
-      CentOS7HVM: "ami-07423fb63ea0a0930"
+      CentOS7HVM: "ami-04a25c39dc7a8aebb"
     eu-central-1:
-      CentOS7HVM: "ami-0cfbf4f6db41068ac"
+      CentOS7HVM: "ami-0e8286b71b81c3cc1"
+    me-south-1:
+      CentOS7HVM: "ami-011c71a894b10f35b"
+    ap-east-1:
+      CentOS7HVM: "ami-0e5c29e6c87a9644f"
+    eu-north-1:
+      CentOS7HVM: "ami-05788af9005ef9a93"
+    eu-south-1:
+      CentOS7HVM: "ami-0a84267606bcea16b"
     eu-west-1:
-      CentOS7HVM: "ami-08935252a36e25f85"
+      CentOS7HVM: "ami-0b850cf02cc00fdc8"
+    eu-west-2:
+      CentOS7HVM: "ami-09e5afc68eed60ef4"
+    eu-west-3:
+      CentOS7HVM: "ami-0cb72d2e599cffbf9"
     sa-east-1:
-      CentOS7HVM: "ami-05145e0b28ad8e0b2"
+      CentOS7HVM: "ami-0b30f38d939dd4b54"
     us-east-1:
       CentOS7HVM: "ami-0affd4508a5d2481b"
     us-east-2:
@@ -117,26 +126,14 @@ Mappings:
       CentOS7HVM: "ami-098f55b4287a885ba"
     us-west-2:
       CentOS7HVM: "ami-0bc06212a56393ee1"
-  ArtifactoryProductMap:
-    JFrog-Container-Registry:
-      "7153": "Jcr7153"
-      flavor: "jcr"
-      haEabled: false
-      product: "jcr"
-    JFrog-Artifactory-Enterprise:
-      "7153": "Artifactory7153"
-      flavor: "pro"
-      haEabled: true
-      product: "artifactory"
-    JFrog-Artifactory-Pro:
-      "7153": "Artifactory7153"
-      flavor: "pro"
-      haEabled: false
-      product: "artifactory"
-
-Conditions:
-  IsSecondary: !Equals [!Ref ArtifactoryPrimary, 'false']
-
+    cn-north-1:
+      CentOS7HVM: "ami-0e02aaefeb74c3373"
+    cn-northwest-1:
+      CentOS7HVM: "ami-07183a7702633260b"
+    us-gov-east-1:
+      CentOS7HVM: "ami-00e30c71"
+    us-gov-west-1:
+      CentOS7HVM: "ami-bbba86da"
 Resources:
   ArtifactoryScalingGroup:
     Type: AWS::AutoScaling::AutoScalingGroup
@@ -222,7 +219,6 @@ Resources:
                   - import_playbook: artifactory-ami.yml
                     vars:
                       ami_creation: false
-                      artifactory_flavour: "pro"
                       artifactory_ha_enabled: false
                       artifactory_tar: "https://releases.jfrog.io/artifactory/artifactory-pro/org/artifactory/pro/jfrog-artifactory-pro/${ArtifactoryVersion}/jfrog-artifactory-pro-${ArtifactoryVersion}-linux.tar.gz"
                       artifactory_version: ${ArtifactoryVersion}
@@ -235,13 +231,6 @@ Resources:
             /root/attach_volume.sh:
               content: !Sub |
                 #!/usr/bin/env bash
-                IS_PRIMARY="${ArtifactoryPrimary}"
-
-                if [[ $IS_PRIMARY != "true" ]]; then
-                  echo 'Not primary node. Skipping EBS volume attachment.'
-                  lsblk # debug
-                  exit 0
-                fi
 
                 echo "Using primary volume ID ${PrimaryVolume}"
                 VOLUME_ID="${PrimaryVolume}"
@@ -265,48 +254,42 @@ Resources:
                 lsblk # debug
               mode: "0770"
             /root/.jfrog_ami/artifactory.yml:
-              content: !Sub
-                - |
-                  # Base install for Artifactory
-                  - import_playbook: site-artifactory.yml
-                    vars:
-                      artifactory_product: ${product}
-                      artifactory_flavour: ${flavor}
-                      artifactory_ha_enabled: ${ha_enabled}
-                      artifactory_is_primary: ${ArtifactoryPrimary}
-                      artifactory_server_name: ${ArtifactoryServerName}
-                      server_name: ${ArtifactoryServerName}.${CertificateDomain}
-                      use_custom_data_directory: true
-                      custom_data_directory: "${UserDataDirectory}"
-                      s3_region: ${AWS::Region}
-                      s3_bucket: ${ArtifactoryS3Bucket}
-                      certificate: ${Certificate}
-                      certificate_key: ${CertificateKey}
-                      certificate_domain: ${CertificateDomain}
-                      enable_ssl: ${EnableSSL}
-                      ssl_dir: /etc/pki/tls/certs
-                      db_type: ${DatabaseType}
-                      db_driver: ${DatabaseDriver}
-                      db_url: ${DatabaseUrl}
-                      db_user: ${DatabaseUser}
-                      db_password: ${DatabasePassword}
-                      master_key: ${MasterKey}
-                      join_key: ${MasterKey}
-                      extra_java_opts: ${ExtraJavaOptions}
-                      artifactory_version: ${ArtifactoryVersion}
-                      artifactory_keystore:
-                        path: /opt/jfrog/artifactory/app/third-party/java/lib/security/cacerts
-                        default_password: changeit
-                        new_keystore_pass: ${DatabasePassword}
-                      artifactory_java_db_drivers:
-                        - name: ${DatabasePlugin}
-                          url: ${DatabasePluginUrl}
-                          owner: artifactory
-                          group: artifactory
-                      product_id: 'CloudFormation_QS_EC2/1.0.0'
-                - flavor: !FindInMap [ArtifactoryProductMap, !Ref ArtifactoryProduct, flavor]
-                  ha_enabled: !FindInMap [ArtifactoryProductMap, !Ref ArtifactoryProduct, haEabled]
-                  product: !FindInMap [ArtifactoryProductMap, !Ref ArtifactoryProduct, product]
+              content: |
+                # Base install for Artifactory
+                - import_playbook: site-artifactory.yml
+                  vars:
+                    artifactory_product: ${ArtifactoryProduct}
+                    artifactory_ha_enabled: true
+                    artifactory_server_name: ${ArtifactoryServerName}
+                    server_name: ${ArtifactoryServerName}.${CertificateDomain}
+                    use_custom_data_directory: true
+                    custom_data_directory: "${UserDataDirectory}"
+                    s3_region: ${AWS::Region}
+                    s3_bucket: ${ArtifactoryS3Bucket}
+                    certificate: ${Certificate}
+                    certificate_key: ${CertificateKey}
+                    certificate_domain: ${CertificateDomain}
+                    enable_ssl: ${EnableSSL}
+                    ssl_dir: /etc/pki/tls/certs
+                    db_type: ${DatabaseType}
+                    db_driver: ${DatabaseDriver}
+                    db_url: ${DatabaseUrl}
+                    db_user: ${DatabaseUser}
+                    db_password: ${DatabasePassword}
+                    master_key: ${MasterKey}
+                    join_key: ${MasterKey}
+                    extra_java_opts: ${ExtraJavaOptions}
+                    artifactory_version: ${ArtifactoryVersion}
+                    artifactory_keystore:
+                      path: /opt/jfrog/artifactory/app/third-party/java/lib/security/cacerts
+                      default_password: changeit
+                      new_keystore_pass: ${DatabasePassword}
+                    artifactory_java_db_drivers:
+                      - name: ${DatabasePlugin}
+                        url: ${DatabasePluginUrl}
+                        owner: artifactory
+                        group: artifactory
+                    product_id: 'CloudFormation_QS_EC2/1.0.0'
               mode: "0400"
             /root/.vault_pass.txt:
               content: !Sub |
@@ -331,15 +314,12 @@ Resources:
       SecurityGroups:
         - !Ref SecurityGroups
       BlockDeviceMappings:
-        !If
-          - IsSecondary
-          - - DeviceName: /dev/xvda
-              Ebs:
-                VolumeSize: !Ref VolumeSize
-                VolumeType: gp2
-                DeleteOnTermination: true
-                Encrypted: true
-          - !Ref AWS::NoValue
+        - DeviceName: /dev/xvda
+          Ebs:
+            VolumeSize: !Ref VolumeSize
+            VolumeType: gp2
+            DeleteOnTermination: true
+            Encrypted: true
       InstanceType: !Ref InstanceType
       UserData:
         Fn::Base64:
