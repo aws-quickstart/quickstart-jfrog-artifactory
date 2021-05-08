@@ -89,7 +89,8 @@ Parameters:
 
 # To populate additional mappings use following link
 # https://raw.githubusercontent.com/aws-quickstart/quickstart-linux-bastion/master/templates/linux-bastion.template
-  AWSAMIRegionMap1:
+Mappings:
+  AWSAMIRegionMap:
     ap-northeast-1:
       CentOS7HVM: "ami-06a46da680048c8ae"
     ap-northeast-2:
