@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: "2010-09-09"
-Description: "Deploys the EC2 Autoscaling, LaunchConfig and Instance for Artifactory (qs-1qpmmjh5o)"
+Description: "Artifactory: Deploys the EC2 Autoscaling, LaunchConfig and instances (qs-1qpmmjh5o)"
 Parameters:
   PrivateSubnetIds:
     Type: List<AWS::EC2::Subnet::Id>
@@ -134,6 +134,27 @@ Mappings:
       CentOS7HVM: "ami-00e30c71"
     us-gov-west-1:
       CentOS7HVM: "ami-bbba86da"
+
+  ArtifactoryProductMap:
+    JFrog-Container-Registry:
+      "7153": "Jcr7153"
+      flavor: "jcr"
+      haEabled: false
+      product: "jcr"
+    JFrog-Artifactory-Enterprise:
+      "7153": "Artifactory7153"
+      flavor: "pro"
+      haEabled: true
+      product: "artifactory"
+    JFrog-Artifactory-Pro:
+      "7153": "Artifactory7153"
+      flavor: "pro"
+      haEabled: false
+      product: "artifactory"
+
+Conditions:
+  IsSecondary: !Equals [!Ref ArtifactoryPrimary, 'false']
+
 Resources:
   ArtifactoryScalingGroup:
     Type: AWS::AutoScaling::AutoScalingGroup

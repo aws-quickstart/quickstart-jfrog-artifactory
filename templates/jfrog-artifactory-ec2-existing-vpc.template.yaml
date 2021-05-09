@@ -2,7 +2,8 @@ AWSTemplateFormatVersion: '2010-09-09'
 Description: 'JFrog Artifactory Quick Start Deployment into an Existing VPC (qs-1q037efj0)'
 Metadata:
   QuickStartDocumentation:
-    EntrypointName: "Launch into an existing VPC"
+    EntrypointName: "Parameters for launching into an existing VPC"
+    Order: "2"
   AWS::CloudFormation::Interface:
     ParameterGroups:
       - Label:

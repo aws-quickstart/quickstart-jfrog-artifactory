@@ -30,7 +30,6 @@ submodules:
 	git submodule foreach --recursive 'git submodule init'
 	git submodule foreach --recursive 'git submodule update --remote --recursive'
 
-
 help:
 	@echo   "make test  : executes ${VENVBIN}/taskcat"
 	@echo   "if running in a container without venv please set USEVENV to false"

@@ -1,0 +1,14 @@
+// Replace the content in <>
+// Briefly describe the software. Use consistent and clear branding. 
+// Include the benefits of using the software on AWS, and provide details on usage scenarios.
+
+Once you deploy JFrog’s Artifactory with the option to install Xray, you can use it as a production service. For more
+information about setting up Artifactory, see the <<#_get_started_with_JFrog_Artifactory, Get started with JFrog_Artifactory>> section
+later in this guide.
+
+WARNING:  The deployment is configured as _infrastructure as code_. Any changes
+to the infrastructure should be done by updating the https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/stacks.html[CloudFormation stack^]. Any
+changes performed on the boxes themselves (including reverse-proxy
+configurations) are lost when an instance reboots. By design, upon shutdown of an
+instance, or when Artifactory is unavailable, an Auto Scaling group replaces the
+node, following a load-balancing health check.

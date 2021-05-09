@@ -1,0 +1,79 @@
+// If no preperation is required, remove all content from here
+
+// ==== Prepare your AWS account
+
+// _Describe any setup required in the AWS account prior to template launch_
+
+// ==== Prepare your {partner-company-name} account
+
+// _Describe any setup required in the partner portal/account prior to template launch_
+
+==== Prepare for the deployment
+// _Describe any preparation required to complete the product build, such as obtaining licenses or placing files in S3_
+
+===== Prepare the certificate and certificate key
+
+Open the certificate into an editor of your choice and copy the certificate and paste it directly in the text box in next step. This results in the entire certificate being on a single line, and it automatically converts all Carriage Return and Line Feed (CRLF) or Line Feed (LF) characters to spaces.
+Follow the same process for the certificate key.
+
+
+===== Add the license keys and certificate to AWS Secrets Manager
+
+Perform these steps:
+
+. Open AWS Secrets Manager in the same Region in which you deploy the Quick Start.
+. Choose *Store a new secret*.
+. Choose *Other type of secret*.
+. For the secret key value, create six rows for the Artifactory licenses.
+. Add the following key names and Artifactory license keys (see <<secret_manager_licenses>>):
+
+* *ArtifactoryLicense1*
+* *ArtifactoryLicense2*
+* *ArtifactoryLicense3*
+* *ArtifactoryLicense4*
+* *ArtifactoryLicense5*
+* *ArtifactoryLicense6*
+
+:xrefstyle: short
+[#secret_manager_licenses]
+.Secrets Manager key-value licenses page
+[link=../{quickstart-project-name}/images/secret_manager_licenses.png]
+image::../images/secret_manager_licenses.png[image_placeholder]
+
+[start=6]
+. Choose *Next*.
+. Provide a secret name to use when deploying this Quick Start.
+. Choose *Next* twice.
+. Choose *Store*.
+
+[start=7]
+. Repeat the above steps for storing the certificate details in AWS Secrets Manager.
+. Create three rows for the certificate information retrieved in the preparation of the certificate in the <<Prepare the certificate and certificate key>> section:
+
+* *Certificate*
+* *CertificateKey*
+* *CertificateDomain* 
+
+:xrefstyle: short
+[#secret_manager_certificate]
+.Secrets Manager key-value certificates page
+[link=../{quickstart-project-name}/images/secrets_manager_certificates.png]
+image::../images/secrets_manager_certificates.png[image_placeholder]
+
+
+// Optional based on Marketplace listing. Not to be edited
+ifdef::marketplace_subscription[]
+===== Subscribe to the CentOS AMI
+
+This Quick Start requires a subscription to the Amazon Machine Image (AMI) for CentOS in AWS Marketplace.
+
+Perform the following steps:
+
+. Sign in to your AWS account.
+. {marketplace_listing_url}[Open the page for the CentOS AMI in AWS Marketplace], and then choose *Continue to Subscribe*.
+. Review the terms and conditions for software usage, and then choose *Accept Terms*. +
+  A confirmation page loads, and an email confirmation is sent to the account owner. For detailed subscription instructions, see the https://aws.amazon.com/marketplace/help/200799470[AWS Marketplace documentation^].
+
+. When the subscription process is complete, exit out of AWS Marketplace without further action. *Do not* provision the software from AWS Marketplace — the Quick Start deploys the AMI for you.
+endif::marketplace_subscription[]
+// \Not to be edited
