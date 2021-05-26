@@ -182,7 +182,7 @@ p a>code:hover{color:rgba(0,0,0,.9)}
   padding-top:0;
   overflow:hidden;
   background:#283e5b;
-  border-bottom: 4px solid #435c7c;
+  /* border-bottom: 4px solid #435c7c; */
   width:320px;
   height:154px;
   top:0;
@@ -411,7 +411,7 @@ span.icon>.fa{cursor:default}
 a span.icon>.fa{cursor:inherit}
 .admonitionblock td.icon [class^="fa icon-"]{font-size:2.5em;text-shadow:1px 1px 2px rgba(0,0,0,.5);cursor:default}
 .admonitionblock td.icon .icon-note::before{content:"\f05a";color:#19407c}
-.admonitionblock td.icon .icon-tip::before{content:"\f0eb";text-shadow:1px 1px 2px rgba(155,155,0,.8);color:#111}
+.admonitionblock td.icon .icon-tip::before{content:"\f0eb";color: rgb(3, 87, 21);}
 .admonitionblock td.icon .icon-warning::before{content:"\f071";color:#bf6900}
 .admonitionblock td.icon .icon-caution::before{content:"\f06d";color:#bf3400}
 .admonitionblock td.icon .icon-important::before{content:"\f06a";color:#bf0000}
@@ -747,8 +747,43 @@ p {
   font-weight  : 300 !important;
 }
 
-#toc.toc2 #toctitle{
-  background-image: url('images/AWS-Logo.svg');
+/* image layout */
+#toc.toc2 #toctitle {
+  background-image: url("images/AWS-Logo.svg");
+  background-repeat: no-repeat;
+  background-size: 50%;
+  background-position: center;
+  width: auto;
+  height: 15%;
+}
+
+/* Left Navbar size */
+#toc.toc2 {
+  width: 17%;
+  min-width: 15em;
+}
+
+/* auto width for main page */
+body.toc2 {
+  padding-left: 22%;
+  padding-right: 2%;
+}
+
+/* hide left nav bar if page size is smaller than 767px */
+@media screen and (max-width: 767px) {
+  #toc {
+      display: none !important;
+  }
+  body.toc2 {
+    padding-left: 1%;
+    padding-right: 1%;
+    position: relative;
+  }
+
+  #content {
+    padding-left: 2%;
+    padding-right: 2%;
+  }
 }
 
 /* QS Tables */
@@ -990,7 +1025,7 @@ see the pricing pages for each AWS service you use. Prices are subject to change
 <i class="fa icon-tip" title="Tip"></i>
 </td>
 <td class="content">
-After you deploy the Quick Start, <a href="https://docs.aws.amazon.com/awsaccountbilling/latest/aboutv2/billing-reports-gettingstarted-turnonreports.html" target="_blank" rel="noopener">create AWS Cost and Usage Reports</a> to deliver billing metrics to an Amazon Simple Storage Service (Amazon S3) bucket in your account. These reports provide cost estimates based on usage throughout each month and aggregate the data at the end of the month. For more information, see <a href="https://docs.aws.amazon.com/awsaccountbilling/latest/aboutv2/billing-reports-costusage.html" target="_blank" rel="noopener">What are AWS Cost and Usage Reports?</a>
+After you deploy the Quick Start, create <a href="https://docs.aws.amazon.com/awsaccountbilling/latest/aboutv2/billing-reports-gettingstarted-turnonreports.html" target="_blank" rel="noopener">AWS Cost and Usage Reports</a> to deliver billing metrics to an Amazon Simple Storage Service (Amazon S3) bucket in your account. These reports provide cost estimates based on usage throughout each month and aggregate the data at the end of the month. For more information, see <a href="https://docs.aws.amazon.com/cur/latest/userguide/what-is-cur.html" target="_blank" rel="noopener">What are AWS Cost and Usage Reports?</a>
 </td>
 </tr>
 </table>
@@ -1199,7 +1234,7 @@ your infrastructure and applications on the AWS Cloud.</p>
 <div class="sect3">
 <h4 id="_resource_quotas">Resource quotas</h4>
 <div class="paragraph">
-<p>If necessary, request <a href="https://console.aws.amazon.com/servicequotas/home?region=us-east-2#!/" target="_blank" rel="noopener">service quota increases</a> for the following resources. You might request quota increases to avoid exceeding the default limits for any resources that are shared across multiple deployments. The <a href="https://console.aws.amazon.com/servicequotas/home?region=us-east-2#!/" target="_blank" rel="noopener">Service Quotas console</a> displays your usage and quotas for some aspects of some services. For more information, see <a href="https://docs.aws.amazon.com/servicequotas/latest/userguide/intro.html" target="_blank" rel="noopener">What is Service Quotas?</a> and <a href="https://docs.aws.amazon.com/general/latest/gr/aws_service_limits.html" target="_blank" rel="noopener">AWS service quotas</a>.</p>
+<p>If necessary, request <a href="https://console.aws.amazon.com/servicequotas/home?region=us-east-2#!/" target="_blank" rel="noopener">service quota increases</a> for the following resources. You might need to request increases if your existing deployment currently uses these resources and if this Quick Start deployment could result in exceeding the default quotas. The <a href="https://console.aws.amazon.com/servicequotas/home?region=us-east-2#!/" target="_blank" rel="noopener">Service Quotas console</a> displays your usage and quotas for some aspects of some services. For more information, see <a href="https://docs.aws.amazon.com/servicequotas/latest/userguide/intro.html" target="_blank" rel="noopener">What is Service Quotas?</a> and <a href="https://docs.aws.amazon.com/general/latest/gr/aws_service_limits.html" target="_blank" rel="noopener">AWS service quotas</a>.</p>
 </div>
 <table class="tableblock frame-all grid-all stretch">
 <colgroup>
@@ -1540,15 +1575,9 @@ If you’re deploying JFrog Artifactory Enterprise and Xray into an existing VPC
 <p>Monitor the status of the stack. When the status is <strong>CREATE_COMPLETE</strong>, the Artifactory and Xray deployment is ready.</p>
 </li>
 <li>
-<p>Use the values displayed in the <strong>Outputs</strong> tab for the stack, as shown in <a href="#cfn_outputs">Figure 4</a>, to view the created resources.</p>
+<p>To view the created resources, see the values displayed in the <strong>Outputs</strong> tab for the stack.</p>
 </li>
 </ol>
-</div>
-<div id="cfn_outputs" class="imageblock">
-<div class="content">
-<a class="image" href="images/cfn_outputs.png"><img src="images/cfn_outputs.png" alt="cfn_outputs" width="100%" height="100%"></a>
-</div>
-<div class="title">Figure 4. Artifactory and Xray outputs after successful deployment</div>
 </div>
 </div>
 </div>
@@ -1559,7 +1588,7 @@ If you’re deploying JFrog Artifactory Enterprise and Xray into an existing VPC
 <div class="olist arabic">
 <ol class="arabic">
 <li>
-<p>Connect to Artifactory from <code>ArtifactoryURL</code>. You can find <code>ArtifactoryUrl</code> on the <strong>Outputs</strong> tab of the Artifactory primary stack. Verify that you can view the login screen (see <a href="#get_started_1">Figure 5</a>).</p>
+<p>Connect to Artifactory from <code>ArtifactoryURL</code>. You can find <code>ArtifactoryUrl</code> on the <strong>Outputs</strong> tab of the Artifactory primary stack. Verify that you can view the login screen (see <a href="#get_started_1">Figure 4</a>).</p>
 </li>
 </ol>
 </div>
@@ -1567,7 +1596,7 @@ If you’re deploying JFrog Artifactory Enterprise and Xray into an existing VPC
 <div class="content">
 <a class="image" href="../quickstart-jfrog-artifactory/images/get_started_1.png"><img src="images/get_started_1.png" alt="image_placeholder" width="648" height="439"></a>
 </div>
-<div class="title">Figure 5. JFrog Artifactory login screen</div>
+<div class="title">Figure 4. JFrog Artifactory login screen</div>
 </div>
 <div class="admonitionblock note">
 <table>
@@ -1591,13 +1620,13 @@ JFrog Users and Groups.</p>
 </ol>
 </div>
 <div class="paragraph">
-<p>This loads the setup wizard for initial configuration. Choose <strong>Get Started</strong>. (see <a href="#get_started_2">Figure 6</a>).</p>
+<p>This loads the setup wizard for initial configuration. Choose <strong>Get Started</strong>. (see <a href="#get_started_2">Figure 5</a>).</p>
 </div>
 <div id="get_started_2" class="imageblock">
 <div class="content">
 <a class="image" href="../quickstart-jfrog-artifactory/images/get_started_2.png"><img src="images/get_started_2.png" alt="image_placeholder" width="648" height="439"></a>
 </div>
-<div class="title">Figure 6. JFrog Artifactory welcome screen</div>
+<div class="title">Figure 5. JFrog Artifactory welcome screen</div>
 </div>
 <div class="paragraph">
 <p>This Quick Start handles the license key configuration during the deployment, so you are not prompted to activate your license.</p>
@@ -1605,7 +1634,7 @@ JFrog Users and Groups.</p>
 <div class="olist arabic">
 <ol class="arabic" start="3">
 <li>
-<p>Set a secure administrator password for your deployment, and then choose <strong>Next</strong> (see <a href="#get_started_3">Figure 7</a>).</p>
+<p>Set a secure administrator password for your deployment, and then choose <strong>Next</strong> (see <a href="#get_started_3">Figure 6</a>).</p>
 </li>
 </ol>
 </div>
@@ -1613,13 +1642,13 @@ JFrog Users and Groups.</p>
 <div class="content">
 <a class="image" href="../quickstart-jfrog-artifactory/images/get_started_3.png"><img src="images/get_started_3.png" alt="image_placeholder" width="648" height="439"></a>
 </div>
-<div class="title">Figure 7. Set administrator password</div>
+<div class="title">Figure 6. Set administrator password</div>
 </div>
 <div class="olist arabic">
 <ol class="arabic" start="4">
 <li>
 <p>Optionally, configure the base URL setting. Because this deployment uses a proxy, it’s highly recommended that you update the base URL of Artifactory. More information
-regarding this setting can be found in the <a href="https://www.jfrog.com/confluence/display/RTF/Configuring+Artifactory#ConfiguringArtifactory-GeneralSettings" target="_blank" rel="noopener">Getting Started guide</a> (see <a href="#get_started_4">Figure 8</a>).</p>
+regarding this setting can be found in the <a href="https://www.jfrog.com/confluence/display/RTF/Configuring+Artifactory#ConfiguringArtifactory-GeneralSettings" target="_blank" rel="noopener">Getting Started guide</a> (see <a href="#get_started_4">Figure 7</a>).</p>
 </li>
 </ol>
 </div>
@@ -1627,12 +1656,12 @@ regarding this setting can be found in the <a href="https://www.jfrog.com/conflu
 <div class="content">
 <a class="image" href="../quickstart-jfrog-artifactory/images/get_started_4.png"><img src="images/get_started_4.png" alt="image_placeholder" width="648" height="439"></a>
 </div>
-<div class="title">Figure 8. Set Base URL screen</div>
+<div class="title">Figure 7. Set Base URL screen</div>
 </div>
 <div class="olist arabic">
 <ol class="arabic" start="5">
 <li>
-<p>Optionally, configure proxy settings for remote resources. (see <a href="#get_started_5">Figure 9</a>).</p>
+<p>Optionally, configure proxy settings for remote resources. (see <a href="#get_started_5">Figure 8</a>).</p>
 </li>
 </ol>
 </div>
@@ -1640,12 +1669,12 @@ regarding this setting can be found in the <a href="https://www.jfrog.com/conflu
 <div class="content">
 <a class="image" href="../quickstart-jfrog-artifactory/images/get_started_5.png"><img src="images/get_started_5.png" alt="image_placeholder" width="648" height="439"></a>
 </div>
-<div class="title">Figure 9. SConfigure proxy settings if required</div>
+<div class="title">Figure 8. SConfigure proxy settings if required</div>
 </div>
 <div class="olist arabic">
 <ol class="arabic" start="6">
 <li>
-<p>Select the repositories that you require, and then choose <strong>Create</strong> (see <a href="#get_started_6">Figure 10</a>).</p>
+<p>Select the repositories that you require, and then choose <strong>Create</strong> (see <a href="#get_started_6">Figure 9</a>).</p>
 </li>
 </ol>
 </div>
@@ -1653,12 +1682,12 @@ regarding this setting can be found in the <a href="https://www.jfrog.com/conflu
 <div class="content">
 <a class="image" href="../quickstart-jfrog-artifactory/images/get_started_6.png"><img src="images/get_started_6.png" alt="image_placeholder" width="648" height="439"></a>
 </div>
-<div class="title">Figure 10. Select repositories</div>
+<div class="title">Figure 9. Select repositories</div>
 </div>
 <div class="olist arabic">
 <ol class="arabic" start="7">
 <li>
-<p>Choose <strong>Finish</strong> (see <a href="#get_started_7">Figure 11</a>).</p>
+<p>Choose <strong>Finish</strong> (see <a href="#get_started_7">Figure 10</a>).</p>
 </li>
 </ol>
 </div>
@@ -1666,7 +1695,7 @@ regarding this setting can be found in the <a href="https://www.jfrog.com/conflu
 <div class="content">
 <a class="image" href="../quickstart-jfrog-artifactory/images/get_started_7.png"><img src="images/get_started_7.png" alt="image_placeholder" width="648" height="439"></a>
 </div>
-<div class="title">Figure 11. SFinal wizard screen</div>
+<div class="title">Figure 10. SFinal wizard screen</div>
 </div>
 <div class="olist arabic">
 <ol class="arabic" start="8">
@@ -1708,7 +1737,7 @@ Backups save to the local file system and do not persist if the EC2 instance is 
 <div class="paragraph">
 <p>If you perform maintenance on the stack, update the
 CloudFormation stack rather than updating the infrastructure manually (this also applies to
-updating Artifactory). The Artifactory version for this Quick Start is <strong>7.15.x</strong>, and the Xray version is <strong>3.17.x</strong> (see <a href="#update_1">Figure 12</a>).</p>
+updating Artifactory). The Artifactory version for this Quick Start is <strong>7.15.x</strong>, and the Xray version is <strong>3.17.x</strong> (see <a href="#update_1">Figure 11</a>).</p>
 </div>
 <div class="admonitionblock note">
 <table>
@@ -1726,14 +1755,14 @@ If you plan to upgrade Artifactory and Xray, update Xray first.
 <div class="content">
 <a class="image" href="../quickstart-jfrog-artifactory/images/update_1.png"><img src="images/update_1.png" alt="image_placeholder" width="648" height="439"></a>
 </div>
-<div class="title">Figure 12. JFrog Artifactory status page shows the current version</div>
+<div class="title">Figure 11. JFrog Artifactory status page shows the current version</div>
 </div>
 <div class="sect2">
 <h3 id="_upgrade_xray">Upgrade Xray</h3>
 <div class="olist arabic">
 <ol class="arabic">
 <li>
-<p>Choose the Xray stack, and then choose <strong>Update</strong> (see <a href="#xray_update_1">Figure 13</a>).</p>
+<p>Choose the Xray stack, and then choose <strong>Update</strong> (see <a href="#xray_update_1">Figure 12</a>).</p>
 </li>
 </ol>
 </div>
@@ -1741,12 +1770,12 @@ If you plan to upgrade Artifactory and Xray, update Xray first.
 <div class="content">
 <a class="image" href="../quickstart-jfrog-artifactory/images/xray_update_1.png"><img src="images/xray_update_1.png" alt="image_placeholder" width="648" height="439"></a>
 </div>
-<div class="title">Figure 13. JFrog Artifactory status page shows the current version</div>
+<div class="title">Figure 12. JFrog Artifactory status page shows the current version</div>
 </div>
 <div class="olist arabic">
 <ol class="arabic" start="2">
 <li>
-<p>Choose <strong>Update nested stack</strong>, and then choose <strong>Update stack</strong> (see <a href="#xray_update_2">Figure 14</a>).</p>
+<p>Choose <strong>Update nested stack</strong>, and then choose <strong>Update stack</strong> (see <a href="#xray_update_2">Figure 13</a>).</p>
 </li>
 </ol>
 </div>
@@ -1754,12 +1783,12 @@ If you plan to upgrade Artifactory and Xray, update Xray first.
 <div class="content">
 <a class="image" href="../quickstart-jfrog-artifactory/images/xray_update_2.png"><img src="images/xray_update_2.png" alt="image_placeholder" width="648" height="439"></a>
 </div>
-<div class="title">Figure 14. JFrog Artifactory status page shows the current version</div>
+<div class="title">Figure 13. JFrog Artifactory status page shows the current version</div>
 </div>
 <div class="olist arabic">
 <ol class="arabic" start="3">
 <li>
-<p>Choose <strong>Use current template</strong>, and then choose <strong>Next</strong>  (see <a href="#xray_update_3">Figure 15</a>).</p>
+<p>Choose <strong>Use current template</strong>, and then choose <strong>Next</strong>  (see <a href="#xray_update_3">Figure 14</a>).</p>
 </li>
 </ol>
 </div>
@@ -1767,12 +1796,12 @@ If you plan to upgrade Artifactory and Xray, update Xray first.
 <div class="content">
 <a class="image" href="../quickstart-jfrog-artifactory/images/xray_update_3.png"><img src="images/xray_update_3.png" alt="image_placeholder" width="648" height="439"></a>
 </div>
-<div class="title">Figure 15. JFrog Artifactory status page shows the current version</div>
+<div class="title">Figure 14. JFrog Artifactory status page shows the current version</div>
 </div>
 <div class="olist arabic">
 <ol class="arabic" start="4">
 <li>
-<p>Modify the Xray version that is supported by the template, and then choose <strong>Next</strong> twice, the two <strong>I acknowledge</strong> check boxes, and <strong>Update Stack</strong>  (see <a href="#xray_update_4">Figure 16</a>).</p>
+<p>Modify the Xray version that is supported by the template, and then choose <strong>Next</strong> twice, the two <strong>I acknowledge</strong> check boxes, and <strong>Update Stack</strong>  (see <a href="#xray_update_4">Figure 15</a>).</p>
 </li>
 </ol>
 </div>
@@ -1780,12 +1809,12 @@ If you plan to upgrade Artifactory and Xray, update Xray first.
 <div class="content">
 <a class="image" href="../quickstart-jfrog-artifactory/images/xray_update_4.png"><img src="images/xray_update_4.png" alt="image_placeholder" width="648" height="439"></a>
 </div>
-<div class="title">Figure 16. JFrog Artifactory status page shows the current version</div>
+<div class="title">Figure 15. JFrog Artifactory status page shows the current version</div>
 </div>
 <div class="olist arabic">
 <ol class="arabic" start="5">
 <li>
-<p>Shut down the Xray nodes one by one. Shutting down the nodes one at a time initiates a health check failure on the load balancer. The load balancer then deletes the current running node and deploys a net new primary node with the updated version.  (see <a href="#xray_update_5">Figure 17</a>).</p>
+<p>Shut down the Xray nodes one by one. Shutting down the nodes one at a time initiates a health check failure on the load balancer. The load balancer then deletes the current running node and deploys a net new primary node with the updated version.  (see <a href="#xray_update_5">Figure 16</a>).</p>
 </li>
 </ol>
 </div>
@@ -1793,7 +1822,7 @@ If you plan to upgrade Artifactory and Xray, update Xray first.
 <div class="content">
 <a class="image" href="../quickstart-jfrog-artifactory/images/xray_update_5.png"><img src="images/xray_update_5.png" alt="image_placeholder" width="648" height="439"></a>
 </div>
-<div class="title">Figure 17. JFrog Artifactory status page shows the current version</div>
+<div class="title">Figure 16. JFrog Artifactory status page shows the current version</div>
 </div>
 </div>
 <div class="sect2">
@@ -1801,7 +1830,7 @@ If you plan to upgrade Artifactory and Xray, update Xray first.
 <div class="olist arabic">
 <ol class="arabic">
 <li>
-<p>Choose the root stack, and then choose <strong>Update</strong> (see <a href="#update_2">Figure 18</a>).</p>
+<p>Choose the root stack, and then choose <strong>Update</strong> (see <a href="#update_2">Figure 17</a>).</p>
 </li>
 </ol>
 </div>
@@ -1809,13 +1838,13 @@ If you plan to upgrade Artifactory and Xray, update Xray first.
 <div class="content">
 <a class="image" href="../quickstart-jfrog-artifactory/images/update_2.png"><img src="images/update_2.png" alt="image_placeholder" width="648" height="439"></a>
 </div>
-<div class="title">Figure 18. Stack list and update button on the CloudFormation console</div>
+<div class="title">Figure 17. Stack list and update button on the CloudFormation console</div>
 </div>
 <div class="olist arabic">
 <ol class="arabic" start="2">
 <li>
 <p>On the <strong>Prerequisite</strong> screen, choose <strong>Use current template</strong>, and then choose <strong>Next</strong>
-(see <a href="#update_3">Figure 19</a>).</p>
+(see <a href="#update_3">Figure 18</a>).</p>
 </li>
 </ol>
 </div>
@@ -1823,12 +1852,12 @@ If you plan to upgrade Artifactory and Xray, update Xray first.
 <div class="content">
 <a class="image" href="../quickstart-jfrog-artifactory/images/update_3.png"><img src="images/update_3.png" alt="image_placeholder" width="648" height="439"></a>
 </div>
-<div class="title">Figure 19. Update stack, prerequisite information</div>
+<div class="title">Figure 18. Update stack, prerequisite information</div>
 </div>
 <div class="olist arabic">
 <ol class="arabic" start="3">
 <li>
-<p>Scroll down the page and locate the <strong>Artifactory version</strong> field (see <a href="#update_4">Figure 20</a>).</p>
+<p>Scroll down the page and locate the <strong>Artifactory version</strong> field (see <a href="#update_4">Figure 19</a>).</p>
 </li>
 </ol>
 </div>
@@ -1836,12 +1865,12 @@ If you plan to upgrade Artifactory and Xray, update Xray first.
 <div class="content">
 <a class="image" href="../quickstart-jfrog-artifactory/images/update_4.png"><img src="images/update_4.png" alt="image_placeholder" width="648" height="439"></a>
 </div>
-<div class="title">Figure 20. CloudFormation console update page (before you change the version)</div>
+<div class="title">Figure 19. CloudFormation console update page (before you change the version)</div>
 </div>
 <div class="olist arabic">
 <ol class="arabic" start="4">
 <li>
-<p>Enter the version number that you want to run (see <a href="#update_5">Figure 21</a>).</p>
+<p>Enter the version number that you want to run (see <a href="#update_5">Figure 20</a>).</p>
 </li>
 </ol>
 </div>
@@ -1849,12 +1878,12 @@ If you plan to upgrade Artifactory and Xray, update Xray first.
 <div class="content">
 <a class="image" href="../quickstart-jfrog-artifactory/images/update_5.png"><img src="images/update_5.png" alt="image_placeholder" width="648" height="439"></a>
 </div>
-<div class="title">Figure 21. CloudFormation console update page (after you change the version)</div>
+<div class="title">Figure 20. CloudFormation console update page (after you change the version)</div>
 </div>
 <div class="olist arabic">
 <ol class="arabic" start="5">
 <li>
-<p>Scroll down, and choose <strong>Next</strong>. Choose <strong>Next</strong> again, unless you want to change any other tags or policies. Select the two <strong>I acknowledge</strong> check boxes, and choose <strong>Update stack</strong> (see <a href="#update_6">Figure 22</a>).</p>
+<p>Scroll down, and choose <strong>Next</strong>. Choose <strong>Next</strong> again, unless you want to change any other tags or policies. Select the two <strong>I acknowledge</strong> check boxes, and choose <strong>Update stack</strong> (see <a href="#update_6">Figure 21</a>).</p>
 </li>
 </ol>
 </div>
@@ -1862,13 +1891,13 @@ If you plan to upgrade Artifactory and Xray, update Xray first.
 <div class="content">
 <a class="image" href="../quickstart-jfrog-artifactory/images/update_6.png"><img src="images/update_6.png" alt="image_placeholder" width="648" height="439"></a>
 </div>
-<div class="title">Figure 22. Completing the update process</div>
+<div class="title">Figure 21. Completing the update process</div>
 </div>
 <div class="olist arabic">
 <ol class="arabic" start="6">
 <li>
 <p>Shut down the <strong>ArtifactoryMaster</strong> node. The proper process shuts down the nodes one at a time, starting with the Artifactory primary node. This shutdown initiates a health check
-failure on the load balancer. The load balancer then deletes the current running primary node and deploys a new primary node with the updated version (see <a href="#update_7">Figure 23</a>).</p>
+failure on the load balancer. The load balancer then deletes the current running primary node and deploys a new primary node with the updated version (see <a href="#update_7">Figure 22</a>).</p>
 </li>
 </ol>
 </div>
@@ -1876,16 +1905,16 @@ failure on the load balancer. The load balancer then deletes the current running
 <div class="content">
 <a class="image" href="../quickstart-jfrog-artifactory/images/update_7.png"><img src="images/update_7.png" alt="image_placeholder" width="648" height="439"></a>
 </div>
-<div class="title">Figure 23. Shutting down Artifactory’s primary node</div>
+<div class="title">Figure 22. Shutting down Artifactory’s primary node</div>
 </div>
 <div class="paragraph">
-<p>The Artifactory status page shows which instances are offline (see <a href="#update_8">Figure 24</a>).</p>
+<p>The Artifactory status page shows which instances are offline (see <a href="#update_8">Figure 23</a>).</p>
 </div>
 <div id="update_8" class="imageblock">
 <div class="content">
 <a class="image" href="../quickstart-jfrog-artifactory/images/update_8.png"><img src="images/update_8.png" alt="image_placeholder" width="648" height="439"></a>
 </div>
-<div class="title">Figure 24. JFrog Artifactory service status page</div>
+<div class="title">Figure 23. JFrog Artifactory service status page</div>
 </div>
 <div class="admonitionblock important">
 <table>
@@ -1994,8 +2023,7 @@ When you set <strong>Rollback on failure</strong> to <strong>Disabled</strong>, 
 <i class="fa icon-note" title="Note"></i>
 </td>
 <td class="content">
-Unless you are customizing the Quick Start templates for your own deployment projects, we recommend that you keep the default settings for the parameters labeled <code>Quick Start S3 bucket name</code>, <code>Quick Start S3 bucket
-Region</code>, and <code>Quick Start S3 key prefix</code>. Changing these parameter settings automatically updates code references to point to a new Quick Start location. For more information, see the <a href="https://aws-quickstart.github.io/option1.html" target="_blank" rel="noopener">AWS Quick Start Contributor’s Guide</a>.
+Unless you are customizing the Quick Start templates for your own deployment projects, keep the default settings for the parameters labeled <strong>Quick Start S3 bucket name</strong>, <strong>Quick Start S3 bucket Region</strong>, and <strong>Quick Start S3 key prefix</strong>. Changing these parameter settings automatically updates code references to point to a new Quick Start location. For more information, see the <a href="https://aws-quickstart.github.io/option1.html" target="_blank" rel="noopener">AWS Quick Start Contributor’s Guide</a>.
 </td>
 </tr>
 </table>
@@ -2880,10 +2908,10 @@ and to share your customizations with others.</p>
 </html>
 <!--
 repo commit:
-d908c8d636cfa96501909fa52c113e8f641d41b0
+1d45dfd2c3871229527db9736a8573a5f2d83c32
 
 submodule config:
-+59b9927c61cd1831141cf0350520c89abb2246da docs/boilerplate (heads/main)
- 1f9a7bebc434f9a38b0ed4d4dd80d438d4d26204 submodules/quickstart-aws-vpc (v1.0-57-g1f9a7be)
- bb45452fbbd46adb9918c6bcc3cdd70e87491349 submodules/quickstart-linux-bastion (heads/main)
+ a9d6c5903745c1091793d3cd1f960948919c2c9f docs/boilerplate (heads/main)
+ ffc7af4e59a09dbf52199a3ecf70f3805abeff48 submodules/quickstart-aws-vpc (v1.0-58-gffc7af4)
+ 0079021c9d06c1ef6551ff1af781db61334201c8 submodules/quickstart-linux-bastion (heads/main)
 -->
