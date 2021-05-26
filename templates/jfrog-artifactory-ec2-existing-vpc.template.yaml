@@ -1,6 +1,12 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Description: 'JFrog Artifactory Quick Start Deployment into an Existing VPC (qs-1q037efj0)'
 Metadata:
+  cfn-lint:
+    config:
+      ignore_checks:
+        - E9101
+      ignore_reasons:
+        - E9101: "'master' is part of the product naming conventions for now"
   QuickStartDocumentation:
     EntrypointName: "Parameters for launching into an existing VPC"
     Order: "2"
@@ -556,6 +562,13 @@ Resources:
   BastionRole:
     Condition: EnableBastion
     Type: "AWS::IAM::Role"
+    Metadata:
+      cfn-lint:
+        config:
+          ignore_checks:
+            - EIAMPolicyWildcardResource
+          ignore_reasons:
+            EIAMPolicyWildcardResource: EC2 ec2:Describe* , ec2:AssociateAddress API actions do not support resource-level permission
     Properties:
       AssumeRolePolicyDocument:
         Version: 2012-10-17
@@ -775,6 +788,15 @@ Resources:
           CidrIp: 0.0.0.0/0
   ArtifactoryHostRole:
     Type: AWS::IAM::Role
+    Metadata:
+      cfn-lint:
+        config:
+          ignore_checks:
+            - EIAMPolicyWildcardResource
+            - EIAMPolicyActionWildcard
+          ignore_reasons:
+            EIAMPolicyWildcardResource: EC2 ec2:Describe* API actions do not support resource-level permission. Autoscaling has instance names changing, so needs to be *
+            EIAMPolicyActionWildcard: EC2 ec2:Describe* API actions do not support resource-level permission.
     Properties:
       Path: /
       AssumeRolePolicyDocument:
@@ -818,7 +840,7 @@ Resources:
                   - "logs:CreateLogStream"
                   - "logs:PutLogEvents"
                   - "logs:DescribeLogStreams"
-                Resource: "arn:aws:logs:*:*:*"
+                Resource: !Sub "arn:${AWS::Partition}:logs:*:*:*"
               - Effect: "Allow"
                 Action:
                   - "s3:GetObject"
@@ -830,7 +852,7 @@ Resources:
               - Effect: "Allow"
                 Action:
                   - "secretsmanager:GetSecretValue"
-                Resource: "arn:aws:secretsmanager:*:*:secret:*"
+                Resource: !Sub "arn:${AWS::Partition}:secretsmanager:*:*:secret:*"
   ArtifactoryHostProfile:
     Type: AWS::IAM::InstanceProfile
     Properties:
@@ -950,6 +972,15 @@ Resources:
   XrayHostRole:
     Condition: EnableXray
     Type: AWS::IAM::Role
+    Metadata:
+      cfn-lint:
+        config:
+          ignore_checks:
+            - EIAMPolicyWildcardResource
+            - EIAMPolicyActionWildcard
+          ignore_reasons:
+            EIAMPolicyWildcardResource: Autoscaling has instance names changing, so needs to be * for ec2:AttachVolume/ec2:DetachVolume
+            EIAMPolicyActionWildcard: EC2 ec2:Describe* API actions do not support resource-level permission.
     Properties:
       Path: /
       AssumeRolePolicyDocument:
@@ -982,7 +1013,9 @@ Resources:
                   - "s3:GetObject"
                   - "s3:ListObject"
                   - "s3:ListBucket"
-                Resource: "*"
+                Resource: 
+                  - !Sub "arn:${AWS::Partition}:s3:::${QsS3BucketName}/*"
+                  - !Sub "arn:${AWS::Partition}:s3:::${QsS3BucketName}"
         - PolicyName: 'CloudWatch-policy'
           PolicyDocument:
             Version: "2012-10-17"
@@ -993,11 +1026,11 @@ Resources:
                   - "logs:CreateLogStream"
                   - "logs:PutLogEvents"
                   - "logs:DescribeLogStreams"
-                Resource: "arn:aws:logs:*:*:*"
+                Resource: !Sub "arn:${AWS::Partition}:logs:*:*:*"
               - Effect: "Allow"
                 Action:
                   - "s3:GetObject"
-                Resource: "*"
+                Resource: !Sub "arn:${AWS::Partition}:s3:::${QsS3BucketName}/*"
   XrayHostProfile:
     Condition: EnableXray
     Type: AWS::IAM::InstanceProfile
