@@ -332,13 +332,12 @@ Resources:
   ArtifactoryS3IAMPolicy:
     Type: AWS::IAM::Policy
     Metadata:
-  cfn-lint:
-    config:
-      ignore_checks:
-        - EIAMPolicyActionWildcard
-      ignore_reasons:
-        - EIAMPolicyWildcardResource: excluding for s3:Get*, s3:Put*, s3:List*
-      
+      cfn-lint:
+        config:
+          ignore_checks:
+            - EIAMPolicyActionWildcard
+          ignore_reasons:
+            - EIAMPolicyWildcardResource: excluding for s3:Get*, s3:Put*, s3:List*
     Properties:
       PolicyName: S3BucketPermissions
       PolicyDocument:
