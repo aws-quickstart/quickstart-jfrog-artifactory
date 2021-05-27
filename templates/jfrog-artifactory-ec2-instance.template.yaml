@@ -1,5 +1,16 @@
 AWSTemplateFormatVersion: "2010-09-09"
 Description: "Artifactory: Deploys the EC2 Autoscaling, LaunchConfig and instances (qs-1qpmmjh5o)"
+Metadata:
+  cfn-lint:
+    config:
+      ignore_checks:
+        - W9006
+        - W9002
+        - W9003
+        - W9004
+        - E9101
+      ignore_reasons:
+        - E9101: "'master' is part of the product naming conventions for now"
 Parameters:
   PrivateSubnetIds:
     Type: List<AWS::EC2::Subnet::Id>

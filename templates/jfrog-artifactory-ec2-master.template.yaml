@@ -1,6 +1,12 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Description: 'JFrog Artifactory Quick Start Deployment (qs-1qpmmjh2f)'
 Metadata:
+  cfn-lint:
+    config:
+      ignore_checks:
+        - E9101
+      ignore_reasons:
+        - E9101: "'master' is part of the product naming conventions for now"
   QuickStartDocumentation:
     EntrypointName: "Parameters for launching into a new VPC"
     Order: "1"
