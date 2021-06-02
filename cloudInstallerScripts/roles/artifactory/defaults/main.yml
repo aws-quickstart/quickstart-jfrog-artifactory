@@ -4,7 +4,7 @@
 ansible_marketplace: standalone
 
 # The version of Artifactory to install
-artifactory_version: 7.15.3
+artifactory_version: 7.19.4
 
 # licenses - cluster license content in json
 artifactory_licenses:
@@ -13,19 +13,13 @@ artifactory_licenses:
 artifactory_ha_enabled: true
 
 # value for whether a host is primary. this should be set in host vars
-artifactory_is_primary: true
+artifactory_is_primary: false
 
 # The location where Artifactory should install.
 artifactory_download_directory: /opt/jfrog
 
 # The location where Artifactory should store data.
 artifactory_file_store_dir: /data
-
-# whether to customer data directory
-use_custom_data_directory: false
-
-# location for customer directory. Will be symlink to as artifactory/var
-custom_data_directory: /artifactory-user-data
 
 extra_java_opts: -server -Xms2g -Xmx14g -Xss256k -XX:+UseG1GC
 

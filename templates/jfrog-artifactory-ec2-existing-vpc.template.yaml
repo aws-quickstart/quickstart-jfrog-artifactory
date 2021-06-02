@@ -625,7 +625,8 @@ Resources:
         DatabaseName: !Ref DatabaseName
         InstanceType: !Ref InstanceType
         ArtifactoryHostRole: !Ref ArtifactoryHostRole
-        VolumeSize: !Ref VolumeSize
+        # VolumeSize: !Ref VolumeSize
+        EfsSecurityGroup: !Ref ArtifactoryEc2Sg
   ArtifactoryElb:
     Type: AWS::ElasticLoadBalancingV2::LoadBalancer
     Properties:
@@ -754,6 +755,12 @@ Resources:
           FromPort: 8046
           ToPort: 8046
           CidrIp: !Ref VpcCidr
+# as per https://stackoverflow.com/questions/38632222/aws-efs-connection-timeout-at-mount/57141195
+# we need to open 2049 ingress for EFS to work
+        - IpProtocol: tcp
+          FromPort: 2049
+          ToPort: 2049
+          CidrIp: !Ref VpcCidr
       SecurityGroupEgress:
         - IpProtocol: "-1"
           CidrIp: 0.0.0.0/0
@@ -858,8 +865,9 @@ Resources:
         HostProfile: !Ref ArtifactoryHostProfile
         SecurityGroups: !Ref ArtifactoryEc2Sg
         InstanceType: !Ref InstanceType
-        PrimaryVolume: !GetAtt ArtifactoryCoreInfraStack.Outputs.ArtifactoryEbsVolume
-        VolumeSize: !Ref VolumeSize
+        # PrimaryVolume: !GetAtt ArtifactoryCoreInfraStack.Outputs.ArtifactoryEbsVolume
+        # VolumeSize: !Ref VolumeSize
+        ArtifactoryEfsFileSystem: !GetAtt ArtifactoryCoreInfraStack.Outputs.ArtifactoryEfsFileSystem
         TargetGroupARN: !Ref ArtifactoryTargetGroup
         SSLTargetGroupARN: !Ref ArtifactorySslTargetGroup
         InternalTargetGroupARN: !Ref ArtifactoryInternalTargetGroup

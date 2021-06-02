@@ -2,62 +2,112 @@ project:
   name: quickstart-jfrog-artifactory
   owner: quickstart-eng@amazon.com
   s3_object_acl: private
-  s3_regional_buckets: true
-  shorten_stack_name: true
-  regions:
-      - us-east-1
-      - us-west-2
-      - us-east-2
-      - us-west-1
-      - eu-central-1
-      - eu-west-1
-      - eu-west-2
-      - eu-west-3
-      - ap-southeast-2
-      - eu-north-1
-      - ca-central-1
-      - sa-east-1
-      - eu-south-1
-      - af-south-1
+  s3_regional_buckets: True
+
   parameters:
-    #KeyPairName         : "<use .taskcat_overrides.yml to set this value>"
-    ArtifactoryVersion  : 7.15.3
-    XrayVersion         : 3.17.4
-    AccessCidr          : "10.0.0.0/0"
+    KeyPairName         : "vinaykey1"
+    ArtifactoryVersion  : 7.19.4
+    XrayVersion         : 3.25.1
+    AccessCidr          : "0.0.0.0/0"
     QsS3BucketName      : "$[taskcat_autobucket]"
     QsS3KeyPrefix       : "quickstart-jfrog-artifactory/"
     QsS3BucketRegion    : "$[taskcat_current_region]"
+    MasterKey           : "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"
+    SmLicenseName       : "jfrog-artifactory"
+    SmCertName          : "jfrog.tech-certificates"
+    DatabasePassword: "$[taskcat_genpass_8A]"
+    MultiAzDatabase: "true"
+    ArtifactoryServerName: "artifactory"
+    XrayDatabasePassword: "$[taskcat_genpass_8A]"
+    AvailabilityZones: "$[taskcat_genaz_2]"
+
+    # Set this to your home intenet gateway public IP in override file
+    # e.g. "24.4.228.4/32"
+    # RemoteAccessCidr    : "63.238.166.122/29" # JFrog network
+    RemoteAccessCidr: "107.3.154.154/32"
+
 tests:
-  jfrog-artifactory-ec2-xray:
+  artifactory-enterprise-new-vpc:
+    auth:
+      REGION: default
+      us-gov-west-1: gov
+      us-gov-east-1: gov
     parameters:
-      KeyPairName: "$[taskcat_getkeypair]"
-      RemoteAccessCidr: "10.0.0.0/0"
-      AvailabilityZones: "$[taskcat_genaz_2]"
-      DatabasePassword: "$[taskcat_genpass_8A]"
-      ArtifactoryProduct: "JFrog-Artifactory-Enterprise"
-      ProvisionBastionHost: "Disabled"
-      NumberOfSecondary: "2"
-      ArtifactoryServerName: "artifactory"
+      ProvisionBastionHost: "Enabled"
+      NumberOfInstances: "3"
       InstallXray: "true"
-      XrayDatabasePassword: "$[taskcat_genpass_8A]"
       XrayNumberOfInstances: 2
-      MasterKey: "override"
-      SmLicenseName: "override"
-      SmCertName: "override"
     template: templates/jfrog-artifactory-ec2-master.template.yaml
     regions:
-        # - us-east-1
-        # - us-west-2
-        - us-east-2
-        # - us-west-1
-        # - eu-central-1
-        # - eu-west-1
-        # - eu-west-2
-        # - eu-west-3
-        # - ap-southeast-2
-        # - eu-north-1
-        # - ca-central-1
-        # - sa-east-1
-        # - eu-south-1
-        # - af-south-1
-        
+      - us-east-1
+      # - us-gov-east-1
+
+  artifactory-enterprise-existing-vpc:
+    auth:
+      REGION: default
+      us-gov-west-1: gov
+      us-gov-east-1: gov
+    parameters:
+      ProvisionBastionHost: "Enabled"
+      NumberOfInstances: 3
+      InstallXray: "true"
+      XrayNumberOfInstances: 2
+
+      # us-east-1
+      AvailabilityZones   : "us-east-1a, us-east-1b"
+      VpcId               : "vpc-0df1d896364490643"
+      PublicSubnet1Id     : "subnet-05e222926ec99d3c3"
+      PublicSubnet2Id     : "subnet-02a7e4641b2e5bc13"
+      PrivateSubnet1Id    : "subnet-0f0f73fdb8b31271d"
+      PrivateSubnet2Id    : "subnet-02f5e6f3024809a98"
+
+    template: templates/jfrog-artifactory-ec2-existing-vpc.template.yaml
+    regions:
+      - us-east-1
+
+  xray-ami:
+    auth:
+      REGION: default
+    parameters:
+      AvailabilityZone: "$[taskcat_genaz_1]"
+    template: templates/ami-rt-xray-master.template.yaml
+    regions:
+      - us-west-1
+
+  create-vpc:
+    auth:
+      us-east-1     : default
+      us-gov-west-1 : gov
+      us-gov-east-1 : gov
+    parameters:
+      AvailabilityZones: "$[taskcat_genaz_2]"
+    template: submodules/quickstart-aws-vpc/templates/aws-vpc.template.yaml
+    regions:
+      # - us-east-1
+      # - us-east-2
+      # - us-west-1
+  #     - us-west-2
+      - us-gov-east-1
+
+  artifactory-existing-core-infra:
+    auth:
+      REGION: default
+      us-gov-west-1: gov
+      us-gov-east-1: gov
+    parameters:
+      ProvisionBastionHost: "Enabled"
+      NumberOfInstances: 1
+      InstallXray: "false"
+      XrayNumberOfInstances: 2
+
+      # us-east-1
+      AvailabilityZones   : "us-east-1a, us-east-1b"
+      VpcId               : "vpc-0df1d896364490643"
+      PublicSubnet1Id     : "subnet-05e222926ec99d3c3"
+      PublicSubnet2Id     : "subnet-02a7e4641b2e5bc13"
+      PrivateSubnet1Id    : "subnet-0f0f73fdb8b31271d"
+      PrivateSubnet2Id    : "subnet-02f5e6f3024809a98"
+
+    template: templates/jfrog-artifactory-ec2-existing-vpc.template.yaml
+    regions:
+      - us-east-1

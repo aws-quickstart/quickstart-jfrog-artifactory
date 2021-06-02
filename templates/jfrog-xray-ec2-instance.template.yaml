@@ -63,10 +63,6 @@ Parameters:
     Type: String
   XrayVersion:
     Type: String
-  UserDataDirectory:
-    Description: Directory to store Artifactory data. Can be used to store data (via symlink) in detachable volume
-    Type: String
-    Default: '/xray-user-data'
 
 # To populate additional mappings use the following with the desired --region
 # aws --region us-west-2 ec2 describe-images --owners amazon --filters 'Name=name,Values=amzn-ami-hvm-2018.03.0.20181129-x86_64-gp2' 'Name=state,Values=available' --output json | jq -r '.Images | sort_by(.CreationDate) | last(.[]).ImageId'
@@ -214,8 +210,6 @@ Resources:
                   - import_playbook: site-xray.yml
                     vars:
                       jfrog_url: ${JfrogInternalUrl}
-                      use_custom_data_directory: true
-                      custom_data_directory: "${UserDataDirectory}"
                       master_key: ${MasterKey}
                       join_key: ${MasterKey}
                       extra_java_opts: ${ExtraJavaOptions}

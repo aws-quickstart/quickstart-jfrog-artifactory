@@ -90,12 +90,12 @@ tests:
       XrayNumberOfInstances: 2
 
       # us-west-1
-      AvailabilityZones   : "us-west-1b, us-west-1c"
-      VpcId               : "vpc-0d5806917ae9d5aae"
-      PublicSubnet1Id     : "subnet-05e6d5d00b0743b24"
-      PublicSubnet2Id     : "subnet-012e67d537e962d6e"
-      PrivateSubnet1Id    : "subnet-0b1da4b9fbbe67cf2"
-      PrivateSubnet2Id    : "subnet-05b1ea54d37dce2ee"
+      AvailabilityZones   : "us-east-1a, us-east-1b"
+      VpcId               : "vpc-0df1d896364490643"
+      PublicSubnet1Id     : "subnet-05e222926ec99d3c3"
+      PublicSubnet2Id     : "subnet-02a7e4641b2e5bc13"
+      PrivateSubnet1Id    : "subnet-0f0f73fdb8b31271d"
+      PrivateSubnet2Id    : "subnet-02f5e6f3024809a98"
 
     template: templates/jfrog-artifactory-ec2-existing-vpc.template.yaml
 
@@ -116,14 +116,14 @@ tests:
   artifactory-pro-existing-vpc:
     parameters:
       InstallXray         : "true"
-      DatabasePreferredAz : us-west-1b
+      DatabasePreferredAz : us-east-1a
 
-      # us-west-1
-      VpcId               : "vpc-0d5806917ae9d5aae"
-      PublicSubnet1Id     : "subnet-05e6d5d00b0743b24"
-      PublicSubnet2Id     : "subnet-012e67d537e962d6e"
-      PrivateSubnet1Id    : "subnet-0b1da4b9fbbe67cf2"
-      PrivateSubnet2Id    : "subnet-05b1ea54d37dce2ee"
+      # us-east-1
+      VpcId               : "vpc-0df1d896364490643"
+      PublicSubnet1Id     : "subnet-05e222926ec99d3c3"
+      PublicSubnet2Id     : "subnet-02a7e4641b2e5bc13"
+      PrivateSubnet1Id    : "subnet-0f0f73fdb8b31271d"
+      PrivateSubnet2Id    : "subnet-02f5e6f3024809a98"
 
       PrivateSubnet1Cidr  : "10.0.0.0/19"
       PrivateSubnet2Cidr  : "10.0.32.0/19"

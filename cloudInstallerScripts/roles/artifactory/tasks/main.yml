@@ -31,10 +31,6 @@
     group: "{{ artifactory_group }}"
   become: yes
 
-- name: setup directory symlink for using custom data directory/volume
-  include_tasks: custom-data-directory.yml
-  when: use_custom_data_directory and custom_data_directory is defined
-
 - name: ensure data subdirectories exist and have correct ownership
   file:
     path: "{{ artifactory_home }}/var/{{ item }}"
@@ -112,21 +108,30 @@
   shell: "{{ artifactory_home }}/app/bin/installService.sh"
   become: yes
 
-- name: start and enable the primary node
-  service:
-    name: artifactory
-    state: restarted
-  become: yes
-  when: artifactory_is_primary == true
+# - name: start and enable the primary node
+#   service:
+#     name: artifactory
+#     state: restarted
+#   become: yes
+#   when: artifactory_is_primary == true
 
-- name: random wait before restarting to prevent secondary nodes from hitting DB first
-  pause:
-    seconds: "{{ 120 | random + 10}}"
-  when: artifactory_is_primary == false
+# - name: random wait before restarting to prevent secondary nodes from hitting DB first
+#   pause:
+#     seconds: "{{ 120 | random + 10}}"
+#   when: artifactory_is_primary == false
+
+# - name: symlink plugin folder to EFS
+#   file:
+#     src: "/efsmount/plugins"
+#     path: "{{ artifactory_home }}/var/etc/artifactory"
+#     state: link
+#     owner: "{{ artifactory_user }}"
+#     group: "{{ artifactory_group }}"
 
 - name: start and enable the secondary nodes
   service:
     name: artifactory
     state: restarted
   become: yes
-  when: artifactory_is_primary == false
+  # when: artifactory_is_primary == false
+
