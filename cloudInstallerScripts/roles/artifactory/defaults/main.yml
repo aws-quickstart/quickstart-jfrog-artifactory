@@ -13,7 +13,7 @@ artifactory_licenses:
 artifactory_ha_enabled: true
 
 # value for whether a host is primary. this should be set in host vars
-artifactory_is_primary: false
+artifactory_is_primary: true
 
 # The location where Artifactory should install.
 artifactory_download_directory: /opt/jfrog

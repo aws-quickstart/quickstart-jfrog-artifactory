@@ -108,11 +108,34 @@
   shell: "{{ artifactory_home }}/app/bin/installService.sh"
   become: yes
 
-# - name: start and enable the primary node
-#   service:
-#     name: artifactory
-#     state: restarted
-#   become: yes
+- name: Delete plugin folder
+  file:
+    state: absent
+    path: "{{ artifactory_home }}/var/etc/artifactory/plugins"
+
+- name: symlink plugin folder to EFS
+  file:
+    src: "/efsmount/plugins"
+    path: "{{ artifactory_home }}/var/etc/artifactory/plugins"
+    state: link
+    owner: "{{ artifactory_user }}"
+    group: "{{ artifactory_group }}"
+
+- name: ensure data subdirectories exist and have correct ownership
+  file:
+    path: "{{ artifactory_home }}/var/{{ item }}"
+    state: directory
+    owner: "{{ artifactory_user }}"
+    group: "{{ artifactory_group }}"
+  loop:
+    - "etc/artifactory/plugins"
+  become: yes
+
+- name: start and enable the primary node
+  service:
+    name: artifactory
+    state: restarted
+  become: yes
 #   when: artifactory_is_primary == true
 
 # - name: random wait before restarting to prevent secondary nodes from hitting DB first
@@ -120,18 +143,9 @@
 #     seconds: "{{ 120 | random + 10}}"
 #   when: artifactory_is_primary == false
 
-# - name: symlink plugin folder to EFS
-#   file:
-#     src: "/efsmount/plugins"
-#     path: "{{ artifactory_home }}/var/etc/artifactory"
-#     state: link
-#     owner: "{{ artifactory_user }}"
-#     group: "{{ artifactory_group }}"
-
-- name: start and enable the secondary nodes
-  service:
-    name: artifactory
-    state: restarted
-  become: yes
-  # when: artifactory_is_primary == false
-
+# - name: start and enable the secondary nodes
+#   service:
+#     name: artifactory
+#     state: restarted
+#   become: yes
+#   when: artifactory_is_primary == false

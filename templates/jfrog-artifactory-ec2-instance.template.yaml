@@ -303,8 +303,9 @@ Resources:
                 mkdir -p $EFS_MOUNT_POINT/plugins
                 echo ls -l $ARTIFACTORY_HOME/var/etc/artifactory
                 ls -l $ARTIFACTORY_HOME/var/etc/artifactory
+
                 # mkdir -p $ARTIFACTORY_HOME/var/etc/artifactory
-                # # ln -s $EFS_MOUNT_POINT/plugins $ARTIFACTORY_HOME/var/etc/artifactory
+                # ln -s $EFS_MOUNT_POINT/plugins $ARTIFACTORY_HOME/var/etc/artifactory
                 # echo ls -l $ARTIFACTORY_HOME/var/etc/artifactory
                 # ls -l $ARTIFACTORY_HOME/var/etc/artifactory
 
