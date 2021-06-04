@@ -141,11 +141,12 @@ tests:
       DatabasePreferredAz : us-east-1a
 
       # us-east-1
-      VpcId               : "vpc-026af7cc6049df7df"
-      PublicSubnet1Id     : "subnet-0636a7357406a39cf"
-      PublicSubnet2Id     : "subnet-0374ac2e5bd029e8b"
-      PrivateSubnet1Id    : "subnet-05dc5384c74fbdffb"
-      PrivateSubnet2Id    : "subnet-066ff5e45624de906"
+      AvailabilityZones   : "us-east-1a, us-east-1b"
+      VpcId               : "vpc-0df1d896364490643"
+      PublicSubnet1Id     : "subnet-05e222926ec99d3c3"
+      PublicSubnet2Id     : "subnet-02a7e4641b2e5bc13"
+      PrivateSubnet1Id    : "subnet-0f0f73fdb8b31271d"
+      PrivateSubnet2Id    : "subnet-02f5e6f3024809a98"
 
       PrivateSubnet1Cidr  : "10.0.0.0/19"
       PrivateSubnet2Cidr  : "10.0.32.0/19"
