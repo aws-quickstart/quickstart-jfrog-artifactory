@@ -1,7 +1,7 @@
 ---
 - name: Install db-utl
   yum:
-    name: "{{ xray_home }}/app/third-party/misc/libdb-utils-5.3.21-19.el7.x86_64.rpm"
+    name: "{{ xray_home }}/app/third-party/misc/libdb-utils-5.3.21-25.el7.x86_64.rpm"
     state: present
   vars:
     ansible_python_interpreter: /bin/python2
