@@ -1,5 +1,13 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Description: 'JFrog Artifactory Quick Start Deployment (qs-1qpmmjh61)'
+Metadata:
+  cfn-lint:
+    config:
+      ignore_checks:
+        - W9006
+        - W9002
+        - W9003
+        - W9004
 Parameters:
   AvailabilityZones:
     Description: List of Availability Zones to use for the subnets in the VPC. Two
@@ -303,6 +311,13 @@ Resources:
               SSEAlgorithm: AES256
   ArtifactoryS3IAMPolicy:
     Type: AWS::IAM::Policy
+    Metadata:
+      cfn-lint:
+        config:
+          ignore_checks:
+            - EIAMPolicyActionWildcard
+          ignore_reasons:
+            - EIAMPolicyWildcardResource: excluding for s3:Get*, s3:Put*, s3:List*
     Properties:
       PolicyName: S3BucketPermissions
       PolicyDocument:
@@ -311,7 +326,38 @@ Resources:
           - Sid: S3BucketPermissions
             Effect: Allow
             Action:
-              - s3:*
+              - s3:AbortMultipartUpload
+              - s3:BypassGovernanceRetention
+              - s3:CreateAccessPoint
+              - s3:CreateAccessPointForObjectLambda
+              - s3:CreateBucket
+              - s3:CreateJob
+              - s3:DeleteAccessPoint
+              - s3:DeleteAccessPointForObjectLambda
+              - s3:DeleteAccessPointPolicy
+              - s3:DeleteAccessPointPolicyForObjectLambda
+              - s3:DeleteBucket
+              - s3:DeleteBucketOwnershipControls
+              - s3:DeleteBucketPolicy
+              - s3:DeleteBucketWebsite
+              - s3:DeleteJobTagging
+              - s3:DeleteObject
+              - s3:DeleteObjectTagging
+              - s3:DeleteObjectVersion
+              - s3:DeleteObjectVersionTagging
+              - s3:DeleteStorageLensConfiguration
+              - s3:DeleteStorageLensConfigurationTagging
+              - s3:DescribeJob
+              - s3:Get*
+              - s3:List*
+              - s3:ObjectOwnerOverrideToBucketOwner
+              - s3:Put*
+              - s3:ReplicateDelete
+              - s3:ReplicateObject
+              - s3:ReplicateTags
+              - s3:RestoreObject
+              - s3:UpdateJobPriority
+              - s3:UpdateJobStatus
             Resource:
               - Fn::Join:
                 - ''
