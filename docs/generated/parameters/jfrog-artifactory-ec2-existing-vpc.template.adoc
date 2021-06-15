@@ -46,7 +46,7 @@
 |===
 |Parameter label (name) |Default value|Description|Artifactory product to install
 (`ArtifactoryProduct`)|`JFrog-Artifactory-Enterprise`|JFrog Artifactory product you want to install into an AMI.|Artifactory version
-(`ArtifactoryVersion`)|`7.18.6`|Version of Artifactory that you want to deploy into the Quick Start. See the release notes to select the version you want to deploy at https://www.jfrog.com/confluence/display/RTF/Release+Notes.|Secondary instances
+(`ArtifactoryVersion`)|`7.19.4`|Version of Artifactory that you want to deploy into the Quick Start. See the release notes to select the version you want to deploy at https://www.jfrog.com/confluence/display/RTF/Release+Notes.|Secondary instances
 (`NumberOfSecondary`)|`2`|Number of secondary Artifactory servers to complete your HA deployment. To align with Artifactory best practices, the minimum number is two and the maximum is seven. Do not select more instances than you have licenses for.|Artifactory licenses secret name
 (`SmLicenseName`)|`**__Blank string__**`|Secret name created in AWS Secrets Manager, which contains the Artifactory licenses.|Artifactory certificate secret name
 (`SmCertName`)|`**__Blank string__**`|Secret name created in AWS Secrets Manager, which contains the SSL certificate and certificate key.|Artifactory server name
@@ -81,7 +81,7 @@
 |===
 |Parameter label (name) |Default value|Description|Install JFrog Xray
 (`InstallXray`)|`true`|Choose true to install JFrog Xray instance(s).|Version of Xray to install
-(`XrayVersion`)|`3.24.2`|The version of Xray that you want to deploy into the Quick Start.|Number of JFrog Xray instances
+(`XrayVersion`)|`3.25.1`|The version of Xray that you want to deploy into the Quick Start.|Number of JFrog Xray instances
 (`XrayNumberOfInstances`)|`1`|The number of Xray instances servers to complete your HA deployment. The minimum number is one; the maximum is seven. Do not select more than instances than you have licenses for.|Xray instance type
 (`XrayInstanceType`)|`c5.2xlarge`|The EC2 instance type for the Xray instances.|Xray Database user
 (`XrayDatabaseUser`)|`xray`|The login ID for the Xray database user.|Xray Database password
