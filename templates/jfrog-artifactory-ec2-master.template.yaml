@@ -47,7 +47,7 @@ Metadata:
         Parameters:
           - ArtifactoryProduct
           - ArtifactoryVersion
-          - NumberOfSecondary
+          - NumberOfInstances
           - SmLicenseName
           - SmCertName
           - ArtifactoryServerName
@@ -58,7 +58,6 @@ Metadata:
           default: Amazon RDS configuration
         Parameters:
           - DatabaseName
-          - DatabaseEngine
           - DatabaseUser
           - DatabasePassword
           - DatabaseInstance
@@ -117,8 +116,8 @@ Metadata:
         default: EBS root volume size
       InstanceType:
         default: EC2 instance type
-      NumberOfSecondary:
-        default: Secondary instances
+      NumberOfInstances:
+        default: Number of Artifactory instances
       ArtifactoryProduct:
         default: Artifactory product to install
       ArtifactoryVersion:
@@ -137,8 +136,6 @@ Metadata:
         default: Default Java memory settings
       DatabaseName:
         default: Database name
-      DatabaseEngine:
-        default: Database engine
       DatabaseUser:
         default: Database user
       DatabasePassword:
@@ -322,13 +319,12 @@ Parameters:
     ConstraintDescription: Must contain valid instance type.
     Default: m5.xlarge
     Type: String
-  NumberOfSecondary:
-    Description: Number of secondary Artifactory servers to complete your
+  NumberOfInstances:
+    Description: Number of  Artifactory servers to complete your
       HA deployment. To align with Artifactory best practices, the minimum number
-      is two, and the maximum is seven. Do not select more instances than you
+      is three, and the maximum is eight. Do not select more instances than you
       have licenses for.
     AllowedValues:
-      - 0
       - 1
       - 2
       - 3
@@ -336,14 +332,14 @@ Parameters:
       - 5
       - 6
       - 7
-    Default: 2
+      - 8
+    Default: 3
     Type: Number
   ArtifactoryProduct:
     Description: JFrog Artifactory product you want to install into an AMI.
     AllowedValues:
       - JFrog-Artifactory-Pro
       - JFrog-Artifactory-Enterprise
-      - JFrog-Container-Registry
     Default: JFrog-Artifactory-Enterprise
     Type: String
   ArtifactoryVersion:
@@ -396,12 +392,6 @@ Parameters:
     ConstraintDescription: 1 to 60 alphanumeric characters First character must be a letter.
     Default: artdb
     Type: String
-  DatabaseEngine:
-    Description: Database engine that you want to run.
-    AllowedValues:
-      - Postgres
-    Default: Postgres
-    Type: String
   DatabaseUser:
     Description: Login ID for the master user of your database instance.
     MinLength: '1'
@@ -426,13 +416,10 @@ Parameters:
       - db.m5.large
       - db.m5.xlarge
       - db.m5.2xlarge
-      - db.m5.10xlarge
-      - db.m5.16xlarge
-      - db.m5.large
-      - db.m5.xlarge
-      - db.m5.2xlarge
       - db.m5.4xlarge
+      - db.m5.8xlarge
       - db.m5.12xlarge
+      - db.m5.16xlarge
       - db.m5.24xlarge
     ConstraintDescription: Must be a valid database Instance Type.
     Default: db.m5.large
@@ -531,7 +518,7 @@ Resources:
     Type: AWS::CloudFormation::Stack
     Properties:
       TemplateURL: !Sub
-        - https://${S3Bucket}.s3.${S3Region}.${AWS::URLSuffix}/${QsS3KeyPrefix}submodules/quickstart-aws-vpc/templates/aws-vpc.template
+        - https://${S3Bucket}.s3.${S3Region}.${AWS::URLSuffix}/${QsS3KeyPrefix}submodules/quickstart-aws-vpc/templates/aws-vpc.template.yaml
         - S3Bucket: !If [UsingDefaultBucket, !Sub '${QsS3BucketName}-${AWS::Region}', !Ref 'QsS3BucketName']
           S3Region: !If [UsingDefaultBucket, !Ref 'AWS::Region', !Ref 'QsS3BucketRegion']
       Parameters:
@@ -539,8 +526,6 @@ Resources:
           Fn::Join:
             - ','
             - Ref: AvailabilityZones
-        KeyPairName:
-          Ref: KeyPairName
         NumberOfAZs: '2'
         PrivateSubnet1ACIDR:
           Ref: PrivateSubnet1Cidr
@@ -584,7 +569,7 @@ Resources:
         NumBastionHosts: !Ref NumBastionHosts
         VolumeSize: !Ref VolumeSize
         InstanceType: !Ref InstanceType
-        NumberOfSecondary: !Ref NumberOfSecondary
+        NumberOfInstances: !Ref NumberOfInstances
         ArtifactoryProduct: !Ref ArtifactoryProduct
         ArtifactoryVersion: !Ref ArtifactoryVersion
         SmLicenseName: !Ref SmLicenseName
@@ -594,7 +579,6 @@ Resources:
         ExtraJavaOptions: !Ref ExtraJavaOptions
         DefaultJavaMemSettings: !Ref DefaultJavaMemSettings
         DatabaseName: !Ref DatabaseName
-        DatabaseEngine: !Ref DatabaseEngine
         DatabaseUser: !Ref DatabaseUser
         DatabasePassword: !Ref DatabasePassword
         DatabaseInstance: !Ref DatabaseInstance

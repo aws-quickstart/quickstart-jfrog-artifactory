@@ -49,8 +49,6 @@ Parameters:
       - "true"
       - "false"
     Type: String
-  DatabaseEngine:
-    Type: String
   DatabaseUser:
     Type: String
   DatabasePassword:
@@ -60,19 +58,15 @@ Parameters:
     Type: String
   DatabaseName:
     Type: String
-  ArtifactoryProduct:
-    Default: JFrog-Artifactory-Pro
-    Type: String
-  ReleaseStage:
-    Default: GA
-    Type: String
   InstanceType:
     Default: m5.xlarge
     Type: String
   ArtifactoryHostRole:
     Type: String
-  VolumeSize:
-    Type: Number
+  # VolumeSize:
+  #   Type: Number
+  EfsSecurityGroup:
+    Type: String
 
 Mappings:
   DatabaseMap:
@@ -84,20 +78,6 @@ Mappings:
       PluginURL: https://jdbc.postgresql.org/download/
       port: "5432"
       extraDatabaseOps: ""
-  ReleaseStageMap:
-    BETA:
-      ProDockerRepo: "earlyaccess-docker.jfrog.io/jfrog/artifactory-pro"
-      JcrDockerRepo: "earlyaccess-docker.jfrog.io/jfrog/artifactory-jcr"
-      NginxDockerRepo: "earlyaccess-docker.jfrog.io/jfrog/nginx-artifactory-pro"
-    GA:
-      ProDockerRepo: "docker.bintray.io/jfrog/artifactory-pro"
-      JcrDockerRepo: "docker.bintray.io/jfrog/artifactory-jcr"
-      NginxDockerRepo: "docker.bintray.io/jfrog/nginx-artifactory-pro"
-  ProductMap:
-    JFrog-Container-Registry:
-      RepoName: JcrDockerRepo
-    JFrog-Artifactory-Pro:
-      RepoName: ProDockerRepo
   JavaOptionstoInstance:
     c5.2xlarge:
       Min: 8
@@ -254,10 +234,10 @@ Resources:
       DBInstanceClass: !Ref DatabaseInstance
       DBName: !Ref DatabaseName
       DBSubnetGroupName: !Ref  ArtifactoryDatabaseSubnetGroup
-      Engine: !Ref DatabaseEngine
+      Engine: "Postgres"
       EngineVersion: !FindInMap
         - DatabaseMap
-        - !Ref DatabaseEngine
+        - "Postgres"
         - DatabaseVersion
       MasterUsername: !Ref DatabaseUser
       MasterUserPassword: !Ref DatabasePassword
@@ -281,31 +261,31 @@ Resources:
         - IpProtocol: tcp
           FromPort: !FindInMap
             - DatabaseMap
-            - !Ref DatabaseEngine
+            - "Postgres"
             - port
           ToPort: !FindInMap
             - DatabaseMap
-            - !Ref DatabaseEngine
+            - "Postgres"
             - port
           CidrIp: !Ref PrivateSubnet1Cidr
         - IpProtocol: tcp
           FromPort: !FindInMap
             - DatabaseMap
-            - !Ref DatabaseEngine
+            - "Postgres"
             - port
           ToPort: !FindInMap
             - DatabaseMap
-            - !Ref DatabaseEngine
+            - "Postgres"
             - port
           CidrIp: !Ref PrivateSubnet2Cidr
         - IpProtocol: tcp
           FromPort: !FindInMap
             - DatabaseMap
-            - !Ref DatabaseEngine
+            - "Postgres"
             - port
           ToPort: !FindInMap
             - DatabaseMap
-            - !Ref DatabaseEngine
+            - "Postgres"
             - port
           CidrIp: !Ref PrivateSubnet3Cidr
       SecurityGroupEgress:
@@ -390,74 +370,89 @@ Resources:
                   - "/*"
       Roles:
         - !Ref ArtifactoryHostRole
-  ArtifactoryEbsVolume:
-    Type: AWS::EC2::Volume
+  # ArtifactoryEbsVolume:
+  #   Type: AWS::EC2::Volume
+  #   Properties:
+  #     AvailabilityZone:
+  #       !If
+  #         - IsMultiAzDatabase
+  #         - !Select
+  #           - '0'
+  #           - !Ref AvailabilityZones
+  #         - !Ref DatabasePreferredAz
+  #     Encrypted: false
+  #     Size: !Ref VolumeSize
+  #     Tags:
+  #       - Key: Name
+  #         Value: !Sub "Artifactory-${AWS::StackName}"
+  #     VolumeType: gp2
+  #   DeletionPolicy: Snapshot
+  #   UpdateReplacePolicy: Snapshot
+  ArtifactoryEfsFileSystem:
+    Type: AWS::EFS::FileSystem
     Properties:
-      AvailabilityZone:
-        !If
-          - IsMultiAzDatabase
-          - !Select
-            - '0'
-            - !Ref AvailabilityZones
-          - !Ref DatabasePreferredAz
-      Encrypted: false
-      Size: !Ref VolumeSize
-      Tags:
+      BackupPolicy:
+        Status: DISABLED
+      Encrypted: true
+      FileSystemTags:
         - Key: Name
           Value: !Sub "Artifactory-${AWS::StackName}"
-      VolumeType: gp2
-    DeletionPolicy: Snapshot
-    UpdateReplacePolicy: Snapshot
+      PerformanceMode: generalPurpose
+      ThroughputMode: bursting
+  ArtifactoryEfsMountTarget1:
+    Type: AWS::EFS::MountTarget
+    Properties:
+      FileSystemId: !Ref ArtifactoryEfsFileSystem
+      SecurityGroups:
+        - !Ref EfsSecurityGroup
+      SubnetId: !Select ['0', !Ref SubnetIds]
+  ArtifactoryEfsMountTarget2:
+    Type: AWS::EFS::MountTarget
+    Properties:
+      FileSystemId: !Ref ArtifactoryEfsFileSystem
+      SecurityGroups:
+        - !Ref EfsSecurityGroup
+      SubnetId: !Select ['1', !Ref SubnetIds]
 Outputs:
   S3Bucket:
     Value: !Ref ArtifactoryS3Bucket
     Description: Actual S3 bucket created for Artifactory
   DatabaseDriver:
-    Value: !FindInMap [DatabaseMap, !Ref DatabaseEngine, Driver]
+    Value: !FindInMap [DatabaseMap, "Postgres", Driver]
   DatabasePlugin:
-    Value: !FindInMap [DatabaseMap, !Ref DatabaseEngine, Plugin]
+    Value: !FindInMap [DatabaseMap, "Postgres", Plugin]
   DatabasePluginUrl:
     Value: !Sub
       - "${MainURL}${PluginVersion}"
       - {
-        MainURL: !FindInMap [DatabaseMap, !Ref DatabaseEngine, PluginURL],
-        PluginVersion: !FindInMap [DatabaseMap, !Ref DatabaseEngine, Plugin]
+        MainURL: !FindInMap [DatabaseMap, "Postgres", PluginURL],
+        PluginVersion: !FindInMap [DatabaseMap, "Postgres", Plugin]
         }
   DatabaseType:
-    Value: !FindInMap [DatabaseMap, !Ref DatabaseEngine, Name]
+    Value: !FindInMap [DatabaseMap, "Postgres", Name]
   DatabaseUrl:
     Value: !Sub
       - "jdbc:${DatabaseType}://${ArtifactoryDatabaseEndpointAddress}:${port}/${DatabaseName}${extraDatabaseOps}"
       - {
-        DatabaseType: !FindInMap [DatabaseMap, !Ref DatabaseEngine, Name],
+        DatabaseType: !FindInMap [DatabaseMap, "Postgres", Name],
         ArtifactoryDatabaseEndpointAddress: !GetAtt ArtifactoryDatabase.Endpoint.Address,
-        port: !FindInMap [DatabaseMap, !Ref DatabaseEngine, port],
-        extraDatabaseOps: !FindInMap [DatabaseMap, !Ref DatabaseEngine, extraDatabaseOps],
+        port: !FindInMap [DatabaseMap, "Postgres", port],
+        extraDatabaseOps: !FindInMap [DatabaseMap, "Postgres", extraDatabaseOps],
         }
   XrayMasterDatabaseUrl:
     Value: !Sub
       - "${ArtifactoryDatabaseEndpointAddress}:${port}/${DatabaseName}?sslmode=disable"
       - {
         ArtifactoryDatabaseEndpointAddress: !GetAtt ArtifactoryDatabase.Endpoint.Address,
-        port: !FindInMap [DatabaseMap, !Ref DatabaseEngine, port],
+        port: !FindInMap [DatabaseMap, "Postgres", port],
         }
   XrayDatabaseUrl:
     Value: !Sub
       - "${ArtifactoryDatabaseEndpointAddress}:${port}/xraydb?sslmode=disable"
       - {
         ArtifactoryDatabaseEndpointAddress: !GetAtt ArtifactoryDatabase.Endpoint.Address,
-        port: !FindInMap [DatabaseMap, !Ref DatabaseEngine, port],
+        port: !FindInMap [DatabaseMap, "Postgres", port],
         }
-  ProDockerRepo:
-    Value: !FindInMap
-      - ReleaseStageMap
-      - !Ref ReleaseStage
-      - !FindInMap
-        - ProductMap
-        - !Ref ArtifactoryProduct
-        - RepoName
-  NginxDockerRepo:
-    Value: !FindInMap [ReleaseStageMap, !Ref ReleaseStage, NginxDockerRepo]
   JavaOpts:
     Value: !Sub
       - "-Xms${min}g -Xmx${max}g"
@@ -467,5 +462,5 @@ Outputs:
       }
   DeploymentSize:
     Value: !FindInMap [JavaOptionstoInstance, !Ref InstanceType, DeploymentSize]
-  ArtifactoryEbsVolume:
-    Value: !Ref ArtifactoryEbsVolume
+  ArtifactoryEfsFileSystem:
+    Value: !Ref ArtifactoryEfsFileSystem

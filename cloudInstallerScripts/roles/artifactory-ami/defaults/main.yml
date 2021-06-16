@@ -31,18 +31,9 @@ artifactory_file_store_dir: /data
 
 extra_java_opts: -server -Xms2g -Xmx14g -Xss256k -XX:+UseG1GC
 
+artifactory_tar: https://releases.jfrog.io/artifactory/artifactory-pro/org/artifactory/pro/jfrog-artifactory-pro/{{ artifactory_version }}/jfrog-artifactory-pro-{{ artifactory_version }}-linux.tar.gz
 
-
-# Pick the Artifactory flavour to install, can be also cpp-ce, jcr, pro.
-# for Artifactory, use following values
-artifactory_flavour: pro
-artifactory_tar: https://releases.jfrog.io/artifactory/artifactory-pro/org/artifactory/{{ artifactory_flavour }}/jfrog-artifactory-{{ artifactory_flavour }}/{{ artifactory_version }}/jfrog-artifactory-{{ artifactory_flavour }}-{{ artifactory_version }}-linux.tar.gz
-
-# for JCR, use following values
-# artifactory_flavour: jcr
-# artifactory_tar:  https://dl.bintray.com/jfrog/artifactory/org/artifactory/{{ artifactory_flavour }}/jfrog-artifactory-{{ artifactory_flavour }}/{{ artifactory_version }}/jfrog-artifactory-{{ artifactory_flavour }}-{{ artifactory_version }}-linux.tar.gz
-
-artifactory_home: "{{ artifactory_download_directory }}/artifactory-{{ artifactory_flavour }}-{{ artifactory_version }}"
+artifactory_home: "{{ artifactory_download_directory }}/artifactory-pro-{{ artifactory_version }}"
 db_download_url: "https://jdbc.postgresql.org/download/postgresql-42.2.12.jar"
 
 artifactory_user: artifactory

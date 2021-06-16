@@ -259,13 +259,10 @@ Parameters:
       - db.m5.large
       - db.m5.xlarge
       - db.m5.2xlarge
-      - db.m5.10xlarge
-      - db.m5.16xlarge
-      - db.m5.large
-      - db.m5.xlarge
-      - db.m5.2xlarge
       - db.m5.4xlarge
+      - db.m5.8xlarge
       - db.m5.12xlarge
+      - db.m5.16xlarge
       - db.m5.24xlarge
     ConstraintDescription: Must be a valid database Instance Type.
     Default: db.m5.large
@@ -322,7 +319,7 @@ Resources:
         ArtifactoryVersion: !Ref ArtifactoryVersion
         VolumeSize: !Ref VolumeSize
         InstanceType: !Ref InstanceType
-        NumberOfSecondary: 0
+        NumberOfInstances: 1
         SmLicenseName: !Ref SmLicenseName
         SmCertName: !Ref SmCertName
         ArtifactoryServerName: !Ref ArtifactoryServerName

@@ -27,7 +27,6 @@ Parameters:
     AllowedValues:
       - JFrog-Artifactory-Pro
       - JFrog-Artifactory-Enterprise
-      - JFrog-Container-Registry
     Default: JFrog-Artifactory-Enterprise
     Type: String
   QsS3BucketName:
@@ -66,8 +65,6 @@ Parameters:
   DatabasePassword:
     Type: String
     NoEcho: 'true'
-  ArtifactoryPrimary:
-    Type: String
   MasterKey:
     Type: String
     NoEcho: 'true'
@@ -89,14 +86,12 @@ Parameters:
     Type: String
   InstanceType:
     Type: String
-  PrimaryVolume:
+  # PrimaryVolume:
+  #   Type: String
+  # VolumeSize:
+  #   Type: Number
+  ArtifactoryEfsFileSystem:
     Type: String
-  VolumeSize:
-    Type: Number
-  UserDataDirectory:
-    Description: Directory to store Artifactory data. Can be used to store data (via symlink) in detachable volume
-    Type: String
-    Default: '/artifactory-user-data'
 
 # To populate additional mappings use following link
 # https://raw.githubusercontent.com/aws-quickstart/quickstart-linux-bastion/master/templates/linux-bastion.template
@@ -149,25 +144,18 @@ Mappings:
     us-gov-west-1:
       CentOS7HVM: "ami-bbba86da"
 
-  ArtifactoryProductMap:
-    JFrog-Container-Registry:
-      "7153": "Jcr7153"
-      flavor: "jcr"
-      haEabled: false
-      product: "jcr"
-    JFrog-Artifactory-Enterprise:
-      "7153": "Artifactory7153"
-      flavor: "pro"
-      haEabled: true
-      product: "artifactory"
-    JFrog-Artifactory-Pro:
-      "7153": "Artifactory7153"
-      flavor: "pro"
-      haEabled: false
-      product: "artifactory"
+  # ArtifactoryProductMap:
+  #   JFrog-Artifactory-Enterprise:
+  #     flavor: "pro"
+  #     haEabled: true
+  #     product: "artifactory"
+  #   JFrog-Artifactory-Pro:
+  #     flavor: "pro"
+  #     haEabled: false
+  #     product: "artifactory"
 
-Conditions:
-  IsSecondary: !Equals [!Ref ArtifactoryPrimary, 'false']
+# Conditions:
+#   IsSecondary: !Equals [!Ref ArtifactoryPrimary, 'false']
 
 Resources:
   ArtifactoryScalingGroup:
@@ -215,11 +203,11 @@ Resources:
           jfrog_ami_setup:
             - "config-cloudwatch"
             - "config-ansible-art-ami"
-            - "config-artifactory-primary"
+            - "config-artifactory"
             - "secure-artifactory"
           artifactory_install:
             - "config-cloudwatch"
-            - "config-artifactory-primary"
+            - "config-artifactory"
             - "secure-artifactory"
         config-cloudwatch:
           files:
@@ -232,6 +220,12 @@ Resources:
                 file = /var/log/messages
                 log_group_name = /artifactory/instances/{instance_id}
                 log_stream_name = /var/log/messages/
+                datetime_format = %b %d %H:%M:%S
+
+                [/var/log/amazon/efs]
+                file = /var/log/amazon/efs
+                log_group_name = /artifactory/instances/{instance_id}
+                log_stream_name = /var/log/amazon/efs/
                 datetime_format = %b %d %H:%M:%S
 
                 [/var/log/jfrog-ami-setup.log]
@@ -254,7 +248,6 @@ Resources:
                   - import_playbook: artifactory-ami.yml
                     vars:
                       ami_creation: false
-                      artifactory_flavour: "pro"
                       artifactory_ha_enabled: false
                       artifactory_tar: "https://releases.jfrog.io/artifactory/artifactory-pro/org/artifactory/pro/jfrog-artifactory-pro/${ArtifactoryVersion}/jfrog-artifactory-pro-${ArtifactoryVersion}-linux.tar.gz"
                       artifactory_version: ${ArtifactoryVersion}
@@ -262,83 +255,109 @@ Resources:
                       db_type: "postgresql"
                       db_driver: "org.postgresql.Driver"
               mode: "0400"
-        config-artifactory-primary:
+        # config-artifactory-primary:
+        #   files:
+        #     /root/attach_volume.sh:
+        #       content: !Sub |
+        #         #!/usr/bin/env bash
+
+        #         echo "Using primary volume ID ${PrimaryVolume}"
+        #         VOLUME_ID="${PrimaryVolume}"
+        #         echo "VOLUME_ID: $VOLUME_ID"
+        #         if [[ -z "$VOLUME_ID" ]]; then
+        #           echo 'Invalid $VOLUME_ID'
+        #           exit 1
+        #         fi
+
+        #         # Get instance id from AWS
+        #         INSTANCE_ID=$(curl -s http://169.254.169.254/latest/meta-data/instance-id)
+
+        #         # Attach the volume created by another CFT
+        #         # the device name should become /dev/nvme1n1
+        #         # See: https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/nvme-ebs-volumes.html
+        #         echo "Attaching volume $VOLUME_ID to instance $INSTANCE_ID"
+        #         /var/awslogs/bin/aws ec2 attach-volume --volume-id $VOLUME_ID --instance-id $INSTANCE_ID --device /dev/xvdf --region ${AWS::Region}
+
+        #         echo "Wait for volume $VOLUME_ID to attach"
+        #         sleep 30 # Give volume time to attach
+        #         lsblk # debug
+        #       mode: "0770"
+        config-artifactory:
           files:
-            /root/attach_volume.sh:
+            /root/mount_efs.sh:
               content: !Sub |
                 #!/usr/bin/env bash
-                IS_PRIMARY="${ArtifactoryPrimary}"
-
-                if [[ $IS_PRIMARY != "true" ]]; then
-                  echo 'Not primary node. Skipping EBS volume attachment.'
-                  lsblk # debug
-                  exit 0
-                fi
-
-                echo "Using primary volume ID ${PrimaryVolume}"
-                VOLUME_ID="${PrimaryVolume}"
-                echo "VOLUME_ID: $VOLUME_ID"
-                if [[ -z "$VOLUME_ID" ]]; then
-                  echo 'Invalid $VOLUME_ID'
-                  exit 1
-                fi
-
+                
+                ARTIFACTORY_HOME="/opt/jfrog/artifactory-pro-${ArtifactoryVersion}"
                 # Get instance id from AWS
                 INSTANCE_ID=$(curl -s http://169.254.169.254/latest/meta-data/instance-id)
 
-                # Attach the volume created by another CFT
-                # the device name should become /dev/nvme1n1
-                # See: https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/nvme-ebs-volumes.html
-                echo "Attaching volume $VOLUME_ID to instance $INSTANCE_ID"
-                /var/awslogs/bin/aws ec2 attach-volume --volume-id $VOLUME_ID --instance-id $INSTANCE_ID --device /dev/xvdf --region ${AWS::Region}
+                EFS_FILE_SYSTEM_ID="${ArtifactoryEfsFileSystem}"
+                EFS_MOUNT_POINT="/efsmount"
+                EFS_MOUNT_TARGET_DNS="$EFS_FILE_SYSTEM_ID.efs.${AWS::Region}.amazonaws.com"
 
-                echo "Wait for volume $VOLUME_ID to attach"
-                sleep 30 # Give volume time to attach
-                lsblk # debug
+                echo "before mounting efs"
+                ls -l /
+                mkdir -p $EFS_MOUNT_POINT
+                mount -t nfs4 -o nfsvers=4.1,rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2,noresvport $EFS_MOUNT_TARGET_DNS:/ $EFS_MOUNT_POINT
+                chmod go+rw $EFS_MOUNT_POINT
+                echo "after mounting efs"
+                ls -l /
+
+                # mkdir -p $EFS_MOUNT_POINT/$INSTANCE_ID/var
+                # mkdir -p $ARTIFACTORY_HOME
+                # ln -s $EFS_MOUNT_POINT/$INSTANCE_ID/var $ARTIFACTORY_HOME
+
+                echo "before creating plugins folder"
+                echo ls -l $EFS_MOUNT_POINT
+                ls -l $EFS_MOUNT_POINT
+                mkdir -p $EFS_MOUNT_POINT/plugins
+                echo ls -l $ARTIFACTORY_HOME/var/etc/artifactory
+                ls -l $ARTIFACTORY_HOME/var/etc/artifactory
+
+                # mkdir -p $ARTIFACTORY_HOME/var/etc/artifactory
+                # ln -s $EFS_MOUNT_POINT/plugins $ARTIFACTORY_HOME/var/etc/artifactory
+                # echo ls -l $ARTIFACTORY_HOME/var/etc/artifactory
+                # ls -l $ARTIFACTORY_HOME/var/etc/artifactory
+
               mode: "0770"
             /root/.jfrog_ami/artifactory.yml:
-              content: !Sub
-                - |
-                  # Base install for Artifactory
-                  - import_playbook: site-artifactory.yml
-                    vars:
-                      artifactory_product: ${product}
-                      artifactory_flavour: ${flavor}
-                      artifactory_ha_enabled: ${ha_enabled}
-                      artifactory_is_primary: ${ArtifactoryPrimary}
-                      artifactory_server_name: ${ArtifactoryServerName}
-                      server_name: ${ArtifactoryServerName}.${CertificateDomain}
-                      use_custom_data_directory: true
-                      custom_data_directory: "${UserDataDirectory}"
-                      s3_region: ${AWS::Region}
-                      s3_bucket: ${ArtifactoryS3Bucket}
-                      certificate: ${Certificate}
-                      certificate_key: ${CertificateKey}
-                      certificate_domain: ${CertificateDomain}
-                      enable_ssl: ${EnableSSL}
-                      ssl_dir: /etc/pki/tls/certs
-                      db_type: ${DatabaseType}
-                      db_driver: ${DatabaseDriver}
-                      db_url: ${DatabaseUrl}
-                      db_user: ${DatabaseUser}
-                      db_password: ${DatabasePassword}
-                      master_key: ${MasterKey}
-                      join_key: ${MasterKey}
-                      extra_java_opts: ${ExtraJavaOptions}
-                      artifactory_version: ${ArtifactoryVersion}
-                      artifactory_keystore:
-                        path: /opt/jfrog/artifactory/app/third-party/java/lib/security/cacerts
-                        default_password: changeit
-                        new_keystore_pass: ${DatabasePassword}
-                      artifactory_java_db_drivers:
-                        - name: ${DatabasePlugin}
-                          url: ${DatabasePluginUrl}
-                          owner: artifactory
-                          group: artifactory
-                      product_id: 'CloudFormation_QS_EC2/1.0.0'
-                - flavor: !FindInMap [ArtifactoryProductMap, !Ref ArtifactoryProduct, flavor]
-                  ha_enabled: !FindInMap [ArtifactoryProductMap, !Ref ArtifactoryProduct, haEabled]
-                  product: !FindInMap [ArtifactoryProductMap, !Ref ArtifactoryProduct, product]
+              content: !Sub |
+                # Base install for Artifactory
+                - import_playbook: site-artifactory.yml
+                  vars:
+                    artifactory_product: ${ArtifactoryProduct}
+                    artifactory_download_directory: "/opt/jfrog"
+                    artifactory_home: "/opt/jfrog/artifactory-pro-${ArtifactoryVersion}"
+                    artifactory_ha_enabled: true
+                    artifactory_server_name: ${ArtifactoryServerName}
+                    server_name: ${ArtifactoryServerName}.${CertificateDomain}
+                    s3_region: ${AWS::Region}
+                    s3_bucket: ${ArtifactoryS3Bucket}
+                    certificate: ${Certificate}
+                    certificate_key: ${CertificateKey}
+                    certificate_domain: ${CertificateDomain}
+                    enable_ssl: ${EnableSSL}
+                    ssl_dir: /etc/pki/tls/certs
+                    db_type: ${DatabaseType}
+                    db_driver: ${DatabaseDriver}
+                    db_url: ${DatabaseUrl}
+                    db_user: ${DatabaseUser}
+                    db_password: ${DatabasePassword}
+                    master_key: ${MasterKey}
+                    join_key: ${MasterKey}
+                    extra_java_opts: ${ExtraJavaOptions}
+                    artifactory_version: ${ArtifactoryVersion}
+                    artifactory_keystore:
+                      path: /opt/jfrog/artifactory/app/third-party/java/lib/security/cacerts
+                      default_password: changeit
+                      new_keystore_pass: ${DatabasePassword}
+                    artifactory_java_db_drivers:
+                      - name: ${DatabasePlugin}
+                        url: ${DatabasePluginUrl}
+                        owner: artifactory
+                        group: artifactory
+                    product_id: 'CloudFormation_QS_EC2/1.0.0'
               mode: "0400"
             /root/.vault_pass.txt:
               content: !Sub |
@@ -362,17 +381,14 @@ Resources:
         - 'CentOS7HVM'
       SecurityGroups:
         - !Ref SecurityGroups
-      BlockDeviceMappings:
-        !If
-          - IsSecondary
-          - - DeviceName: /dev/xvda
-              Ebs:
-                VolumeSize: !Ref VolumeSize
-                VolumeType: gp2
-                DeleteOnTermination: true
-                Encrypted: true
-          - !Ref AWS::NoValue
       InstanceType: !Ref InstanceType
+      # BlockDeviceMappings:
+      #   - DeviceName: /dev/xvda
+      #     Ebs:
+      #       VolumeSize: !Ref VolumeSize
+      #       VolumeType: gp2
+      #       DeleteOnTermination: true
+      #       Encrypted: true
       UserData:
         Fn::Base64:
           !Sub |
@@ -405,12 +421,15 @@ Resources:
             # Update OS
             yum update -y
 
-            # Install git
-            yum install -y epel-release git policycoreutils-python
+            # Install EPEL Repository
+            yum install -y epel-release
+
+            # Install git, jq, nfs-utils, policycoreutils python
+            yum install -y git jq nfs-utils policycoreutils-python
 
             yum update --security -y 2>&1 | tee /var/log/userdata.yum_security_update.log
 
-            yum install -y jq python3 libselinux-python3
+            yum install -y python3 libselinux-python3
 
             echo $PATH
 
@@ -450,10 +469,13 @@ Resources:
             chmod +x ./awslogs-agent-setup.py
             ./awslogs-agent-setup.py -n -r ${AWS::Region} -c /root/cloudwatch.conf 2>&1 | tee /var/log/userdata.cloudwatch_agent_install.log
 
-            /root/attach_volume.sh || cfn_fail
+            /root/mount_efs.sh 2>&1 | tee /var/log/jfrog-efs-mount.log || cfn_fail
+
+            #/root/attach_volume.sh || cfn_fail
 
             ansible-galaxy collection install community.general ansible.posix
 
+            setsebool httpd_can_network_connect 1 -P
             aws secretsmanager get-secret-value --secret-id ${ArtifactoryLicensesSecretName} --region ${AWS::Region} | jq -r '{"artifactory_licenses":(.SecretString | fromjson )}' > ~/.jfrog_ami/licenses.json || cfn_fail
 
             ansible-playbook /root/.jfrog_ami/jfrog-ami-setup.yml --vault-id /root/.vault_pass.txt 2>&1 | tee /var/log/jfrog-ami-setup.log || cfn_fail

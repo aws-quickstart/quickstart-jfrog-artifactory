@@ -51,7 +51,7 @@
     owner: "{{ artifactory_user }}"
     group: "{{ artifactory_group }}"
   loop:
-    - "bootstrap"
+    - "bootstrap/artifactory/tomcat/lib"
     - "etc"
   become: yes
 
