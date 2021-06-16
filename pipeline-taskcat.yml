@@ -119,6 +119,7 @@ tests:
       DatabasePreferredAz : us-east-1a
 
       # us-east-1
+      AvailabilityZones   : "us-east-1a, us-east-1b"
       VpcId               : "vpc-0df1d896364490643"
       PublicSubnet1Id     : "subnet-05e222926ec99d3c3"
       PublicSubnet2Id     : "subnet-02a7e4641b2e5bc13"
