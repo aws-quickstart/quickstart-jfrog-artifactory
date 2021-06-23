@@ -9,10 +9,10 @@ Metadata:
         - W9003
         - W9004
 Parameters:
-  AvailabilityZones:
-    Description: List of Availability Zones to use for the subnets in the VPC. Two
-      Availability Zones are used for this deployment.
-    Type: List<AWS::EC2::AvailabilityZone::Name>
+  # AvailabilityZones:
+  #   Description: List of Availability Zones to use for the subnets in the VPC. Two
+  #     Availability Zones are used for this deployment.
+  #   Type: List<AWS::EC2::AvailabilityZone::Name>
   VpcId:
     Type: AWS::EC2::VPC::Id
   VpcCidr:

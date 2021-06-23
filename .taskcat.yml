@@ -37,7 +37,7 @@ tests:
       NumberOfInstances: "3"
       InstallXray: "true"
       XrayNumberOfInstances: 2
-    template: templates/jfrog-artifactory-ec2-master.template.yaml
+    template: templates/jfrog-artifactory-ec2-main.template.yaml
     regions:
       - us-east-1
       # - us-gov-east-1
@@ -70,7 +70,7 @@ tests:
       REGION: default
     parameters:
       AvailabilityZone: "$[taskcat_genaz_1]"
-    template: templates/ami-rt-xray-master.template.yaml
+    template: templates/ami-rt-xray-main.template.yaml
     regions:
       - us-west-1
 
