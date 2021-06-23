@@ -21,7 +21,7 @@ Metadata:
       - Label:
           default: Network configuration
         Parameters:
-          - AvailabilityZones
+          # - AvailabilityZones
           - VpcId
           - VpcCidr
           - PublicSubnet1Id
@@ -84,8 +84,8 @@ Metadata:
           - XrayDatabaseUser
           - XrayDatabasePassword
     ParameterLabels:
-      AvailabilityZones:
-        default: Availability Zones
+      # AvailabilityZones:
+      #   default: Availability Zones
       KeyPairName:
         default: SSH key name
       VpcId:
@@ -179,10 +179,10 @@ Metadata:
       XrayDatabasePassword:
         default: Xray Database password
 Parameters:
-  AvailabilityZones:
-    Description: List of Availability Zones to use for the subnets in the VPC. Two
-      Availability Zones are used for this deployment.
-    Type: List<AWS::EC2::AvailabilityZone::Name>
+  # AvailabilityZones:
+  #   Description: List of Availability Zones to use for the subnets in the VPC. Two
+  #     Availability Zones are used for this deployment.
+  #   Type: List<AWS::EC2::AvailabilityZone::Name>
   KeyPairName:
     Description: Name of an existing key pair,
       which allows you to connect securely to your instance after it launches.
@@ -619,10 +619,10 @@ Resources:
         - S3Bucket: !If [UsingDefaultBucket, !Sub '${QsS3BucketName}-${AWS::Region}', !Ref 'QsS3BucketName']
           S3Region: !If [UsingDefaultBucket, !Ref 'AWS::Region', !Ref 'QsS3BucketRegion']
       Parameters:
-        AvailabilityZones:
-          Fn::Join:
-            - ','
-            - Ref: AvailabilityZones
+        # AvailabilityZones:
+        #   Fn::Join:
+        #     - ','
+        #     - Ref: AvailabilityZones
         VpcId: !Ref VpcId
         VpcCidr: !Ref VpcCidr
         PrivateSubnet1Cidr: !Ref PrivateSubnet1Cidr

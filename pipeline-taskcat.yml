@@ -39,7 +39,7 @@ tests:
     parameters:
       AvailabilityZone: "$[taskcat_genaz_1]"
       JFrogProduct: "jfrog-artifactory-jcr"
-    template: templates/jfrog-ami-master.template.yaml
+    template: templates/jfrog-ami-main.templates.yaml
 
   rt-ami:
     auth:
@@ -48,7 +48,7 @@ tests:
     parameters:
       AvailabilityZone: "$[taskcat_genaz_1]"
       JFrogProduct: "jfrog-artifactory-pro"
-    template: templates/jfrog-ami-master.template.yaml
+    template: templates/jfrog-ami-main.templates.yaml
 
   xray-ami:
     auth:
@@ -56,7 +56,7 @@ tests:
       us-gov-east-1 : gov
     parameters:
       AvailabilityZone: "$[taskcat_genaz_1]"
-    template: templates/ami-rt-xray-master.template.yaml
+    template: templates/ami-rt-xray-main.templates.yaml
 
   create-bastion-with-existing-vpc:
     parameters:
@@ -77,7 +77,7 @@ tests:
       InstallXray: "true"
       XrayNumberOfInstances: 2
       AvailabilityZones: "$[taskcat_genaz_2]"
-    template: templates/jfrog-artifactory-ec2-master.template.yaml
+    template: templates/jfrog-artifactory-ec2-main.templates.yaml
 
 
   artifactory-enterprise-existing-vpc:
@@ -105,13 +105,13 @@ tests:
       # InstallXray: "false"
       # XrayNumberOfInstances: 2
       AvailabilityZones: "us-east-1a, us-east-1b"
-    template: templates/jfrog-artifactory-ec2-marketplace-master.template.yaml
+    template: templates/jfrog-artifactory-ec2-marketplace-main.templates.yaml
 
   artifactory-pro-new-vpc:
     parameters:
       InstallXray         : "true"
       AvailabilityZones   : "$[taskcat_genaz_2]"
-    template              : templates/jfrog-artifactory-pro-ec2-new-vpc-master.template.yaml
+    template              : templates/jfrog-artifactory-pro-ec2-new-vpc-main.templates.yaml
 
   artifactory-pro-existing-vpc:
     parameters:
@@ -128,6 +128,6 @@ tests:
 
       PrivateSubnet1Cidr  : "10.0.0.0/19"
       PrivateSubnet2Cidr  : "10.0.32.0/19"
-    template              : templates/jfrog-artifactory-pro-ec2-existing-vpc-master.template.yaml
+    template              : templates/jfrog-artifactory-pro-ec2-existing-vpc-main.templates.yaml
 
 

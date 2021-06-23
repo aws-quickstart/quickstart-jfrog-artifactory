@@ -545,10 +545,10 @@ Resources:
         - S3Bucket: !If [UsingDefaultBucket, !Sub '${QsS3BucketName}-${AWS::Region}', !Ref 'QsS3BucketName']
           S3Region: !If [UsingDefaultBucket, !Ref 'AWS::Region', !Ref 'QsS3BucketRegion']
       Parameters:
-        AvailabilityZones:
-          Fn::Join:
-            - ','
-            - Ref: AvailabilityZones
+        # AvailabilityZones:
+        #   Fn::Join:
+        #     - ','
+        #     - Ref: AvailabilityZones
         KeyPairName: !Ref KeyPairName
         VpcId: !GetAtt ArtifactoryVpcStack.Outputs.VPCID
         VpcCidr: !Ref VpcCidr
