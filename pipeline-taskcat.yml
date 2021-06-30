@@ -8,8 +8,8 @@ project:
 
   parameters:
     KeyPairName         : "keyname"
-    ArtifactoryVersion  : 7.15.3
-    XrayVersion         : 3.17.4
+    ArtifactoryVersion  : 7.21.2
+    XrayVersion         : 3.27.2
     AccessCidr          : "0.0.0.0/0"
     QsS3BucketName      : "$[taskcat_autobucket]"
     QsS3KeyPrefix       : "quickstart-jfrog-artifactory/"
@@ -27,15 +27,6 @@ project:
     - REGION
 
 tests:
-
-  jcr-ami:
-    auth:
-      REGION: seller
-    parameters:
-      AvailabilityZone: "$[taskcat_genaz_1]"
-      JFrogProduct: "jfrog-artifactory-jcr"
-    template: templates/jfrog-ami-master.template.yaml
-
   rt-ami:
     auth:
       REGION: seller
@@ -43,7 +34,7 @@ tests:
     parameters:
       AvailabilityZone: "$[taskcat_genaz_1]"
       JFrogProduct: "jfrog-artifactory-pro"
-    template: templates/jfrog-ami-master.template.yaml
+    template: templates/jfrog-ami-main.template.yaml
 
   xray-ami:
     auth:
@@ -51,7 +42,7 @@ tests:
       us-gov-east-1 : gov
     parameters:
       AvailabilityZone: "$[taskcat_genaz_1]"
-    template: templates/ami-rt-xray-master.template.yaml
+    template: templates/ami-rt-xray-main.template.yaml
 
   create-bastion-with-existing-vpc:
     parameters:
@@ -80,7 +71,7 @@ tests:
       XrayDatabasePassword: "$[taskcat_genpass_8A]"
       XrayNumberOfInstances: 2
       AvailabilityZones: "$[taskcat_genaz_2]"
-    template: templates/jfrog-artifactory-ec2-master.template.yaml
+    template: templates/jfrog-artifactory-ec2-main.template.yaml
 
 
   artifactory-enterprise-existing-vpc:
@@ -114,7 +105,6 @@ tests:
 
   rt-xray-ec2-marketplace:
     parameters:
-      DatabaseEngine: Postgres
       DatabasePassword: "$[taskcat_genpass_8A]"
       DatabaseInstance: "db.m5.large"
       NumberOfSecondary: "2"
@@ -125,14 +115,14 @@ tests:
       XrayDatabasePassword: "$[taskcat_genpass_8A]"
       # XrayNumberOfInstances: 2
       AvailabilityZones: "us-east-1a, us-east-1b"
-    template: templates/jfrog-artifactory-ec2-marketplace-master.template.yaml
+    template: templates/jfrog-artifactory-ec2-marketplace-main.template.yaml
 
   artifactory-pro-new-vpc:
     parameters:
       InstallXray         : "true"
       DatabasePassword    : "$[taskcat_genpass_8A]"
       AvailabilityZones   : "$[taskcat_genaz_2]"
-    template              : templates/jfrog-artifactory-pro-ec2-new-vpc-master.template.yaml
+    template              : templates/jfrog-artifactory-pro-ec2-new-vpc-main.template.yaml
 
   artifactory-pro-existing-vpc:
     parameters:
@@ -150,6 +140,6 @@ tests:
 
       PrivateSubnet1Cidr  : "10.0.0.0/19"
       PrivateSubnet2Cidr  : "10.0.32.0/19"
-    template              : templates/jfrog-artifactory-pro-ec2-existing-vpc-master.template.yaml
+    template              : templates/jfrog-artifactory-pro-ec2-existing-vpc-main.template.yaml
 
 
