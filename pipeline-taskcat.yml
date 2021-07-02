@@ -33,7 +33,6 @@ tests:
       us-gov-east-1 : gov
     parameters:
       AvailabilityZone: "$[taskcat_genaz_1]"
-      JFrogProduct: "jfrog-artifactory-pro"
     template: templates/jfrog-ami-main.template.yaml
 
   xray-ami:
