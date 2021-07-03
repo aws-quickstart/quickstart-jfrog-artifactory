@@ -406,8 +406,7 @@ Parameters:
     AllowedPattern: ^[^ \\'"]+$
     MinLength: '8'
     MaxLength: '20'
-    ConstraintDescription: Must be at least 8 and no more than 20 printable ASCII characters (letters, numbers and
-       symbols. Can't contain any of the following: / (slash), '(single quote), "(double quote) and @ (at sign).
+    ConstraintDescription: Must be at least 8 and no more than 20 printable ASCII characters (letters, numbers and symbols. Can't contain any of the following: / (slash), '(single quote), "(double quote) and @ (at sign).
     NoEcho: 'true'
     Type: String
   DatabaseInstance:
@@ -505,8 +504,7 @@ Parameters:
     AllowedPattern: ^[^ \\'"]+$
     MinLength: '8'
     MaxLength: '20'
-    ConstraintDescription: Must be at least 8 and no more than 20 printable ASCII characters (letters, numbers and
-       symbols. Can't contain any of the following: / (slash), '(single quote), "(double quote) and @ (at sign).
+    ConstraintDescription: Must be at least 8 and no more than 20 printable ASCII characters (letters, numbers and symbols. Can't contain any of the following: / (slash), '(single quote), "(double quote) and @ (at sign).
     NoEcho: 'true'
     Type: String
 Conditions:
