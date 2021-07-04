@@ -183,6 +183,7 @@ Resources:
                       db_type: "postgresql"
                       db_driver: "org.postgresql.Driver"
                       artifactory_tar: "https://releases.jfrog.io/artifactory/artifactory-pro/org/artifactory/pro/jfrog-artifactory-pro/${ArtifactoryVersion}/jfrog-artifactory-pro-${ArtifactoryVersion}-linux.tar.gz"
+                      product_id: CloudFormation_MP_EC2/1.0.0
               mode: "0400"
     Properties:
       KeyName: !Ref KeyPairName

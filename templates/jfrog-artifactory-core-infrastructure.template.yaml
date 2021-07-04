@@ -61,9 +61,6 @@ Parameters:
   ArtifactoryProduct:
     Default: JFrog-Artifactory-Pro
     Type: String
-  ReleaseStage:
-    Default: GA
-    Type: String
   InstanceType:
     Default: m5.xlarge
     Type: String

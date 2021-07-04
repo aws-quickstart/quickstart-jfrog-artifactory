@@ -29,7 +29,6 @@ Parameters:
     AllowedValues:
       - JFrog-Artifactory-Pro
       - JFrog-Artifactory-Enterprise
-      - JFrog-Container-Registry
     Default: JFrog-Artifactory-Enterprise
     Type: String
   QsS3BucketName:

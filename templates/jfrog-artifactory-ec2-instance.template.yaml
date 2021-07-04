@@ -27,7 +27,6 @@ Parameters:
     AllowedValues:
       - JFrog-Artifactory-Pro
       - JFrog-Artifactory-Enterprise
-      - JFrog-Container-Registry
     Default: JFrog-Artifactory-Enterprise
     Type: String
   QsS3BucketName:
@@ -150,11 +149,6 @@ Mappings:
       CentOS7HVM: "ami-bbba86da"
 
   ArtifactoryProductMap:
-    JFrog-Container-Registry:
-      "7153": "Jcr7153"
-      flavor: "jcr"
-      haEabled: false
-      product: "jcr"
     JFrog-Artifactory-Enterprise:
       "7153": "Artifactory7153"
       flavor: "pro"
