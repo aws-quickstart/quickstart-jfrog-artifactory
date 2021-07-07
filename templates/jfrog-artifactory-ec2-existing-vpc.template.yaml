@@ -906,6 +906,7 @@ Resources:
         InternalTargetGroupARN: !Ref ArtifactoryInternalTargetGroup
 
   ArtifactorySecondary:
+    DependsOn: ArtifactoryPrimary
     Type: AWS::CloudFormation::Stack
     Properties:
       TemplateURL: !Sub
