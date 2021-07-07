@@ -58,7 +58,6 @@ Metadata:
           default: Amazon RDS configuration
         Parameters:
           - DatabaseName
-          - DatabaseEngine
           - DatabaseUser
           - DatabasePassword
           - DatabaseInstance
@@ -137,8 +136,6 @@ Metadata:
         default: Default Java memory settings
       DatabaseName:
         default: Database name
-      DatabaseEngine:
-        default: Database engine
       DatabaseUser:
         default: Database user
       DatabasePassword:
@@ -396,12 +393,6 @@ Parameters:
     ConstraintDescription: 1 to 60 alphanumeric characters First character must be a letter.
     Default: artdb
     Type: String
-  DatabaseEngine:
-    Description: Database engine that you want to run.
-    AllowedValues:
-      - Postgres
-    Default: Postgres
-    Type: String
   DatabaseUser:
     Description: Login ID for the master user of your database instance.
     MinLength: '1'
@@ -587,7 +578,6 @@ Resources:
         ExtraJavaOptions: !Ref ExtraJavaOptions
         DefaultJavaMemSettings: !Ref DefaultJavaMemSettings
         DatabaseName: !Ref DatabaseName
-        DatabaseEngine: !Ref DatabaseEngine
         DatabaseUser: !Ref DatabaseUser
         DatabasePassword: !Ref DatabasePassword
         DatabaseInstance: !Ref DatabaseInstance
