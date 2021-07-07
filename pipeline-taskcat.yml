@@ -65,7 +65,7 @@ tests:
       us-gov-east-1: gov
     parameters:
       InstallXray: "true"
-      XrayNumberOfInstances: 2
+      XrayNumberOfSecondary: 1
       AvailabilityZones: "$[taskcat_genaz_2]"
     template: templates/jfrog-artifactory-ec2-main.template.yaml
 
@@ -77,7 +77,7 @@ tests:
       us-gov-east-1: gov
     parameters:
       InstallXray: "true"
-      XrayNumberOfInstances: 2
+      XrayNumberOfSecondary: 1
 
       # us-west-1
       AvailabilityZones   : "us-east-1a, us-east-1b"
@@ -99,7 +99,7 @@ tests:
       SmLicenseCertName: "jfrog-artifactory"
       MultiAzDatabase: "true"
       # InstallXray: "false"
-      # XrayNumberOfInstances: 2
+      # XrayNumberOfSecondary: 1
       AvailabilityZones: "us-east-1a, us-east-1b"
     template: templates/jfrog-artifactory-ec2-marketplace-main.template.yaml
 

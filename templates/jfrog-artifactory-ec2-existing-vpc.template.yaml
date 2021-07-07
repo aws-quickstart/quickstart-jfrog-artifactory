@@ -49,9 +49,8 @@ Metadata:
       - Label:
           default: JFrog Artifactory configuration
         Parameters:
-          - ArtifactoryProduct
           - ArtifactoryVersion
-          - NumberOfInstances
+          - NumberOfSecondary
           - SmLicenseName
           - SmCertName
           - ArtifactoryServerName
@@ -79,7 +78,7 @@ Metadata:
         Parameters:
           - InstallXray
           - XrayVersion
-          - XrayNumberOfInstances
+          - XrayNumberOfSecondary
           - XrayInstanceType
           - XrayDatabaseUser
           - XrayDatabasePassword
@@ -128,10 +127,8 @@ Metadata:
         default: EBS root volume size
       InstanceType:
         default: EC2 instance type
-      NumberOfInstances:
-        default: Number of Artifactory instances
-      ArtifactoryProduct:
-        default: Artifactory product to install
+      NumberOfSecondary:
+        default: Secondary instances
       ArtifactoryVersion:
         default: Artifactory version
       SmLicenseName:
@@ -170,8 +167,8 @@ Metadata:
         default: Install JFrog Xray
       XrayVersion:
         default: Version of Xray to install
-      XrayNumberOfInstances:
-        default: Number of JFrog Xray instances
+      XrayNumberOfSecondary:
+        default: Number of JFrog Xray secondary instances
       XrayInstanceType:
         default: Xray instance type
       XrayDatabaseUser:
@@ -339,12 +336,13 @@ Parameters:
     ConstraintDescription: Must contain valid instance type.
     Default: m5.xlarge
     Type: String
-  NumberOfInstances:
-    Description: Number of Artifactory servers to complete your
+  NumberOfSecondary:
+    Description: Number of secondary Artifactory servers to complete your
       HA deployment. To align with Artifactory best practices, the minimum number
-      is three and the maximum is eight. Do not select more instances than you
+      is two and the maximum is seven. Do not select more instances than you
       have licenses for.
     AllowedValues:
+      - 0
       - 1
       - 2
       - 3
@@ -352,16 +350,8 @@ Parameters:
       - 5
       - 6
       - 7
-      - 8
-    Default: 3
+    Default: 2
     Type: Number
-  ArtifactoryProduct:
-    Description: JFrog Artifactory product you want to install into an AMI.
-    AllowedValues:
-      - JFrog-Artifactory-Pro
-      - JFrog-Artifactory-Enterprise
-    Default: JFrog-Artifactory-Enterprise
-    Type: String
   ArtifactoryVersion:
     Description: Version of Artifactory that you want to deploy into the Quick Start.
       See the release notes to select the version you want to deploy at
@@ -499,13 +489,13 @@ Parameters:
     ConstraintDescription: A version that matches X.X.X per Xray releases.
     Default: 3.27.2
     Type: String
-  XrayNumberOfInstances:
-    Description: The number of Xray instances servers to complete your
-      HA deployment. The minimum number is one; the maximum is seven.
+  XrayNumberOfSecondary:
+    Description: The number of Xray secondary instances servers to complete your
+      HA deployment. The minimum number is zero; the maximum is six.
       Do not select more than instances than you have licenses for.
-    MinValue: 1
-    MaxValue: 7
-    Default: 1
+    MinValue: 0
+    MaxValue: 6
+    Default: 0
     Type: Number
   XrayInstanceType:
     Description: The EC2 instance type for the Xray instances.
@@ -535,11 +525,13 @@ Parameters:
 
 Conditions:
   EnableBastion: !Equals [!Ref 'ProvisionBastionHost', 'Enabled']
+  HasSecondaryNodes: !Not [!Equals [!Ref NumberOfSecondary, '0']]
   DefaultJava: !Equals [!Ref DefaultJavaMemSettings, "true"]
   UsingDefaultBucket: !Equals [!Ref QsS3BucketName, 'aws-quickstart']
   EnableXray: !Equals [!Ref InstallXray, 'true']
   SmCertNameNotExists: !Equals [!Ref 'SmCertName', '']
   SmCertNameExists: !Not [!Equals [!Ref 'SmCertName', '']]
+  XrayHasSecondaryNodes: !Not [!Equals [!Ref XrayNumberOfSecondary, '0']]
 
 Resources:
   BastionRole:
@@ -734,7 +726,7 @@ Resources:
     Properties:
       Tags:
         - Key: Name
-          Value: !Sub ${ArtifactoryProduct}-ec2-instances-sg
+          Value: artifactory-ec2-instances-sg
       GroupDescription: SG for EC2 instances (also permits access using SSH from the bastion host)
       VpcId: !Ref VpcId
       SecurityGroupIngress:
@@ -874,7 +866,6 @@ Resources:
               - UsingDefaultBucket
               - !Ref 'AWS::Region'
               - !Ref 'QsS3BucketRegion'
-        ArtifactoryProduct: !Ref ArtifactoryProduct
         ArtifactoryLicensesSecretName: !Ref SmLicenseName
         ArtifactoryServerName: !Ref ArtifactoryServerName
         EnableSSL: !If [SmCertNameExists, true, false]
@@ -904,6 +895,7 @@ Resources:
         InternalTargetGroupARN: !Ref ArtifactoryInternalTargetGroup
 
   ArtifactorySecondary:
+    Condition: HasSecondaryNodes
     DependsOn: ArtifactoryPrimary
     Type: AWS::CloudFormation::Stack
     Properties:
@@ -913,8 +905,8 @@ Resources:
           S3Region: !If [UsingDefaultBucket, !Ref 'AWS::Region', !Ref 'QsS3BucketRegion']
       Parameters:
         PrivateSubnetIds: !Join [',', [!Ref PrivateSubnet1Id, !Ref PrivateSubnet2Id]]
-        MinScalingNodes: !Ref NumberOfInstances
-        MaxScalingNodes: !Ref NumberOfInstances
+        MinScalingNodes: !Ref NumberOfSecondary
+        MaxScalingNodes: !Ref NumberOfSecondary
         DeploymentTag: Artifactory
         HostRole: !Ref ArtifactoryHostRole
         QsS3BucketName: !Ref QsS3BucketName
@@ -929,7 +921,6 @@ Resources:
               - UsingDefaultBucket
               - !Ref 'AWS::Region'
               - !Ref 'QsS3BucketRegion'
-        ArtifactoryProduct: !Ref ArtifactoryProduct
         ArtifactoryLicensesSecretName: !Ref SmLicenseName
         ArtifactoryServerName: !Ref ArtifactoryServerName
         EnableSSL: !If [SmCertNameExists, true, false]
@@ -1027,8 +1018,9 @@ Resources:
       Roles:
         - !Ref XrayHostRole
       Path: /
-  XrayExistingVpcStack:
+  XrayPrimary:
     Condition: EnableXray
+    DependsOn: ArtifactoryPrimary
     Type: AWS::CloudFormation::Stack
     Properties:
       TemplateURL: !Sub
@@ -1039,10 +1031,54 @@ Resources:
         PrivateSubnet1Id: !Ref PrivateSubnet1Id
         PrivateSubnet2Id: !Ref PrivateSubnet2Id
         KeyPairName: !Ref KeyPairName
-        MinScalingNodes: !Ref XrayNumberOfInstances
-        MaxScalingNodes: !Ref XrayNumberOfInstances
+        MinScalingNodes: 1
+        MaxScalingNodes: 1
         DeploymentTag: 'xray'
-        ArtifactoryProduct: !Ref ArtifactoryProduct
+        QsS3BucketName: !Ref QsS3BucketName
+        QsS3KeyPrefix: !Ref QsS3KeyPrefix
+        QsS3Uri: !Sub
+          - https://${S3Bucket}.s3.${S3Region}.${AWS::URLSuffix}/${QsS3KeyPrefix}
+          - S3Bucket: !If
+              - UsingDefaultBucket
+              - !Sub 'aws-quickstart-${AWS::Region}'
+              - !Ref 'QsS3BucketName'
+            S3Region: !If
+              - UsingDefaultBucket
+              - !Ref 'AWS::Region'
+              - !Ref 'QsS3BucketRegion'
+        DatabaseDriver: !GetAtt ArtifactoryCoreInfraStack.Outputs.DatabaseDriver
+        DatabaseType: !GetAtt ArtifactoryCoreInfraStack.Outputs.DatabaseType
+        DatabaseUser: !Ref DatabaseUser
+        DatabasePassword: !Ref DatabasePassword
+        MasterKey: !Ref MasterKey
+        SecurityGroups: !Ref ArtifactoryEc2Sg
+        VolumeSize: !Ref VolumeSize
+        ExtraJavaOptions: !GetAtt ArtifactoryCoreInfraStack.Outputs.JavaOpts
+        XrayInstanceType: !Ref XrayInstanceType
+        JfrogInternalUrl: !Sub "http://${ArtifactoryInternalElb.DNSName}"
+        XrayDatabaseUser: !Ref XrayDatabaseUser
+        XrayDatabasePassword: !Ref XrayDatabasePassword
+        XrayMasterDatabaseUrl: !GetAtt ArtifactoryCoreInfraStack.Outputs.XrayMasterDatabaseUrl
+        XrayDatabaseUrl: !GetAtt ArtifactoryCoreInfraStack.Outputs.XrayDatabaseUrl
+        XrayVersion: !Ref XrayVersion
+        XrayHostRole: !Ref XrayHostRole
+        XrayHostProfile: !Ref XrayHostProfile
+  XraySecondary:
+    Condition: EnableXray
+    DependsOn: XrayPrimary
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub
+        - https://${S3Bucket}.s3.${S3Region}.${AWS::URLSuffix}/${QsS3KeyPrefix}templates/jfrog-xray-ec2-instance.template.yaml
+        - S3Bucket: !If [UsingDefaultBucket, !Sub '${QsS3BucketName}-${AWS::Region}', !Ref 'QsS3BucketName']
+          S3Region: !If [UsingDefaultBucket, !Ref 'AWS::Region', !Ref 'QsS3BucketRegion']
+      Parameters:
+        PrivateSubnet1Id: !Ref PrivateSubnet1Id
+        PrivateSubnet2Id: !Ref PrivateSubnet2Id
+        KeyPairName: !Ref KeyPairName
+        MinScalingNodes: !Ref XrayNumberOfSecondary
+        MaxScalingNodes: !Ref XrayNumberOfSecondary
+        DeploymentTag: 'xray'
         QsS3BucketName: !Ref QsS3BucketName
         QsS3KeyPrefix: !Ref QsS3KeyPrefix
         QsS3Uri: !Sub

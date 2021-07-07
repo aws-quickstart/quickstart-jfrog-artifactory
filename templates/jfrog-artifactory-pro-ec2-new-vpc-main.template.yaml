@@ -261,11 +261,10 @@ Resources:
         ProvisionBastionHost: "Enabled"
         AccessCidr: !Ref AccessCidr
         RemoteAccessCidr: !Ref RemoteAccessCidr
-        ArtifactoryProduct: 'JFrog-Artifactory-Pro'
         ArtifactoryVersion: !Ref ArtifactoryVersion
         VolumeSize: !Ref VolumeSize
         InstanceType: !Ref InstanceType
-        NumberOfInstances: 1
+        NumberOfSecondary: 0
         SmLicenseName: !Ref SmLicenseName
         SmCertName: !Ref SmCertName
         ArtifactoryServerName: !Ref ArtifactoryServerName

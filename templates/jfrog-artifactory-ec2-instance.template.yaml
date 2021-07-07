@@ -22,13 +22,6 @@ Parameters:
     Type: String
   HostRole:
     Type: String
-  ArtifactoryProduct:
-    Description: JFrog Artifactory product you want to install into an AMI.
-    AllowedValues:
-      - JFrog-Artifactory-Pro
-      - JFrog-Artifactory-Enterprise
-    Default: JFrog-Artifactory-Enterprise
-    Type: String
   QsS3BucketName:
     Type: String
   QsS3KeyPrefix:
@@ -313,7 +306,6 @@ Resources:
                 # Base install for Artifactory
                 - import_playbook: site-artifactory.yml
                   vars:
-                    artifactory_product: ${ArtifactoryProduct}
                     artifactory_download_directory: "/opt/jfrog"
                     artifactory_home: "/opt/jfrog/artifactory-pro-${ArtifactoryVersion}"
                     artifactory_ha_enabled: true

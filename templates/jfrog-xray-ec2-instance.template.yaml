@@ -24,13 +24,6 @@ Parameters:
     Type: Number
   DeploymentTag:
     Type: String
-  ArtifactoryProduct:
-    Description: JFrog Artifactory product you want to install into an AMI.
-    AllowedValues:
-      - JFrog-Artifactory-Pro
-      - JFrog-Artifactory-Enterprise
-    Default: JFrog-Artifactory-Enterprise
-    Type: String
   QsS3BucketName:
     Type: String
   QsS3KeyPrefix:
@@ -126,7 +119,7 @@ Mappings:
     us-gov-west-1:
       CentOS7HVM: "ami-bbba86da"
 Conditions:
-  IsArtifactoryPro: !Equals [!Ref ArtifactoryProduct, 'JFrog-Artifactory-Pro']
+  IsArtifactoryPro: !Equals [!Ref MaxScalingNodes, '1']
 
 Resources:
   XrayScalingGroup:
