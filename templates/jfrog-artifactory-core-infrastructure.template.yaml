@@ -191,30 +191,6 @@ Mappings:
       Min: 192
       Max: 288
       DeploymentSize: xxxLarge
-    m5ad.large:
-      Min: 4
-      Max: 4
-      DeploymentSize: xxSmall
-    m5ad.xlarge:
-      Min: 8
-      Max: 12
-      DeploymentSize: xSmall
-    m5ad.2xlarge:
-      Min: 16
-      Max: 24
-      DeploymentSize: Small
-    m5ad.4xlarge:
-      Min: 32
-      Max: 48
-      DeploymentSize: Medium
-    m5ad.12xlarge:
-      Min: 96
-      Max: 144
-      DeploymentSize: xLarge
-    m5ad.24xlarge:
-      Min: 192
-      Max: 288
-      DeploymentSize: xxxLarge
 
 Conditions:
   IsMultiAzDatabase: !Equals [!Ref MultiAzDatabase, 'true']

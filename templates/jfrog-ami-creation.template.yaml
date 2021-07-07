@@ -172,8 +172,7 @@ Resources:
         config-ansible-art-ami:
           files:
             /root/.jfrog_ami/jfrog-ami-setup.yml:
-              content: !Sub
-                - |
+              content: !Sub |
                   # Base install for JFrogAMIInstance
                   - import_playbook: artifactory-ami.yml
                     vars:

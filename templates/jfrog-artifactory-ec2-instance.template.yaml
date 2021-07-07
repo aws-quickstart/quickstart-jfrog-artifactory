@@ -144,19 +144,6 @@ Mappings:
     us-gov-west-1:
       CentOS7HVM: "ami-bbba86da"
 
-  # ArtifactoryProductMap:
-  #   JFrog-Artifactory-Enterprise:
-  #     flavor: "pro"
-  #     haEabled: true
-  #     product: "artifactory"
-  #   JFrog-Artifactory-Pro:
-  #     flavor: "pro"
-  #     haEabled: false
-  #     product: "artifactory"
-
-# Conditions:
-#   IsSecondary: !Equals [!Ref ArtifactoryPrimary, 'false']
-
 Resources:
   ArtifactoryScalingGroup:
     Type: AWS::AutoScaling::AutoScalingGroup
