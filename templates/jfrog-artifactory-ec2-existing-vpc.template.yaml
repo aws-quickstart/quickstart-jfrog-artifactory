@@ -851,8 +851,7 @@ Resources:
       Roles:
         - !Ref ArtifactoryHostRole
       Path: /
-
-  Artifactory:
+  ArtifactoryPrimary:
     Type: AWS::CloudFormation::Stack
     Properties:
       TemplateURL: !Sub
@@ -860,11 +859,23 @@ Resources:
         - S3Bucket: !If [UsingDefaultBucket, !Sub '${QsS3BucketName}-${AWS::Region}', !Ref 'QsS3BucketName']
           S3Region: !If [UsingDefaultBucket, !Ref 'AWS::Region', !Ref 'QsS3BucketRegion']
       Parameters:
-        PrivateSubnetIds: !Join [',', [!Ref PrivateSubnet1Id, !Ref PrivateSubnet2Id]]
-        MinScalingNodes: !Ref NumberOfInstances
-        MaxScalingNodes: !Ref NumberOfInstances
+        PrivateSubnetIds: !Join [',', [!Ref PrivateSubnet1Id]]
+        MinScalingNodes: '1'  # Always have 1 PrimaryNode
+        MaxScalingNodes: '1'  # Always have 1 PrimaryNode
         DeploymentTag: Artifactory
         HostRole: !Ref ArtifactoryHostRole
+        QsS3BucketName: !Ref QsS3BucketName
+        QsS3KeyPrefix: !Ref QsS3KeyPrefix
+        QsS3Uri: !Sub
+          - https://${S3Bucket}.s3.${S3Region}.${AWS::URLSuffix}/${QsS3KeyPrefix}
+          - S3Bucket: !If
+              - UsingDefaultBucket
+              - !Sub 'aws-quickstart-${AWS::Region}'
+              - !Ref 'QsS3BucketName'
+            S3Region: !If
+              - UsingDefaultBucket
+              - !Ref 'AWS::Region'
+              - !Ref 'QsS3BucketRegion'
         ArtifactoryProduct: !Ref ArtifactoryProduct
         ArtifactoryLicensesSecretName: !Ref SmLicenseName
         ArtifactoryServerName: !Ref ArtifactoryServerName
@@ -893,6 +904,20 @@ Resources:
         TargetGroupARN: !Ref ArtifactoryTargetGroup
         SSLTargetGroupARN: !Ref ArtifactorySslTargetGroup
         InternalTargetGroupARN: !Ref ArtifactoryInternalTargetGroup
+
+  ArtifactorySecondary:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub
+        - https://${S3Bucket}.s3.${S3Region}.${AWS::URLSuffix}/${QsS3KeyPrefix}templates/jfrog-artifactory-ec2-instance.template.yaml
+        - S3Bucket: !If [UsingDefaultBucket, !Sub '${QsS3BucketName}-${AWS::Region}', !Ref 'QsS3BucketName']
+          S3Region: !If [UsingDefaultBucket, !Ref 'AWS::Region', !Ref 'QsS3BucketRegion']
+      Parameters:
+        PrivateSubnetIds: !Join [',', [!Ref PrivateSubnet1Id, !Ref PrivateSubnet2Id]]
+        MinScalingNodes: !Ref NumberOfInstances
+        MaxScalingNodes: !Ref NumberOfInstances
+        DeploymentTag: Artifactory
+        HostRole: !Ref ArtifactoryHostRole
         QsS3BucketName: !Ref QsS3BucketName
         QsS3KeyPrefix: !Ref QsS3KeyPrefix
         QsS3Uri: !Sub
@@ -905,6 +930,34 @@ Resources:
               - UsingDefaultBucket
               - !Ref 'AWS::Region'
               - !Ref 'QsS3BucketRegion'
+        ArtifactoryProduct: !Ref ArtifactoryProduct
+        ArtifactoryLicensesSecretName: !Ref SmLicenseName
+        ArtifactoryServerName: !Ref ArtifactoryServerName
+        EnableSSL: !If [SmCertNameExists, true, false]
+        Certificate: !If [SmCertNameExists, !Sub '{{resolve:secretsmanager:${SmCertName}:SecretString:Certificate}}', '']
+        CertificateKey: !If [SmCertNameExists, !Sub '{{resolve:secretsmanager:${SmCertName}:SecretString:CertificateKey}}', '']
+        CertificateDomain: !If [SmCertNameExists, !Sub '{{resolve:secretsmanager:${SmCertName}:SecretString:CertificateDomain}}', '']
+        ArtifactoryS3Bucket: !GetAtt ArtifactoryCoreInfraStack.Outputs.S3Bucket
+        DatabaseUrl: !GetAtt ArtifactoryCoreInfraStack.Outputs.DatabaseUrl
+        DatabaseDriver: !GetAtt ArtifactoryCoreInfraStack.Outputs.DatabaseDriver
+        DatabasePlugin: !GetAtt ArtifactoryCoreInfraStack.Outputs.DatabasePlugin
+        DatabasePluginUrl: !GetAtt ArtifactoryCoreInfraStack.Outputs.DatabasePluginUrl
+        DatabaseType: !GetAtt ArtifactoryCoreInfraStack.Outputs.DatabaseType
+        DatabaseUser: !Ref DatabaseUser
+        DatabasePassword: !Ref DatabasePassword
+        MasterKey: !Ref MasterKey
+        ExtraJavaOptions: !If [DefaultJava, !Sub "${ArtifactoryCoreInfraStack.Outputs.JavaOpts} ${ExtraJavaOptions}", !Ref ExtraJavaOptions]
+        ArtifactoryVersion: !Ref ArtifactoryVersion
+        KeyPairName: !Ref KeyPairName
+        HostProfile: !Ref ArtifactoryHostProfile
+        SecurityGroups: !Ref ArtifactoryEc2Sg
+        InstanceType: !Ref InstanceType
+        # PrimaryVolume: !GetAtt ArtifactoryCoreInfraStack.Outputs.ArtifactoryEbsVolume
+        # VolumeSize: !Ref VolumeSize
+        ArtifactoryEfsFileSystem: !GetAtt ArtifactoryCoreInfraStack.Outputs.ArtifactoryEfsFileSystem
+        TargetGroupARN: !Ref ArtifactoryTargetGroup
+        SSLTargetGroupARN: !Ref ArtifactorySslTargetGroup
+        InternalTargetGroupARN: !Ref ArtifactoryInternalTargetGroup
   XrayHostRole:
     Condition: EnableXray
     Type: AWS::IAM::Role

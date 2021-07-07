@@ -17,7 +17,6 @@ Metadata:
           default: JFrog Product AMI info
         Parameters:
           - InstanceType
-          - JFrogProduct
           - ArtifactoryVersion
       - Label:
           default: AWS Quick Start Configuration
@@ -36,8 +35,6 @@ Metadata:
         default: Public subnet 1 ID
       InstanceType:
         default: EC2 instance type
-      JFrogProduct:
-        default: JFrog Product to install
       ArtifactoryVersion:
         default: Artifactory version
       QsS3BucketName:
@@ -63,13 +60,6 @@ Parameters:
   PublicSubnet1Id:
     Description: The ID of the public subnet in Availability Zone 1 in your existing VPC (e.g., subnet-z0376dab).
     Type: "AWS::EC2::Subnet::Id"
-  JFrogProduct:
-    Description: The Jfrog product you wish to install into an AMI.
-    AllowedValues:
-      - jfrog-artifactory-pro
-      - jfrog-artifactory-jcr
-    Default: jfrog-artifactory-pro
-    Type: String
   ArtifactoryVersion:
     Description: The version of the Jfrog product line that you want to deploy into an AMI.
       Please see the release notes to select the version you want to deploy.
@@ -193,7 +183,7 @@ Resources:
                       db_download_url: "https://jdbc.postgresql.org/download/postgresql-42.2.12.jar"
                       db_type: "postgresql"
                       db_driver: "org.postgresql.Driver"
-                      artifactory_tar: "{{ 'https://releases.jfrog.io/artifactory/artifactory-pro/org/artifactory/pro/jfrog-artifactory-pro/${ArtifactoryVersion}/jfrog-artifactory-pro-${ArtifactoryVersion}-linux.tar.gz' if '${JFrogProduct}' == 'jfrog-artifactory-pro' else 'https://releases.jfrog.io/artifactory/bintray-artifactory/org/artifactory/jcr/jfrog-artifactory-jcr/${ArtifactoryVersion}/jfrog-artifactory-jcr-${ArtifactoryVersion}-linux.tar.gz' if '${JFrogProduct}' == 'jfrog-artifactory-jcr' }}"
+                      artifactory_tar: "https://releases.jfrog.io/artifactory/artifactory-pro/org/artifactory/pro/jfrog-artifactory-pro/${ArtifactoryVersion}/jfrog-artifactory-pro-${ArtifactoryVersion}-linux.tar.gz"
                       product_id: CloudFormation_MP_EC2/1.0.0
               mode: "0400"
     Properties:
@@ -283,4 +273,4 @@ Resources:
             S3Region: !If [UsingDefaultBucket, !Ref 'AWS::Region', !Ref 'QsS3BucketRegion']
       Tags:
         - Key: Name
-          Value: !Sub ${AWS::StackName}-${JFrogProduct}-${ArtifactoryVersion}
+          Value: !Sub ${AWS::StackName}-jfrog-artifactory-pro-${ArtifactoryVersion}
