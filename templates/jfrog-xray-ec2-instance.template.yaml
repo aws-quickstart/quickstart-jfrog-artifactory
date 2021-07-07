@@ -29,7 +29,6 @@ Parameters:
     AllowedValues:
       - JFrog-Artifactory-Pro
       - JFrog-Artifactory-Enterprise
-      - JFrog-Container-Registry
     Default: JFrog-Artifactory-Enterprise
     Type: String
   QsS3BucketName:
@@ -85,23 +84,35 @@ Parameters:
 Mappings:
   AWSAMIRegionMap:
     ap-northeast-1:
-      CentOS7HVM: "ami-00a5245b4816c38e6"
+      CentOS7HVM: "ami-06a46da680048c8ae"
     ap-northeast-2:
-      CentOS7HVM: "ami-00dc207f8ba6dc919"
+      CentOS7HVM: "ami-06e83aceba2cb0907"
     ap-south-1:
-      CentOS7HVM: "ami-0ad42f4f66f6c1cc9"
+      CentOS7HVM: "ami-026f33d38b6410e30"
     ap-southeast-1:
-      CentOS7HVM: "ami-05b3bcf7f311194b3"
+      CentOS7HVM: "ami-07f65177cb990d65b"
     ap-southeast-2:
-      CentOS7HVM: "ami-02fd0b06f06d93dfc"
+      CentOS7HVM: "ami-0b2045146eb00b617"
     ca-central-1:
-      CentOS7HVM: "ami-07423fb63ea0a0930"
+      CentOS7HVM: "ami-04a25c39dc7a8aebb"
     eu-central-1:
-      CentOS7HVM: "ami-0cfbf4f6db41068ac"
+      CentOS7HVM: "ami-0e8286b71b81c3cc1"
+    me-south-1:
+      CentOS7HVM: "ami-011c71a894b10f35b"
+    ap-east-1:
+      CentOS7HVM: "ami-0e5c29e6c87a9644f"
+    eu-north-1:
+      CentOS7HVM: "ami-05788af9005ef9a93"
+    eu-south-1:
+      CentOS7HVM: "ami-0a84267606bcea16b"
     eu-west-1:
-      CentOS7HVM: "ami-08935252a36e25f85"
+      CentOS7HVM: "ami-0b850cf02cc00fdc8"
+    eu-west-2:
+      CentOS7HVM: "ami-09e5afc68eed60ef4"
+    eu-west-3:
+      CentOS7HVM: "ami-0cb72d2e599cffbf9"
     sa-east-1:
-      CentOS7HVM: "ami-05145e0b28ad8e0b2"
+      CentOS7HVM: "ami-0b30f38d939dd4b54"
     us-east-1:
       CentOS7HVM: "ami-0affd4508a5d2481b"
     us-east-2:
@@ -110,6 +121,15 @@ Mappings:
       CentOS7HVM: "ami-098f55b4287a885ba"
     us-west-2:
       CentOS7HVM: "ami-0bc06212a56393ee1"
+    cn-north-1:
+      CentOS7HVM: "ami-0e02aaefeb74c3373"
+    cn-northwest-1:
+      CentOS7HVM: "ami-07183a7702633260b"
+    us-gov-east-1:
+      CentOS7HVM: "ami-00e30c71"
+    us-gov-west-1:
+      CentOS7HVM: "ami-bbba86da"
+
 
 Conditions:
   IsArtifactoryPro: !Equals [!Ref ArtifactoryProduct, 'JFrog-Artifactory-Pro']

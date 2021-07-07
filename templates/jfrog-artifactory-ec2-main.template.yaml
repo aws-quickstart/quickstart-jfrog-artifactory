@@ -58,7 +58,6 @@ Metadata:
           default: Amazon RDS configuration
         Parameters:
           - DatabaseName
-          - DatabaseEngine
           - DatabaseUser
           - DatabasePassword
           - DatabaseInstance
@@ -137,8 +136,6 @@ Metadata:
         default: Default Java memory settings
       DatabaseName:
         default: Database name
-      DatabaseEngine:
-        default: Database engine
       DatabaseUser:
         default: Database user
       DatabasePassword:
@@ -350,7 +347,7 @@ Parameters:
     Description: Version of Artifactory that you want to deploy into the Quick Start.
       To select the correct version, see the release notes at
       https://www.jfrog.com/confluence/display/RTF/Release+Notes.
-    Default: 7.19.4
+    Default: 7.21.3
     Type: String
   SmLicenseName:
     Description: Secret name created in AWS Secrets Manager, which contains the Artifactory licenses.
@@ -396,12 +393,6 @@ Parameters:
     ConstraintDescription: 1 to 60 alphanumeric characters First character must be a letter.
     Default: artdb
     Type: String
-  DatabaseEngine:
-    Description: Database engine that you want to run.
-    AllowedValues:
-      - Postgres
-    Default: Postgres
-    Type: String
   DatabaseUser:
     Description: Login ID for the master user of your database instance.
     MinLength: '1'
@@ -412,12 +403,11 @@ Parameters:
     Type: String
   DatabasePassword:
     Description: Password for the Artifactory database user.
-    AllowedPattern: ^[^ \\']+$
+    AllowedPattern: ^[^ \\'"]+$
     MinLength: '8'
-    MaxLength: '12'
-    ConstraintDescription: Must be at least 8 and no more than
-      12 characters containing letters and (minimum 1 capital letter), numbers and
-      symbols.
+    MaxLength: '20'
+    ConstraintDescription: Must be at least 8 and no more than 20 printable ASCII characters (letters, numbers and symbols. 
+      Can't contain any of / (slash), '(single quote), "(double quote) and @ (at sign).
     NoEcho: 'true'
     Type: String
   DatabaseInstance:
@@ -426,13 +416,10 @@ Parameters:
       - db.m5.large
       - db.m5.xlarge
       - db.m5.2xlarge
-      - db.m5.10xlarge
-      - db.m5.16xlarge
-      - db.m5.large
-      - db.m5.xlarge
-      - db.m5.2xlarge
       - db.m5.4xlarge
+      - db.m5.8xlarge
       - db.m5.12xlarge
+      - db.m5.16xlarge
       - db.m5.24xlarge
     ConstraintDescription: Must be a valid database Instance Type.
     Default: db.m5.large
@@ -487,7 +474,7 @@ Parameters:
     Type: String
   XrayVersion:
     Description: The version of Xray that you want to deploy into the Quick Start.
-    Default: 3.25.1
+    Default: 3.27.2
     Type: String
   XrayNumberOfInstances:
     Description: The number of Xray instances servers to complete your
@@ -515,12 +502,11 @@ Parameters:
     Type: String
   XrayDatabasePassword:
     Description: The password for the Xray database user.
-    AllowedPattern: ^[^ \\']+$
+    AllowedPattern: ^[^ \\'"]+$
     MinLength: '8'
-    MaxLength: '12'
-    ConstraintDescription: Must be at least 8 and no more than
-      12 characters containing letters and (minimum 1 capital letter), numbers and
-      symbols.
+    MaxLength: '20'
+    ConstraintDescription: Must be at least 8 and no more than 20 printable ASCII characters (letters, numbers and symbols. 
+      Can't contain any of / (slash), '(single quote), "(double quote) and @ (at sign).
     NoEcho: 'true'
     Type: String
 Conditions:
@@ -531,7 +517,7 @@ Resources:
     Type: AWS::CloudFormation::Stack
     Properties:
       TemplateURL: !Sub
-        - https://${S3Bucket}.s3.${S3Region}.${AWS::URLSuffix}/${QsS3KeyPrefix}submodules/quickstart-aws-vpc/templates/aws-vpc.template
+        - https://${S3Bucket}.s3.${S3Region}.${AWS::URLSuffix}/${QsS3KeyPrefix}submodules/quickstart-aws-vpc/templates/aws-vpc.template.yaml
         - S3Bucket: !If [UsingDefaultBucket, !Sub '${QsS3BucketName}-${AWS::Region}', !Ref 'QsS3BucketName']
           S3Region: !If [UsingDefaultBucket, !Ref 'AWS::Region', !Ref 'QsS3BucketRegion']
       Parameters:
@@ -539,8 +525,6 @@ Resources:
           Fn::Join:
             - ','
             - Ref: AvailabilityZones
-        KeyPairName:
-          Ref: KeyPairName
         NumberOfAZs: '2'
         PrivateSubnet1ACIDR:
           Ref: PrivateSubnet1Cidr
@@ -594,7 +578,6 @@ Resources:
         ExtraJavaOptions: !Ref ExtraJavaOptions
         DefaultJavaMemSettings: !Ref DefaultJavaMemSettings
         DatabaseName: !Ref DatabaseName
-        DatabaseEngine: !Ref DatabaseEngine
         DatabaseUser: !Ref DatabaseUser
         DatabasePassword: !Ref DatabasePassword
         DatabaseInstance: !Ref DatabaseInstance
