@@ -45,7 +45,6 @@ Metadata:
       - Label:
           default: JFrog Artifactory configuration
         Parameters:
-          - ArtifactoryProduct
           - ArtifactoryVersion
           - NumberOfSecondary
           - SmLicenseName
@@ -75,7 +74,7 @@ Metadata:
         Parameters:
           - InstallXray
           - XrayVersion
-          - XrayNumberOfInstances
+          - XrayNumberOfSecondary
           - XrayInstanceType
           - XrayDatabaseUser
           - XrayDatabasePassword
@@ -118,8 +117,6 @@ Metadata:
         default: EC2 instance type
       NumberOfSecondary:
         default: Secondary instances
-      ArtifactoryProduct:
-        default: Artifactory product to install
       ArtifactoryVersion:
         default: Artifactory version
       SmLicenseName:
@@ -158,8 +155,8 @@ Metadata:
         default: Install JFrog Xray
       XrayVersion:
         default: Version of Xray to install
-      XrayNumberOfInstances:
-        default: Number of JFrog XrayNumberOfInstances
+      XrayNumberOfSecondary:
+        default: Number of JFrog Xray secondary instances
       XrayInstanceType:
         default: Xray instance type
       XrayDatabaseUser:
@@ -335,14 +332,6 @@ Parameters:
       - 7
     Default: 2
     Type: Number
-  ArtifactoryProduct:
-    Description: JFrog Artifactory product you want to install into an AMI.
-    AllowedValues:
-      - JFrog-Artifactory-Pro
-      - JFrog-Artifactory-Enterprise
-      - JFrog-Container-Registry
-    Default: JFrog-Artifactory-Enterprise
-    Type: String
   ArtifactoryVersion:
     Description: Version of Artifactory that you want to deploy into the Quick Start.
       To select the correct version, see the release notes at
@@ -476,13 +465,13 @@ Parameters:
     Description: The version of Xray that you want to deploy into the Quick Start.
     Default: 3.27.2
     Type: String
-  XrayNumberOfInstances:
-    Description: The number of Xray instances servers to complete your
-      HA deployment. The minimum number is one; the maximum is seven.
+  XrayNumberOfSecondary:
+    Description: The number of Xray secondary instances servers to complete your
+      HA deployment. The minimum number is zero; the maximum is six.
       Do not select more than instances than you have licenses for.
-    MinValue: 1
-    MaxValue: 7
-    Default: 1
+    MinValue: 0
+    MaxValue: 6
+    Default: 0
     Type: Number
   XrayInstanceType:
     Description: The EC2 instance type for the Xray instances.
@@ -544,10 +533,10 @@ Resources:
         - S3Bucket: !If [UsingDefaultBucket, !Sub '${QsS3BucketName}-${AWS::Region}', !Ref 'QsS3BucketName']
           S3Region: !If [UsingDefaultBucket, !Ref 'AWS::Region', !Ref 'QsS3BucketRegion']
       Parameters:
-        AvailabilityZones:
-          Fn::Join:
-            - ','
-            - Ref: AvailabilityZones
+        # AvailabilityZones:
+        #   Fn::Join:
+        #     - ','
+        #     - Ref: AvailabilityZones
         KeyPairName: !Ref KeyPairName
         VpcId: !GetAtt ArtifactoryVpcStack.Outputs.VPCID
         VpcCidr: !Ref VpcCidr
@@ -569,7 +558,6 @@ Resources:
         VolumeSize: !Ref VolumeSize
         InstanceType: !Ref InstanceType
         NumberOfSecondary: !Ref NumberOfSecondary
-        ArtifactoryProduct: !Ref ArtifactoryProduct
         ArtifactoryVersion: !Ref ArtifactoryVersion
         SmLicenseName: !Ref SmLicenseName
         SmCertName: !Ref SmCertName
@@ -589,7 +577,7 @@ Resources:
         QsS3BucketRegion: !Ref QsS3BucketRegion
         InstallXray: !Ref InstallXray
         XrayVersion: !Ref XrayVersion
-        XrayNumberOfInstances: !Ref XrayNumberOfInstances
+        XrayNumberOfSecondary: !Ref XrayNumberOfSecondary
         XrayInstanceType: !Ref XrayInstanceType
         XrayDatabaseUser: !Ref XrayDatabaseUser
         XrayDatabasePassword: !Ref XrayDatabasePassword

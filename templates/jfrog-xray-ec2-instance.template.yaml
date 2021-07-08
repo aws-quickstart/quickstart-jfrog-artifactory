@@ -24,13 +24,6 @@ Parameters:
     Type: Number
   DeploymentTag:
     Type: String
-  ArtifactoryProduct:
-    Description: JFrog Artifactory product you want to install into an AMI.
-    AllowedValues:
-      - JFrog-Artifactory-Pro
-      - JFrog-Artifactory-Enterprise
-    Default: JFrog-Artifactory-Enterprise
-    Type: String
   QsS3BucketName:
     Type: String
   QsS3KeyPrefix:
@@ -74,10 +67,6 @@ Parameters:
     Type: String
   XrayVersion:
     Type: String
-  UserDataDirectory:
-    Description: Directory to store Artifactory data. Can be used to store data (via symlink) in detachable volume
-    Type: String
-    Default: '/xray-user-data'
 
 # To populate additional mappings use the following with the desired --region
 # aws --region us-west-2 ec2 describe-images --owners amazon --filters 'Name=name,Values=amzn-ami-hvm-2018.03.0.20181129-x86_64-gp2' 'Name=state,Values=available' --output json | jq -r '.Images | sort_by(.CreationDate) | last(.[]).ImageId'
@@ -129,10 +118,8 @@ Mappings:
       CentOS7HVM: "ami-00e30c71"
     us-gov-west-1:
       CentOS7HVM: "ami-bbba86da"
-
-
 Conditions:
-  IsArtifactoryPro: !Equals [!Ref ArtifactoryProduct, 'JFrog-Artifactory-Pro']
+  IsArtifactoryPro: !Equals [!Ref MaxScalingNodes, '1']
 
 Resources:
   XrayScalingGroup:
@@ -227,8 +214,6 @@ Resources:
                   - import_playbook: site-xray.yml
                     vars:
                       jfrog_url: ${JfrogInternalUrl}
-                      use_custom_data_directory: true
-                      custom_data_directory: "${UserDataDirectory}"
                       master_key: ${MasterKey}
                       join_key: ${MasterKey}
                       extra_java_opts: ${ExtraJavaOptions}

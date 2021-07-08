@@ -17,6 +17,11 @@ project:
     MasterKey           : "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"
     SmLicenseName       : "jfrog-artifactory"
     SmCertName          : "jfrog.tech-certificates"
+    ArtifactoryServerName: "artifactory"
+    MultiAzDatabase     : "true"
+    ProvisionBastionHost: "Disabled"
+    DatabasePassword    : "$[taskcat_genpass_8A]"
+    XrayDatabasePassword: "$[taskcat_genpass_8A]"
 
     # Set this to your home intenet gateway public IP in override file
     # e.g. "24.4.228.4/32"
@@ -45,9 +50,10 @@ tests:
 
   create-bastion-with-existing-vpc:
     parameters:
-      VPCID               : "vpc-0d2100ab913ced1a2"
-      PublicSubnet1ID     : "subnet-0c2f1ab3118b0de23"
-      PublicSubnet2ID     : "subnet-0972dd8e6c961bfd3"
+      # us-west-1
+      VpcId               : "vpc-0d5806917ae9d5aae"
+      PublicSubnet1Id     : "subnet-05e6d5d00b0743b24"
+      PublicSubnet2Id     : "subnet-012e67d537e962d6e"
       RemoteAccessCIDR    : "24.4.228.4/32"
       EnableTCPForwarding : 'true'
     template: submodules/quickstart-linux-bastion/templates/linux-bastion.template
@@ -58,17 +64,8 @@ tests:
       us-gov-west-1: gov
       us-gov-east-1: gov
     parameters:
-      ArtifactoryProduct: "JFrog-Artifactory-Enterprise"
-      ProvisionBastionHost: "Disabled"
-      DatabaseInstance: "db.m5.large"
-      DatabasePassword: "$[taskcat_genpass_8A]"
-      MultiAzDatabase: "true"
-      NumberOfSecondary: "1"
-      ArtifactoryServerName: "artifactory"
-      SmLicenseCertName: "jfrog-artifactory"
       InstallXray: "true"
-      XrayDatabasePassword: "$[taskcat_genpass_8A]"
-      XrayNumberOfInstances: 2
+      XrayNumberOfSecondary: 1
       AvailabilityZones: "$[taskcat_genaz_2]"
     template: templates/jfrog-artifactory-ec2-main.template.yaml
 
@@ -79,19 +76,10 @@ tests:
       us-gov-west-1: gov
       us-gov-east-1: gov
     parameters:
-      ArtifactoryProduct: "JFrog-Artifactory-Enterprise"
-      ProvisionBastionHost: "Disabled"
-      DatabasePassword: "$[taskcat_genpass_8A]"
-      MultiAzDatabase: "true"
-      DatabaseInstance: "db.m5.large"
-      NumberOfSecondary: 1
-      ArtifactoryServerName: "artifactory"
-      SmLicenseCertName: "jfrog-artifactory"
       InstallXray: "true"
-      XrayDatabasePassword: "$[taskcat_genpass_8A]"
-      XrayNumberOfInstances: 2
+      XrayNumberOfSecondary: 1
 
-      # us-east-1
+      # us-west-1
       AvailabilityZones   : "us-east-1a, us-east-1b"
       VpcId               : "vpc-0df1d896364490643"
       PublicSubnet1Id     : "subnet-05e222926ec99d3c3"
@@ -111,22 +99,19 @@ tests:
       SmLicenseCertName: "jfrog-artifactory"
       MultiAzDatabase: "true"
       # InstallXray: "false"
-      XrayDatabasePassword: "$[taskcat_genpass_8A]"
-      # XrayNumberOfInstances: 2
+      # XrayNumberOfSecondary: 1
       AvailabilityZones: "us-east-1a, us-east-1b"
     template: templates/jfrog-artifactory-ec2-marketplace-main.template.yaml
 
   artifactory-pro-new-vpc:
     parameters:
       InstallXray         : "true"
-      DatabasePassword    : "$[taskcat_genpass_8A]"
       AvailabilityZones   : "$[taskcat_genaz_2]"
     template              : templates/jfrog-artifactory-pro-ec2-new-vpc-main.template.yaml
 
   artifactory-pro-existing-vpc:
     parameters:
       InstallXray         : "true"
-      DatabasePassword    : "$[taskcat_genpass_8A]"
       DatabasePreferredAz : us-east-1a
 
       # us-east-1

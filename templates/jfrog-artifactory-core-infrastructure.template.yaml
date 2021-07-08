@@ -9,10 +9,10 @@ Metadata:
         - W9003
         - W9004
 Parameters:
-  AvailabilityZones:
-    Description: List of Availability Zones to use for the subnets in the VPC. Two
-      Availability Zones are used for this deployment.
-    Type: List<AWS::EC2::AvailabilityZone::Name>
+  # AvailabilityZones:
+  #   Description: List of Availability Zones to use for the subnets in the VPC. Two
+  #     Availability Zones are used for this deployment.
+  #   Type: List<AWS::EC2::AvailabilityZone::Name>
   VpcId:
     Type: AWS::EC2::VPC::Id
   VpcCidr:
@@ -58,16 +58,15 @@ Parameters:
     Type: String
   DatabaseName:
     Type: String
-  ArtifactoryProduct:
-    Default: JFrog-Artifactory-Pro
-    Type: String
   InstanceType:
     Default: m5.xlarge
     Type: String
   ArtifactoryHostRole:
     Type: String
-  VolumeSize:
-    Type: Number
+  # VolumeSize:
+  #   Type: Number
+  EfsSecurityGroup:
+    Type: String
 
 Mappings:
   DatabaseMap:
@@ -347,24 +346,49 @@ Resources:
                   - "/*"
       Roles:
         - !Ref ArtifactoryHostRole
-  ArtifactoryEbsVolume:
-    Type: AWS::EC2::Volume
+  # ArtifactoryEbsVolume:
+  #   Type: AWS::EC2::Volume
+  #   Properties:
+  #     AvailabilityZone:
+  #       !If
+  #         - IsMultiAzDatabase
+  #         - !Select
+  #           - '0'
+  #           - !Ref AvailabilityZones
+  #         - !Ref DatabasePreferredAz
+  #     Encrypted: false
+  #     Size: !Ref VolumeSize
+  #     Tags:
+  #       - Key: Name
+  #         Value: !Sub "Artifactory-${AWS::StackName}"
+  #     VolumeType: gp2
+  #   DeletionPolicy: Snapshot
+  #   UpdateReplacePolicy: Snapshot
+  ArtifactoryEfsFileSystem:
+    Type: AWS::EFS::FileSystem
     Properties:
-      AvailabilityZone:
-        !If
-          - IsMultiAzDatabase
-          - !Select
-            - '0'
-            - !Ref AvailabilityZones
-          - !Ref DatabasePreferredAz
-      Encrypted: false
-      Size: !Ref VolumeSize
-      Tags:
+      BackupPolicy:
+        Status: DISABLED
+      Encrypted: true
+      FileSystemTags:
         - Key: Name
           Value: !Sub "Artifactory-${AWS::StackName}"
-      VolumeType: gp2
-    DeletionPolicy: Snapshot
-    UpdateReplacePolicy: Snapshot
+      PerformanceMode: generalPurpose
+      ThroughputMode: bursting
+  ArtifactoryEfsMountTarget1:
+    Type: AWS::EFS::MountTarget
+    Properties:
+      FileSystemId: !Ref ArtifactoryEfsFileSystem
+      SecurityGroups:
+        - !Ref EfsSecurityGroup
+      SubnetId: !Select ['0', !Ref SubnetIds]
+  ArtifactoryEfsMountTarget2:
+    Type: AWS::EFS::MountTarget
+    Properties:
+      FileSystemId: !Ref ArtifactoryEfsFileSystem
+      SecurityGroups:
+        - !Ref EfsSecurityGroup
+      SubnetId: !Select ['1', !Ref SubnetIds]
 Outputs:
   S3Bucket:
     Value: !Ref ArtifactoryS3Bucket
@@ -414,5 +438,5 @@ Outputs:
       }
   DeploymentSize:
     Value: !FindInMap [JavaOptionstoInstance, !Ref InstanceType, DeploymentSize]
-  ArtifactoryEbsVolume:
-    Value: !Ref ArtifactoryEbsVolume
+  ArtifactoryEfsFileSystem:
+    Value: !Ref ArtifactoryEfsFileSystem

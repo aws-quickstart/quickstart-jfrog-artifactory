@@ -26,9 +26,7 @@ venv: venv/bin/taskcat venv/bin/aws
 
 submodules:
 	git submodule init
-	git submodule update --remote --recursive
-	git submodule foreach --recursive 'git submodule init'
-	git submodule foreach --recursive 'git submodule update --remote --recursive'
+	git submodule update --init --recursive
 
 help:
 	@echo   "make test  : executes ${VENVBIN}/taskcat"
