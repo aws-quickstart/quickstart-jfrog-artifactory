@@ -26,9 +26,7 @@ venv: venv/bin/taskcat venv/bin/aws
 
 submodules:
 	git submodule init
-	git submodule update --remote --recursive
-	git submodule foreach --recursive 'git submodule init'
-	git submodule foreach --recursive 'git submodule update --remote --recursive'
+	git submodule update --init --recursive
 
 help:
 	@echo   "make test  : executes ${VENVBIN}/taskcat"
@@ -53,8 +51,8 @@ endif
 
 public_repo: venv
 	${VENVBIN}/taskcat -c theflash/ci/config.yml -u
-	#https://${VENVBIN}/taskcat-tag-quickstart-jfrog-artifactory-c2fa9d34.s3-us-west-2.amazonaws.com/quickstart-jfrog-artifactory/templates/jfrog-artifactory-ec2-master.template
-	#curl https://${VENVBIN}/taskcat-tag-quickstart-jfrog-artifactory-7008506c.s3-us-west-2.amazonaws.com/quickstart-jfrog-artifactory/templates/jfrog-artifactory-ec2-master.template
+	#https://${VENVBIN}/taskcat-tag-quickstart-jfrog-artifactory-c2fa9d34.s3-us-west-2.amazonaws.com/quickstart-jfrog-artifactory/templates/jfrog-artifactory-ec2-main.template
+	#curl https://${VENVBIN}/taskcat-tag-quickstart-jfrog-artifactory-7008506c.s3-us-west-2.amazonaws.com/quickstart-jfrog-artifactory/templates/jfrog-artifactory-ec2-main.template
 
 get_public_dns: venv
 	${VENVBIN}/aws elb describe-load-balancers | jq '.LoadBalancerDescriptions[]| .CanonicalHostedZoneName'

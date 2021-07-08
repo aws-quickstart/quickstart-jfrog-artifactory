@@ -16,7 +16,6 @@ Metadata:
           default: JFrog Product AMI info
         Parameters:
           - InstanceType
-          - JFrogProduct
           - ArtifactoryVersion
       - Label:
           default: AWS Quick Start Configuration
@@ -33,8 +32,6 @@ Metadata:
         default: Availability zone
       InstanceType:
         default: EC2 instance type
-      JFrogProduct:
-        default: JFrog Product to install
       ArtifactoryVersion:
         default: Artifactory version
       QsS3BucketName:
@@ -57,13 +54,6 @@ Parameters:
       We recommend that you set this value to a trusted IP range.
       For example, you might want to grant specific ranges inside your corporate network SSH access.
     AllowedPattern: ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/([0-9]|[1-2][0-9]|3[0-2]))$
-    Type: String
-  JFrogProduct:
-    Description: The Jfrog product you wish to install into an AMI.
-    AllowedValues:
-      - jfrog-artifactory-pro
-      - jfrog-artifactory-jcr
-    Default: jfrog-artifactory-pro
     Type: String
   ArtifactoryVersion:
     Description: The version of the Jfrog product line that you want to deploy into an AMI.
@@ -131,7 +121,6 @@ Resources:
         VpcId: !GetAtt VPCStack.Outputs.VpcId
         PublicSubnet1Id: !GetAtt VPCStack.Outputs.PublicSubnetID
         InstanceType: !Ref InstanceType
-        JFrogProduct: !Ref JFrogProduct
         ArtifactoryVersion: !Ref ArtifactoryVersion
         QsS3BucketName: !Ref QsS3BucketName
         QsS3KeyPrefix: !Ref QsS3KeyPrefix

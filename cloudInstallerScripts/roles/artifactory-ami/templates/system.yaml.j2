@@ -20,7 +20,8 @@ shared:
     id: {{ ansible_machine_id }}
 
     ## Sets this node as primary in HA installation
-    primary: {{ artifactory_is_primary }}
+    # primary: {{ artifactory_is_primary }}
+    Affinity: "any"
 
     ## Sets this node as part of HA installation
     haEnabled: {{ artifactory_ha_enabled }}

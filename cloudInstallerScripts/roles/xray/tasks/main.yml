@@ -24,10 +24,6 @@
 - name: perform prerequisite installation
   include_tasks: "{{ ansible_os_family }}.yml"
 
-- name: setup directory symlink for using custom data directory/volume
-  include_tasks: custom-data-directory.yml
-  when: use_custom_data_directory and custom_data_directory is defined
-
 - name: ensure data subdirectories exist and have correct ownership
   file:
     path: "{{ xray_home }}/var/{{ item }}"
