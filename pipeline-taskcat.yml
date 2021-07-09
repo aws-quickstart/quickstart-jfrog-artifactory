@@ -8,8 +8,8 @@ project:
 
   parameters:
     KeyPairName         : "keyname"
-    ArtifactoryVersion  : 7.21.2
-    XrayVersion         : 3.27.2
+    ArtifactoryVersion  : "rt_ver"
+    XrayVersion         : "xray_ver"
     AccessCidr          : "0.0.0.0/0"
     QsS3BucketName      : "$[taskcat_autobucket]"
     QsS3KeyPrefix       : "quickstart-jfrog-artifactory/"
