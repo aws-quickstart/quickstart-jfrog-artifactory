@@ -333,6 +333,7 @@ Parameters:
       - m5a.12xlarge
       - m5a.16xlarge
       - m5a.24xlarge
+      - m6g.xlarge
     ConstraintDescription: Must contain valid instance type.
     Default: m5.xlarge
     Type: String
@@ -502,6 +503,7 @@ Parameters:
     AllowedValues:
       - c5.2xlarge
       - c5.4xlarge
+      - c6g.2xlarge
     ConstraintDescription: Must contain valid instance type.
     Default: c5.2xlarge
     Type: String
@@ -691,7 +693,6 @@ Resources:
     Type: AWS::ElasticLoadBalancingV2::LoadBalancer
     Properties:
       IpAddressType: ipv4
-      # Name: ArtifactoryInternal-ELB
       Scheme: internal
       Subnets:
         - !Ref PrivateSubnet1Id
@@ -706,7 +707,6 @@ Resources:
       HealthCheckTimeoutSeconds: 10
       HealthyThresholdCount: 3
       HealthCheckPort: "8082"
-      # Name: artifactory-internal-http
       Port: 80
       Protocol: TCP
       TargetType: instance
@@ -758,11 +758,21 @@ Resources:
           FromPort: 8046
           ToPort: 8046
           CidrIp: !Ref VpcCidr
-# as per https://stackoverflow.com/questions/38632222/aws-efs-connection-timeout-at-mount/57141195
-# we need to open 2049 ingress for EFS to work
         - IpProtocol: tcp
           FromPort: 2049
           ToPort: 2049
+          CidrIp: !Ref VpcCidr
+        - IpProtocol: tcp
+          FromPort: 4369
+          ToPort: 4369
+          CidrIp: !Ref VpcCidr
+        - IpProtocol: tcp
+          FromPort: 15672
+          ToPort: 15672
+          CidrIp: !Ref VpcCidr
+        - IpProtocol: tcp
+          FromPort: 25672
+          ToPort: 25672
           CidrIp: !Ref VpcCidr
       SecurityGroupEgress:
         - IpProtocol: "-1"
@@ -1064,7 +1074,7 @@ Resources:
         XrayHostRole: !Ref XrayHostRole
         XrayHostProfile: !Ref XrayHostProfile
   XraySecondary:
-    Condition: EnableXray
+    Condition: XrayHasSecondaryNodes
     DependsOn: XrayPrimary
     Type: AWS::CloudFormation::Stack
     Properties:

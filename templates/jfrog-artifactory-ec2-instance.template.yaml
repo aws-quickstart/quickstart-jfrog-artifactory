@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: "2010-09-09"
-Description: "Artifactory: Deploys the EC2 Autoscaling, LaunchConfig and instances (qs-1qpmmjh5o)"
+Description: "Artifactory: Deploys the EC2 Autoscaling, LaunchConfig and Instances (qs-1qpmmjh5o)"
 Metadata:
   cfn-lint:
     config:
@@ -86,10 +86,11 @@ Parameters:
   ArtifactoryEfsFileSystem:
     Type: String
 
-# To populate additional mappings use following link
-# https://raw.githubusercontent.com/aws-quickstart/quickstart-linux-bastion/master/templates/linux-bastion.template
 Mappings:
   AWSAMIRegionMap:
+# To populate additional mappings use following link
+# https://raw.githubusercontent.com/aws-quickstart/quickstart-linux-bastion/master/templates/linux-bastion.template
+# link from centos: https://www.centos.org/download/aws-images/
     ap-northeast-1:
       CentOS7HVM: "ami-06a46da680048c8ae"
     ap-northeast-2:
@@ -124,8 +125,10 @@ Mappings:
       CentOS7HVM: "ami-0affd4508a5d2481b"
     us-east-2:
       CentOS7HVM: "ami-01e36b7901e884a10"
+      # CentOS7HVM: "ami-07f692d95b2b9c8c5" #arm64  https://www.centos.org/download/aws-images/
     us-west-1:
       CentOS7HVM: "ami-098f55b4287a885ba"
+      # CentOS7HVM: "ami-09748e99ee14e3823" #arm64  https://www.centos.org/download/aws-images/
     us-west-2:
       CentOS7HVM: "ami-0bc06212a56393ee1"
     cn-north-1:
@@ -235,33 +238,6 @@ Resources:
                       db_type: "postgresql"
                       db_driver: "org.postgresql.Driver"
               mode: "0400"
-        # config-artifactory-primary:
-        #   files:
-        #     /root/attach_volume.sh:
-        #       content: !Sub |
-        #         #!/usr/bin/env bash
-
-        #         echo "Using primary volume ID ${PrimaryVolume}"
-        #         VOLUME_ID="${PrimaryVolume}"
-        #         echo "VOLUME_ID: $VOLUME_ID"
-        #         if [[ -z "$VOLUME_ID" ]]; then
-        #           echo 'Invalid $VOLUME_ID'
-        #           exit 1
-        #         fi
-
-        #         # Get instance id from AWS
-        #         INSTANCE_ID=$(curl -s http://169.254.169.254/latest/meta-data/instance-id)
-
-        #         # Attach the volume created by another CFT
-        #         # the device name should become /dev/nvme1n1
-        #         # See: https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/nvme-ebs-volumes.html
-        #         echo "Attaching volume $VOLUME_ID to instance $INSTANCE_ID"
-        #         /var/awslogs/bin/aws ec2 attach-volume --volume-id $VOLUME_ID --instance-id $INSTANCE_ID --device /dev/xvdf --region ${AWS::Region}
-
-        #         echo "Wait for volume $VOLUME_ID to attach"
-        #         sleep 30 # Give volume time to attach
-        #         lsblk # debug
-        #       mode: "0770"
         config-artifactory:
           files:
             /root/mount_efs.sh:
@@ -361,13 +337,6 @@ Resources:
       SecurityGroups:
         - !Ref SecurityGroups
       InstanceType: !Ref InstanceType
-      # BlockDeviceMappings:
-      #   - DeviceName: /dev/xvda
-      #     Ebs:
-      #       VolumeSize: !Ref VolumeSize
-      #       VolumeType: gp2
-      #       DeleteOnTermination: true
-      #       Encrypted: true
       UserData:
         Fn::Base64:
           !Sub |
@@ -449,8 +418,6 @@ Resources:
             ./awslogs-agent-setup.py -n -r ${AWS::Region} -c /root/cloudwatch.conf 2>&1 | tee /var/log/userdata.cloudwatch_agent_install.log
 
             /root/mount_efs.sh 2>&1 | tee /var/log/jfrog-efs-mount.log || cfn_fail
-
-            #/root/attach_volume.sh || cfn_fail
 
             ansible-galaxy collection install community.general ansible.posix
 

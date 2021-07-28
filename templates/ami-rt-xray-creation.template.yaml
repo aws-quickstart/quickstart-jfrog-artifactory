@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: 'JFrog Product AMI creation into an existing VPC'
+Description: 'JFrog Product AMI creation into an existing VPC (qs-xxx)'
 Metadata:
   AWS::CloudFormation::Interface:
     ParameterGroups:
@@ -226,7 +226,7 @@ Resources:
 
             yum update --security -y &> /var/log/userdata.yum_security_update.log
 
-            yum install -y git python3 libselinux-python3
+            yum install -y git python3 libselinux-python3 jq
 
             yum install -y postgresql-server postgresql-devel
 

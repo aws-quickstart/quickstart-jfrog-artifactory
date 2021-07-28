@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: "2010-09-09"
-Description: "Xray: Deploys the EC2 Autoscaling, LaunchConfig and instances (qs-1rtidak0g)"
+Description: "Xray: Deploys the EC2 Autoscaling, LaunchConfig and Instances (qs-1rtidak0g)"
 Metadata:
   cfn-lint:
     config:
@@ -13,9 +13,9 @@ Metadata:
         - E9101: "'master' is part of the product naming conventions for now"
 Parameters:
   PrivateSubnet1Id:
-    Type: 'AWS::EC2::Subnet::Id'
+    Type: AWS::EC2::Subnet::Id
   PrivateSubnet2Id:
-    Type: 'AWS::EC2::Subnet::Id'
+    Type: AWS::EC2::Subnet::Id
   KeyPairName:
     Type: AWS::EC2::KeyPair::KeyName
   MinScalingNodes:
@@ -68,8 +68,9 @@ Parameters:
   XrayVersion:
     Type: String
 
-# To populate additional mappings use the following with the desired --region
-# aws --region us-west-2 ec2 describe-images --owners amazon --filters 'Name=name,Values=amzn-ami-hvm-2018.03.0.20181129-x86_64-gp2' 'Name=state,Values=available' --output json | jq -r '.Images | sort_by(.CreationDate) | last(.[]).ImageId'
+# To populate additional mappings use following link
+# https://raw.githubusercontent.com/aws-quickstart/quickstart-linux-bastion/master/templates/linux-bastion.template
+# link from centos: https://www.centos.org/download/aws-images/
 Mappings:
   AWSAMIRegionMap:
     ap-northeast-1:
@@ -106,8 +107,10 @@ Mappings:
       CentOS7HVM: "ami-0affd4508a5d2481b"
     us-east-2:
       CentOS7HVM: "ami-01e36b7901e884a10"
+      # CentOS7HVM: "ami-07f692d95b2b9c8c5" #arm64  https://www.centos.org/download/aws-images/
     us-west-1:
       CentOS7HVM: "ami-098f55b4287a885ba"
+      # CentOS7HVM: "ami-09748e99ee14e3823" #arm64  https://www.centos.org/download/aws-images/
     us-west-2:
       CentOS7HVM: "ami-0bc06212a56393ee1"
     cn-north-1:
@@ -118,8 +121,6 @@ Mappings:
       CentOS7HVM: "ami-00e30c71"
     us-gov-west-1:
       CentOS7HVM: "ami-bbba86da"
-Conditions:
-  IsArtifactoryPro: !Equals [!Ref MaxScalingNodes, '1']
 
 Resources:
   XrayScalingGroup:
@@ -127,7 +128,8 @@ Resources:
     Properties:
       LaunchConfigurationName: !Ref XrayLaunchConfiguration
       VPCZoneIdentifier:
-        !If [IsArtifactoryPro, [!Ref PrivateSubnet1Id], [!Ref PrivateSubnet1Id, !Ref PrivateSubnet2Id]]
+        - !Ref PrivateSubnet1Id
+        - !Ref PrivateSubnet2Id
       MinSize: !Ref MinScalingNodes
       MaxSize: !Ref MaxScalingNodes
       Cooldown: '300'
@@ -208,23 +210,49 @@ Resources:
               mode: "0400"
         config-xray:
           files:
+            /root/create_rabbitmq_cluster.sh:
+              content: !Sub |
+                #!/usr/bin/env bash
+                export HOME=/root
+                cd
+                cp ~xray/.erlang.cookie /root/
+                curl http://localhost:15672/cli/rabbitmqadmin > ./rabbitmqadmin
+                chmod 755 ./rabbitmqadmin
+                OTHERHOST=$(curl -s http://localhost:8046/router/api/v1/topology/health | jq -r '.nodes | with_entries(.value |= .health_response.services[].service_id)' | grep  jfx | grep -v $(curl http://169.254.169.254/latest/meta-data/local-ipv4) | head -1 | sed "s/.*http:\/\/\(.*\):8082.*/\1/")
+                echo "OTHERHOST = $OTHERHOST"
+                CLUSTER=$(./rabbitmqadmin -H $OTHERHOST list nodes | grep rabbit | head -1 | cut -s -d ' ' -f 2-2)
+                echo "CLUSTER = $CLUSTER"
+                if [ -z "$CLUSTER" ]
+                then
+                  echo "No cluster found. Treating this node as first node"
+                  # no other node is found. So this must be first node.
+                  # no need to connect to cluster, let it form its own cluster
+                else
+                  /opt/jfrog/jfrog-xray*/app/third-party/rabbitmq/sbin/rabbitmqctl stop_app
+                  /opt/jfrog/jfrog-xray*/app/third-party/rabbitmq/sbin/rabbitmqctl force_reset
+                  /opt/jfrog/jfrog-xray*/app/third-party/rabbitmq/sbin/rabbitmqctl join_cluster $CLUSTER
+                fi
+                /opt/jfrog/jfrog-xray*/app/third-party/rabbitmq/sbin/rabbitmqctl start_app
+                /opt/jfrog/jfrog-xray*/app/third-party/rabbitmq/sbin/rabbitmqctl cluster_status
+
+              mode: "0770"
             /root/.xray_ami/xray.yml:
               content: !Sub |
-                  # Base install for Xray
-                  - import_playbook: site-xray.yml
-                    vars:
-                      jfrog_url: ${JfrogInternalUrl}
-                      master_key: ${MasterKey}
-                      join_key: ${MasterKey}
-                      extra_java_opts: ${ExtraJavaOptions}
-                      db_type: ${DatabaseType}
-                      db_driver: ${DatabaseDriver}
-                      db_master_url: postgresql://${DatabaseUser}:${DatabasePassword}@${XrayMasterDatabaseUrl}
-                      db_url: postgres://${XrayDatabaseUrl}
-                      db_master_user: ${DatabaseUser}
-                      db_user: ${XrayDatabaseUser}
-                      db_password: ${XrayDatabasePassword}
-                      xray_version: ${XrayVersion}
+                # Base install for Xray
+                - import_playbook: site-xray.yml
+                  vars:
+                    jfrog_url: ${JfrogInternalUrl}
+                    master_key: ${MasterKey}
+                    join_key: ${MasterKey}
+                    extra_java_opts: ${ExtraJavaOptions}
+                    db_type: ${DatabaseType}
+                    db_driver: ${DatabaseDriver}
+                    db_master_url: postgresql://${DatabaseUser}:${DatabasePassword}@${XrayMasterDatabaseUrl}
+                    db_url: postgres://${XrayDatabaseUrl}
+                    db_master_user: ${DatabaseUser}
+                    db_user: ${XrayDatabaseUser}
+                    db_password: ${XrayDatabasePassword}
+                    xray_version: ${XrayVersion}
               mode: "0400"
             /root/.vault_pass.txt:
               content: !Sub |
@@ -285,10 +313,11 @@ Resources:
             }
 
             S3URI=${QsS3Uri}
+            yum install -y epel-release
 
             yum update --security -y &> /var/log/userdata.yum_security_update.log
 
-            yum install -y git python3 libselinux-python3
+            yum install -y git python3 libselinux-python3 jq
             yum install -y postgresql-server postgresql-devel
 
             echo $PATH

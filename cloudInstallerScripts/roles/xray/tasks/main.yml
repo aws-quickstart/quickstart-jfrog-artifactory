@@ -74,3 +74,7 @@
     name: xray
     state: restarted
   become: yes
+
+- name: join rabbitmq cluster
+  shell: "/root/create_rabbitmq_cluster.sh"
+  become: yes

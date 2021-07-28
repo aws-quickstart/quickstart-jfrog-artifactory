@@ -1,6 +1,6 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Description: 'Creates a VPC with a single public subnet. Note: If you require
-  more than one subnet, please move to the aws-vpc quickstart module'
+  more than one subnet, please move to the aws-vpc quickstart module (qs-xxx)'
 Metadata:
   AWS::CloudFormation::Interface:
     ParameterGroups:

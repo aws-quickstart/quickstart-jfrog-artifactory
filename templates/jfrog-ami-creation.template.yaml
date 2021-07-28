@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: 'JFrog Product AMI creation into an existing VPC'
+Description: 'JFrog Product AMI creation into an existing VPC (qs-xxx)'
 Metadata:
   AWS::CloudFormation::Interface:
     ParameterGroups:
@@ -232,7 +232,7 @@ Resources:
             yum update -y
 
             # Install git, policycoreutils python
-            yum install -y git policycoreutils-python
+            yum install -y git policycoreutils-python jq
 
             yum update --security -y 2>&1 | tee /var/log/userdata.yum_security_update.log
 

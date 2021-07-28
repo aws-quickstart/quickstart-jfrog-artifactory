@@ -69,15 +69,6 @@ Parameters:
     Type: String
 
 Mappings:
-  DatabaseMap:
-    Postgres:
-      Name: postgresql
-      DatabaseVersion: 11.5
-      Driver: "org.postgresql.Driver"
-      Plugin: postgresql-42.2.9.jar
-      PluginURL: https://jdbc.postgresql.org/download/
-      port: "5432"
-      extraDatabaseOps: ""
   JavaOptionstoInstance:
     c5.2xlarge:
       Min: 8
@@ -191,6 +182,14 @@ Mappings:
       Min: 192
       Max: 288
       DeploymentSize: xxxLarge
+    m6g.xlarge:
+      Min: 8
+      Max: 12
+      DeploymentSize: xSmall
+    c6g.2xlarge:
+      Min: 8
+      Max: 12
+      DeploymentSize: Small
 
 Conditions:
   IsMultiAzDatabase: !Equals [!Ref MultiAzDatabase, 'true']
@@ -210,11 +209,8 @@ Resources:
       DBInstanceClass: !Ref DatabaseInstance
       DBName: !Ref DatabaseName
       DBSubnetGroupName: !Ref  ArtifactoryDatabaseSubnetGroup
-      Engine: "Postgres"
-      EngineVersion: !FindInMap
-        - DatabaseMap
-        - "Postgres"
-        - DatabaseVersion
+      Engine: Postgres
+      EngineVersion: "11.5"
       MasterUsername: !Ref DatabaseUser
       MasterUserPassword: !Ref DatabasePassword
       MultiAZ: !Ref MultiAzDatabase
@@ -235,34 +231,16 @@ Resources:
           ToPort: 22
           CidrIp: !Ref VpcCidr
         - IpProtocol: tcp
-          FromPort: !FindInMap
-            - DatabaseMap
-            - "Postgres"
-            - port
-          ToPort: !FindInMap
-            - DatabaseMap
-            - "Postgres"
-            - port
+          FromPort: 5432
+          ToPort: 5432
           CidrIp: !Ref PrivateSubnet1Cidr
         - IpProtocol: tcp
-          FromPort: !FindInMap
-            - DatabaseMap
-            - "Postgres"
-            - port
-          ToPort: !FindInMap
-            - DatabaseMap
-            - "Postgres"
-            - port
+          FromPort: 5432
+          ToPort: 5432
           CidrIp: !Ref PrivateSubnet2Cidr
         - IpProtocol: tcp
-          FromPort: !FindInMap
-            - DatabaseMap
-            - "Postgres"
-            - port
-          ToPort: !FindInMap
-            - DatabaseMap
-            - "Postgres"
-            - port
+          FromPort: 5432
+          ToPort: 5432
           CidrIp: !Ref PrivateSubnet3Cidr
       SecurityGroupEgress:
         - IpProtocol: tcp
@@ -394,41 +372,25 @@ Outputs:
     Value: !Ref ArtifactoryS3Bucket
     Description: Actual S3 bucket created for Artifactory
   DatabaseDriver:
-    Value: !FindInMap [DatabaseMap, "Postgres", Driver]
+    Value: "org.postgresql.Driver"
   DatabasePlugin:
-    Value: !FindInMap [DatabaseMap, "Postgres", Plugin]
+    Value: postgresql-42.2.9.jar
   DatabasePluginUrl:
-    Value: !Sub
-      - "${MainURL}${PluginVersion}"
-      - {
-        MainURL: !FindInMap [DatabaseMap, "Postgres", PluginURL],
-        PluginVersion: !FindInMap [DatabaseMap, "Postgres", Plugin]
-        }
+    Value: https://jdbc.postgresql.org/download/postgresql-42.2.9.jar"
   DatabaseType:
-    Value: !FindInMap [DatabaseMap, "Postgres", Name]
+    Value: postgresql
   DatabaseUrl:
     Value: !Sub
-      - "jdbc:${DatabaseType}://${ArtifactoryDatabaseEndpointAddress}:${port}/${DatabaseName}${extraDatabaseOps}"
-      - {
-        DatabaseType: !FindInMap [DatabaseMap, "Postgres", Name],
-        ArtifactoryDatabaseEndpointAddress: !GetAtt ArtifactoryDatabase.Endpoint.Address,
-        port: !FindInMap [DatabaseMap, "Postgres", port],
-        extraDatabaseOps: !FindInMap [DatabaseMap, "Postgres", extraDatabaseOps],
-        }
+      - "jdbc:postgresql://${ArtifactoryDatabaseEndpointAddress}:5432/${DatabaseName}"
+      - ArtifactoryDatabaseEndpointAddress: !GetAtt ArtifactoryDatabase.Endpoint.Address
   XrayMasterDatabaseUrl:
     Value: !Sub
-      - "${ArtifactoryDatabaseEndpointAddress}:${port}/${DatabaseName}?sslmode=disable"
-      - {
-        ArtifactoryDatabaseEndpointAddress: !GetAtt ArtifactoryDatabase.Endpoint.Address,
-        port: !FindInMap [DatabaseMap, "Postgres", port],
-        }
+      - "${ArtifactoryDatabaseEndpointAddress}:5432/${DatabaseName}?sslmode=disable"
+      - ArtifactoryDatabaseEndpointAddress: !GetAtt ArtifactoryDatabase.Endpoint.Address
   XrayDatabaseUrl:
     Value: !Sub
-      - "${ArtifactoryDatabaseEndpointAddress}:${port}/xraydb?sslmode=disable"
-      - {
-        ArtifactoryDatabaseEndpointAddress: !GetAtt ArtifactoryDatabase.Endpoint.Address,
-        port: !FindInMap [DatabaseMap, "Postgres", port],
-        }
+      - "${ArtifactoryDatabaseEndpointAddress}:5432/xraydb?sslmode=disable"
+      - ArtifactoryDatabaseEndpointAddress: !GetAtt ArtifactoryDatabase.Endpoint.Address
   JavaOpts:
     Value: !Sub
       - "-Xms${min}g -Xmx${max}g"

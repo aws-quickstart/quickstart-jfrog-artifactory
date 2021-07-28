@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: 'JFrog Product AMI creation into an existing VPC'
+Description: 'JFrog Product AMI creation into an existing VPC (qs-xxx)'
 Metadata:
   AWS::CloudFormation::Interface:
     ParameterGroups:
