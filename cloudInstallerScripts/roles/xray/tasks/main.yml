@@ -76,5 +76,5 @@
   become: yes
 
 - name: join rabbitmq cluster
-  shell: "/root/create_rabbitmq_cluster.sh"
+  shell: "/root/create_rabbitmq_cluster.sh 2>&1 | tee /root/joinrabbitcluster.log"
   become: yes

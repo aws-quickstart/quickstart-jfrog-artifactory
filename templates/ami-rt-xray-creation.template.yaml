@@ -120,6 +120,14 @@ Conditions:
 Resources:
   JFrogAMIIamRole:
     Type: AWS::IAM::Role
+    Metadata:
+      cfn-lint:
+        config:
+          ignore_checks:
+            - EIAMPolicyWildcardResource
+            - EIAMPolicyActionWildcard
+          ignore_reasons:
+            EIAMPolicyWildcardResource: EC2 ec2:Describe* , ec2:AssociateAddress API actions do not support resource-level permission
     Properties:
       AssumeRolePolicyDocument:
         Version: "2012-10-17"

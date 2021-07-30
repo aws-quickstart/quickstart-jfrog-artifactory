@@ -533,7 +533,7 @@ Conditions:
   EnableXray: !Equals [!Ref InstallXray, 'true']
   SmCertNameNotExists: !Equals [!Ref 'SmCertName', '']
   SmCertNameExists: !Not [!Equals [!Ref 'SmCertName', '']]
-  XrayHasSecondaryNodes: !Not [!Equals [!Ref XrayNumberOfSecondary, '0']]
+  XrayHasSecondaryNodes: !And [!Equals [!Ref InstallXray, 'true'] , !Not [!Equals [!Ref XrayNumberOfSecondary, '0']]]
 
 Resources:
   BastionRole:
@@ -611,18 +611,13 @@ Resources:
         - S3Bucket: !If [UsingDefaultBucket, !Sub '${QsS3BucketName}-${AWS::Region}', !Ref 'QsS3BucketName']
           S3Region: !If [UsingDefaultBucket, !Ref 'AWS::Region', !Ref 'QsS3BucketRegion']
       Parameters:
-        # AvailabilityZones:
-        #   Fn::Join:
-        #     - ','
-        #     - Ref: AvailabilityZones
         VpcId: !Ref VpcId
         VpcCidr: !Ref VpcCidr
         PrivateSubnet1Cidr: !Ref PrivateSubnet1Cidr
         PrivateSubnet2Cidr: !Ref PrivateSubnet2Cidr
-        PrivateSubnet3Cidr: !Ref PrivateSubnet2Cidr  # This should end up in no new rule but required for EKS
         SubnetIds: !Join [",", [!Ref PrivateSubnet1Id, !Ref PrivateSubnet2Id]]
+        PrivateSubnet1Id: !Ref PrivateSubnet1Id
         DatabaseAllocatedStorage: !Ref DatabaseAllocatedStorage
-        DatabasePreferredAz: !Ref DatabasePreferredAz
         MultiAzDatabase: !Ref MultiAzDatabase
         DatabaseUser: !Ref DatabaseUser
         DatabasePassword: !Ref DatabasePassword
@@ -862,7 +857,7 @@ Resources:
         PrivateSubnetIds: !Join [',', [!Ref PrivateSubnet1Id]]
         MinScalingNodes: '1'  # Always have 1 PrimaryNode
         MaxScalingNodes: '1'  # Always have 1 PrimaryNode
-        DeploymentTag: Artifactory
+        DeploymentTag: 'Artifactory Primary'
         HostRole: !Ref ArtifactoryHostRole
         QsS3BucketName: !Ref QsS3BucketName
         QsS3KeyPrefix: !Ref QsS3KeyPrefix
@@ -917,7 +912,7 @@ Resources:
         PrivateSubnetIds: !Join [',', [!Ref PrivateSubnet1Id, !Ref PrivateSubnet2Id]]
         MinScalingNodes: !Ref NumberOfSecondary
         MaxScalingNodes: !Ref NumberOfSecondary
-        DeploymentTag: Artifactory
+        DeploymentTag: 'Artifactory Secondary'
         HostRole: !Ref ArtifactoryHostRole
         QsS3BucketName: !Ref QsS3BucketName
         QsS3KeyPrefix: !Ref QsS3KeyPrefix
@@ -1043,7 +1038,7 @@ Resources:
         KeyPairName: !Ref KeyPairName
         MinScalingNodes: 1
         MaxScalingNodes: 1
-        DeploymentTag: 'xray'
+        DeploymentTag: 'Xray Primary'
         QsS3BucketName: !Ref QsS3BucketName
         QsS3KeyPrefix: !Ref QsS3KeyPrefix
         QsS3Uri: !Sub
@@ -1088,7 +1083,7 @@ Resources:
         KeyPairName: !Ref KeyPairName
         MinScalingNodes: !Ref XrayNumberOfSecondary
         MaxScalingNodes: !Ref XrayNumberOfSecondary
-        DeploymentTag: 'xray'
+        DeploymentTag: 'Xray Secondary'
         QsS3BucketName: !Ref QsS3BucketName
         QsS3KeyPrefix: !Ref QsS3KeyPrefix
         QsS3Uri: !Sub

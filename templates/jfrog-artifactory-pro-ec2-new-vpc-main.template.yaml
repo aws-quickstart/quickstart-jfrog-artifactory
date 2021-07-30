@@ -1,6 +1,12 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Description: 'JFrog Artifactory Quick Start Deployment into an Existing VPC (qs-1q037efj0)'
 Metadata:
+  cfn-lint:
+    config:
+      ignore_checks:
+        - E9101
+      ignore_reasons:
+        - E9101: "'master' is part of the product naming conventions for now"
   AWS::CloudFormation::Interface:
     ParameterGroups:
       - Label:
@@ -272,9 +278,6 @@ Resources:
         DatabasePassword: !Ref DatabasePassword
         DatabaseInstance: !Ref DatabaseInstance
         DatabaseAllocatedStorage: !Ref DatabaseAllocatedStorage
-        DatabasePreferredAz: !Select
-          - '0'
-          - !Ref 'AvailabilityZones'
         MultiAzDatabase: false
         QsS3BucketName: !Ref QsS3BucketName
         QsS3KeyPrefix: !Ref QsS3KeyPrefix

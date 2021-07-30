@@ -218,7 +218,14 @@ Resources:
                 cp ~xray/.erlang.cookie /root/
                 curl http://localhost:15672/cli/rabbitmqadmin > ./rabbitmqadmin
                 chmod 755 ./rabbitmqadmin
-                OTHERHOST=$(curl -s http://localhost:8046/router/api/v1/topology/health | jq -r '.nodes | with_entries(.value |= .health_response.services[].service_id)' | grep  jfx | grep -v $(curl http://169.254.169.254/latest/meta-data/local-ipv4) | head -1 | sed "s/.*http:\/\/\(.*\):8082.*/\1/")
+                date
+                # Add a random wait up to a max of 300 secs, so all servers start at different times.
+                # this helps all rabbitmq nodes to detect the same cluster
+                # without this sleep, rabbit
+                sleep $(( ( RANDOM % 300 )  + 100 ))
+                date
+                curl -s http://localhost:8046/router/api/v1/topology/health
+                OTHERHOST=$(curl -s http://localhost:8046/router/api/v1/topology/health | jq -r '.nodes | keys[] as $k | "\($k), \(.[$k].effective_state), \(.[$k].health_response.services[].service_id)"' | grep -v UNHEALTHY | grep jfx | grep -v $(curl http://169.254.169.254/latest/meta-data/local-ipv4) | cut -d ',' -f 1-1 | uniq | head -1 | sed "s/.*http:\/\/\(.*\):8082.*/\1/")
                 echo "OTHERHOST = $OTHERHOST"
                 CLUSTER=$(./rabbitmqadmin -H $OTHERHOST list nodes | grep rabbit | head -1 | cut -s -d ' ' -f 2-2)
                 echo "CLUSTER = $CLUSTER"
@@ -234,7 +241,6 @@ Resources:
                 fi
                 /opt/jfrog/jfrog-xray*/app/third-party/rabbitmq/sbin/rabbitmqctl start_app
                 /opt/jfrog/jfrog-xray*/app/third-party/rabbitmq/sbin/rabbitmqctl cluster_status
-
               mode: "0770"
             /root/.xray_ami/xray.yml:
               content: !Sub |
