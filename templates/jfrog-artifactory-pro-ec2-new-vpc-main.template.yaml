@@ -180,7 +180,7 @@ Parameters:
     Description: Version of Artifactory that you want to deploy into the Quick Start.
       To select the correct version, see the release notes at
       https://www.jfrog.com/confluence/display/RTF/Release+Notes.
-    Default: 7.21.5
+    Default: 7.21.12
     Type: String
   SmLicenseName:
     Description: Secret name created in AWS Secrets Manager, which contains the Artifactory licenses.
@@ -242,7 +242,7 @@ Parameters:
     Type: String
   XrayVersion:
     Description: The version of Xray that you want to deploy into the Quick Start.
-    Default: 3.27.2
+    Default: 3.29.0
     Type: String
   XrayInstanceType:
     Description: The EC2 instance type for the Xray instances.
