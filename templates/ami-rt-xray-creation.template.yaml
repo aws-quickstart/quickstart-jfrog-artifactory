@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: 'JFrog Product AMI creation into an existing VPC'
+Description: 'JFrog Product AMI creation into an existing VPC (qs-xxx)'
 Metadata:
   AWS::CloudFormation::Interface:
     ParameterGroups:
@@ -120,6 +120,14 @@ Conditions:
 Resources:
   JFrogAMIIamRole:
     Type: AWS::IAM::Role
+    Metadata:
+      cfn-lint:
+        config:
+          ignore_checks:
+            - EIAMPolicyWildcardResource
+            - EIAMPolicyActionWildcard
+          ignore_reasons:
+            EIAMPolicyWildcardResource: EC2 ec2:Describe* , ec2:AssociateAddress API actions do not support resource-level permission
     Properties:
       AssumeRolePolicyDocument:
         Version: "2012-10-17"
@@ -226,7 +234,7 @@ Resources:
 
             yum update --security -y &> /var/log/userdata.yum_security_update.log
 
-            yum install -y git python3 libselinux-python3
+            yum install -y git python3 libselinux-python3 jq
 
             yum install -y postgresql-server postgresql-devel
 

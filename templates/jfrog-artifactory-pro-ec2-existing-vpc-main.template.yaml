@@ -1,6 +1,12 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Description: 'JFrog Artifactory Quick Start Deployment into an Existing VPC (qs-1q037efj0)'
 Metadata:
+  cfn-lint:
+    config:
+      ignore_checks:
+        - E9101
+      ignore_reasons:
+        - E9101: "'master' is part of the product naming conventions for now"
   AWS::CloudFormation::Interface:
     ParameterGroups:
       - Label:
@@ -47,7 +53,6 @@ Metadata:
         Parameters:
           - DatabaseInstance
           - DatabaseAllocatedStorage
-          - DatabasePreferredAz
       - Label:
           default: JFrog Xray Configuration
         Parameters:
@@ -101,8 +106,6 @@ Metadata:
         default: Database instance type
       DatabaseAllocatedStorage:
         default: Database allocated storage
-      DatabasePreferredAz:
-        default: Database preferred Availability Zone
       InstallXray:
         default: Install JFrog Xray
       XrayVersion:
@@ -272,10 +275,6 @@ Parameters:
     MaxValue: 1024
     Default: 10
     Type: Number
-  DatabasePreferredAz:
-    Description: Preferred availability zone for Amazon RDS primary instance
-    Default: us-west-2a
-    Type: AWS::EC2::AvailabilityZone::Name
   InstallXray:
     Description: Choose true to install JFrog Xray instance(s).
     ConstraintDescription: True or False
@@ -324,7 +323,6 @@ Resources:
         DatabasePassword: !Ref DatabasePassword
         DatabaseInstance: !Ref DatabaseInstance
         DatabaseAllocatedStorage: !Ref DatabaseAllocatedStorage
-        DatabasePreferredAz: !Ref DatabasePreferredAz
         MultiAzDatabase: false
         QsS3BucketName: !Ref QsS3BucketName
         QsS3KeyPrefix: !Ref QsS3KeyPrefix

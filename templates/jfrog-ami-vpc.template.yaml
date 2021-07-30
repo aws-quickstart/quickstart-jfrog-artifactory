@@ -1,6 +1,6 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Description: 'Creates a VPC with a single public subnet. Note: If you require
-  more than one subnet, please move to the aws-vpc quickstart module'
+  more than one subnet, please move to the aws-vpc quickstart module (qs-xxx)'
 Metadata:
   AWS::CloudFormation::Interface:
     ParameterGroups:
@@ -114,6 +114,15 @@ Resources:
       RouteTableId: !Ref PublicSubnetRouteTable
   S3Endpoint:
     Type: AWS::EC2::VPCEndpoint
+    Metadata:
+      cfn-lint:
+        config:
+          ignore_checks:
+            - EIAMPolicyWildcardResource
+            - EIAMPolicyActionWildcard
+            - EPolicyWildcardPrincipal
+          ignore_reasons:
+            EIAMPolicyWildcardResource: EC2 ec2:Describe* , ec2:AssociateAddress API actions do not support resource-level permission
     Properties:
       PolicyDocument:
         Version: 2012-10-17
