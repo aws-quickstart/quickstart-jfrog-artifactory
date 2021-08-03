@@ -21,9 +21,9 @@ Metadata:
       - Label:
           default: Network configuration
         Parameters:
-          # - AvailabilityZones
           - VpcId
           - VpcCidr
+          - AvailabilityZones
           - PublicSubnet1Id
           - PublicSubnet2Id
           - PrivateSubnet1Id
@@ -65,7 +65,6 @@ Metadata:
           - DatabasePassword
           - DatabaseInstance
           - DatabaseAllocatedStorage
-          - DatabasePreferredAz
           - MultiAzDatabase
       - Label:
           default: AWS Quick Start configuration
@@ -83,14 +82,14 @@ Metadata:
           - XrayDatabaseUser
           - XrayDatabasePassword
     ParameterLabels:
-      # AvailabilityZones:
-      #   default: Availability Zones
       KeyPairName:
         default: SSH key name
       VpcId:
         default: VPC ID
       VpcCidr:
         default: VPC CIDR
+      AvailabilityZones:
+        default: Availability Zones
       PublicSubnet1Id:
         default: Public subnet 1 ID
       PublicSubnet2Id:
@@ -153,8 +152,6 @@ Metadata:
         default: Database instance type
       DatabaseAllocatedStorage:
         default: Database allocated storage
-      DatabasePreferredAz:
-        default: Database preferred Availability Zone
       MultiAzDatabase:
         default: High-availability database
       QsS3BucketName:
@@ -176,10 +173,6 @@ Metadata:
       XrayDatabasePassword:
         default: Xray Database password
 Parameters:
-  # AvailabilityZones:
-  #   Description: List of Availability Zones to use for the subnets in the VPC. Two
-  #     Availability Zones are used for this deployment.
-  #   Type: List<AWS::EC2::AvailabilityZone::Name>
   KeyPairName:
     Description: Name of an existing key pair,
       which allows you to connect securely to your instance after it launches.
@@ -194,6 +187,10 @@ Parameters:
     ConstraintDescription: CIDR block parameter must be in the form x.x.x.x/16-28
     Default: 10.0.0.0/16
     Type: String
+  AvailabilityZones:
+    Description: List of Availability Zones to use for the subnets in the VPC. Two
+      Availability Zones are used for this deployment.
+    Type: List<AWS::EC2::AvailabilityZone::Name>
   PublicSubnet1Id:
     Description: ID of the public subnet in Availability Zone 1 of your existing VPC (e.g., subnet-z0376dab).
     Type: "AWS::EC2::Subnet::Id"
@@ -229,6 +226,7 @@ Parameters:
       We recommend that you set this value to a trusted IP range.
       For example, you might want to grant specific ranges inside your corporate network SSH access.
     AllowedPattern: ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/([0-9]|[1-2][0-9]|3[0-2]))$
+    ConstraintDescription: CIDR block parameter must be in the form x.x.x.x/x
     Type: String
   ELBScheme:
     Description: Choose whether this is internet facing or internal.
@@ -238,7 +236,7 @@ Parameters:
     Default: internet-facing
     Type: String
   ProvisionBastionHost:
-    Description: Choose Disabled to skip creating a bastion instance. Due to the JFrog Container Registry nodes being
+    Description: Choose Disabled to skip creating a bastion instance. Due to the Artifactory nodes being
       created in private subnets, the default setting of Enabled this is highly recommended.
     AllowedValues:
       - "Enabled"
@@ -442,10 +440,6 @@ Parameters:
     MaxValue: 1024
     Default: 10
     Type: Number
-  DatabasePreferredAz:
-    Description: Preferred availability zone for Amazon RDS primary instance
-    Type: String
-    Default: ''
   MultiAzDatabase:
     Description: Choose false to create an Amazon RDS instance in a single Availability Zone.
     ConstraintDescription: True or False
@@ -616,7 +610,10 @@ Resources:
         PrivateSubnet1Cidr: !Ref PrivateSubnet1Cidr
         PrivateSubnet2Cidr: !Ref PrivateSubnet2Cidr
         SubnetIds: !Join [",", [!Ref PrivateSubnet1Id, !Ref PrivateSubnet2Id]]
-        PrivateSubnet1Id: !Ref PrivateSubnet1Id
+        AvailabilityZones:
+          Fn::Join:
+            - ','
+            - Ref: AvailabilityZones
         DatabaseAllocatedStorage: !Ref DatabaseAllocatedStorage
         MultiAzDatabase: !Ref MultiAzDatabase
         DatabaseUser: !Ref DatabaseUser

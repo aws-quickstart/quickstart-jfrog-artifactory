@@ -29,9 +29,10 @@ Parameters:
     Type: String
   SubnetIds:
     Type: List<AWS::EC2::Subnet::Id>
-  PrivateSubnet1Id:
-    Description: ID of the private subnet in Availability Zone 1 of your existing VPC (e.g., subnet-a0246dcd).
-    Type: "AWS::EC2::Subnet::Id"
+  AvailabilityZones:
+    Description: List of Availability Zones to use for the subnets in the VPC. Two
+      Availability Zones are used for this deployment.
+    Type: List<AWS::EC2::AvailabilityZone::Name>
   DatabaseAllocatedStorage:
     Type: Number
   MultiAzDatabase:
@@ -194,7 +195,7 @@ Resources:
     Type: AWS::RDS::DBInstance
     Properties:
       AllocatedStorage: !Ref DatabaseAllocatedStorage
-      AvailabilityZone: !If [IsMultiAzDatabase, !Ref AWS::NoValue, !Ref PrivateSubnet1Id]
+      AvailabilityZone: !If [IsMultiAzDatabase, !Ref AWS::NoValue, !Select ['0', !Ref AvailabilityZones]]
       BackupRetentionPeriod: 30
       DBInstanceClass: !Ref DatabaseInstance
       DBName: !Ref DatabaseName

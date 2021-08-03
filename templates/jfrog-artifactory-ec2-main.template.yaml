@@ -526,13 +526,13 @@ Resources:
         - S3Bucket: !If [UsingDefaultBucket, !Sub '${QsS3BucketName}-${AWS::Region}', !Ref 'QsS3BucketName']
           S3Region: !If [UsingDefaultBucket, !Ref 'AWS::Region', !Ref 'QsS3BucketRegion']
       Parameters:
-        # AvailabilityZones:
-        #   Fn::Join:
-        #     - ','
-        #     - Ref: AvailabilityZones
         KeyPairName: !Ref KeyPairName
         VpcId: !GetAtt ArtifactoryVpcStack.Outputs.VPCID
         VpcCidr: !Ref VpcCidr
+        AvailabilityZones:
+          Fn::Join:
+            - ','
+            - Ref: AvailabilityZones
         PublicSubnet1Id: !GetAtt ArtifactoryVpcStack.Outputs.PublicSubnet1ID
         PublicSubnet2Id: !GetAtt ArtifactoryVpcStack.Outputs.PublicSubnet2ID
         PrivateSubnet1Id: !GetAtt ArtifactoryVpcStack.Outputs.PrivateSubnet1AID
@@ -576,7 +576,7 @@ Resources:
 Outputs:
   ArtifactoryUrl:
     Description: URL of the ELB to access Artifactory
-    Value: !Sub ${ArtifactoryExistingVpcStack.Outputs.ArtifactoryUrl}
+    Value: !GetAtt ArtifactoryExistingVpcStack.Outputs.ArtifactoryUrl
   BastionIp:
-    Value: !Sub ${ArtifactoryExistingVpcStack.Outputs.BastionIp}
     Description: Bastion host IP, for admin access via SSH
+    Value: !GetAtt ArtifactoryExistingVpcStack.Outputs.BastionIp

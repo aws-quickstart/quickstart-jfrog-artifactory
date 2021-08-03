@@ -23,6 +23,7 @@ Metadata:
       - Label:
           default: Network configuration
         Parameters:
+          - AvailabilityZones
           - VpcId
           - PublicSubnet1Id
           - PublicSubnet2Id
@@ -86,6 +87,8 @@ Metadata:
         default: Permitted IP range
       RemoteAccessCidr:
         default: Remote access CIDR
+      AvailabilityZones:
+        default: Availability Zones
       VolumeSize:
         default: EBS root volume size
       InstanceType:
@@ -180,6 +183,10 @@ Parameters:
       For example, you may want to grant specific ranges from within your corporate network that use the SSH protocol.
     AllowedPattern: ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/([0-9]|[1-2][0-9]|3[0-2]))$
     Type: String
+  AvailabilityZones:
+    Description: List of Availability Zones to use for the subnets in the VPC. Two
+      Availability Zones are used for this deployment.
+    Type: List<AWS::EC2::AvailabilityZone::Name>
   VolumeSize:
     Description: Size in gigabytes of the available storage (min 10GB); the Quick Start will create an
       Amazon Elastic Block Store (Amazon EBS) volumes of this size.
@@ -331,6 +338,10 @@ Resources:
         XrayVersion: !Ref XrayVersion
         XrayInstanceType: !Ref XrayInstanceType
         XrayDatabasePassword: !Ref DatabasePassword
+        AvailabilityZones:
+          Fn::Join:
+            - ','
+            - Ref: AvailabilityZones
         VpcId: !Ref VpcId
         PublicSubnet1Id: !Ref PublicSubnet1Id
         PublicSubnet2Id: !Ref PublicSubnet2Id
