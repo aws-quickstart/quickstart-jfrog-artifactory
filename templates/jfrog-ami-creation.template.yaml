@@ -126,8 +126,9 @@ Resources:
           ignore_checks:
             - EIAMPolicyWildcardResource
             - EIAMPolicyActionWildcard
+            - EIAMPolicyWildcardPrincipal
           ignore_reasons:
-            EIAMPolicyWildcardResource: EC2 ec2:Describe* , ec2:AssociateAddress API actions do not support resource-level permission
+            - EIAMPolicyWildcardResource: excluding for s3:Get*, s3:Put*, s3:List*
     Properties:
       AssumeRolePolicyDocument:
         Version: "2012-10-17"

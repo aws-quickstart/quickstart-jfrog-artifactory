@@ -201,6 +201,7 @@ Resources:
       DBName: !Ref DatabaseName
       DBSubnetGroupName: !Ref  ArtifactoryDatabaseSubnetGroup
       Engine: Postgres
+      PubliclyAccessible: false
       EngineVersion: "11.5"
       MasterUsername: !Ref DatabaseUser
       MasterUserPassword: !Ref DatabasePassword
