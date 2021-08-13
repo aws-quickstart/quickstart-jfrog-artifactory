@@ -2,6 +2,12 @@ AWSTemplateFormatVersion: '2010-09-09'
 Description: 'Creates a VPC with a single public subnet. Note: If you require
   more than one subnet, please move to the aws-vpc quickstart module (qs-xxx)'
 Metadata:
+  cfn-lint:
+    config:
+      ignore_checks:
+        - EIAMPolicyWildcardResource
+        - EIAMPolicyActionWildcard
+        - EIAMPolicyWildcardPrincipal
   AWS::CloudFormation::Interface:
     ParameterGroups:
       - Label:
@@ -127,6 +133,7 @@ Resources:
         Statement:
         - Effect: Allow
           Principal: '*'
+          # Principal: '{ "AWS": "arn:${AWS::Partition}:*::${AWS::AccountId}:root" }'
           Action:
             - s3:AbortMultipartUpload
             - s3:BypassGovernanceRetention
