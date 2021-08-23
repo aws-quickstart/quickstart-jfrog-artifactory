@@ -160,7 +160,7 @@ Resources:
             - s3:UpdateJobPriority
             - s3:UpdateJobStatus
           Resource:
-          - 'arn:${AWS::Partition}:s3:::*'
+          - !Sub 'arn:${AWS::Partition}:s3:::*'
       RouteTableIds:
       - !Ref PublicSubnetRouteTable
       ServiceName: !Join
