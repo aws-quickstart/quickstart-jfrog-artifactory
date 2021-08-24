@@ -11,11 +11,12 @@
 :template_aws_ec2_securitygroup:
 :template_aws_ec2_subnet:
 :template_aws_ec2_subnetroutetableassociation:
-:template_aws_ec2_volume:
 :template_aws_ec2_vpc:
 :template_aws_ec2_vpcdhcpoptionsassociation:
 :template_aws_ec2_vpcendpoint:
 :template_aws_ec2_vpcgatewayattachment:
+:template_aws_efs_filesystem:
+:template_aws_efs_mounttarget:
 :template_aws_elasticloadbalancingv2_listener:
 :template_aws_elasticloadbalancingv2_loadbalancer:
 :template_aws_elasticloadbalancingv2_targetgroup:
@@ -28,6 +29,7 @@
 :template_cloudformation:
 :template_deterministic_ec2_instances:
 :template_ec2:
+:template_efs:
 :template_elasticloadbalancingv2:
 :template_iam:
 :template_rds:

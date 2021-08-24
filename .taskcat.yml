@@ -43,7 +43,7 @@ tests:
       MasterKey: "override"
       SmLicenseName: "override"
       SmCertName: "override"
-    template: templates/jfrog-artifactory-ec2-master.template.yaml
+    template: templates/jfrog-artifactory-ec2-main.template.yaml
     regions:
         - us-east-1
         - us-west-2

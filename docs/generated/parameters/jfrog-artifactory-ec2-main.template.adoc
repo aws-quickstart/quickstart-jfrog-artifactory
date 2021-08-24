@@ -4,49 +4,45 @@
 |===
 |Parameter label (name) |Default value|Description|SSH key name
 (`KeyPairName`)|`**__Requires input__**`|Name of an existing key pair, which allows you to connect securely to your instance after it launches. This is the key pair you created in your preferred Region.|Permitted IP range
-(`AccessCidr`)|`**__Requires input__**`|CIDR IP range that is permitted to access Artifactory. We recommend that you set this value to a trusted IP range. For example, you might want to grant only your corporate network access to the software.|Remote access CIDR
-(`RemoteAccessCidr`)|`**__Requires input__**`|Remote CIDR range that allows you to connect to the bastion instance by using SSH. We recommend that you set this value to a trusted IP range. For example, you might want to grant specific ranges inside your corporate network SSH access.
+(`AccessCidr`)|`**__Requires input__**`|CIDR IP range permitted to access Artifactory. It is recommended that you set this value to a trusted IP range. For example, you may want to limit software access to your corporate network.|Remote access CIDR
+(`RemoteAccessCidr`)|`**__Requires input__**`|Remote CIDR range that allows you to connect to the bastion instance by using SSH. It is recommended that you set this value to a trusted IP range. For example, you may want to grant specific ranges from within your corporate network that use the SSH protocol.
 |===
 .Network configuration
 [width="100%",cols="16%,11%,73%",options="header",]
 |===
-|Parameter label (name) |Default value|Description|VPC ID
-(`VpcId`)|`**__Requires input__**`|ID of your existing VPC (e.g., vpc-0343606e).|VPC CIDR
-(`VpcCidr`)|`10.0.0.0/16`|CIDR block for the VPC.|Availability Zones
-(`AvailabilityZones`)|`**__Requires input__**`|List of Availability Zones to use for the subnets in the VPC. Two Availability Zones are used for this deployment.|Public subnet 1 ID
-(`PublicSubnet1Id`)|`**__Requires input__**`|ID of the public subnet in Availability Zone 1 of your existing VPC (e.g., subnet-z0376dab).|Public subnet 2 ID
-(`PublicSubnet2Id`)|`**__Requires input__**`|ID of the public subnet in Availability Zone 2 of your existing VPC (e.g., subnet-a29c3d84).|Private subnet 1 ID
-(`PrivateSubnet1Id`)|`**__Requires input__**`|ID of the private subnet in Availability Zone 1 of your existing VPC (e.g., subnet-a0246dcd).|Private subnet 2 ID
-(`PrivateSubnet2Id`)|`**__Requires input__**`|ID of the private subnet in Availability Zone 2 of your existing VPC (e.g., subnet-b58c3d67).|Private subnet 1 CIDR
-(`PrivateSubnet1Cidr`)|`10.0.0.0/19`|CIDR of the private subnet in Availability Zone 1 of your existing VPC (e.g., 10.0.0.0/19).|Private subnet 2 CIDR
-(`PrivateSubnet2Cidr`)|`10.0.32.0/19`|CIDR of the private subnet in Availability Zone 2 of your existing VPC (e.g., 10.0.32.0/19).|Elastic Load Balancing scheme
-(`ELBScheme`)|`internet-facing`|Choose whether this is internet facing or internal.
+|Parameter label (name) |Default value|Description|Availability Zones
+(`AvailabilityZones`)|`**__Requires input__**`|List of Availability Zones to use for the subnets in the VPC. Two Availability Zones are used for this deployment.|VPC CIDR
+(`VpcCidr`)|`10.0.0.0/16`|CIDR block for the VPC.|Private subnet 1 CIDR
+(`PrivateSubnet1Cidr`)|`10.0.0.0/19`|CIDR block for private subnet 1 located in Availability Zone 1.|Private subnet 2 CIDR
+(`PrivateSubnet2Cidr`)|`10.0.32.0/19`|CIDR block for private subnet 2 located in Availability Zone 2.|Public subnet 1 CIDR
+(`PublicSubnet1Cidr`)|`10.0.128.0/20`|CIDR block for the public (DMZ) subnet 1 located in Availability Zone 1.|Public subnet 2 CIDR
+(`PublicSubnet2Cidr`)|`10.0.144.0/20`|CIDR block for the public (DMZ) subnet 2 located in Availability Zone 2.
 |===
 .Bastion configuration
 [width="100%",cols="16%,11%,73%",options="header",]
 |===
 |Parameter label (name) |Default value|Description|Bastion instance
-(`ProvisionBastionHost`)|`Enabled`|Choose Disabled to skip creating a bastion instance. Due to the Artifactory nodes being created in private subnets, the default setting of Enabled this is highly recommended.|Bastion instance type
+(`ProvisionBastionHost`)|`Enabled`|To skip creating a bastion instance, choose Disabled. Because Artifactory nodes are created in private subnets, it's highly recommended to set this value to Enabled.|Bastion instance type
 (`BastionInstanceType`)|`t3.micro`|Size of the bastion instances.|Bastion operating system
 (`BastionOs`)|`Amazon-Linux2-HVM`|Linux distribution for the Amazon Machine Image (AMI) to be used for the bastion instances.|Bastion root volume size
-(`BastionRootVolumeSize`)|`10`|Size of the root volume on the bastion instances.|Bastion enable TCP forwarding
-(`BastionEnableTcpForwarding`)|`true`|Choose whether to enable TCPForwarding via the bootstrapping of the bastion instance or not.|Number of bastion instances
+(`BastionRootVolumeSize`)|`10`|Size of the root volume in the bastion instances.|Bastion enable TCP forwarding
+(`BastionEnableTcpForwarding`)|`true`|Choose whether to enable TCP forwarding via bootstrapping of the bastion instance.|Number of bastion instances
 (`NumBastionHosts`)|`1`|Number of bastion instances to create.|Bastion enable X11 forwarding
-(`BastionEnableX11Forwarding`)|`false`|Choose true to enable X11 via the bootstrapping of the bastion host. Setting this value to true will enable X Windows over SSH. X11 forwarding can be useful, but it is also a security risk, so it's recommended that you keep the default (false) setting.
+(`BastionEnableX11Forwarding`)|`false`|Choose true to enable X11 via bootstrapping of the bastion host. Setting this value to true enables X Windows over SSH. X11 forwarding can be useful, but it is also a security risk, so it's recommended that you keep the default (false) setting.
 |===
 .Amazon EC2 configuration
 [width="100%",cols="16%,11%,73%",options="header",]
 |===
 |Parameter label (name) |Default value|Description|EBS root volume size
-(`VolumeSize`)|`200`|Size in gigabytes of the available storage (min 10GB); the Quick Start will create an Amazon Elastic Block Store (Amazon EBS) volumes of this size.|EC2 instance type
-(`InstanceType`)|`m5.xlarge`|EC2 type for the Artifactory instances.
+(`VolumeSize`)|`200`|Size in gigabytes of available storage (min 10GB). The Quick Start creates an Amazon Elastic Block Store (Amazon EBS) volumes of this size.|EC2 instance type
+(`InstanceType`)|`m5.xlarge`|EC2 instance type for the Artifactory instances.
 |===
 .JFrog Artifactory configuration
 [width="100%",cols="16%,11%,73%",options="header",]
 |===
 |Parameter label (name) |Default value|Description|Artifactory version
-(`ArtifactoryVersion`)|`7.24.3`|Version of Artifactory that you want to deploy into the Quick Start. See the release notes to select the version you want to deploy at https://www.jfrog.com/confluence/display/RTF/Release+Notes.|Secondary instances
-(`NumberOfSecondary`)|`2`|Number of secondary Artifactory servers to complete your HA deployment. To align with Artifactory best practices, the minimum number is two and the maximum is seven. Do not select more instances than you have licenses for.|Artifactory licenses secret name
+(`ArtifactoryVersion`)|`7.24.3`|Version of Artifactory that you want to deploy into the Quick Start. To select the correct version, see the release notes at https://www.jfrog.com/confluence/display/RTF/Release+Notes.|Secondary instances
+(`NumberOfSecondary`)|`2`|Number of secondary Artifactory servers to complete your HA deployment. To align with Artifactory best practices, the minimum number is two, and the maximum is seven. Do not select more instances than you have licenses for.|Artifactory licenses secret name
 (`SmLicenseName`)|`**__Blank string__**`|Secret name created in AWS Secrets Manager, which contains the Artifactory licenses.|Artifactory certificate secret name
 (`SmCertName`)|`**__Blank string__**`|Secret name created in AWS Secrets Manager, which contains the SSL certificate and certificate key.|Artifactory server name
 (`ArtifactoryServerName`)|`**__Requires input__**`|Name of your Artifactory server. Ensure that this matches your certificate.|Master server key
@@ -62,7 +58,7 @@
 (`DatabaseUser`)|`artifactory`|Login ID for the master user of your database instance.|Database password
 (`DatabasePassword`)|`**__Requires input__**`|Password for the Artifactory database user.|Database instance type
 (`DatabaseInstance`)|`db.m5.large`|Size of the database to be deployed as part of the Quick Start.|Database allocated storage
-(`DatabaseAllocatedStorage`)|`10`|Size in gigabytes of the available storage for the database instance.|High-availability database
+(`DatabaseAllocatedStorage`)|`10`|Size in gigabytes of available storage for the database instance.|High-availability database
 (`MultiAzDatabase`)|`true`|Choose false to create an Amazon RDS instance in a single Availability Zone.
 |===
 .AWS Quick Start configuration

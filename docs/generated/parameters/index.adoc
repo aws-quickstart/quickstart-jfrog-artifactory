@@ -1,6 +1,6 @@
 
 === Parameters for launching into a new VPC
-include::jfrog-artifactory-ec2-master.template.adoc[]
+include::jfrog-artifactory-ec2-main.template.adoc[]
 
 === Parameters for launching into an existing VPC
 include::jfrog-artifactory-ec2-existing-vpc.template.adoc[]

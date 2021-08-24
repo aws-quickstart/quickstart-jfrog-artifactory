@@ -21,9 +21,9 @@ Metadata:
       - Label:
           default: Network configuration
         Parameters:
-          - AvailabilityZones
           - VpcId
           - VpcCidr
+          - AvailabilityZones
           - PublicSubnet1Id
           - PublicSubnet2Id
           - PrivateSubnet1Id
@@ -49,7 +49,6 @@ Metadata:
       - Label:
           default: JFrog Artifactory configuration
         Parameters:
-          - ArtifactoryProduct
           - ArtifactoryVersion
           - NumberOfSecondary
           - SmLicenseName
@@ -62,12 +61,10 @@ Metadata:
           default: Amazon RDS configuration
         Parameters:
           - DatabaseName
-          - DatabaseEngine
           - DatabaseUser
           - DatabasePassword
           - DatabaseInstance
           - DatabaseAllocatedStorage
-          - DatabasePreferredAz
           - MultiAzDatabase
       - Label:
           default: AWS Quick Start configuration
@@ -80,19 +77,19 @@ Metadata:
         Parameters:
           - InstallXray
           - XrayVersion
-          - XrayNumberOfInstances
+          - XrayNumberOfSecondary
           - XrayInstanceType
           - XrayDatabaseUser
           - XrayDatabasePassword
     ParameterLabels:
-      AvailabilityZones:
-        default: Availability Zones
       KeyPairName:
         default: SSH key name
       VpcId:
         default: VPC ID
       VpcCidr:
         default: VPC CIDR
+      AvailabilityZones:
+        default: Availability Zones
       PublicSubnet1Id:
         default: Public subnet 1 ID
       PublicSubnet2Id:
@@ -131,8 +128,6 @@ Metadata:
         default: EC2 instance type
       NumberOfSecondary:
         default: Secondary instances
-      ArtifactoryProduct:
-        default: Artifactory product to install
       ArtifactoryVersion:
         default: Artifactory version
       SmLicenseName:
@@ -149,8 +144,6 @@ Metadata:
         default: Default Java memory settings
       DatabaseName:
         default: Database name
-      DatabaseEngine:
-        default: Database engine
       DatabaseUser:
         default: Database user
       DatabasePassword:
@@ -159,8 +152,6 @@ Metadata:
         default: Database instance type
       DatabaseAllocatedStorage:
         default: Database allocated storage
-      DatabasePreferredAz:
-        default: Database preferred Availability Zone
       MultiAzDatabase:
         default: High-availability database
       QsS3BucketName:
@@ -173,8 +164,8 @@ Metadata:
         default: Install JFrog Xray
       XrayVersion:
         default: Version of Xray to install
-      XrayNumberOfInstances:
-        default: Number of JFrog Xray instances
+      XrayNumberOfSecondary:
+        default: Number of JFrog Xray secondary instances
       XrayInstanceType:
         default: Xray instance type
       XrayDatabaseUser:
@@ -182,10 +173,6 @@ Metadata:
       XrayDatabasePassword:
         default: Xray Database password
 Parameters:
-  AvailabilityZones:
-    Description: List of Availability Zones to use for the subnets in the VPC. Two
-      Availability Zones are used for this deployment.
-    Type: List<AWS::EC2::AvailabilityZone::Name>
   KeyPairName:
     Description: Name of an existing key pair,
       which allows you to connect securely to your instance after it launches.
@@ -200,6 +187,10 @@ Parameters:
     ConstraintDescription: CIDR block parameter must be in the form x.x.x.x/16-28
     Default: 10.0.0.0/16
     Type: String
+  AvailabilityZones:
+    Description: List of Availability Zones to use for the subnets in the VPC. Two
+      Availability Zones are used for this deployment.
+    Type: List<AWS::EC2::AvailabilityZone::Name>
   PublicSubnet1Id:
     Description: ID of the public subnet in Availability Zone 1 of your existing VPC (e.g., subnet-z0376dab).
     Type: "AWS::EC2::Subnet::Id"
@@ -235,6 +226,7 @@ Parameters:
       We recommend that you set this value to a trusted IP range.
       For example, you might want to grant specific ranges inside your corporate network SSH access.
     AllowedPattern: ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/([0-9]|[1-2][0-9]|3[0-2]))$
+    ConstraintDescription: CIDR block parameter must be in the form x.x.x.x/x
     Type: String
   ELBScheme:
     Description: Choose whether this is internet facing or internal.
@@ -244,7 +236,7 @@ Parameters:
     Default: internet-facing
     Type: String
   ProvisionBastionHost:
-    Description: Choose Disabled to skip creating a bastion instance. Due to the JFrog Container Registry nodes being
+    Description: Choose Disabled to skip creating a bastion instance. Due to the Artifactory nodes being
       created in private subnets, the default setting of Enabled this is highly recommended.
     AllowedValues:
       - "Enabled"
@@ -339,6 +331,7 @@ Parameters:
       - m5a.12xlarge
       - m5a.16xlarge
       - m5a.24xlarge
+      - m6g.xlarge
     ConstraintDescription: Must contain valid instance type.
     Default: m5.xlarge
     Type: String
@@ -358,21 +351,13 @@ Parameters:
       - 7
     Default: 2
     Type: Number
-  ArtifactoryProduct:
-    Description: JFrog Artifactory product you want to install into an AMI.
-    AllowedValues:
-      - JFrog-Artifactory-Pro
-      - JFrog-Artifactory-Enterprise
-      - JFrog-Container-Registry
-    Default: JFrog-Artifactory-Enterprise
-    Type: String
   ArtifactoryVersion:
     Description: Version of Artifactory that you want to deploy into the Quick Start.
       See the release notes to select the version you want to deploy at
       https://www.jfrog.com/confluence/display/RTF/Release+Notes.
     AllowedPattern: ^(([0-9]|[1-9][0-9])\.){2}([1-9][0-9]|[0-9])$
     ConstraintDescription: A version that matches X.X.X per Artifactory releases
-    Default: 7.19.4
+    Default: 7.24.3
     Type: String
   SmLicenseName:
     Description: Secret name created in AWS Secrets Manager, which contains the Artifactory licenses.
@@ -418,12 +403,6 @@ Parameters:
     ConstraintDescription: 1 to 60 alphanumeric characters First character must be a letter.
     Default: artdb
     Type: String
-  DatabaseEngine:
-    Description: Database engine that you want to run, which is currently locked to MySQL.
-    AllowedValues:
-      - Postgres
-    Default: Postgres
-    Type: String
   DatabaseUser:
     Description: Login ID for the master user of your database instance.
     MinLength: '1'
@@ -434,12 +413,11 @@ Parameters:
     Type: String
   DatabasePassword:
     Description: Password for the Artifactory database user.
-    AllowedPattern: ^[^ \\']+$
+    AllowedPattern: ^[^ \\'"]+$
     MinLength: '8'
-    MaxLength: '12'
-    ConstraintDescription: Must be at least 8 and no more than
-      12 characters containing letters and (minimum 1 capital letter), numbers and
-      symbols.
+    MaxLength: '20'
+    ConstraintDescription: Must be at least 8 and no more than 20 printable ASCII characters (letters, numbers and symbols. 
+      Can't contain any of / (slash), '(single quote), "(double quote) and @ (at sign).
     NoEcho: 'true'
     Type: String
   DatabaseInstance:
@@ -448,13 +426,10 @@ Parameters:
       - db.m5.large
       - db.m5.xlarge
       - db.m5.2xlarge
-      - db.m5.10xlarge
-      - db.m5.16xlarge
-      - db.m5.large
-      - db.m5.xlarge
-      - db.m5.2xlarge
       - db.m5.4xlarge
+      - db.m5.8xlarge
       - db.m5.12xlarge
+      - db.m5.16xlarge
       - db.m5.24xlarge
     ConstraintDescription: Must be a valid database Instance Type.
     Default: db.m5.large
@@ -465,10 +440,6 @@ Parameters:
     MaxValue: 1024
     Default: 10
     Type: Number
-  DatabasePreferredAz:
-    Description: Preferred availability zone for Amazon RDS primary instance
-    Type: String
-    Default: ''
   MultiAzDatabase:
     Description: Choose false to create an Amazon RDS instance in a single Availability Zone.
     ConstraintDescription: True or False
@@ -511,21 +482,22 @@ Parameters:
     Description: The version of Xray that you want to deploy into the Quick Start.
     AllowedPattern: ^(([0-9]|[1-9][0-9])\.){2}([1-9][0-9]|[0-9])$
     ConstraintDescription: A version that matches X.X.X per Xray releases.
-    Default: 3.25.1
+    Default: 3.29.2
     Type: String
-  XrayNumberOfInstances:
-    Description: The number of Xray instances servers to complete your
-      HA deployment. The minimum number is one; the maximum is seven.
+  XrayNumberOfSecondary:
+    Description: The number of Xray secondary instances servers to complete your
+      HA deployment. The minimum number is zero; the maximum is six.
       Do not select more than instances than you have licenses for.
-    MinValue: 1
-    MaxValue: 7
-    Default: 1
+    MinValue: 0
+    MaxValue: 6
+    Default: 0
     Type: Number
   XrayInstanceType:
     Description: The EC2 instance type for the Xray instances.
     AllowedValues:
       - c5.2xlarge
       - c5.4xlarge
+      - c6g.2xlarge
     ConstraintDescription: Must contain valid instance type.
     Default: c5.2xlarge
     Type: String
@@ -539,24 +511,23 @@ Parameters:
     Type: String
   XrayDatabasePassword:
     Description: The password for the Xray database user.
-    AllowedPattern: ^[^ \\']+$
+    AllowedPattern: ^[^ \\'"]+$
     MinLength: '8'
-    MaxLength: '12'
-    ConstraintDescription: Must be at least 8 and no more than
-      12 characters containing letters and (minimum 1 capital letter), numbers and
-      symbols.
+    MaxLength: '20'
+    ConstraintDescription: Must be at least 8 and no more than 20 printable ASCII characters (letters, numbers and symbols. 
+      Can't contain any of / (slash), '(single quote), "(double quote) and @ (at sign).
     NoEcho: 'true'
     Type: String
 
 Conditions:
   EnableBastion: !Equals [!Ref 'ProvisionBastionHost', 'Enabled']
-  IsArtifactory: !Not [!Equals [!Ref ArtifactoryProduct, 'JFrog-Container-Registry']]
   HasSecondaryNodes: !Not [!Equals [!Ref NumberOfSecondary, '0']]
   DefaultJava: !Equals [!Ref DefaultJavaMemSettings, "true"]
   UsingDefaultBucket: !Equals [!Ref QsS3BucketName, 'aws-quickstart']
   EnableXray: !Equals [!Ref InstallXray, 'true']
   SmCertNameNotExists: !Equals [!Ref 'SmCertName', '']
   SmCertNameExists: !Not [!Equals [!Ref 'SmCertName', '']]
+  XrayHasSecondaryNodes: !And [!Equals [!Ref InstallXray, 'true'] , !Not [!Equals [!Ref XrayNumberOfSecondary, '0']]]
 
 Resources:
   BastionRole:
@@ -634,27 +605,25 @@ Resources:
         - S3Bucket: !If [UsingDefaultBucket, !Sub '${QsS3BucketName}-${AWS::Region}', !Ref 'QsS3BucketName']
           S3Region: !If [UsingDefaultBucket, !Ref 'AWS::Region', !Ref 'QsS3BucketRegion']
       Parameters:
-        AvailabilityZones:
-          Fn::Join:
-            - ','
-            - Ref: AvailabilityZones
         VpcId: !Ref VpcId
         VpcCidr: !Ref VpcCidr
         PrivateSubnet1Cidr: !Ref PrivateSubnet1Cidr
         PrivateSubnet2Cidr: !Ref PrivateSubnet2Cidr
-        PrivateSubnet3Cidr: !Ref PrivateSubnet2Cidr  # This should end up in no new rule but required for EKS
         SubnetIds: !Join [",", [!Ref PrivateSubnet1Id, !Ref PrivateSubnet2Id]]
+        AvailabilityZones:
+          Fn::Join:
+            - ','
+            - Ref: AvailabilityZones
         DatabaseAllocatedStorage: !Ref DatabaseAllocatedStorage
-        DatabasePreferredAz: !Ref DatabasePreferredAz
         MultiAzDatabase: !Ref MultiAzDatabase
-        DatabaseEngine: !Ref DatabaseEngine
         DatabaseUser: !Ref DatabaseUser
         DatabasePassword: !Ref DatabasePassword
         DatabaseInstance: !Ref DatabaseInstance
         DatabaseName: !Ref DatabaseName
         InstanceType: !Ref InstanceType
         ArtifactoryHostRole: !Ref ArtifactoryHostRole
-        VolumeSize: !Ref VolumeSize
+        # VolumeSize: !Ref VolumeSize
+        EfsSecurityGroup: !Ref ArtifactoryEc2Sg
   ArtifactoryElb:
     Type: AWS::ElasticLoadBalancingV2::LoadBalancer
     Properties:
@@ -716,7 +685,6 @@ Resources:
     Type: AWS::ElasticLoadBalancingV2::LoadBalancer
     Properties:
       IpAddressType: ipv4
-      # Name: ArtifactoryInternal-ELB
       Scheme: internal
       Subnets:
         - !Ref PrivateSubnet1Id
@@ -731,7 +699,6 @@ Resources:
       HealthCheckTimeoutSeconds: 10
       HealthyThresholdCount: 3
       HealthCheckPort: "8082"
-      # Name: artifactory-internal-http
       Port: 80
       Protocol: TCP
       TargetType: instance
@@ -751,7 +718,7 @@ Resources:
     Properties:
       Tags:
         - Key: Name
-          Value: !Sub ${ArtifactoryProduct}-ec2-instances-sg
+          Value: artifactory-ec2-instances-sg
       GroupDescription: SG for EC2 instances (also permits access using SSH from the bastion host)
       VpcId: !Ref VpcId
       SecurityGroupIngress:
@@ -782,6 +749,22 @@ Resources:
         - IpProtocol: tcp
           FromPort: 8046
           ToPort: 8046
+          CidrIp: !Ref VpcCidr
+        - IpProtocol: tcp
+          FromPort: 2049
+          ToPort: 2049
+          CidrIp: !Ref VpcCidr
+        - IpProtocol: tcp
+          FromPort: 4369
+          ToPort: 4369
+          CidrIp: !Ref VpcCidr
+        - IpProtocol: tcp
+          FromPort: 15672
+          ToPort: 15672
+          CidrIp: !Ref VpcCidr
+        - IpProtocol: tcp
+          FromPort: 25672
+          ToPort: 25672
           CidrIp: !Ref VpcCidr
       SecurityGroupEgress:
         - IpProtocol: "-1"
@@ -840,7 +823,7 @@ Resources:
                   - "logs:CreateLogStream"
                   - "logs:PutLogEvents"
                   - "logs:DescribeLogStreams"
-                Resource: !Sub "arn:${AWS::Partition}:logs:*:*:*"
+                Resource: !Sub "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:*:*"
               - Effect: "Allow"
                 Action:
                   - "s3:GetObject"
@@ -852,7 +835,7 @@ Resources:
               - Effect: "Allow"
                 Action:
                   - "secretsmanager:GetSecretValue"
-                Resource: !Sub "arn:${AWS::Partition}:secretsmanager:*:*:secret:*"
+                Resource: !Sub "arn:${AWS::Partition}:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:*"
   ArtifactoryHostProfile:
     Type: AWS::IAM::InstanceProfile
     Properties:
@@ -871,7 +854,7 @@ Resources:
         PrivateSubnetIds: !Join [',', [!Ref PrivateSubnet1Id]]
         MinScalingNodes: '1'  # Always have 1 PrimaryNode
         MaxScalingNodes: '1'  # Always have 1 PrimaryNode
-        DeploymentTag: !If [IsArtifactory, "ArtifactoryPrimary", "JcrPrimary"]
+        DeploymentTag: 'Artifactory Primary'
         HostRole: !Ref ArtifactoryHostRole
         QsS3BucketName: !Ref QsS3BucketName
         QsS3KeyPrefix: !Ref QsS3KeyPrefix
@@ -885,7 +868,6 @@ Resources:
               - UsingDefaultBucket
               - !Ref 'AWS::Region'
               - !Ref 'QsS3BucketRegion'
-        ArtifactoryProduct: !Ref ArtifactoryProduct
         ArtifactoryLicensesSecretName: !Ref SmLicenseName
         ArtifactoryServerName: !Ref ArtifactoryServerName
         EnableSSL: !If [SmCertNameExists, true, false]
@@ -900,7 +882,6 @@ Resources:
         DatabaseType: !GetAtt ArtifactoryCoreInfraStack.Outputs.DatabaseType
         DatabaseUser: !Ref DatabaseUser
         DatabasePassword: !Ref DatabasePassword
-        ArtifactoryPrimary: true
         MasterKey: !Ref MasterKey
         ExtraJavaOptions: !If [DefaultJava, !Sub "${ArtifactoryCoreInfraStack.Outputs.JavaOpts} ${ExtraJavaOptions}", !Ref ExtraJavaOptions]
         ArtifactoryVersion: !Ref ArtifactoryVersion
@@ -908,8 +889,9 @@ Resources:
         HostProfile: !Ref ArtifactoryHostProfile
         SecurityGroups: !Ref ArtifactoryEc2Sg
         InstanceType: !Ref InstanceType
-        PrimaryVolume: !GetAtt ArtifactoryCoreInfraStack.Outputs.ArtifactoryEbsVolume
-        VolumeSize: !Ref VolumeSize
+        # PrimaryVolume: !GetAtt ArtifactoryCoreInfraStack.Outputs.ArtifactoryEbsVolume
+        # VolumeSize: !Ref VolumeSize
+        ArtifactoryEfsFileSystem: !GetAtt ArtifactoryCoreInfraStack.Outputs.ArtifactoryEfsFileSystem
         TargetGroupARN: !Ref ArtifactoryTargetGroup
         SSLTargetGroupARN: !Ref ArtifactorySslTargetGroup
         InternalTargetGroupARN: !Ref ArtifactoryInternalTargetGroup
@@ -927,9 +909,20 @@ Resources:
         PrivateSubnetIds: !Join [',', [!Ref PrivateSubnet1Id, !Ref PrivateSubnet2Id]]
         MinScalingNodes: !Ref NumberOfSecondary
         MaxScalingNodes: !Ref NumberOfSecondary
-        DeploymentTag: ArtifactorySecondary
+        DeploymentTag: 'Artifactory Secondary'
         HostRole: !Ref ArtifactoryHostRole
-        ArtifactoryProduct: !Ref ArtifactoryProduct
+        QsS3BucketName: !Ref QsS3BucketName
+        QsS3KeyPrefix: !Ref QsS3KeyPrefix
+        QsS3Uri: !Sub
+          - https://${S3Bucket}.s3.${S3Region}.${AWS::URLSuffix}/${QsS3KeyPrefix}
+          - S3Bucket: !If
+              - UsingDefaultBucket
+              - !Sub 'aws-quickstart-${AWS::Region}'
+              - !Ref 'QsS3BucketName'
+            S3Region: !If
+              - UsingDefaultBucket
+              - !Ref 'AWS::Region'
+              - !Ref 'QsS3BucketRegion'
         ArtifactoryLicensesSecretName: !Ref SmLicenseName
         ArtifactoryServerName: !Ref ArtifactoryServerName
         EnableSSL: !If [SmCertNameExists, true, false]
@@ -944,7 +937,6 @@ Resources:
         DatabaseType: !GetAtt ArtifactoryCoreInfraStack.Outputs.DatabaseType
         DatabaseUser: !Ref DatabaseUser
         DatabasePassword: !Ref DatabasePassword
-        ArtifactoryPrimary: false
         MasterKey: !Ref MasterKey
         ExtraJavaOptions: !If [DefaultJava, !Sub "${ArtifactoryCoreInfraStack.Outputs.JavaOpts} ${ExtraJavaOptions}", !Ref ExtraJavaOptions]
         ArtifactoryVersion: !Ref ArtifactoryVersion
@@ -952,23 +944,12 @@ Resources:
         HostProfile: !Ref ArtifactoryHostProfile
         SecurityGroups: !Ref ArtifactoryEc2Sg
         InstanceType: !Ref InstanceType
-        PrimaryVolume: !GetAtt ArtifactoryCoreInfraStack.Outputs.ArtifactoryEbsVolume
-        VolumeSize: !Ref VolumeSize
+        # PrimaryVolume: !GetAtt ArtifactoryCoreInfraStack.Outputs.ArtifactoryEbsVolume
+        # VolumeSize: !Ref VolumeSize
+        ArtifactoryEfsFileSystem: !GetAtt ArtifactoryCoreInfraStack.Outputs.ArtifactoryEfsFileSystem
         TargetGroupARN: !Ref ArtifactoryTargetGroup
         SSLTargetGroupARN: !Ref ArtifactorySslTargetGroup
         InternalTargetGroupARN: !Ref ArtifactoryInternalTargetGroup
-        QsS3BucketName: !Ref QsS3BucketName
-        QsS3KeyPrefix: !Ref QsS3KeyPrefix
-        QsS3Uri: !Sub
-          - https://${S3Bucket}.s3.${S3Region}.${AWS::URLSuffix}/${QsS3KeyPrefix}
-          - S3Bucket: !If
-              - UsingDefaultBucket
-              - !Sub 'aws-quickstart-${AWS::Region}'
-              - !Ref 'QsS3BucketName'
-            S3Region: !If
-              - UsingDefaultBucket
-              - !Ref 'AWS::Region'
-              - !Ref 'QsS3BucketRegion'
   XrayHostRole:
     Condition: EnableXray
     Type: AWS::IAM::Role
@@ -1026,7 +1007,7 @@ Resources:
                   - "logs:CreateLogStream"
                   - "logs:PutLogEvents"
                   - "logs:DescribeLogStreams"
-                Resource: !Sub "arn:${AWS::Partition}:logs:*:*:*"
+                Resource: !Sub "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:*:*"
               - Effect: "Allow"
                 Action:
                   - "s3:GetObject"
@@ -1039,7 +1020,7 @@ Resources:
       Roles:
         - !Ref XrayHostRole
       Path: /
-  XrayExistingVpcStack:
+  XrayPrimary:
     Condition: EnableXray
     DependsOn: ArtifactoryPrimary
     Type: AWS::CloudFormation::Stack
@@ -1052,10 +1033,54 @@ Resources:
         PrivateSubnet1Id: !Ref PrivateSubnet1Id
         PrivateSubnet2Id: !Ref PrivateSubnet2Id
         KeyPairName: !Ref KeyPairName
-        MinScalingNodes: !Ref XrayNumberOfInstances
-        MaxScalingNodes: !Ref XrayNumberOfInstances
-        DeploymentTag: 'xray'
-        ArtifactoryProduct: !Ref ArtifactoryProduct
+        MinScalingNodes: 1
+        MaxScalingNodes: 1
+        DeploymentTag: 'Xray Primary'
+        QsS3BucketName: !Ref QsS3BucketName
+        QsS3KeyPrefix: !Ref QsS3KeyPrefix
+        QsS3Uri: !Sub
+          - https://${S3Bucket}.s3.${S3Region}.${AWS::URLSuffix}/${QsS3KeyPrefix}
+          - S3Bucket: !If
+              - UsingDefaultBucket
+              - !Sub 'aws-quickstart-${AWS::Region}'
+              - !Ref 'QsS3BucketName'
+            S3Region: !If
+              - UsingDefaultBucket
+              - !Ref 'AWS::Region'
+              - !Ref 'QsS3BucketRegion'
+        DatabaseDriver: !GetAtt ArtifactoryCoreInfraStack.Outputs.DatabaseDriver
+        DatabaseType: !GetAtt ArtifactoryCoreInfraStack.Outputs.DatabaseType
+        DatabaseUser: !Ref DatabaseUser
+        DatabasePassword: !Ref DatabasePassword
+        MasterKey: !Ref MasterKey
+        SecurityGroups: !Ref ArtifactoryEc2Sg
+        VolumeSize: !Ref VolumeSize
+        ExtraJavaOptions: !GetAtt ArtifactoryCoreInfraStack.Outputs.JavaOpts
+        XrayInstanceType: !Ref XrayInstanceType
+        JfrogInternalUrl: !Sub "http://${ArtifactoryInternalElb.DNSName}"
+        XrayDatabaseUser: !Ref XrayDatabaseUser
+        XrayDatabasePassword: !Ref XrayDatabasePassword
+        XrayMasterDatabaseUrl: !GetAtt ArtifactoryCoreInfraStack.Outputs.XrayMasterDatabaseUrl
+        XrayDatabaseUrl: !GetAtt ArtifactoryCoreInfraStack.Outputs.XrayDatabaseUrl
+        XrayVersion: !Ref XrayVersion
+        XrayHostRole: !Ref XrayHostRole
+        XrayHostProfile: !Ref XrayHostProfile
+  XraySecondary:
+    Condition: XrayHasSecondaryNodes
+    DependsOn: XrayPrimary
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub
+        - https://${S3Bucket}.s3.${S3Region}.${AWS::URLSuffix}/${QsS3KeyPrefix}templates/jfrog-xray-ec2-instance.template.yaml
+        - S3Bucket: !If [UsingDefaultBucket, !Sub '${QsS3BucketName}-${AWS::Region}', !Ref 'QsS3BucketName']
+          S3Region: !If [UsingDefaultBucket, !Ref 'AWS::Region', !Ref 'QsS3BucketRegion']
+      Parameters:
+        PrivateSubnet1Id: !Ref PrivateSubnet1Id
+        PrivateSubnet2Id: !Ref PrivateSubnet2Id
+        KeyPairName: !Ref KeyPairName
+        MinScalingNodes: !Ref XrayNumberOfSecondary
+        MaxScalingNodes: !Ref XrayNumberOfSecondary
+        DeploymentTag: 'Xray Secondary'
         QsS3BucketName: !Ref QsS3BucketName
         QsS3KeyPrefix: !Ref QsS3KeyPrefix
         QsS3Uri: !Sub

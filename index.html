@@ -2227,15 +2227,9 @@ Unless you are customizing the Quick Start templates for your own deployment pro
 </thead>
 <tbody>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Artifactory product to install
-(<code>ArtifactoryProduct</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>JFrog-Artifactory-Enterprise</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">JFrog Artifactory product you want to install into an AMI.</p></td>
-</tr>
-<tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Artifactory version
 (<code>ArtifactoryVersion</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>7.19.4</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>7.24.3</code></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Version of Artifactory that you want to deploy into the Quick Start. To select the correct version, see the release notes at <a href="https://www.jfrog.com/confluence/display/RTF/Release+Notes" class="bare">https://www.jfrog.com/confluence/display/RTF/Release+Notes</a>.</p></td>
 </tr>
 <tr>
@@ -2304,12 +2298,6 @@ Unless you are customizing the Quick Start templates for your own deployment pro
 <td class="tableblock halign-left valign-top"><p class="tableblock">Name of your database instance. The name must be unique across all instances owned by your AWS account in the current Region. The database instance identifier is case-insensitive, but it&#8217;s stored in lowercase (as in "mydbinstance").</p></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Database engine
-(<code>DatabaseEngine</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>Postgres</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Database engine that you want to run.</p></td>
-</tr>
-<tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Database user
 (<code>DatabaseUser</code>)</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>artifactory</code></p></td>
@@ -2332,12 +2320,6 @@ Unless you are customizing the Quick Start templates for your own deployment pro
 (<code>DatabaseAllocatedStorage</code>)</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>10</code></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Size in gigabytes of available storage for the database instance.</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Database preferred Availability Zone
-(<code>DatabasePreferredAz</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code><strong><em>Blank string</em></strong></code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Preferred availability zone for Amazon RDS primary instance</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">High-availability database
@@ -2406,14 +2388,14 @@ Unless you are customizing the Quick Start templates for your own deployment pro
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Version of Xray to install
 (<code>XrayVersion</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>3.25.1</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>3.29.2</code></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">The version of Xray that you want to deploy into the Quick Start.</p></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Number of JFrog XrayNumberOfInstances
-(<code>XrayNumberOfInstances</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>1</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">The number of Xray instances servers to complete your HA deployment. The minimum number is one; the maximum is seven. Do not select more than instances than you have licenses for.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Number of JFrog Xray secondary instances
+(<code>XrayNumberOfSecondary</code>)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>0</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">The number of Xray secondary instances servers to complete your HA deployment. The minimum number is zero; the maximum is six. Do not select more than instances than you have licenses for.</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Xray instance type
@@ -2489,12 +2471,6 @@ Unless you are customizing the Quick Start templates for your own deployment pro
 </thead>
 <tbody>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Availability Zones
-(<code>AvailabilityZones</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code><strong><em>Requires input</em></strong></code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">List of Availability Zones to use for the subnets in the VPC. Two Availability Zones are used for this deployment.</p></td>
-</tr>
-<tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">VPC ID
 (<code>VpcId</code>)</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code><strong><em>Requires input</em></strong></code></p></td>
@@ -2505,6 +2481,12 @@ Unless you are customizing the Quick Start templates for your own deployment pro
 (<code>VpcCidr</code>)</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>10.0.0.0/16</code></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">CIDR block for the VPC.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Availability Zones
+(<code>AvailabilityZones</code>)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code><strong><em>Requires input</em></strong></code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">List of Availability Zones to use for the subnets in the VPC. Two Availability Zones are used for this deployment.</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Public subnet 1 ID
@@ -2569,7 +2551,7 @@ Unless you are customizing the Quick Start templates for your own deployment pro
 <td class="tableblock halign-left valign-top"><p class="tableblock">Bastion instance
 (<code>ProvisionBastionHost</code>)</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>Enabled</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Choose Disabled to skip creating a bastion instance. Due to the JFrog Container Registry nodes being created in private subnets, the default setting of Enabled this is highly recommended.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Choose Disabled to skip creating a bastion instance. Due to the Artifactory nodes being created in private subnets, the default setting of Enabled this is highly recommended.</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Bastion instance type
@@ -2654,15 +2636,9 @@ Unless you are customizing the Quick Start templates for your own deployment pro
 </thead>
 <tbody>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Artifactory product to install
-(<code>ArtifactoryProduct</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>JFrog-Artifactory-Enterprise</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">JFrog Artifactory product you want to install into an AMI.</p></td>
-</tr>
-<tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Artifactory version
 (<code>ArtifactoryVersion</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>7.19.4</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>7.24.3</code></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Version of Artifactory that you want to deploy into the Quick Start. See the release notes to select the version you want to deploy at <a href="https://www.jfrog.com/confluence/display/RTF/Release+Notes" class="bare">https://www.jfrog.com/confluence/display/RTF/Release+Notes</a>.</p></td>
 </tr>
 <tr>
@@ -2731,12 +2707,6 @@ Unless you are customizing the Quick Start templates for your own deployment pro
 <td class="tableblock halign-left valign-top"><p class="tableblock">Name of your database instance. The name must be unique across all instances owned by your AWS account in the current Region. The database instance identifier is case-insensitive, but it&#8217;s stored in lowercase (as in "mydbinstance").</p></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Database engine
-(<code>DatabaseEngine</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>Postgres</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Database engine that you want to run, which is currently locked to MySQL.</p></td>
-</tr>
-<tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Database user
 (<code>DatabaseUser</code>)</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>artifactory</code></p></td>
@@ -2759,12 +2729,6 @@ Unless you are customizing the Quick Start templates for your own deployment pro
 (<code>DatabaseAllocatedStorage</code>)</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>10</code></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Size in gigabytes of the available storage for the database instance.</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Database preferred Availability Zone
-(<code>DatabasePreferredAz</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code><strong><em>Blank string</em></strong></code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Preferred availability zone for Amazon RDS primary instance</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">High-availability database
@@ -2833,14 +2797,14 @@ Unless you are customizing the Quick Start templates for your own deployment pro
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Version of Xray to install
 (<code>XrayVersion</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>3.25.1</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>3.29.2</code></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">The version of Xray that you want to deploy into the Quick Start.</p></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Number of JFrog Xray instances
-(<code>XrayNumberOfInstances</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>1</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">The number of Xray instances servers to complete your HA deployment. The minimum number is one; the maximum is seven. Do not select more than instances than you have licenses for.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Number of JFrog Xray secondary instances
+(<code>XrayNumberOfSecondary</code>)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>0</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">The number of Xray secondary instances servers to complete your HA deployment. The minimum number is zero; the maximum is six. Do not select more than instances than you have licenses for.</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Xray instance type
@@ -2913,7 +2877,7 @@ and to share your customizations with others.</p>
 </html>
 <!--
 repo commit:
-8a829e5d91b50eedb78e3cd4d618482437665dd0
+f99a9c0eebccfea3890ef5347e9e8229ed860bfd
 
 submodule config:
  4ee94d6b60ec455e5b452e8ad9841eb825704b70 docs/boilerplate (heads/main)
