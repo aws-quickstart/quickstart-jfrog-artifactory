@@ -45,7 +45,6 @@ Metadata:
       - Label:
           default: JFrog Artifactory configuration
         Parameters:
-          - ArtifactoryProduct
           - ArtifactoryVersion
           - NumberOfSecondary
           - SmLicenseName
@@ -58,12 +57,10 @@ Metadata:
           default: Amazon RDS configuration
         Parameters:
           - DatabaseName
-          - DatabaseEngine
           - DatabaseUser
           - DatabasePassword
           - DatabaseInstance
           - DatabaseAllocatedStorage
-          - DatabasePreferredAz
           - MultiAzDatabase
       - Label:
           default: AWS Quick Start configuration
@@ -76,7 +73,7 @@ Metadata:
         Parameters:
           - InstallXray
           - XrayVersion
-          - XrayNumberOfInstances
+          - XrayNumberOfSecondary
           - XrayInstanceType
           - XrayDatabaseUser
           - XrayDatabasePassword
@@ -119,8 +116,6 @@ Metadata:
         default: EC2 instance type
       NumberOfSecondary:
         default: Secondary instances
-      ArtifactoryProduct:
-        default: Artifactory product to install
       ArtifactoryVersion:
         default: Artifactory version
       SmLicenseName:
@@ -137,8 +132,6 @@ Metadata:
         default: Default Java memory settings
       DatabaseName:
         default: Database name
-      DatabaseEngine:
-        default: Database engine
       DatabaseUser:
         default: Database user
       DatabasePassword:
@@ -147,8 +140,6 @@ Metadata:
         default: Database instance type
       DatabaseAllocatedStorage:
         default: Database allocated storage
-      DatabasePreferredAz:
-        default: Database preferred Availability Zone
       MultiAzDatabase:
         default: High-availability database
       QsS3BucketName:
@@ -161,8 +152,8 @@ Metadata:
         default: Install JFrog Xray
       XrayVersion:
         default: Version of Xray to install
-      XrayNumberOfInstances:
-        default: Number of JFrog XrayNumberOfInstances
+      XrayNumberOfSecondary:
+        default: Number of JFrog Xray secondary instances
       XrayInstanceType:
         default: Xray instance type
       XrayDatabaseUser:
@@ -338,19 +329,11 @@ Parameters:
       - 7
     Default: 2
     Type: Number
-  ArtifactoryProduct:
-    Description: JFrog Artifactory product you want to install into an AMI.
-    AllowedValues:
-      - JFrog-Artifactory-Pro
-      - JFrog-Artifactory-Enterprise
-      - JFrog-Container-Registry
-    Default: JFrog-Artifactory-Enterprise
-    Type: String
   ArtifactoryVersion:
     Description: Version of Artifactory that you want to deploy into the Quick Start.
       To select the correct version, see the release notes at
       https://www.jfrog.com/confluence/display/RTF/Release+Notes.
-    Default: 7.19.4
+    Default: 7.24.3
     Type: String
   SmLicenseName:
     Description: Secret name created in AWS Secrets Manager, which contains the Artifactory licenses.
@@ -396,12 +379,6 @@ Parameters:
     ConstraintDescription: 1 to 60 alphanumeric characters First character must be a letter.
     Default: artdb
     Type: String
-  DatabaseEngine:
-    Description: Database engine that you want to run.
-    AllowedValues:
-      - Postgres
-    Default: Postgres
-    Type: String
   DatabaseUser:
     Description: Login ID for the master user of your database instance.
     MinLength: '1'
@@ -412,12 +389,11 @@ Parameters:
     Type: String
   DatabasePassword:
     Description: Password for the Artifactory database user.
-    AllowedPattern: ^[^ \\']+$
+    AllowedPattern: ^[^ \\'"]+$
     MinLength: '8'
-    MaxLength: '12'
-    ConstraintDescription: Must be at least 8 and no more than
-      12 characters containing letters and (minimum 1 capital letter), numbers and
-      symbols.
+    MaxLength: '20'
+    ConstraintDescription: Must be at least 8 and no more than 20 printable ASCII characters (letters, numbers and symbols. 
+      Can't contain any of / (slash), '(single quote), "(double quote) and @ (at sign).
     NoEcho: 'true'
     Type: String
   DatabaseInstance:
@@ -426,13 +402,10 @@ Parameters:
       - db.m5.large
       - db.m5.xlarge
       - db.m5.2xlarge
-      - db.m5.10xlarge
-      - db.m5.16xlarge
-      - db.m5.large
-      - db.m5.xlarge
-      - db.m5.2xlarge
       - db.m5.4xlarge
+      - db.m5.8xlarge
       - db.m5.12xlarge
+      - db.m5.16xlarge
       - db.m5.24xlarge
     ConstraintDescription: Must be a valid database Instance Type.
     Default: db.m5.large
@@ -443,10 +416,6 @@ Parameters:
     MaxValue: 1024
     Default: 10
     Type: Number
-  DatabasePreferredAz:
-    Description: Preferred availability zone for Amazon RDS primary instance
-    Type: String
-    Default: ''
   MultiAzDatabase:
     Description: Choose false to create an Amazon RDS instance in a single Availability Zone.
     ConstraintDescription: True or False
@@ -487,15 +456,15 @@ Parameters:
     Type: String
   XrayVersion:
     Description: The version of Xray that you want to deploy into the Quick Start.
-    Default: 3.25.1
+    Default: 3.29.2
     Type: String
-  XrayNumberOfInstances:
-    Description: The number of Xray instances servers to complete your
-      HA deployment. The minimum number is one; the maximum is seven.
+  XrayNumberOfSecondary:
+    Description: The number of Xray secondary instances servers to complete your
+      HA deployment. The minimum number is zero; the maximum is six.
       Do not select more than instances than you have licenses for.
-    MinValue: 1
-    MaxValue: 7
-    Default: 1
+    MinValue: 0
+    MaxValue: 6
+    Default: 0
     Type: Number
   XrayInstanceType:
     Description: The EC2 instance type for the Xray instances.
@@ -515,12 +484,11 @@ Parameters:
     Type: String
   XrayDatabasePassword:
     Description: The password for the Xray database user.
-    AllowedPattern: ^[^ \\']+$
+    AllowedPattern: ^[^ \\'"]+$
     MinLength: '8'
-    MaxLength: '12'
-    ConstraintDescription: Must be at least 8 and no more than
-      12 characters containing letters and (minimum 1 capital letter), numbers and
-      symbols.
+    MaxLength: '20'
+    ConstraintDescription: Must be at least 8 and no more than 20 printable ASCII characters (letters, numbers and symbols. 
+      Can't contain any of / (slash), '(single quote), "(double quote) and @ (at sign).
     NoEcho: 'true'
     Type: String
 Conditions:
@@ -531,7 +499,7 @@ Resources:
     Type: AWS::CloudFormation::Stack
     Properties:
       TemplateURL: !Sub
-        - https://${S3Bucket}.s3.${S3Region}.${AWS::URLSuffix}/${QsS3KeyPrefix}submodules/quickstart-aws-vpc/templates/aws-vpc.template
+        - https://${S3Bucket}.s3.${S3Region}.${AWS::URLSuffix}/${QsS3KeyPrefix}submodules/quickstart-aws-vpc/templates/aws-vpc.template.yaml
         - S3Bucket: !If [UsingDefaultBucket, !Sub '${QsS3BucketName}-${AWS::Region}', !Ref 'QsS3BucketName']
           S3Region: !If [UsingDefaultBucket, !Ref 'AWS::Region', !Ref 'QsS3BucketRegion']
       Parameters:
@@ -539,8 +507,6 @@ Resources:
           Fn::Join:
             - ','
             - Ref: AvailabilityZones
-        KeyPairName:
-          Ref: KeyPairName
         NumberOfAZs: '2'
         PrivateSubnet1ACIDR:
           Ref: PrivateSubnet1Cidr
@@ -560,13 +526,13 @@ Resources:
         - S3Bucket: !If [UsingDefaultBucket, !Sub '${QsS3BucketName}-${AWS::Region}', !Ref 'QsS3BucketName']
           S3Region: !If [UsingDefaultBucket, !Ref 'AWS::Region', !Ref 'QsS3BucketRegion']
       Parameters:
+        KeyPairName: !Ref KeyPairName
+        VpcId: !GetAtt ArtifactoryVpcStack.Outputs.VPCID
+        VpcCidr: !Ref VpcCidr
         AvailabilityZones:
           Fn::Join:
             - ','
             - Ref: AvailabilityZones
-        KeyPairName: !Ref KeyPairName
-        VpcId: !GetAtt ArtifactoryVpcStack.Outputs.VPCID
-        VpcCidr: !Ref VpcCidr
         PublicSubnet1Id: !GetAtt ArtifactoryVpcStack.Outputs.PublicSubnet1ID
         PublicSubnet2Id: !GetAtt ArtifactoryVpcStack.Outputs.PublicSubnet2ID
         PrivateSubnet1Id: !GetAtt ArtifactoryVpcStack.Outputs.PrivateSubnet1AID
@@ -585,7 +551,6 @@ Resources:
         VolumeSize: !Ref VolumeSize
         InstanceType: !Ref InstanceType
         NumberOfSecondary: !Ref NumberOfSecondary
-        ArtifactoryProduct: !Ref ArtifactoryProduct
         ArtifactoryVersion: !Ref ArtifactoryVersion
         SmLicenseName: !Ref SmLicenseName
         SmCertName: !Ref SmCertName
@@ -594,26 +559,24 @@ Resources:
         ExtraJavaOptions: !Ref ExtraJavaOptions
         DefaultJavaMemSettings: !Ref DefaultJavaMemSettings
         DatabaseName: !Ref DatabaseName
-        DatabaseEngine: !Ref DatabaseEngine
         DatabaseUser: !Ref DatabaseUser
         DatabasePassword: !Ref DatabasePassword
         DatabaseInstance: !Ref DatabaseInstance
         DatabaseAllocatedStorage: !Ref DatabaseAllocatedStorage
-        DatabasePreferredAz: !Ref DatabasePreferredAz
         MultiAzDatabase: !Ref MultiAzDatabase
         QsS3BucketName: !Ref QsS3BucketName
         QsS3KeyPrefix: !Ref QsS3KeyPrefix
         QsS3BucketRegion: !Ref QsS3BucketRegion
         InstallXray: !Ref InstallXray
         XrayVersion: !Ref XrayVersion
-        XrayNumberOfInstances: !Ref XrayNumberOfInstances
+        XrayNumberOfSecondary: !Ref XrayNumberOfSecondary
         XrayInstanceType: !Ref XrayInstanceType
         XrayDatabaseUser: !Ref XrayDatabaseUser
         XrayDatabasePassword: !Ref XrayDatabasePassword
 Outputs:
   ArtifactoryUrl:
     Description: URL of the ELB to access Artifactory
-    Value: !Sub ${ArtifactoryExistingVpcStack.Outputs.ArtifactoryUrl}
+    Value: !GetAtt ArtifactoryExistingVpcStack.Outputs.ArtifactoryUrl
   BastionIp:
-    Value: !Sub ${ArtifactoryExistingVpcStack.Outputs.BastionIp}
     Description: Bastion host IP, for admin access via SSH
+    Value: !GetAtt ArtifactoryExistingVpcStack.Outputs.BastionIp

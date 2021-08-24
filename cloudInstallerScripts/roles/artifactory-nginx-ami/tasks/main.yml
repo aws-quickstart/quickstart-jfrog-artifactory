@@ -1,4 +1,12 @@
 ---
+- name: ensure python2 is installed
+  yum:
+    name: python2
+    state: present
+    update_cache: true
+  become: true
+  become_user: root
+
 - name: Add epel-release repo
   yum:
     name: epel-release
