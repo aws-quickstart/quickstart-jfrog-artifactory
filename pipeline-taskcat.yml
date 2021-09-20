@@ -19,7 +19,7 @@ project:
     SmCertName          : "jfrog.tech-certificates"
     ArtifactoryServerName: "artifactory"
     MultiAzDatabase     : "true"
-    ProvisionBastionHost: "Disabled"
+    ProvisionBastionHost: "Enabled"
     DatabasePassword    : "$[taskcat_genpass_8A]"
     XrayDatabasePassword: "$[taskcat_genpass_8A]"
 
