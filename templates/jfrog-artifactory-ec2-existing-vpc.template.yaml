@@ -640,10 +640,11 @@ Resources:
     Properties:
       HealthCheckEnabled: True
       HealthCheckIntervalSeconds: 30
-      HealthCheckProtocol: TCP
-      HealthCheckTimeoutSeconds: 10
+      HealthCheckProtocol: HTTP
+      # HealthCheckTimeoutSeconds: 10
       HealthyThresholdCount: 3
       HealthCheckPort: "8082"
+      HealthCheckPath: "/artifactory/api/system/ping"
       Port: 443
       Protocol: TCP
       TargetType: instance
@@ -654,10 +655,11 @@ Resources:
     Properties:
       HealthCheckEnabled: True
       HealthCheckIntervalSeconds: 30
-      HealthCheckProtocol: TCP
-      HealthCheckTimeoutSeconds: 10
+      HealthCheckProtocol: HTTP
+      # HealthCheckTimeoutSeconds: 10
       HealthyThresholdCount: 3
       HealthCheckPort: "8082"
+      HealthCheckPath: "/artifactory/api/system/ping"
       Port: 80
       Protocol: TCP
       TargetType: instance

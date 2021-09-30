@@ -8,8 +8,8 @@ project:
 
   parameters:
     KeyPairName         : "vinaykey1"
-    ArtifactoryVersion  : 7.25.7
-    XrayVersion         : 3.32.2
+    ArtifactoryVersion  : 7.23.3
+    XrayVersion         : 3.29.0
     AccessCidr          : "0.0.0.0/0"
     QsS3BucketName      : "$[taskcat_autobucket]"
     QsS3KeyPrefix       : "quickstart-jfrog-artifactory/"
@@ -62,6 +62,7 @@ tests:
       us-gov-east-1: gov
     parameters:
       AvailabilityZones   : "us-east-1a, us-east-1b"
+      DatabasePreferredAz : us-east-1a
     template: templates/jfrog-artifactory-ec2-main.template.yaml
     regions:
       - us-east-1
@@ -166,6 +167,7 @@ tests:
 
       # us-east-1
       AvailabilityZones   : "us-east-2a, us-east-2b"
+      DatabasePreferredAz : us-east-2a
 
       VpcId               : "vpc-06134dfb53cb98669"
       PublicSubnet1Id     : "subnet-0f029329115b95a59"
@@ -182,6 +184,7 @@ tests:
 
       # us-west-1
       AvailabilityZones   : "us-west-1b, us-west-1c"
+      DatabasePreferredAz : us-west-1b
       VpcId               : "vpc-02461d0d92635b8a7"
       PublicSubnet1Id     : "subnet-0dda0ef33f3fbaaef"
       PublicSubnet2Id     : "subnet-0dec438020b90312a"
@@ -200,6 +203,7 @@ tests:
 
       # us-east-1
       AvailabilityZones   : "us-gov-east-1a, us-gov-east-1b"
+      DatabasePreferredAz : us-gov-east-1a
 
       VpcId               : "vpc-0767e97df3b88d54e"
       PublicSubnet1Id     : "subnet-0e42f633560429957"

@@ -79,7 +79,7 @@ Metadata:
           - QsS3BucketRegion
     ParameterLabels:
       AvailabilityZones:
-        default: Availability Zones
+        default: Availability Zones (You must select 2)
       KeyPairName:
         default: SSH key name
       PrivateSubnet1Cidr:
