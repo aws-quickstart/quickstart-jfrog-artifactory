@@ -112,7 +112,6 @@ tests:
   artifactory-pro-existing-vpc:
     parameters:
       InstallXray         : "true"
-      DatabasePreferredAz : us-east-1a
 
       # us-east-1
       AvailabilityZones   : "us-east-1a, us-east-1b"
