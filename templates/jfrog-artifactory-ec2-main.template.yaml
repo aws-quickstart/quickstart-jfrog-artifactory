@@ -456,7 +456,7 @@ Parameters:
     Type: String
   XrayVersion:
     Description: The version of Xray that you want to deploy into the Quick Start.
-    Default: 3.32.2
+    Default: 3.33.3
     Type: String
   XrayNumberOfSecondary:
     Description: The number of Xray secondary instances servers to complete your
