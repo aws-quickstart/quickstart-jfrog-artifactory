@@ -113,11 +113,18 @@
     state: absent
     path: "{{ artifactory_home }}/var/etc/artifactory/plugins"
 
+- name: ensure efs plugin folder exists
+  file:
+    path: "/efsmount/plugins"
+    state: directory
+  become: yes
+
 - name: symlink plugin folder to EFS
   file:
     src: "/efsmount/plugins"
     path: "{{ artifactory_home }}/var/etc/artifactory/plugins"
     state: link
+    force: yes
     owner: "{{ artifactory_user }}"
     group: "{{ artifactory_group }}"
 
