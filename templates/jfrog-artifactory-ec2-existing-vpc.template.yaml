@@ -67,12 +67,6 @@ Metadata:
           - DatabaseAllocatedStorage
           - MultiAzDatabase
       - Label:
-          default: AWS Quick Start configuration
-        Parameters:
-          - QsS3BucketName
-          - QsS3KeyPrefix
-          - QsS3BucketRegion
-      - Label:
           default: JFrog Xray Configuration
         Parameters:
           - InstallXray
@@ -81,6 +75,12 @@ Metadata:
           - XrayInstanceType
           - XrayDatabaseUser
           - XrayDatabasePassword
+      - Label:
+          default: AWS Quick Start configuration (INTERNAL SETTINGS. DO NOT MODIFY)
+        Parameters:
+          - QsS3BucketName
+          - QsS3KeyPrefix
+          - QsS3BucketRegion
     ParameterLabels:
       KeyPairName:
         default: SSH key name
@@ -89,7 +89,7 @@ Metadata:
       VpcCidr:
         default: VPC CIDR
       AvailabilityZones:
-        default: Availability Zones
+        default: Availability Zones (You must select 2)
       PublicSubnet1Id:
         default: Public subnet 1 ID
       PublicSubnet2Id:
@@ -155,17 +155,17 @@ Metadata:
       MultiAzDatabase:
         default: High-availability database
       QsS3BucketName:
-        default: Quick Start S3 bucket name
+        default: Quick Start S3 bucket name (Do not modify)
       QsS3KeyPrefix:
-        default: Quick Start S3 key prefix
+        default: Quick Start S3 key prefix (Do not modify)
       QsS3BucketRegion:
-        default: Quick Start S3 bucket region
+        default: Quick Start S3 bucket region (Do not modify)
       InstallXray:
         default: Install JFrog Xray
       XrayVersion:
         default: Version of Xray to install
       XrayNumberOfSecondary:
-        default: Number of JFrog Xray secondary instances
+        default: Number of JFrog Xray secondary instances (Must select 0 or 1)
       XrayInstanceType:
         default: Xray instance type
       XrayDatabaseUser:
@@ -357,7 +357,7 @@ Parameters:
       https://www.jfrog.com/confluence/display/RTF/Release+Notes.
     AllowedPattern: ^(([0-9]|[1-9][0-9])\.){2}([1-9][0-9]|[0-9])$
     ConstraintDescription: A version that matches X.X.X per Artifactory releases
-    Default: 7.24.3
+    Default: 7.27.3
     Type: String
   SmLicenseName:
     Description: Secret name created in AWS Secrets Manager, which contains the Artifactory licenses.
@@ -368,7 +368,7 @@ Parameters:
     Default: ''
     Type: String
   ArtifactoryServerName:
-    Description: Name of your Artifactory server. Ensure that this matches your certificate.
+    Description: Name of your Artifactory subdomain. Ensure that this matches your certificate. e.g. if you are installing at artifactory1.yourcompany.com, this value should be "artifactory1"
     Type: String
   MasterKey:
     Description: Master key for the Artifactory cluster. Generate a master key by using the command '$openssl rand -hex 16'.
@@ -482,12 +482,13 @@ Parameters:
     Description: The version of Xray that you want to deploy into the Quick Start.
     AllowedPattern: ^(([0-9]|[1-9][0-9])\.){2}([1-9][0-9]|[0-9])$
     ConstraintDescription: A version that matches X.X.X per Xray releases.
-    Default: 3.29.2
+    Default: 3.33.4
     Type: String
   XrayNumberOfSecondary:
     Description: The number of Xray secondary instances servers to complete your
       HA deployment. The minimum number is zero; the maximum is six.
       Do not select more than instances than you have licenses for.
+      Note:- You MUST start with 1 instance, then modify the stack to increase one by one until you have reached your desired value.
     MinValue: 0
     MaxValue: 6
     Default: 0
@@ -639,10 +640,11 @@ Resources:
     Properties:
       HealthCheckEnabled: True
       HealthCheckIntervalSeconds: 30
-      HealthCheckProtocol: TCP
-      HealthCheckTimeoutSeconds: 10
+      HealthCheckProtocol: HTTP
+      # HealthCheckTimeoutSeconds: 10
       HealthyThresholdCount: 3
       HealthCheckPort: "8082"
+      HealthCheckPath: "/artifactory/api/system/ping"
       Port: 443
       Protocol: TCP
       TargetType: instance
@@ -653,10 +655,11 @@ Resources:
     Properties:
       HealthCheckEnabled: True
       HealthCheckIntervalSeconds: 30
-      HealthCheckProtocol: TCP
-      HealthCheckTimeoutSeconds: 10
+      HealthCheckProtocol: HTTP
+      # HealthCheckTimeoutSeconds: 10
       HealthyThresholdCount: 3
       HealthCheckPort: "8082"
+      HealthCheckPath: "/artifactory/api/system/ping"
       Port: 80
       Protocol: TCP
       TargetType: instance
