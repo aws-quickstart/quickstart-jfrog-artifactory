@@ -19,7 +19,7 @@ project:
     SmCertName          : "jfrog.tech-certificates"
     ArtifactoryServerName: "artifactory"
     MultiAzDatabase     : "true"
-    ProvisionBastionHost: "Disabled"
+    ProvisionBastionHost: "Enabled"
     DatabasePassword    : "$[taskcat_genpass_8A]"
     XrayDatabasePassword: "$[taskcat_genpass_8A]"
 
@@ -112,7 +112,6 @@ tests:
   artifactory-pro-existing-vpc:
     parameters:
       InstallXray         : "true"
-      DatabasePreferredAz : us-east-1a
 
       # us-east-1
       AvailabilityZones   : "us-east-1a, us-east-1b"
