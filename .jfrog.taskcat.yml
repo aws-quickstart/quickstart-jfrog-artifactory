@@ -3,13 +3,13 @@ project:
   owner: quickstart-eng@amazon.com
   s3_object_acl: private
   s3_regional_buckets: True
-  # s3_bucket: tcat-422383ecc658557f9a377abae675aac0  # commercial accounts (also for GovCloud)
+  s3_bucket: tcat-422383ecc658557f9a377abae675aac0  # commercial accounts (also for GovCloud)
   #s3_bucket: tcat-a3e80b6745b2547da1c745b16adf2a66    # aws-seller accounts (MarketPlace)
 
   parameters:
     KeyPairName         : "vinaykey1"
-    ArtifactoryVersion  : 7.24.3
-    XrayVersion         : 3.29.2
+    ArtifactoryVersion  : 7.27.3
+    XrayVersion         : 3.33.3
     AccessCidr          : "0.0.0.0/0"
     QsS3BucketName      : "$[taskcat_autobucket]"
     QsS3KeyPrefix       : "quickstart-jfrog-artifactory/"
@@ -41,9 +41,8 @@ tests:
       AvailabilityZone: "$[taskcat_genaz_1]"
     template: templates/jfrog-ami-main.template.yaml
     regions:
-      # - us-east-1
-      # - us-gov-east-1
-      - us-east-2
+      - us-east-1
+      - us-gov-east-1
 
   xray-ami:
     auth:
@@ -54,9 +53,8 @@ tests:
       AvailabilityZone: "$[taskcat_genaz_1]"
     template: templates/ami-rt-xray-main.template.yaml
     regions:
-      # - us-east-1
-      # - us-gov-east-1
-      - us-east-2
+      - us-east-1
+      - us-gov-east-1
 
   ent-new-vpc:
     auth:

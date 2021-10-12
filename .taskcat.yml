@@ -20,8 +20,8 @@ project:
       - eu-south-1
       - af-south-1
   parameters:
-    ArtifactoryVersion  : 7.15.3
-    XrayVersion         : 3.17.4
+    ArtifactoryVersion  : 7.27.3
+    XrayVersion         : 3.33.4
     AccessCidr          : "10.0.0.0/0"
     QsS3BucketName      : "$[taskcat_autobucket]"
     QsS3KeyPrefix       : "quickstart-jfrog-artifactory/"
@@ -33,13 +33,12 @@ tests:
       RemoteAccessCidr: "10.0.0.0/0"
       AvailabilityZones: "$[taskcat_genaz_2]"
       DatabasePassword: "$[taskcat_genpass_8A]"
-      ArtifactoryProduct: "JFrog-Artifactory-Enterprise"
       ProvisionBastionHost: "Disabled"
       NumberOfSecondary: "2"
       ArtifactoryServerName: "artifactory"
       InstallXray: "true"
       XrayDatabasePassword: "$[taskcat_genpass_8A]"
-      XrayNumberOfInstances: 2
+      XrayNumberOfSecondary: 1
       MasterKey: "override"
       SmLicenseName: "override"
       SmCertName: "override"
