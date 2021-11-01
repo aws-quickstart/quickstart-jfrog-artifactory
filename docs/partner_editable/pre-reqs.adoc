@@ -33,6 +33,7 @@ Perform these steps:
 * *ArtifactoryLicense4*
 * *ArtifactoryLicense5*
 * *ArtifactoryLicense6*
+* *ArtifactoryLicense7*
 
 :xrefstyle: short
 [#secret_manager_licenses]

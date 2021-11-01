@@ -2,7 +2,7 @@
 :partner-product-name: JFrog Artifactory Enterprise and Xray 
 :partner-product-short-name: Artifactory and Xray
 :partner-company-name: JFrog Ltd.
-:doc-month: April
+:doc-month: October
 :doc-year: 2021
 :partner-contributors: Vinay Aggarwal and Alex Hung, JFrog
 :quickstart-contributors: Dylan Owen, AWS Quick Start team

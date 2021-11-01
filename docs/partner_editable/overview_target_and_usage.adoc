@@ -12,7 +12,7 @@ at any stage of the application lifecycle, providing radical transparency that l
 This Quick Start is for administrators who want the flexibility, scale, and availability of
 AWS through products such as virtual private clouds (VPCs), Amazon Elastic Compute
 Cloud (Amazon EC2), Amazon Simple Storage Service (Amazon S3), Elastic Load Balancing
-(ELB), and Amazon Relational Database Service (Amazon RDS) to deploy Artifactory as
+(ELB), Elastic File System (EFS) and Amazon Relational Database Service (Amazon RDS) to deploy Artifactory as
 their repository manager. 
 
 Amazon EC2, along with Amazon S3 and Amazon RDS, forms the foundation for the

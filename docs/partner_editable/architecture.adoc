@@ -16,6 +16,7 @@ provide you with your own virtual network on AWS.*
 * A Network Load Balancer attached to the public subnets connecting via port 80 or 443
 to the Artifactory primary and secondary nodes in the private subnets.
 * A Network Load Balancer attached to the public subnets for Xray to connect via port 80 to the Artifactory primary and secondary nodes residing in the private subnets.
+* An EFS storage attahed to artifactory primary and secondary nodes
 * A private and encrypted Amazon S3 bucket for repository storage.
 * In the public subnets:
 
