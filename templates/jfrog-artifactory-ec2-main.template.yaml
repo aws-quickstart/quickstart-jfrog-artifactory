@@ -1,5 +1,5 @@
-AWSTemplateFormatVersion: '2010-09-09'
-Description: 'JFrog Artifactory Quick Start Deployment (qs-1qpmmjh2f)'
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "JFrog Artifactory Quick Start Deployment (qs-1qpmmjh2f)"
 Metadata:
   cfn-lint:
     config:
@@ -8,8 +8,8 @@ Metadata:
       ignore_reasons:
         - E9101: "'master' is part of the product naming conventions for now"
   QuickStartDocumentation:
-    EntrypointName: 'Parameters for launching into a new VPC'
-    Order: '1'
+    EntrypointName: "Parameters for launching into a new VPC"
+    Order: "1"
   AWS::CloudFormation::Interface:
     ParameterGroups:
       - Label:
@@ -223,9 +223,9 @@ Parameters:
       To skip creating a bastion instance, choose Disabled. Because Artifactory nodes are
       created in private subnets, it's highly recommended to set this value to Enabled.
     AllowedValues:
-      - 'Enabled'
-      - 'Disabled'
-    Default: 'Enabled'
+      - "Enabled"
+      - "Disabled"
+    Default: "Enabled"
     Type: String
   BastionInstanceType:
     Description: Size of the bastion instances.
@@ -239,7 +239,7 @@ Parameters:
       - m5.xlarge
       - m5.2xlarge
       - m5.4xlarge
-    Default: 't3.micro'
+    Default: "t3.micro"
     Type: String
   BastionRootVolumeSize:
     Description: Size of the root volume in the bastion instances.
@@ -250,9 +250,9 @@ Parameters:
       Choose whether to enable TCP forwarding via bootstrapping of the bastion
       instance.
     AllowedValues:
-      - 'true'
-      - 'false'
-    Default: 'true'
+      - "true"
+      - "false"
+    Default: "true"
     Type: String
   BastionEnableX11Forwarding:
     Description:
@@ -261,27 +261,27 @@ Parameters:
       X11 forwarding can be useful, but it is also a security risk, so it's recommended
       that you keep the default (false) setting.
     AllowedValues:
-      - 'true'
-      - 'false'
-    Default: 'false'
+      - "true"
+      - "false"
+    Default: "false"
     Type: String
   BastionOs:
     Description: Linux distribution for the Amazon Machine Image (AMI) to be used for the bastion instances.
     AllowedValues:
-      - 'Amazon-Linux2-HVM'
-      - 'CentOS-7-HVM'
-      - 'Ubuntu-Server-20.04-LTS-HVM'
-      - 'SUSE-SLES-15-HVM'
-    Default: 'Amazon-Linux2-HVM'
+      - "Amazon-Linux2-HVM"
+      - "CentOS-7-HVM"
+      - "Ubuntu-Server-20.04-LTS-HVM"
+      - "SUSE-SLES-15-HVM"
+    Default: "Amazon-Linux2-HVM"
     Type: String
   NumBastionHosts:
     Description: Number of bastion instances to create.
     AllowedValues:
-      - '1'
-      - '2'
-      - '3'
-      - '4'
-    Default: '1'
+      - "1"
+      - "2"
+      - "3"
+      - "4"
+    Default: "1"
     Type: String
   VolumeSize:
     Description:
@@ -346,11 +346,11 @@ Parameters:
     Type: String
   SmLicenseName:
     Description: Secret name created in AWS Secrets Manager, which contains the Artifactory licenses.
-    Default: ''
+    Default: ""
     Type: String
   SmCertName:
     Description: Secret name created in AWS Secrets Manager, which contains the SSL certificate and certificate key.
-    Default: ''
+    Default: ""
     Type: String
   ArtifactoryServerName:
     Description: Name of your Artifactory subdomain. Ensure that this matches your certificate. e.g. if you are installing at artifactory1.yourcompany.com, this value should be "artifactory1"
@@ -358,10 +358,10 @@ Parameters:
   MasterKey:
     Description: Master key for the Artifactory cluster. Generate a master key by using the command '$openssl rand -hex 16'.
     AllowedPattern: ^[a-zA-Z0-9]+$
-    MinLength: '1'
-    MaxLength: '64'
+    MinLength: "1"
+    MaxLength: "64"
     ConstraintDescription: Only capital or lowercase letters and numbers, with a Max of 64 characters.
-    NoEcho: 'true'
+    NoEcho: "true"
     Type: String
   ExtraJavaOptions:
     Description:
@@ -376,9 +376,9 @@ Parameters:
       If you plan to overwrite them, ensure they are added to the ExtraJavaOptions to prevent the stack provision from failing.
     ConstraintDescription: True or False
     AllowedValues:
-      - 'true'
-      - 'false'
-    Default: 'true'
+      - "true"
+      - "false"
+    Default: "true"
     Type: String
   DatabaseName:
     Description:
@@ -386,15 +386,15 @@ Parameters:
       owned by your AWS account in the current Region. The database instance identifier is case-insensitive,
       but it's stored in lowercase (as in "mydbinstance").
     AllowedPattern: ^[a-zA-Z]([a-zA-Z0-9])+$
-    MinLength: '1'
-    MaxLength: '60'
+    MinLength: "1"
+    MaxLength: "60"
     ConstraintDescription: 1 to 60 alphanumeric characters First character must be a letter.
     Default: artdb
     Type: String
   DatabaseUser:
     Description: Login ID for the master user of your database instance.
-    MinLength: '1'
-    MaxLength: '16'
+    MinLength: "1"
+    MaxLength: "16"
     AllowedPattern: ^[a-zA-Z]([a-zA-Z0-9])+$
     ConstraintDescription: 1 to 16 alphanumeric characters. The first character must be a letter.
     Default: artifactory
@@ -402,12 +402,12 @@ Parameters:
   DatabasePassword:
     Description: Password for the Artifactory database user.
     AllowedPattern: ^[^ \\'"]+$
-    MinLength: '8'
-    MaxLength: '20'
+    MinLength: "8"
+    MaxLength: "20"
     ConstraintDescription:
       Must be at least 8 and no more than 20 printable ASCII characters (letters, numbers and symbols.
       Can't contain any of / (slash), '(single quote), "(double quote) and @ (at sign).
-    NoEcho: 'true'
+    NoEcho: "true"
     Type: String
   DatabaseInstance:
     Description: Size of the database to be deployed as part of the Quick Start.
@@ -433,9 +433,9 @@ Parameters:
     Description: Choose false to create an Amazon RDS instance in a single Availability Zone.
     ConstraintDescription: True or False
     AllowedValues:
-      - 'true'
-      - 'false'
-    Default: 'true'
+      - "true"
+      - "false"
+    Default: "true"
     Type: String
   QsS3BucketName:
     Description:
@@ -460,16 +460,16 @@ Parameters:
     Default: quickstart-jfrog-artifactory/
     Type: String
   QsS3BucketRegion:
-    Default: 'us-east-1'
+    Default: "us-east-1"
     Description: AWS Region where the Quick Start S3 bucket (QSS3BucketName) is hosted. If you use your own bucket, you must specify your own value.
     Type: String
   InstallXray:
     Description: Choose true to install JFrog Xray instance(s).
     ConstraintDescription: True or False
     AllowedValues:
-      - 'true'
-      - 'false'
-    Default: 'true'
+      - "true"
+      - "false"
+    Default: "true"
     Type: String
   XrayVersion:
     Description: The version of Xray that you want to deploy into the Quick Start.
@@ -494,8 +494,8 @@ Parameters:
     Type: String
   XrayDatabaseUser:
     Description: The login ID for the Xray database user.
-    MinLength: '1'
-    MaxLength: '16'
+    MinLength: "1"
+    MaxLength: "16"
     AllowedPattern: ^[a-zA-Z]([a-zA-Z0-9])+$
     ConstraintDescription: 1 to 16 alphanumeric characters. First character must be a letter.
     Default: xray
@@ -503,15 +503,15 @@ Parameters:
   XrayDatabasePassword:
     Description: The password for the Xray database user.
     AllowedPattern: ^[^ \\'"]+$
-    MinLength: '8'
-    MaxLength: '20'
+    MinLength: "8"
+    MaxLength: "20"
     ConstraintDescription:
       Must be at least 8 and no more than 20 printable ASCII characters (letters, numbers and symbols.
       Can't contain any of / (slash), '(single quote), "(double quote) and @ (at sign).
-    NoEcho: 'true'
+    NoEcho: "true"
     Type: String
 Conditions:
-  UsingDefaultBucket: !Equals [!Ref QsS3BucketName, 'aws-quickstart']
+  UsingDefaultBucket: !Equals [!Ref QsS3BucketName, "aws-quickstart"]
 
 Resources:
   ArtifactoryVpcStack:
@@ -522,21 +522,21 @@ Resources:
         - S3Bucket:
             !If [
               UsingDefaultBucket,
-              !Sub '${QsS3BucketName}-${AWS::Region}',
-              !Ref 'QsS3BucketName',
+              !Sub "${QsS3BucketName}-${AWS::Region}",
+              !Ref "QsS3BucketName",
             ]
           S3Region:
             !If [
               UsingDefaultBucket,
-              !Ref 'AWS::Region',
-              !Ref 'QsS3BucketRegion',
+              !Ref "AWS::Region",
+              !Ref "QsS3BucketRegion",
             ]
       Parameters:
         AvailabilityZones:
           Fn::Join:
-            - ','
+            - ","
             - Ref: AvailabilityZones
-        NumberOfAZs: '2'
+        NumberOfAZs: "2"
         PrivateSubnet1ACIDR:
           Ref: PrivateSubnet1Cidr
         PrivateSubnet2ACIDR:
@@ -555,14 +555,14 @@ Resources:
         - S3Bucket:
             !If [
               UsingDefaultBucket,
-              !Sub '${QsS3BucketName}-${AWS::Region}',
-              !Ref 'QsS3BucketName',
+              !Sub "${QsS3BucketName}-${AWS::Region}",
+              !Ref "QsS3BucketName",
             ]
           S3Region:
             !If [
               UsingDefaultBucket,
-              !Ref 'AWS::Region',
-              !Ref 'QsS3BucketRegion',
+              !Ref "AWS::Region",
+              !Ref "QsS3BucketRegion",
             ]
       Parameters:
         KeyPairName: !Ref KeyPairName
@@ -570,7 +570,7 @@ Resources:
         VpcCidr: !Ref VpcCidr
         AvailabilityZones:
           Fn::Join:
-            - ','
+            - ","
             - Ref: AvailabilityZones
         PublicSubnet1Id: !GetAtt ArtifactoryVpcStack.Outputs.PublicSubnet1ID
         PublicSubnet2Id: !GetAtt ArtifactoryVpcStack.Outputs.PublicSubnet2ID
