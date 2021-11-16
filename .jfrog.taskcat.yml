@@ -3,14 +3,14 @@ project:
   owner: quickstart-eng@amazon.com
   s3_object_acl: private
   s3_regional_buckets: True
-  s3_bucket: tcat-34c17b83dcbd547393a86d8053a8d298 # commercial accounts (also for GovCloud)
-  #s3_bucket: tcat-a3e80b6745b2547da1c745b16adf2a66    # aws-seller accounts (MarketPlace)
+  s3_bucket: tcat-qs-ec2 # commercial accounts (also for GovCloud)
+  #s3_bucket: tcat-qs-ec2    #aws-seller accounts (MarketPlace)
 
   parameters:
-    KeyPairName: "giri"
+    #KeyPairName: "" #Key Pair Name which should be already exists in aws
     ArtifactoryVersion: 7.27.10
     XrayVersion: 3.35.0
-    AccessCidr: "0.0.0.0/0"
+    #AccessCidr: "" #Cidr block for accessing artifactory loadbalancer
     QsS3BucketName: "$[taskcat_autobucket]"
     QsS3KeyPrefix: "quickstart-jfrog-artifactory/"
     QsS3BucketRegion: "$[taskcat_current_region]"
@@ -26,10 +26,7 @@ project:
     NumberOfSecondary: 2
     InstallXray: "true"
     XrayNumberOfSecondary: 1
-
-    # RemoteAccessCidr  : "0.0.0.0/0"
-    RemoteAccessCidr: "49.207.208.42/32" # vinay's home IP (with or without zscalar)
-    # RemoteAccessCidr  : "63.238.166.122/29" # JFrog network
+    #RemoteAccessCidr:  #Remote cidr to access bastion host
 
 tests:
   rt-ami:
