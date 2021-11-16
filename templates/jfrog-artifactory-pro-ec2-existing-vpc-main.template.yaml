@@ -1,5 +1,5 @@
-AWSTemplateFormatVersion: '2010-09-09'
-Description: 'JFrog Artifactory Quick Start Deployment into an Existing VPC (qs-1q037efj0)'
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "JFrog Artifactory Quick Start Deployment into an Existing VPC (qs-1q037efj0)"
 Metadata:
   cfn-lint:
     config:
@@ -117,25 +117,29 @@ Metadata:
         default: Xray instance type
 Parameters:
   QsS3BucketName:
-    Description: S3 bucket name for the Quick Start assets. This string can include
+    Description:
+      S3 bucket name for the Quick Start assets. This string can include
       numbers, lowercase letters, and hyphens (-). It cannot start
       or end with a hyphen (-).
     AllowedPattern: ^[0-9a-z]+([0-9a-z-]*[0-9a-z])*$
-    ConstraintDescription: Quick Start bucket name can include numbers, lowercase
+    ConstraintDescription:
+      Quick Start bucket name can include numbers, lowercase
       letters, and hyphens (-). It cannot start or end with a hyphen (-).
     Default: aws-quickstart
     Type: String
   QsS3KeyPrefix:
-    Description: S3 key prefix for the Quick Start assets. Quick Start key prefix
+    Description:
+      S3 key prefix for the Quick Start assets. Quick Start key prefix
       can include numbers, lowercase letters, uppercase letters, hyphens (-), and
       forward slash (/).
     AllowedPattern: ^[0-9a-zA-Z-/]*$
-    ConstraintDescription: Quick Start key prefix can include numbers, lowercase letters,
+    ConstraintDescription:
+      Quick Start key prefix can include numbers, lowercase letters,
       uppercase letters, hyphens (-), and forward slash (/).
     Default: quickstart-jfrog-artifactory/
     Type: String
   QsS3BucketRegion:
-    Default: 'us-east-1'
+    Default: "us-east-1"
     Description: AWS Region where the Quick Start S3 bucket (QSS3BucketName) is hosted. If you use your own bucket, you must specify your own value.
     Type: String
   KeyPairName:
@@ -178,17 +182,20 @@ Parameters:
     Default: 0.0.0.0/0
     Type: String
   RemoteAccessCidr:
-    Description: Remote CIDR range that allows you to connect to the bastion instance by using SSH.
+    Description:
+      Remote CIDR range that allows you to connect to the bastion instance by using SSH.
       It is recommended that you set this value to a trusted IP range.
       For example, you may want to grant specific ranges from within your corporate network that use the SSH protocol.
     AllowedPattern: ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/([0-9]|[1-2][0-9]|3[0-2]))$
     Type: String
   AvailabilityZones:
-    Description: List of Availability Zones to use for the subnets in the VPC. Two
+    Description:
+      List of Availability Zones to use for the subnets in the VPC. Two
       Availability Zones are used for this deployment.
     Type: List<AWS::EC2::AvailabilityZone::Name>
   VolumeSize:
-    Description: Size in gigabytes of the available storage (min 10GB); the Quick Start will create an
+    Description:
+      Size in gigabytes of the available storage (min 10GB); the Quick Start will create an
       Amazon Elastic Block Store (Amazon EBS) volumes of this size.
     Default: 100
     Type: Number
@@ -225,42 +232,44 @@ Parameters:
     Default: m5.xlarge
     Type: String
   ArtifactoryVersion:
-    Description: Version of Artifactory that you want to deploy into the Quick Start.
+    Description:
+      Version of Artifactory that you want to deploy into the Quick Start.
       To select the correct version, see the release notes at
       https://www.jfrog.com/confluence/display/RTF/Release+Notes.
     AllowedPattern: ^(([0-9]|[1-9][0-9])\.){2}([1-9][0-9]|[0-9])$
     ConstraintDescription: A version that matches X.X.X per Artifactory releases.
-    Default: 7.27.3
+    Default: 7.27.10
     Type: String
   SmLicenseName:
     Description: Secret name created in AWS Secrets Manager, which contains the Artifactory licenses.
-    Default: ''
+    Default: ""
     Type: String
   SmCertName:
     Description: Secret name created in AWS Secrets Manager, which contains the SSL certificate and certificate key.
-    Default: ''
+    Default: ""
     Type: String
   ArtifactoryServerName:
     Description: Name of your Artifactory subdomain. Ensure that this matches your certificate. e.g. if you are installing at artifactory1.yourcompany.com, this value should be "artifactory1"
-    Default: 'artifactory'
+    Default: "artifactory"
     Type: String
   MasterKey:
     Description: Master key for the Artifactory cluster. Generate a master key by using the command '$openssl rand -hex 16'.
     AllowedPattern: ^[a-zA-Z0-9]+$
-    MinLength: '1'
-    MaxLength: '64'
+    MinLength: "1"
+    MaxLength: "64"
     ConstraintDescription: Only capital or lowercase letters and numbers, with a Max of 64 characters.
-    NoEcho: 'true'
-    Default: 'FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF'
+    NoEcho: "true"
+    Default: "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"
     Type: String
   DatabasePassword:
     Description: Password for the Artifactory database user.
     AllowedPattern: ^[^ \\'"]+$
-    MinLength: '8'
-    MaxLength: '20'
-    ConstraintDescription: Must be at least 8 and no more than 20 printable ASCII characters (letters, numbers and symbols. 
+    MinLength: "8"
+    MaxLength: "20"
+    ConstraintDescription:
+      Must be at least 8 and no more than 20 printable ASCII characters (letters, numbers and symbols.
       Can't contain any of / (slash), '(single quote), "(double quote) and @ (at sign).
-    NoEcho: 'true'
+    NoEcho: "true"
     Type: String
   DatabaseInstance:
     Description: Size of the database to be deployed as part of the Quick Start.
@@ -294,7 +303,7 @@ Parameters:
     Description: The version of Xray that you want to deploy into the Quick Start.
     AllowedPattern: ^(([0-9]|[1-9][0-9])\.){2}([1-9][0-9]|[0-9])$
     ConstraintDescription: A version that matches X.X.X per Xray releases.
-    Default: 3.33.4
+    Default: 3.35.0
     Type: String
   XrayInstanceType:
     Description: The EC2 instance type for the Xray instances.
@@ -305,15 +314,25 @@ Parameters:
     Default: c5.2xlarge
     Type: String
 Conditions:
-  UsingDefaultBucket: !Equals [!Ref QsS3BucketName, 'aws-quickstart']
+  UsingDefaultBucket: !Equals [!Ref QsS3BucketName, "aws-quickstart"]
 Resources:
   ArtifactoryExistingVpcStack:
     Type: AWS::CloudFormation::Stack
     Properties:
       TemplateURL: !Sub
         - https://${S3Bucket}.s3.${S3Region}.${AWS::URLSuffix}/${QsS3KeyPrefix}templates/jfrog-artifactory-ec2-existing-vpc.template.yaml
-        - S3Bucket: !If [UsingDefaultBucket, !Sub '${QsS3BucketName}-${AWS::Region}', !Ref 'QsS3BucketName']
-          S3Region: !If [UsingDefaultBucket, !Ref 'AWS::Region', !Ref 'QsS3BucketRegion']
+        - S3Bucket:
+            !If [
+              UsingDefaultBucket,
+              !Sub "${QsS3BucketName}-${AWS::Region}",
+              !Ref "QsS3BucketName",
+            ]
+          S3Region:
+            !If [
+              UsingDefaultBucket,
+              !Ref "AWS::Region",
+              !Ref "QsS3BucketRegion",
+            ]
       Parameters:
         KeyPairName: !Ref KeyPairName
         ProvisionBastionHost: "Enabled"
@@ -340,7 +359,7 @@ Resources:
         XrayDatabasePassword: !Ref DatabasePassword
         AvailabilityZones:
           Fn::Join:
-            - ','
+            - ","
             - Ref: AvailabilityZones
         VpcId: !Ref VpcId
         PublicSubnet1Id: !Ref PublicSubnet1Id
