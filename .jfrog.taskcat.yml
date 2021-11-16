@@ -7,10 +7,10 @@ project:
   #s3_bucket: tcat-qs-ec2    #aws-seller accounts (MarketPlace)
 
   parameters:
-    #KeyPairName: "" #Key Pair Name which should be already exists in aws
+    #KeyPairName: "" #Key Pair Name which should be already exists in aws.This should be set in global taskcat file.
     ArtifactoryVersion: 7.27.10
     XrayVersion: 3.35.0
-    #AccessCidr: "" #Cidr block for accessing artifactory loadbalancer
+    #AccessCidr: "" #Cidr block for accessing artifactory loadbalancer. This should be set in global taskcat file.
     QsS3BucketName: "$[taskcat_autobucket]"
     QsS3KeyPrefix: "quickstart-jfrog-artifactory/"
     QsS3BucketRegion: "$[taskcat_current_region]"
@@ -26,7 +26,7 @@ project:
     NumberOfSecondary: 2
     InstallXray: "true"
     XrayNumberOfSecondary: 1
-    #RemoteAccessCidr:  #Remote cidr to access bastion host
+    #RemoteAccessCidr:  #Remote cidr to access bastion host. This should be set in global taskcat file.
 
 tests:
   rt-ami:
