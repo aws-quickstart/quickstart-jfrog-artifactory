@@ -49,7 +49,7 @@ regarding this setting can be found in the https://www.jfrog.com/confluence/disp
 image::../images/get_started_4.png[image_placeholder,width=648,height=439]
 
 [start=5]
-. Optionally, configure proxy settings for remote resources. (see <<get_started_5>>).
+. Optionally, configure proxy settings for remote resources. (See <<get_started_5>>).
 
 :xrefstyle: short
 [#get_started_5]
@@ -226,4 +226,4 @@ will allow your SQL database to be available from the internet.
 //Provide any other information of interest to users, especially focusing on areas where AWS or cloud usage differs from on-premises usage.
 
 A major difference between running on-premises and on AWS is storage. Because Amazon S3 is
-used, you are charged for what is currently in use rather than what may be allocated on premises. Ensure to https://www.jfrog.com/confluence/display/RTF/Monitoring+Storage[monitor your usage^].
+used, you are charged for what is currently in use rather than what may be allocated on premises. Ensure that you https://www.jfrog.com/confluence/display/RTF/Monitoring+Storage[monitor your usage^].
