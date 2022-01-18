@@ -376,7 +376,7 @@ Parameters:
     AllowedPattern: ^[a-zA-Z]([a-zA-Z0-9])+$
     MinLength: '1'
     MaxLength: '60'
-    ConstraintDescription: 1 to 60 alphanumeric characters First character must be a letter.
+    ConstraintDescription: 1 to 60 alphanumeric characters. The first character must be a letter.
     Default: artdb
     Type: String
   DatabaseUser:

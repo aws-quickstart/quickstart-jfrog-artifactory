@@ -4,7 +4,7 @@
 
 https://jfrog.com/artifactory/[JFrog’s Artifactory^] is an enterprise universal repository manager, capable of hosting all of
 your binaries in one place. This Quick Start deploys Artifactory Enterprise in a highly
-available (HA) configuration into AWS.
+available (HA) configuration.
 
 https://jfrog.com/xray/[JFrog Xray^] works with JFrog Artifactory to perform universal analysis of binary software components 
 at any stage of the application lifecycle, providing radical transparency that leads to trust in your software. Xray is an optional installation that you can choose during the Quick Start deployment.  
