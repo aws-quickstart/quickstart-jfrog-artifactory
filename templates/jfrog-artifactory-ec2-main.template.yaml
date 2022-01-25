@@ -97,19 +97,19 @@ Metadata:
       VpcCidr:
         default: VPC CIDR
       ProvisionBastionHost:
-        default: Bastion instance
+        default: Bastion host instance
       BastionInstanceType:
-        default: Bastion instance type
+        default: Bastion host instance type
       BastionRootVolumeSize:
-        default: Bastion root volume size
+        default: Bastion host root volume size
       BastionEnableTcpForwarding:
-        default: Bastion enable TCP forwarding
+        default: Bastion host enable TCP forwarding
       BastionEnableX11Forwarding:
-        default: Bastion enable X11 forwarding
+        default: Bastion host enable X11 forwarding
       BastionOs:
-        default: Bastion operating system
+        default: Bastion host operating system
       NumBastionHosts:
-        default: Number of bastion instances
+        default: Number of bastion host instances
       VolumeSize:
         default: EBS root volume size
       InstanceType:
@@ -125,7 +125,7 @@ Metadata:
       ArtifactoryServerName:
         default: JFrog Artifactory server name
       MasterKey:
-        default: Primary server key
+        default: Master server key
       ExtraJavaOptions:
         default: Extra Java options
       DefaultJavaMemSettings:
@@ -143,11 +143,11 @@ Metadata:
       MultiAzDatabase:
         default: High-availability database
       QsS3BucketName:
-        default: Quick Start S3 bucket name (Do not modify)
+        default: Quick Start S3 bucket name—do not modify
       QsS3KeyPrefix:
-        default: Quick Start S3 key prefix (Do not modify)
+        default: Quick Start S3 key prefix—do not modify
       QsS3BucketRegion:
-        default: Quick Start S3 bucket region (Do not modify)
+        default: Quick Start S3 bucket region—do not modify
       InstallXray:
         default: Install JFrog Xray
       XrayVersion:
@@ -157,9 +157,9 @@ Metadata:
       XrayInstanceType:
         default: JFrog Xray instance type
       XrayDatabaseUser:
-        default: JFrog Xray Database user
+        default: JFrog Xray database user
       XrayDatabasePassword:
-        default: JFrog Xray Database password
+        default: JFrog Xray database password
 Parameters:
   VpcCidr:
     Description: CIDR block for the VPC.
@@ -208,9 +208,7 @@ Parameters:
     AllowedPattern: ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/([0-9]|[1-2][0-9]|3[0-2]))$
     Type: String
   RemoteAccessCidr:
-    Description: Remote CIDR range that allows you to connect to the bastion instance by using SSH.
-      It is recommended that you set this value to a trusted IP range.
-      For example, you may want to grant specific ranges from within your corporate network that use the SSH protocol.
+    Description: Remote CIDR range that allows you to connect to the bastion instance by using SSH. It is recommended that you set this value to a trusted IP range. For example, you may want to grant specific ranges from within your corporate network that use the SSH protocol.
     AllowedPattern: ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/([0-9]|[1-2][0-9]|3[0-2]))$
     Type: String
   ProvisionBastionHost:
@@ -221,7 +219,7 @@ Parameters:
     Default: "Enabled"
     Type: String
   BastionInstanceType:
-    Description: Size of the bastion host instances.
+    Description: Bastion host instance size.
     AllowedValues:
       - t3.nano
       - t3.micro
@@ -235,12 +233,11 @@ Parameters:
     Default: "t3.micro"
     Type: String
   BastionRootVolumeSize:
-    Description: Size of the root volume in the bastion host instances.
+    Description: Size of the root volume on the bastion host instances.
     Default: 10
     Type: Number
   BastionEnableTcpForwarding:
     Description: Choose `true` to enable TCP forwarding using bastion host bootstrapping.
-      instance.
     AllowedValues:
       - "true"
       - "false"
@@ -321,7 +318,8 @@ Parameters:
     Default: 2
     Type: Number
   ArtifactoryVersion:
-    Description: JFrog Artifactory version to deploy. For help selecting the correct version, see [Artifactory Release Notes](https://www.jfrog.com/confluence/display/RTF/Release+Notes).
+    Description: JFrog Artifactory version to install. For help selecting the correct version, see [Artifactory Release Notes](https://www.jfrog.com/confluence/display/RTF/Release+Notes).
+    ConstraintDescription: A version that matches X.X.X per Artifactory releases.
     Default: 7.27.3
     Type: String
   SmLicenseName:
@@ -336,7 +334,7 @@ Parameters:
     Description: Name of your JFrog Artifactory subdomain. Ensure that this matches your certificate. For example, to install at `artifactory1.yourcompany.com`, enter `artifactory1`.
     Type: String
   MasterKey:
-    Description: JFrog Artifactory cluster key. Generate a key by running the command '$openssl rand -hex 16'.
+    Description: JFrog Artifactory cluster master key. Generate a key by running the command '$openssl rand -hex 16'.
     AllowedPattern: ^[a-zA-Z0-9]+$
     MinLength: '1'
     MaxLength: '64'
@@ -364,7 +362,7 @@ Parameters:
     Default: artdb
     Type: String
   DatabaseUser:
-    Description: Login ID of the primary user of your database instance.
+    Description: Login ID of the master user of your database instance.
     MinLength: '1'
     MaxLength: '16'
     AllowedPattern: ^[a-zA-Z]([a-zA-Z0-9])+$
@@ -376,7 +374,7 @@ Parameters:
     AllowedPattern: ^[^ \\'"]+$
     MinLength: '8'
     MaxLength: '20'
-    ConstraintDescription: Must be at least 8 and no more than 20 printable ASCII characters (letters, numbers and symbols). Can't contain `/` (slash), `'` (single quote), `"` (double quote), or `@` (at sign).
+    ConstraintDescription: Password must be 8–20 printable ASCII characters (letters, numbers, and symbols). The password cannot contain `/` (slash), `'` (single quote), `"` (double quote), or `@` (at sign).
     NoEcho: 'true'
     Type: String
   DatabaseInstance:
@@ -394,13 +392,13 @@ Parameters:
     Default: db.m5.large
     Type: String
   DatabaseAllocatedStorage:
-    Description: Size in gigabytes of available storage for the database instance.
+    Description: Available storage for the database instance (in GB).
     MinValue: 5
     MaxValue: 1024
     Default: 10
     Type: Number
   MultiAzDatabase:
-    Description: Choose false to create an Amazon RDS instance in a single Availability Zone only.
+    Description: Choose `false` to create an Amazon RDS instance in a single Availability Zone only.
     ConstraintDescription: True or False
     AllowedValues:
       - "true"
@@ -455,7 +453,8 @@ Parameters:
     Default: "true"
     Type: String
   XrayVersion:
-    Description: JFrog Xray version to deploy.
+    Description: JFrog Xray version to install.
+    ConstraintDescription: A version that matches X.X.X per Xray releases.
     Default: 3.33.4
     Type: String
   XrayNumberOfSecondary:
@@ -481,12 +480,11 @@ Parameters:
     Default: xray
     Type: String
   XrayDatabasePassword:
-    Description: The password for the Xray database user.
+    Description: JFrog Xray database user password.
     AllowedPattern: ^[^ \\'"]+$
     MinLength: '8'
     MaxLength: '20'
-    ConstraintDescription: Must be at least 8 and no more than 20 printable ASCII characters (letters, numbers and symbols. 
-      Can't contain any of / (slash), '(single quote), "(double quote) and @ (at sign).
+    ConstraintDescription: Password must be 8–20 printable ASCII characters (letters, numbers, and symbols). The password cannot contain `/` (slash), `'` (single quote), `"` (double quote), or `@` (at sign).
     NoEcho: 'true'
     Type: String
 Conditions:
