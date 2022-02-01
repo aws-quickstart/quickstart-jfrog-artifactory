@@ -27,7 +27,7 @@ The Quick Start handles JFrog license key configuration during the deployment, s
 
 [start=8]
 :xrefstyle: short
-. On the *Create Repositories* page, select your desired package types. Then choose *Next*. (See <<get_started_6>>).
+. On the *Create Repositories* page, select your desired package types. Then choose *Next*. (See <<get_started_6>>.)
 
 [#get_started_6]
 .Select repositories
@@ -48,76 +48,57 @@ NOTE: Backups save to the local file system and do not persist if the EC2 instan
 == Update {partner-product-short-name}
 // If Post-deployment steps are required, add them here. If not, remove the heading
 
-If you perform maintenance on the stack, update the
-CloudFormation stack rather than updating the infrastructure manually (this also applies to
-updating JFrog Artifactory). The JFrog Artifactory version for this Quick Start is *7.15.x*, and the Xray version is *3.17.x* (see <<update_1>>).
+To perform maintenance on the stack, update the CloudFormation stack rather than updating the infrastructure manually. (This also applies to updating JFrog Artifactory.). The JFrog Artifactory version for this Quick Start is *7.15.x*, and the Xray version is *3.17.x*. You can find current versions on the JFrog Artifactory *Service Status* page. For more information, see https://www.jfrog.com/confluence/display/JFROG/Monitoring+Service+Statuses[Monitoring Service Status].
 
-NOTE: If you plan to upgrade Artifactory and Xray, update Xray first.
+NOTE: If you plan to upgrade both JFrog Artifactory and JFrog Xray, update JFrog Xray first.
 
-:xrefstyle: short
-[#update_1]
-.JFrog Artifactory status page shows the current version
-[link=../{quickstart-project-name}/images/update_1.png]
-image::../images/update_1.png[image_placeholder,width=648,height=439]
+=== Upgrade JFrog Xray 
 
-=== Upgrade Xray 
-
-. Choose the Xray stack, and then choose *Update* (see <<xray_update_1>>).
+. On the https://console.aws.amazon.com/cloudformation/[AWS CloudFormation console], choose the JFrog Xray stack. Then choose *Update*. (See <<xray_update_1>>.)
 
 [#xray_update_1]
-.JFrog Artifactory status page shows the current version
+.JFrog Xray stack
 [link=../{quickstart-project-name}/images/xray_update_1.png]
 image::../images/xray_update_1.png[image_placeholder,width=648,height=439]
 
 [start=2]
-. Choose *Update nested stack*, and then choose *Update stack* (see <<xray_update_2>>).
+. Choose *Update nested stack*, and then choose *Update stack*. (See <<xray_update_2>>.)
 
 [#xray_update_2]
-.JFrog Artifactory status page shows the current version
+.Update nested stack
 [link=../{quickstart-project-name}/images/xray_update_2.png]
-image::../images/xray_update_2.png[image_placeholder,width=648,height=439]
+image::../images/xray_update_2.png[image_placeholder,width=486,height=331]
 
 [start=3]
-. Choose *Use current template*, and then choose *Next*  (see <<xray_update_3>>).
+. Choose *Use current template*, and then choose *Next*. (See <<xray_update_3>>.)
 
 [#xray_update_3]
-.JFrog Artifactory status page shows the current version
+.Update stack—Use current template
 [link=../{quickstart-project-name}/images/xray_update_3.png]
 image::../images/xray_update_3.png[image_placeholder,width=648,height=439]
 
 [start=4]
-. Modify the Xray version that is supported by the template, and then choose *Next* twice, the two *I acknowledge* check boxes, and *Update Stack*  (see <<xray_update_4>>).
-
-[#xray_update_4]
-.JFrog Artifactory status page shows the current version
-[link=../{quickstart-project-name}/images/xray_update_4.png]
-image::../images/xray_update_4.png[image_placeholder,width=648,height=439]
+. Enter the `XrayVersion` you want to run. Then choose *Next* twice, select the two acknowledgement check boxes, and choose *Update Stack*.
 
 [start=5]
-. Shut down the Xray nodes one by one. Shutting down the nodes one at a time initiates a health check failure on the load balancer. The load balancer then deletes the current running node and deploys a net new primary node with the updated version.  (see <<xray_update_5>>).
+. Shut down the JFrog Xray nodes one by one. Shutting down the nodes one at a time initiates a health check failure on the load balancer. The load balancer then deletes the current running node and deploys a net new primary node with the updated JFrog version.
 
-[#xray_update_5]
-.JFrog Artifactory status page shows the current version
-[link=../{quickstart-project-name}/images/xray_update_5.png]
-image::../images/xray_update_5.png[image_placeholder,width=648,height=439]
+=== Upgrade JFrog Artifactory
 
-=== Upgrade Artifactory
-
-. Choose the root stack, and then choose *Update* (see <<update_2>>).
+. On the https://console.aws.amazon.com/cloudformation/[AWS CloudFormation console], choose the JFrog Artifactory root stack, and then choose *Update*. (See <<update_2>>.)
 
 :xrefstyle: short
 [#update_2]
-.Stack list and update button on the CloudFormation console
+.JFrog Artifactory root stack in the AWS CloudFormation console
 [link=../{quickstart-project-name}/images/update_2.png]
 image::../images/update_2.png[image_placeholder,width=648,height=439]
 
 [start=2]
-. On the *Prerequisite* screen, choose *Use current template*, and then choose *Next*
-(see <<update_3>>).
+. On the *Prerequisite - Prepare template* screen, choose *Use current template*, and then choose *Next*. (See <<update_3>>.)
 
 :xrefstyle: short
 [#update_3]
-.Update stack, prerequisite information
+.Prerequisite - Prepare template
 [link=../{quickstart-project-name}/images/update_3.png]
 image::../images/update_3.png[image_placeholder,width=648,height=439]
 
