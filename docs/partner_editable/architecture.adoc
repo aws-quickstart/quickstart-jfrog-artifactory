@@ -2,13 +2,12 @@ Deploying this Quick Start for a new virtual private cloud (VPC) with
 default parameters builds the following {partner-product-name} environment in the
 AWS Cloud.
 
-// Replace this example diagram with your own. Send us your source PowerPoint file. Be sure to follow our guidelines here : http://(we should include these points on our contributors giude)
+:xrefstyle: short
 [#architecture1]
-.Quick Start architecture for {partner-product-name} on AWS
-[link=images/jfrog-architecture-diagram.png]
-image::../images/jfrog-artifactory-architecture-diagram-update.png[Architecture,width=648,height=439]
+.Quick Start architecture for {partner-product-short-name} on AWS
+image::../images/jfrog-artifactory-architecture-diagram-update.png[Architecture]
 
-As shown in Figure 1, the Quick Start sets up the following:
+As shown in <<architecture1>>, the Quick Start sets up the following:
 
 * A highly available architecture that spans two Availability Zones.*
 * A virtual private cloud (VPC) configured with public and private subnets according to AWS best practices, to provide you with your own virtual network on AWS.*
@@ -28,18 +27,11 @@ As shown in Figure 1, the Quick Start sets up the following:
 
 === Auto Scaling groups
 
-The Auto Scaling groups are designed to have one primary node and multiple secondary
-nodes. When an EC2 node or service fails, Auto Scaling groups automatically recreate the instances. For this reason, all configurations are made on boot and result in a loss of any data that are not stored in the Amazon RDS instance or S3 bucket.
-
-NOTE:  It is recommended that you do not modify the number of instances when deploying the Quick Start. For more information, see https://aws.amazon.com/autoscaling/[AWS Auto Scaling^].
+The Auto Scaling groups are designed to have one primary node and multiple secondary nodes. When an EC2 node or service fails, Auto Scaling groups automatically recreate the instances. For this reason, all configurations are made on boot and result in a loss of any data that are not stored in the Amazon RDS instance or S3 bucket. It is recommended that you do not modify the number of instances. For more information, see https://aws.amazon.com/autoscaling/[AWS Auto Scaling^].
 
 === Ansible init script
-Ansible is installed and configured to run only on initial boot. Ansible, in cooperation with the Auto Scaling group, initiates the required configuration to configure, install, and run Artifactory and Xray. As a part of this configuration, the nodes automatically join the HA cluster.
+Ansible is installed and configured to run only on initial boot. Ansible works with the Auto Scaling group to configure, install, and run JFrog Artifactory and JFrog Xray. As a part of the configuration, the nodes automatically join the high availability (HA) cluster.
 
-WARNING: Do not change the master key of the stack when updating the stack.
-Doing so results in an unsupported configuration that future nodes cannot join.
-To update an expired Secure Sockets Layer (SSL) certificate, change the
-CloudFormation stack certificate and certificate key inputs, and then redeploy the
-nodes (see Updating Artifactory). +
+WARNING: Do not change the master key of the stack when updating the stack. Doing so results in an unsupported configuration that future nodes cannot join. To update an expired Secure Sockets Layer (SSL) certificate, change the CloudFormation stack certificate and certificate key inputs, and then redeploy the nodes (see Updating Artifactory). +
  +
 If you change the certificate and certificate key manually on the Amazon EC2 instances (instead of updating the CloudFormation stack), your manual changes are lost at the next update or reboot, which results in an unwanted configuration.

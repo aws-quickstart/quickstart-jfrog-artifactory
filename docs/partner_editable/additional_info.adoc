@@ -4,79 +4,41 @@
 == Get started with JFrog Artifactory
 // If steps are required to test the deployment, add them here. If not, remove the heading
 
-. Connect to Artifactory from `ArtifactoryURL`. You can find `ArtifactoryUrl` on the *Outputs* tab of the Artifactory primary stack. Verify that you can view the login screen (see <<get_started_1>>).
+. On the *Outputs* tab of the JFrog Artifactory stack in the https://console.aws.amazon.com/cloudformation/[AWS CloudFormation console], find `ArtifactoryURL`. Connect to JFrog Artifactory using `ArtifactoryURL`.
 
-:xrefstyle: short
-[#get_started_1]
-.JFrog Artifactory login screen
-[link=../{quickstart-project-name}/images/get_started_1.png]
-image::../images/get_started_1.png[image_placeholder,width=648,height=439]
-
-NOTE: If you use a non-CA-signed certificate, you will receive a certificate warning when you attempt to access the page. This happens because the certificate doesn’t
-match the ELB DNS unless you configure Amazon Route 53.
+NOTE: If you use a non-CA-signed certificate, you will see a certificate warning when you attempt to access the JFrog Artifactory URL. You can click through the warning to continue to the page. This warning displays when the certificate does not match the Elastic Load Balancer DNS (Domain Name System). As an option, you can configure Amazon Route 53 as the DNS service to avoid seeing this warning.
 
 [start=2]
-. The default user name and password for Artifactory are `admin` and `password`, respectively. Enter your credentials, and choose *Login*. For more information, see
-JFrog Users and Groups.
+. On the JFrog Artifactory login page, enter the default credentials `admin`/`password`.
+. Choose *Login*. 
 
-This loads the setup wizard for initial configuration. Choose *Get Started*. (see <<get_started_2>>).
-
-:xrefstyle: short
-[#get_started_2]
-.JFrog Artifactory welcome screen
-[link=../{quickstart-project-name}/images/get_started_2.png]
-image::../images/get_started_2.png[image_placeholder,width=648,height=439]
-
-This Quick Start handles the license key configuration during the deployment, so you are not prompted to activate your license.
-
-[start=3]
-. Set a secure administrator password for your deployment, and then choose *Next* (see <<get_started_3>>).
-
-:xrefstyle: short
-[#get_started_3]
-.Set administrator password
-[link=../{quickstart-project-name}/images/get_started_3.png]
-image::../images/get_started_3.png[image_placeholder,width=648,height=439]
+NOTE: For more information, see
+https://www.jfrog.com/confluence/display/JFROG/Users+and+Groups[Users and Groups].
 
 [start=4]
-. Optionally, configure the base URL setting. Because this deployment uses a proxy, it’s highly recommended that you update the base URL of Artifactory. More information
-regarding this setting can be found in the https://www.jfrog.com/confluence/display/RTF/Configuring+Artifactory#ConfiguringArtifactory-GeneralSettings[Getting Started guide^] (see <<get_started_4>>).
+. On the *Welcome to the JFrog Platform* page, choose *Get Started*. 
+The Quick Start handles JFrog license key configuration during the deployment, so you do not need to activate your license before getting started.
 
+. On the *Reset Admin Password* page, set a secure administrator password for your deployment. Then choose *Next*.
+
+. On the *Set Base URL* page, you can configure an optional base URL setting. Because this deployment uses a proxy, it's highly recommended that you set the JFrog Artifactory base URL. For more information, see https://www.jfrog.com/confluence/display/RTF/Configuring+Artifactory#ConfiguringArtifactory-GeneralSettings[Configuring Artifactory^].
+
+. On the *Configure Platform Default Proxy* page, you can configure optional proxy settings for remote resources.
+
+[start=8]
 :xrefstyle: short
-[#get_started_4]
-.Set Base URL screen
-[link=../{quickstart-project-name}/images/get_started_4.png]
-image::../images/get_started_4.png[image_placeholder,width=648,height=439]
+. On the *Create Repositories* page, select your desired package types. Then choose *Next*. (See <<get_started_6>>).
 
-[start=5]
-. Optionally, configure proxy settings for remote resources. (See <<get_started_5>>).
-
-:xrefstyle: short
-[#get_started_5]
-.SConfigure proxy settings if required
-[link=../{quickstart-project-name}/images/get_started_5.png]
-image::../images/get_started_5.png[image_placeholder,width=648,height=439]
-
-[start=6]
-. Select the repositories that you require, and then choose *Create* (see <<get_started_6>>).
-
-:xrefstyle: short
 [#get_started_6]
 .Select repositories
 [link=../{quickstart-project-name}/images/get_started_6.png]
 image::../images/get_started_6.png[image_placeholder,width=648,height=439]
 
 [start=7]
-. Choose *Finish* (see <<get_started_7>>).
-
-:xrefstyle: short
-[#get_started_7]
-.SFinal wizard screen
-[link=../{quickstart-project-name}/images/get_started_7.png]
-image::../images/get_started_7.png[image_placeholder,width=648,height=439]
+. On the *Congratulations* page, choose *Finish*.
 
 [start=8]
-. Complete the administrative tasks by configuring the following:
+. Complete the following administrative tasks.
 * https://www.jfrog.com/confluence/display/RTF/Managing+Backups[Backups^]
 * https://www.jfrog.com/confluence/display/JFROG/Regular+Maintenance+Operations[Regular Maintenance Operations^]
 * https://www.jfrog.com/confluence/display/RTF/Authentication[Security^]
@@ -88,7 +50,7 @@ NOTE: Backups save to the local file system and do not persist if the EC2 instan
 
 If you perform maintenance on the stack, update the
 CloudFormation stack rather than updating the infrastructure manually (this also applies to
-updating Artifactory). The Artifactory version for this Quick Start is *7.15.x*, and the Xray version is *3.17.x* (see <<update_1>>).
+updating JFrog Artifactory). The JFrog Artifactory version for this Quick Start is *7.15.x*, and the Xray version is *3.17.x* (see <<update_1>>).
 
 NOTE: If you plan to upgrade Artifactory and Xray, update Xray first.
 
