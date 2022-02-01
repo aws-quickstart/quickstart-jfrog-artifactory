@@ -81,9 +81,11 @@ image::../images/xray_update_3.png[image_placeholder,width=648,height=439]
 . Enter the `XrayVersion` you want to run. Then choose *Next* twice, select the two acknowledgement check boxes, and choose *Update Stack*.
 
 [start=5]
-. Shut down the JFrog Xray nodes one by one. Shutting down the nodes one at a time initiates a health check failure on the load balancer. The load balancer then deletes the current running node and deploys a net new primary node with the updated JFrog version.
+. Stop the JFrog Xray nodes one by one. For more information, see https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/Stop_Start.html[Stop and start your instance]. Shutting down the nodes one at a time initiates a health check failure on the load balancer. The load balancer then deletes the current running node and deploys a net new primary node with the updated JFrog Xray version.
 
 === Upgrade JFrog Artifactory
+
+IMPORTANT: To prevent issues and downtime, update only one node at a time. Shut down the `ArtifactoryPrimary` node first. After the new version starts, shut down the secondary nodes one by one.
 
 . On the https://console.aws.amazon.com/cloudformation/[AWS CloudFormation console], choose the JFrog Artifactory root stack, and then choose *Update*. (See <<update_2>>.)
 
@@ -103,70 +105,36 @@ image::../images/update_2.png[image_placeholder,width=648,height=439]
 image::../images/update_3.png[image_placeholder,width=648,height=439]
 
 [start=3]
-. Scroll down the page and locate the *Artifactory version* field (see <<update_4>>).
-
-:xrefstyle: short
-[#update_4]
-.CloudFormation console update page (before you change the version)
-[link=../{quickstart-project-name}/images/update_4.png]
-image::../images/update_4.png[image_placeholder,width=648,height=439]
-
-[start=4]
-. Enter the version number that you want to run (see <<update_5>>).
+. In the *Artifactory version* field, enter the JFrog Artifactory version you want to run. (See <<update_5>>.)
 
 :xrefstyle: short
 [#update_5]
-.CloudFormation console update page (after you change the version)
+.Artifactory version
 [link=../{quickstart-project-name}/images/update_5.png]
 image::../images/update_5.png[image_placeholder,width=648,height=439]
 
-[start=5]
-. Scroll down, and choose *Next*. Choose *Next* again, unless you want to change any other tags or policies. Select the two *I acknowledge* check boxes, and choose *Update stack* (see <<update_6>>).
+[start=4]
+. Choose *Next*.
 
-:xrefstyle: short
-[#update_6]
-.Completing the update process
-[link=../{quickstart-project-name}/images/update_6.png]
-image::../images/update_6.png[image_placeholder,width=648,height=439]
+. Choose *Next* again, unless you want to change any other tags or policies. Select the two acknowledgment check boxes, and then choose *Update stack*.
 
-[start=6]
-. Shut down the *ArtifactoryMaster* node. The proper process shuts down the nodes one at a time, starting with the Artifactory primary node. This shutdown initiates a health check
-failure on the load balancer. The load balancer then deletes the current running primary node and deploys a new primary node with the updated version (see <<update_7>>).
+. Stop the JFrog Artifactory nodes one by one, starting with the primary node `ArtifactoryMaster`. For more information, see https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/Stop_Start.html[Stop and start your instance]. Shutting down the nodes one at a time initiates a health check failure on the load balancer. The load balancer then deletes the current running node and deploys a net new primary node with the updated JFrog Artifactory version.
 
-:xrefstyle: short
-[#update_7]
-.Shutting down Artifactory’s primary node
-[link=../{quickstart-project-name}/images/update_7.png]
-image::../images/update_7.png[image_placeholder,width=648,height=439]
-
-The Artifactory status page shows which instances are offline (see <<update_8>>).
-
-:xrefstyle: short
-[#update_8]
-.JFrog Artifactory service status page
-[link=../{quickstart-project-name}/images/update_8.png]
-image::../images/update_8.png[image_placeholder,width=648,height=439]
-
-IMPORTANT: To prevent issues and downtime, update only one node at a time. Shut down the *ArtifactoryPrimary* node first. When
-the new version starts, shut down the secondary nodes one by one.
-
+NOTE: In JFrog Artifactory, you can see the instances that are offline on the *Service Status* page. For more information, see https://www.jfrog.com/confluence/display/JFROG/Monitoring+Service+Statuses[Monitoring Service Status].
 
 == Security
 // Provide post-deployment best practices for using the technology on AWS, including considerations such as migrating data, backups, ensuring high performance, high availability, etc. Link to software documentation for detailed information.
 
-By default, the load balancer does not match your certificate. You must configure the DNS
-according to your organization’s configuration, which is highly recommended for a
+By default, the load balancer does not match your certificate. You must configure the DNS according to your organization's configuration, which is highly recommended for a
 production deployment.
+
 When you create a new VPC, the private subnet CIDR is automatically provided to the
-database security group *Artifactory-rds-sg*. In the new VPC, the private subnet is accessible
-only from the public subnet.
-When you deploy to an existing VPC, ensure similar rules are followed so that your
-Artifactory nodes are not accessible directly from the internet. Also, ensure that the private
-CIDR is correct and locked down. Avoid using `0.0.0.0/0`. If the subnet is a public subnet, it
-will allow your SQL database to be available from the internet.
+database security group `Artifactory-rds-sg``. In the new VPC, the private subnet is accessible only from the public subnet.
+
+When you deploy to an existing VPC, ensure that similar rules are followed so that your
+JFrog Artifactory nodes are not accessible directly from the internet. Also, ensure that the private CIDR is correct and locked down. Avoid using `0.0.0.0/0`. If the subnet is a public subnet, it will allow your SQL database to be available from the internet.
 
 == Storage
 //Provide any other information of interest to users, especially focusing on areas where AWS or cloud usage differs from on-premises usage.
 
-A major difference between running on-premises and on AWS is storage. Because Amazon S3 is
-used, you are charged for what is currently in use rather than what may be allocated on premises. Ensure that you https://www.jfrog.com/confluence/display/RTF/Monitoring+Storage[monitor your usage^].
+A major difference between running on-premises and on AWS is storage. Because Amazon S3 is used, you are charged for what is currently in use rather than what may be allocated on premises. Ensure that you https://www.jfrog.com/confluence/display/RTF/Monitoring+Storage[monitor your usage^].
