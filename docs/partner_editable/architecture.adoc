@@ -21,7 +21,7 @@ As shown in <<architecture1>>, the Quick Start sets up the following:
 * Amazon Elastic File System (Amazon EFS) file system for the JFrog Artifactory primary and secondary nodes. 
 * A Network Load Balancer to distribute traffic among JFrog Artifactory primary and secondary nodes.
 * If you deploy JFrog Xray, a Network Load Balancer for JFrog Xray to connect to JFrog Artifactory nodes.
-* A private and encrypted Amazon Simple Storage Service (Amazon S3) bucket for repository storage.
+* A private and encrypted Amazon S3 bucket for repository storage.
 
 [.small]#* The template that deploys the Quick Start into an existing VPC skips the components marked by asterisks and prompts you for your existing VPC configuration.#
 

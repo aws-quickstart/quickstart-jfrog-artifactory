@@ -13,18 +13,17 @@
 
 ===== Prepare the certificate and certificate key
 
-Open the certificate into an editor of your choice and copy the certificate and paste it directly in the text box in next step. This results in the entire certificate being on a single line, and it automatically converts all Carriage Return and Line Feed (CRLF) or Line Feed (LF) characters to spaces.
-Follow the same process for the certificate key.
-
+Open the certificate in an editor of your choice. Copy the certificate and paste it in the text box in next step. This results in the entire certificate being on a single line, and it automatically converts all Carriage Return and Line Feed (CRLF) or Line Feed (LF) characters to spaces. Follow the same process for the certificate key.
 
 ===== Add the license keys and certificate to AWS Secrets Manager
 
 Perform these steps:
 
-. Open AWS Secrets Manager in the same Region in which you deploy the Quick Start.
+. Open the https://console.aws.amazon.com/secretsmanager/home?region=us-east-1#!/home[AWS Secrets Manager console].
+. In the top toolbar, choose the AWS Region in which you deploy the Quick Start.
 . Choose *Store a new secret*.
-. Choose *Other type of secret*.
-. For the secret key value, create six rows for the Artifactory licenses.
+. On the *Store a new secret* page, choose *Other type of secret*.
+. In the *Key/value pairs* section, For the secret key value, create six rows for the Artifactory licenses.
 . Add the following key names and Artifactory license keys (see <<secret_manager_licenses>>):
 
 * *ArtifactoryLicense1*

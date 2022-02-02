@@ -129,7 +129,7 @@ By default, the load balancer does not match your certificate. You must configur
 production deployment.
 
 When you create a new VPC, the private subnet CIDR is automatically provided to the
-database security group `Artifactory-rds-sg``. In the new VPC, the private subnet is accessible only from the public subnet.
+database security group `Artifactory-rds-sg`. In the new VPC, the private subnet is accessible only from the public subnet.
 
 When you deploy to an existing VPC, ensure that similar rules are followed so that your
 JFrog Artifactory nodes are not accessible directly from the internet. Also, ensure that the private CIDR is correct and locked down. Avoid using `0.0.0.0/0`. If the subnet is a public subnet, it will allow your SQL database to be available from the internet.

@@ -13,15 +13,10 @@
 // _<AMI information>The Quick Start requires a subscription to the Amazon Machine Image (AMI) for {partner-product-name}, which is available from https://aws.amazon.com/marketplace/[AWS Marketplace^]. Additional pricing, terms, and conditions may apply. For instructions, see link:#step-2.-subscribe-to-the-software-ami[step 2] in the deployment section._
 
 
-This Quick Start requires a subscription to the CentOS AMIand an Enterprise or Enterprise+ license for Artifactory. You can subscribe to the CentOS AMI on the https://aws.amazon.com/marketplace/pp/B00O7WM7QW?ref_=aws-mp-console-subscription-detail[AWS CentOS Marketplace^] page. If you choose to install Xray, you must have an Enterprise+ license or an Enterprise license with the Xray add-on.
+This Quick Start requires a subscription to the CentOS AMI and an Enterprise or Enterprise+ license for JFrog Artifactory. Subscribe to the CentOS AMI on the https://aws.amazon.com/marketplace/pp/B00O7WM7QW?ref_=aws-mp-console-subscription-detail[AWS CentOS Marketplace^] page. If you choose to install JFrog Xray, you must have an Enterprise+ license or an Enterprise license with the JFrog Xray add-on.
 
-To use the Quick Start in your production environment, sign up for a https://jfrog.com/artifactory/free-trial-aws/#enterprise[free trial license^], which includes three Artifactory Enterprise licenses. Add the license keys to AWS Secrets Manager, as described in the <<#_deployment_steps, Deployment steps>> section in this guide. 
+To use the Quick Start in your production environment, sign up for a https://jfrog.com/artifactory/free-trial-aws/#enterprise[free trial JFrog license^], which includes three JFrog Artifactory Enterprise licenses. Add the license keys to AWS Secrets Manager, as described in the <<#_deployment_steps, Deployment steps>> section in this guide. 
 
-NOTE: Enterprise or Enterprise+ licenses are required for high availability. If the license isn’t an Enterprise or Enterprise+ license, the license is invalid,
-or the license is not included, the deployment will fail. Also, ensure that the number
-of secondary Artifactory servers is at most the amount licensed minus one, for the
-primary server. If you specify too many servers, see the <<FAQ>> section for instructions.
+NOTE: JFrog Enterprise or Enterprise+ licenses are required to ensure high availability. Quick Start deployment will fail if the license is not an Enterprise or Enterprise+ license, the license is invalid, or the license is not specified during deployment. Ensure that the number of secondary JFrog Artifactory servers is at most the amount licensed minus one, for the primary server. If you specify too many servers, see the <<FAQ>> section for instructions.
 
-If you use a free trial, convert to a permanent license before your trial ends,
-otherwise the nodes will become unresponsive. You can request a quote by contacting
-https://jfrog.com/pricing/[JFrog^].
+If you start with a free trial JFrog license, contact https://jfrog.com/pricing/[JFrog^] to obtain a permanent license before the trial period ends. Otherwise, nodes become unresponsive after the free trial period ends. 
