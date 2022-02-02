@@ -8,23 +8,21 @@
 
 // _Describe any setup required in the partner portal/account prior to template launch_
 
-==== Prepare for the deployment
+=== Prepare for the deployment
 // _Describe any preparation required to complete the product build, such as obtaining licenses or placing files in S3_
 
-===== Prepare the certificate and certificate key
+==== Prepare the certificate and certificate key
 
-Open the certificate in an editor of your choice. Copy the certificate and paste it in the text box in next step. This results in the entire certificate being on a single line, and it automatically converts all Carriage Return and Line Feed (CRLF) or Line Feed (LF) characters to spaces. Follow the same process for the certificate key.
+Open the certificate in an editor of your choice. Copy the certificate and paste it in the text box in next step. This results in the entire certificate being on a single line, and it automatically converts all carriage return and line feed (CRLF) or line feed (LF) characters to spaces. Follow the same process for the certificate key.
 
-===== Add the license keys and certificate to AWS Secrets Manager
-
-Perform these steps:
+==== Add the license keys and certificate to AWS Secrets Manager
 
 . Open the https://console.aws.amazon.com/secretsmanager/home?region=us-east-1#!/home[AWS Secrets Manager console].
 . In the top toolbar, choose the AWS Region in which you deploy the Quick Start.
 . Choose *Store a new secret*.
 . On the *Store a new secret* page, choose *Other type of secret*.
-. In the *Key/value pairs* section, For the secret key value, create six rows for the Artifactory licenses.
-. Add the following key names and Artifactory license keys (see <<secret_manager_licenses>>):
+. In the *Key/value pairs* section, For the secret key value, create six rows for JFrog Artifactory licenses.
+. Add the following key names and license keys (see <<secret_manager_licenses>>):
 
 * *ArtifactoryLicense1*
 * *ArtifactoryLicense2*
