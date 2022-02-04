@@ -22,7 +22,7 @@
 [#secret_manager_licenses]
 .Secrets Manager key-value licenses page
 [link=../{quickstart-project-name}/images/secret_manager_licenses.png]
-image::../images/secret_manager_licenses.png[image_placeholder]
+image::../images/secret_manager_licenses.png[image_placeholder,width=416,height=391]
 
 [start=6]
 . Choose *Next*.
@@ -44,7 +44,7 @@ image::../images/secret_manager_licenses.png[image_placeholder]
 [#secret_manager_certificate]
 .Secrets Manager key-value certificates page
 [link=../{quickstart-project-name}/images/secrets_manager_certificates.png]
-image::../images/secrets_manager_certificates.png[image_placeholder]
+image::../images/secrets_manager_certificates.png[image_placeholder,width=447,height=241]
 
 NOTE: When you copy the certificate and certificate key from an editor, the contents are copied as a single line of text. This process converts carriage return and line feed (CRLF) or line feed (LF) characters to spaces.
 
