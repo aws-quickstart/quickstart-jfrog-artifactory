@@ -11,14 +11,9 @@
 === Prepare for the deployment
 // _Describe any preparation required to complete the product build, such as obtaining licenses or placing files in S3_
 
-==== Prepare the certificate and certificate key
-
-Open the certificate in an editor of your choice. Copy the certificate and paste it in the text box in next step. This results in the entire certificate being on a single line, and it automatically converts all carriage return and line feed (CRLF) or line feed (LF) characters to spaces. Follow the same process for the certificate key.
-
-==== Add the license keys and certificate to AWS Secrets Manager
-
+==== Add license keys to AWS Secrets Manager
 . Open the https://console.aws.amazon.com/secretsmanager/home?region=us-east-1#!/home[AWS Secrets Manager console].
-. In the top toolbar, choose the AWS Region in which you deploy the Quick Start.
+. In the top toolbar, choose the AWS Region where you deploy the Quick Start.
 . Choose *Store a new secret*.
 . On the *Store a new secret* page, choose *Other type of secret*.
 . In the *Key/value pairs* section, For the secret key value, create six rows for JFrog Artifactory licenses.
@@ -44,9 +39,13 @@ image::../images/secret_manager_licenses.png[image_placeholder]
 . Choose *Next* twice.
 . Choose *Store*.
 
-[start=7]
-. Repeat the above steps for storing the certificate details in AWS Secrets Manager.
-. Create three rows for the certificate information retrieved in the preparation of the certificate in the <<Prepare the certificate and certificate key>> section:
+==== Add certificate and certificate keys to Secrets Manager
+
+. In the Secrets Manager console, choose *Store a new secret*.
+. On the *Store a new secret* page, choose *Other type of secret*.
+. In the *Key/value pairs* section, create three rows. In the first row, enter `Certificate`, `CertificateKey`, and `CertificateDomain`. Paste the certificate into the 
+
+. Open the certificate in a text editor of your choice and copy the entire contents to the clipboard. Copy the certificate and paste it in the text box in next step. This results in the entire certificate being on a single line, and it automatically converts all carriage return and line feed (CRLF) or line feed (LF) characters to spaces. Follow the same process for the certificate key.
 
 * *Certificate*
 * *CertificateKey*
