@@ -11,21 +11,12 @@
 === Prepare for the deployment
 // _Describe any preparation required to complete the product build, such as obtaining licenses or placing files in S3_
 
-==== Add license keys to AWS Secrets Manager
+==== Add JFrog Artifactory license keys to AWS Secrets Manager
 . Open the https://console.aws.amazon.com/secretsmanager/home?region=us-east-1#!/home[AWS Secrets Manager console].
 . In the top toolbar, choose the AWS Region where you deploy the Quick Start.
 . Choose *Store a new secret*.
 . On the *Store a new secret* page, choose *Other type of secret*.
-. In the *Key/value pairs* section, For the secret key value, create six rows for JFrog Artifactory licenses.
-. Add the following key names and license keys (see <<secret_manager_licenses>>):
-
-* *ArtifactoryLicense1*
-* *ArtifactoryLicense2*
-* *ArtifactoryLicense3*
-* *ArtifactoryLicense4*
-* *ArtifactoryLicense5*
-* *ArtifactoryLicense6*
-* *ArtifactoryLicense7*
+. In the *Key/value pairs* section, create a row for each JFrog Artifactory license. In the first column, enter `ArtifactoryLicense<n>`, substituting a number for `<n>` (for example, `ArtifactoryLicense1`, `ArtifactoryLicense2`). In the second column, enter the license.
 
 :xrefstyle: short
 [#secret_manager_licenses]
@@ -41,15 +32,13 @@ image::../images/secret_manager_licenses.png[image_placeholder]
 
 ==== Add certificate and certificate keys to Secrets Manager
 
+. Open the certificate in a text editor of your choice and copy the contents to the clipboard.
 . In the Secrets Manager console, choose *Store a new secret*.
 . On the *Store a new secret* page, choose *Other type of secret*.
-. In the *Key/value pairs* section, create three rows. In the first row, enter `Certificate`, `CertificateKey`, and `CertificateDomain`. Paste the certificate into the 
-
-. Open the certificate in a text editor of your choice and copy the entire contents to the clipboard. Copy the certificate and paste it in the text box in next step. This results in the entire certificate being on a single line, and it automatically converts all carriage return and line feed (CRLF) or line feed (LF) characters to spaces. Follow the same process for the certificate key.
-
-* *Certificate*
-* *CertificateKey*
-* *CertificateDomain* 
+. In the *Key/value pairs* section, create three rows. In the first row, enter `Certificate` in the first column. Paste the certificate into the second column.
+. Open the certificate key in a text editor and copy the contents to the clipboard.
+. In the first column of the second row, enter `CertificateKey`. In the second column, paste the certificate key.
+. In the first column of the third row, enter `CertificateDomain`. Enter `localhost` into the second column.
 
 :xrefstyle: short
 [#secret_manager_certificate]
@@ -57,6 +46,7 @@ image::../images/secret_manager_licenses.png[image_placeholder]
 [link=../{quickstart-project-name}/images/secrets_manager_certificates.png]
 image::../images/secrets_manager_certificates.png[image_placeholder]
 
+NOTE: When you copy the certificate and certificate key from an editor, the contents are copied as a single line of text. This process converts carriage return and line feed (CRLF) or line feed (LF) characters to spaces.
 
 // Optional based on Marketplace listing. Not to be edited
 ifdef::marketplace_subscription[]
