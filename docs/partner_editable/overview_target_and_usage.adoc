@@ -2,39 +2,18 @@
 // Identify your target audience and explain how/why they would use this Quick Start.
 //Avoid borrowing text from third-party websites (copying text from AWS service documentation is fine). Also, avoid marketing-speak, focusing instead on the technical aspect.
 
-https://jfrog.com/artifactory/[JFrog’s Artifactory^] is an enterprise universal repository manager, capable of hosting all of
-your binaries in one place. This Quick Start deploys Artifactory Enterprise in a highly
-available (HA) configuration into AWS.
+This Quick Start deploys https://jfrog.com/artifactory/[JFrog Artifactory]—and, optionally, https://jfrog.com/xray/[JFrog Xray]—in the Amazon Web Services (AWS) Cloud. JFrog Artifactory is a universal artifact repository that can manage over 30 different package types throughout the application development lifecycle. As the single source of truth for your binaries, JFrog Artifactory speeds up the software release cycles for your deployments. JFrog Xray works with JFrog Artifactory to scan your packages for security vulnerabilities at each stage of your DevOps pipeline.
 
-https://jfrog.com/xray/[JFrog Xray^] works with JFrog Artifactory to perform universal analysis of binary software components 
-at any stage of the application lifecycle, providing radical transparency that leads to trust in your software. Xray is an optional installation that you can choose during the Quick Start deployment.  
-
-This Quick Start is for administrators who want the flexibility, scale, and availability of
-AWS through products such as virtual private clouds (VPCs), Amazon Elastic Compute
-Cloud (Amazon EC2), Amazon Simple Storage Service (Amazon S3), Elastic Load Balancing
-(ELB), Elastic File System (EFS) and Amazon Relational Database Service (Amazon RDS) to deploy Artifactory as
-their repository manager. 
-
-Amazon EC2, along with Amazon S3 and Amazon RDS, forms the foundation for the
-deployment. By using Amazon S3 and Amazon RDS as persistent storage for artifacts and
-the configuration, respectively, Artifactory and Xray can be completely redeployed, scaled up, or
-scaled down, depending on your requirements. This configuration allows organizations to
-save on costs for multiple secondary nodes and to pay only for storage used.
+By deploying JFrog on AWS, you gain the security and scalability of AWS services like Amazon Elastic Compute Cloud (Amazon EC2). With Amazon EC2 Auto Scaling, you can redeploy, scale up, or scale down your JFrog Artifactory and JFrog Xray nodes as needed. This Quick Start reference architecture uses AWS Elastic Load Balancing to deliver JFrog Artifactory and JFrog Xray with high availability.
 
 The default installation creates two https://docs.aws.amazon.com/autoscaling/ec2/userguide/what-is-amazon-ec2-auto-scaling.html[Amazon EC2 Auto Scaling^] groups:
 
-* The first Auto Scaling group is responsible for the primary node and ensures that the
-node.id for HA is set to `primary` and that there is always only one primary node.
-* The second Auto Scaling group is responsible for ensuring that the `node.id` for the
-secondaries is unique and therefore sets it to the hostname. This Auto Scaling group is
-also responsible for scaling up or down the number of secondaries to the amount
-specified by the administrator.
+* The first Auto Scaling group ensures that the `node.id` for high availability (HA) is set to `primary` and that there is always only one primary node.
+* The second Auto Scaling group ensures that the `node.id` for the secondary nodes is unique and sets this `node.id` to the hostname. This Auto Scaling group scales up or down the number of secondary nodes to the amount specified by the administrator.
 
-The optional Xray installation creates two additional Amazon EC2 Auto Scaling groups:
+The optional JFrog Xray installation creates two additional Amazon EC2 Auto Scaling groups:
 
-* The first Auto Scaling group is responsible for the primary node. Xray is installed into the primary subnet. 
-* The second Auto Scaling group is responsible installing Xray into the secondary subnet. This Auto Scaling group is also responsible for scaling up or down the number of secondaries to the amount specified by the administrator.
+* The first Auto Scaling group is responsible for the primary node. JFrog Xray is installed into the primary subnet. 
+* The second Auto Scaling group installs JFrog Xray into the secondary subnet. This Auto Scaling group scales up or down the number of secondary nodes to the amount specified by the administrator.
 
-The Auto Scaling groups are monitored by the Network Load Balancer, which is configured
-with https://docs.aws.amazon.com/elasticloadbalancing/latest/classic/elb-healthchecks.html[health checks^] that validate that the Artifactory service is up and running. If the endpoint
-returns an error response, a new node is recovered within 10 minutes.
+The Network Load Balancer monitors the Auto Scaling groups and is configured with https://docs.aws.amazon.com/elasticloadbalancing/latest/classic/elb-healthchecks.html[health checks^] that validate that the JFrog Artifactory service is up and running. If the endpoint returns an error response, a new node is recovered within 10 minutes.

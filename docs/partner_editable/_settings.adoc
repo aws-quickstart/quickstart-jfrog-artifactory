@@ -1,17 +1,18 @@
 :quickstart-project-name: quickstart-jfrog-artifactory
-:partner-product-name: JFrog Artifactory Enterprise and Xray 
+:partner-product-name: JFrog Artifactory Enterprise and JFrog Xray 
 :partner-product-short-name: Artifactory and Xray
 :partner-company-name: JFrog Ltd.
 :doc-month: October
 :doc-year: 2021
 :partner-contributors: Vinay Aggarwal and Alex Hung, JFrog
-:quickstart-contributors: Dylan Owen, AWS Quick Start team
+:quickstart-contributors: Dylan Owen, AWS Integration & Automation team
 :deployment_time: 30 minutes
 :default_deployment_region: us-east-1
+:parameters_as_appendix:
 // Uncomment these two attributes if you are leveraging
 // - an AWS Marketplace listing.
 // Additional content will be auto-generated based on these attributes.
 :marketplace_subscription:
 :marketplace_listing_url: https://aws.amazon.com/marketplace/pp/B00O7WM7QW?ref_=aws-mp-console-subscription-detail
-:no_parameters:
+// :no_parameters:
 //

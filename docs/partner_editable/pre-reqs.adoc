@@ -8,38 +8,21 @@
 
 // _Describe any setup required in the partner portal/account prior to template launch_
 
-==== Prepare for the deployment
+=== Prepare for the deployment
 // _Describe any preparation required to complete the product build, such as obtaining licenses or placing files in S3_
 
-===== Prepare the certificate and certificate key
-
-Open the certificate into an editor of your choice and copy the certificate and paste it directly in the text box in next step. This results in the entire certificate being on a single line, and it automatically converts all Carriage Return and Line Feed (CRLF) or Line Feed (LF) characters to spaces.
-Follow the same process for the certificate key.
-
-
-===== Add the license keys and certificate to AWS Secrets Manager
-
-Perform these steps:
-
-. Open AWS Secrets Manager in the same Region in which you deploy the Quick Start.
+==== Add JFrog Artifactory license keys to AWS Secrets Manager
+. Open the https://console.aws.amazon.com/secretsmanager/home?region=us-east-1#!/home[AWS Secrets Manager console].
+. In the top toolbar, choose the AWS Region where you deploy the Quick Start.
 . Choose *Store a new secret*.
-. Choose *Other type of secret*.
-. For the secret key value, create six rows for the Artifactory licenses.
-. Add the following key names and Artifactory license keys (see <<secret_manager_licenses>>):
-
-* *ArtifactoryLicense1*
-* *ArtifactoryLicense2*
-* *ArtifactoryLicense3*
-* *ArtifactoryLicense4*
-* *ArtifactoryLicense5*
-* *ArtifactoryLicense6*
-* *ArtifactoryLicense7*
+. On the *Store a new secret* page, choose *Other type of secret*.
+. In the *Key/value pairs* section, create a row for each JFrog Artifactory license. In the first column, enter `ArtifactoryLicense<n>`, substituting a number for `<n>` (for example, `ArtifactoryLicense1`, `ArtifactoryLicense2`). In the second column, enter the license.
 
 :xrefstyle: short
 [#secret_manager_licenses]
 .Secrets Manager key-value licenses page
 [link=../{quickstart-project-name}/images/secret_manager_licenses.png]
-image::../images/secret_manager_licenses.png[image_placeholder]
+image::../images/secret_manager_licenses.png[image_placeholder,width=416,height=391]
 
 [start=6]
 . Choose *Next*.
@@ -47,20 +30,23 @@ image::../images/secret_manager_licenses.png[image_placeholder]
 . Choose *Next* twice.
 . Choose *Store*.
 
-[start=7]
-. Repeat the above steps for storing the certificate details in AWS Secrets Manager.
-. Create three rows for the certificate information retrieved in the preparation of the certificate in the <<Prepare the certificate and certificate key>> section:
+==== Add certificate and certificate keys to Secrets Manager
 
-* *Certificate*
-* *CertificateKey*
-* *CertificateDomain* 
+. Open the certificate in a text editor of your choice and copy the contents to the clipboard.
+. In the Secrets Manager console, choose *Store a new secret*.
+. On the *Store a new secret* page, choose *Other type of secret*.
+. In the *Key/value pairs* section, create three rows. In the first row, enter `Certificate` in the first column. Paste the certificate into the second column.
+. Open the certificate key in a text editor and copy the contents to the clipboard.
+. In the first column of the second row, enter `CertificateKey`. In the second column, paste the certificate key.
+. In the first column of the third row, enter `CertificateDomain`. Enter `localhost` into the second column.
 
 :xrefstyle: short
 [#secret_manager_certificate]
 .Secrets Manager key-value certificates page
 [link=../{quickstart-project-name}/images/secrets_manager_certificates.png]
-image::../images/secrets_manager_certificates.png[image_placeholder]
+image::../images/secrets_manager_certificates.png[image_placeholder,width=447,height=241]
 
+NOTE: When you copy the certificate and certificate key from an editor, the contents are copied as a single line of text. This process converts carriage return and line feed (CRLF) or line feed (LF) characters to spaces.
 
 // Optional based on Marketplace listing. Not to be edited
 ifdef::marketplace_subscription[]

@@ -3,12 +3,12 @@
 == FAQ
 
 *Q.* . I provisioned more secondary nodes than I have licenses, and I cannot access
-Artifactory. What do I do?
+JFrog Artifactory. What do I do?
 
 *A.* In the AWS CloudFormation console, choose **Update stack**, and reduce the number of
 secondary nodes to the number of licenses you purchased, minus one license for the master.
 
-*Q.* My license ran out and Artifactory is unresponsive. How do I fix this?
+*Q.* My license ran out and JFrog Artifactory is unresponsive. How do I fix this?
 
 *A.* Reduce the number of secondary nodes to zero, and contact JFrog for a new license.
 
@@ -18,7 +18,6 @@ secondary nodes to the number of licenses you purchased, minus one license for t
 choose **Update stack**, change the certificate and certificate key values. Then, by rolling
 restart, update the master node first, and then, one at a time, the secondary nodes. This will
 rebuild each node with the correct certificate.
-
 
 *Q.* I encountered a *CREATE_FAILED* error when I launched the Quick Start.
 
