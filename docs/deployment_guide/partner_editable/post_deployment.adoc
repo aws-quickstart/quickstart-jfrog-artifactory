@@ -1,3 +1,47 @@
 //Include any postdeployment steps here, such as steps necessary to test that the deployment was successful. If there are no postdeployment steps leave this file empty.
 
 == Postdeployment steps
+
+=== Get started with JFrog Artifactory
+// If steps are required to test the deployment, add them here. If not, remove the heading
+
+. On the *Outputs* tab of the JFrog Artifactory stack in the https://console.aws.amazon.com/cloudformation/[AWS CloudFormation console], find `ArtifactoryURL`. Connect to JFrog Artifactory using `ArtifactoryURL`.
+
+NOTE: If you use a non-CA-signed certificate, you will see a certificate warning when you attempt to access the JFrog Artifactory URL. You can click through the warning to continue to the page. This warning displays when the certificate does not match the Elastic Load Balancer DNS (Domain Name System). As an option, you can configure Amazon Route 53 as the DNS service to avoid seeing this warning.
+
+[start=2]
+. On the JFrog Artifactory login page, enter the default credentials `admin`/`password`.
+. Choose *Login*. 
+
+NOTE: For more information, see
+https://www.jfrog.com/confluence/display/JFROG/Users+and+Groups[Users and Groups].
+
+[start=4]
+. On the *Welcome to the JFrog Platform* page, choose *Get Started*. 
+The Quick Start handles JFrog license key configuration during the deployment, so you do not need to activate your license before getting started.
+
+. On the *Reset Admin Password* page, set a secure administrator password for your deployment. Then choose *Next*.
+
+. On the *Set Base URL* page, you can configure an optional base URL setting. Because this deployment uses a proxy, it's highly recommended that you set the JFrog Artifactory base URL. For more information, see https://www.jfrog.com/confluence/display/RTF/Configuring+Artifactory#ConfiguringArtifactory-GeneralSettings[Configuring Artifactory^].
+
+. On the *Configure Platform Default Proxy* page, you can configure optional proxy settings for remote resources.
+
+[start=8]
+:xrefstyle: short
+. On the *Create Repositories* page, select your desired package types. Then choose *Next*. (See <<get_started_6>>.)
+
+[#get_started_6]
+.Select repositories
+[link=../{quickstart-project-name}/images/get_started_6.png]
+image::../docs/deployment_guide/images/get_started_6.png[image_placeholder,width=648,height=439]
+
+[start=7]
+. On the *Congratulations* page, choose *Finish*.
+
+[start=8]
+. Complete the following administrative tasks.
+* https://www.jfrog.com/confluence/display/RTF/Managing+Backups[Backups^]
+* https://www.jfrog.com/confluence/display/JFROG/Regular+Maintenance+Operations[Regular Maintenance Operations^]
+* https://www.jfrog.com/confluence/display/RTF/Authentication[Security^]
+
+NOTE: Backups save to the local file system and do not persist if the EC2 instance is terminated. It is recommended to create snapshots of the primary instance.
