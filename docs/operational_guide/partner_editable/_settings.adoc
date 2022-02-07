@@ -1,12 +1,12 @@
-:quickstart-project-name: quickstart-repo-name
+:quickstart-project-name: quickstart-jfrog-artifactory
 :quickstart-github-org: aws-quickstart
-:partner-product-name: Full Product Name
-:partner-product-short-name: Product Name
-:partner-company-name: Example Company Name, Ltd.
-:doc-month: January
+:partner-product-name: JFrog Artifactory Enterprise and JFrog Xray
+:partner-product-short-name: Artifactory and Xray
+:partner-company-name: JFrog Ltd.
+:doc-month: February
 :doc-year: 2022
-//:partner-contributors: John Smith, {partner-company-name}
+:partner-contributors: Giridharan Ramasamy, {partner-company-name}
 //:other-contributors: Akua Mansa, Trek10
-//:aws-contributors: Janine Singh, AWS IoT Partner team
-//:aws-ia-contributors: Toni Jones, AWS Integration & Automation team
+:aws-contributors: Janine Singh, AWS IoT Partner team
+:aws-ia-contributors: Dylan Owen, AWS Integration & Automation team
 // :private_repo:
