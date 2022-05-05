@@ -20,8 +20,8 @@ project:
     - eu-south-1
     - af-south-1
   parameters:
-    ArtifactoryVersion: 7.27.10
-    XrayVersion: 3.35.0
+    ArtifactoryVersion: 7.37.14
+    XrayVersion: 3.46.0
     AccessCidr: "10.0.0.0/0"
     QsS3BucketName: "$[taskcat_autobucket]"
     QsS3KeyPrefix: "quickstart-jfrog-artifactory/"
