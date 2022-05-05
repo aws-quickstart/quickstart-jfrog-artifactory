@@ -8,8 +8,8 @@ project:
 
   parameters:
     #KeyPairName: "" #Key Pair Name which should be already exists in aws.This should be set in global taskcat file.
-    ArtifactoryVersion: 7.33.12
-    XrayVersion: 3.43.1
+    ArtifactoryVersion: 7.37.14
+    XrayVersion: 3.46.0
     #AccessCidr: "" #Cidr block for accessing artifactory loadbalancer. This should be set in global taskcat file.
     QsS3BucketName: "$[taskcat_autobucket]"
     QsS3KeyPrefix: "quickstart-jfrog-artifactory/"
