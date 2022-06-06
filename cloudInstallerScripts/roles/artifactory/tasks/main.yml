@@ -44,6 +44,7 @@
     - "etc/info"
     - "etc/security"
     - "etc/artifactory"
+    - "etc/artifactory/info"
   become: yes
 
 - name: check if system yaml file exits
