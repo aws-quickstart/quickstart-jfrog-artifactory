@@ -44,6 +44,7 @@
     - "etc/info"
     - "etc/security"
     - "etc/artifactory"
+    - "etc/artifactory/info"
   become: yes
 
 - name: check if system yaml file exits
@@ -82,7 +83,7 @@
 - name: configure installer info
   template:
     src: installer-info.json.j2
-    dest: "{{ artifactory_home }}/var/etc/info/installer-info.json"
+    dest: "{{ artifactory_home }}/var/etc/artifactory/info/installer-info.json"
   become: yes
 
 - name: use specified binary store file
