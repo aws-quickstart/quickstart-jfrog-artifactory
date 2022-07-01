@@ -41,6 +41,8 @@
     - "bootstrap"
     - "etc"
     - "data"
+    - "data/artifactory"
+    - "data/filebeat"
     - "etc/info"
     - "etc/security"
     - "etc/artifactory"
