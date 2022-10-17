@@ -104,7 +104,7 @@ Mappings:
     sa-east-1:
       CentOS7HVM: "ami-0b30f38d939dd4b54"
     us-east-1:
-      CentOS7HVM: "ami-0affd4508a5d2481b"
+      CentOS7HVM: "ami-00e87074e52e6c9f9"
     us-east-2:
       CentOS7HVM: "ami-01e36b7901e884a10"
       # CentOS7HVM: "ami-07f692d95b2b9c8c5" #arm64  https://www.centos.org/download/aws-images/
