@@ -18,7 +18,7 @@ https://www.jfrog.com/confluence/display/JFROG/Users+and+Groups[Users and Groups
 
 [start=4]
 . On the *Welcome to the JFrog Platform* page, choose *Get Started*. 
-The Quick Start handles JFrog license key configuration during the deployment, so you do not need to activate your license before getting started.
+The Partner Solution handles JFrog license key configuration during the deployment, so you do not need to activate your license before getting started.
 
 . On the *Reset Admin Password* page, set a secure administrator password for your deployment. Then choose *Next*.
 

@@ -1,4 +1,4 @@
 // Replace the content in <>
 // Describe or link to specific knowledge requirements; for example: “familiarity with basic concepts in the areas of networking, database operations, and data encryption” or “familiarity with <software>.”
 
-This Quick Start assumes familiarity with JFrog Artifactory, JFrog Xray, and infrastructure as code. It also requires a moderate level of familiarity with AWS services. If you’re new to AWS, see https://aws.amazon.com/getting-started/[Getting Started wit AWS] and https://aws.amazon.com/training/[AWS Training and Certification].
+This Partner Solution assumes familiarity with JFrog Artifactory, JFrog Xray, and infrastructure as code. It also requires a moderate level of familiarity with AWS services. If you’re new to AWS, see https://aws.amazon.com/getting-started/[Getting Started wit AWS] and https://aws.amazon.com/training/[AWS Training and Certification].
