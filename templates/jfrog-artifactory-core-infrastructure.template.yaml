@@ -51,8 +51,6 @@ Parameters:
     Type: String
   DatabaseName:
     Type: String
-  EngineVersion:
-    Type: String
   InstanceType:
     Default: m5.xlarge
     Type: String
@@ -204,7 +202,7 @@ Resources:
       DBSubnetGroupName: !Ref  ArtifactoryDatabaseSubnetGroup
       Engine: Postgres
       PubliclyAccessible: false
-      EngineVersion: !Ref EngineVersion
+      EngineVersion: 11.18
       MasterUsername: !Ref DatabaseUser
       MasterUserPassword: !Ref DatabasePassword
       MultiAZ: !Ref MultiAzDatabase
