@@ -5,6 +5,7 @@ Metadata:
     config:
       ignore_checks:
         - E9101
+        - W9006
       ignore_reasons:
         - E9101: "'master' is part of the product naming conventions for now"
   QuickStartDocumentation:

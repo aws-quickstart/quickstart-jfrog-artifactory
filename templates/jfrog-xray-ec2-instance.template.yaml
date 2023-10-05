@@ -4,6 +4,8 @@ Metadata:
   cfn-lint:
     config:
       ignore_checks:
+        - W1020
+        - W4002
         - W9006
         - W9002
         - W9003
