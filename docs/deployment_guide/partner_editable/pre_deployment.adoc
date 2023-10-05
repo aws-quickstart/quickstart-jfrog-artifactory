@@ -4,7 +4,7 @@
 
 ==== Add JFrog Artifactory license keys to AWS Secrets Manager
 . Open the https://console.aws.amazon.com/secretsmanager/home?region=us-east-1#!/home[AWS Secrets Manager console].
-. In the top toolbar, choose the AWS Region where you deploy the Quick Start.
+. In the top toolbar, choose the AWS Region where you deploy the Partner Solution.
 . Choose *Store a new secret*.
 . On the *Store a new secret* page, choose *Other type of secret*.
 . In the *Key/value pairs* section, create a row for each JFrog Artifactory license. In the first column, enter `ArtifactoryLicense<n>`, substituting a number for `<n>` (for example, `ArtifactoryLicense1`, `ArtifactoryLicense2`). In the second column, enter the license.
@@ -17,7 +17,7 @@ image::../docs/deployment_guide/images/secret_manager_licenses.png[image_placeho
 
 [start=6]
 . Choose *Next*.
-. Provide a secret name to use when deploying this Quick Start.
+. Provide a secret name to use when deploying this Partner Solution.
 . Choose *Next* twice.
 . Choose *Store*.
 
@@ -41,7 +41,7 @@ NOTE: When you copy the certificate and certificate key from an editor, the cont
 
 ===== Subscribe to the CentOS AMI
 
-This Quick Start requires a subscription to the Amazon Machine Image (AMI) for CentOS in AWS Marketplace.
+This Partner Solution requires a subscription to the Amazon Machine Image (AMI) for CentOS in AWS Marketplace.
 
 Perform the following steps:
 
@@ -50,4 +50,4 @@ Perform the following steps:
 . Review the terms and conditions for software usage, and then choose *Accept Terms*. +
   A confirmation page loads, and an email confirmation is sent to the account owner. For detailed subscription instructions, see the https://aws.amazon.com/marketplace/help/200799470[AWS Marketplace documentation^].
 
-. When the subscription process is complete, exit out of AWS Marketplace without further action. *Do not* provision the software from AWS Marketplace — the Quick Start deploys the AMI for you.
+. When the subscription process is complete, exit out of AWS Marketplace without further action. *Do not* provision the software from AWS Marketplace — the Partner Solution deploys the AMI for you.

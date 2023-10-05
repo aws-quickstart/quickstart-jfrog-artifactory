@@ -1,6 +1,6 @@
 //Add any unique troubleshooting steps here.
 
-For troubleshooting common Quick Start issues visit the http://general-content-file[AWS Quick Start General Content Guide] or the https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/troubleshooting.html[Troubleshooting CloudFormation] page in the AWS documentation.
+For troubleshooting common Partner Solution issues visit the http://general-content-file[AWS Partner Solution General Content Guide] or the https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/troubleshooting.html[Troubleshooting CloudFormation] page in the AWS documentation.
 
 == FAQ
 

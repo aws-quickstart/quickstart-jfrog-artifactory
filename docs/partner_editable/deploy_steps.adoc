@@ -4,9 +4,9 @@
 . Sign in to your AWS account at https://aws.amazon.com[https://aws.amazon.com^] with an IAM user role that has the necessary permissions. For details, see link:#_planning_the_deployment[Planning the deployment], earlier in this guide.
 . Ensure that your AWS account is configured correctly, as discussed in the link:#_technical_requirements[Technical requirements] section.
 
-=== Launch the Quick Start
+=== Launch the Partner Solution
 
-WARNING: If you deploy {partner-product-name} into an existing VPC, ensure that your VPC has two private subnets in different Availability Zones for the workload instances and that the subnets are not shared. This Quick Start does not support https://docs.aws.amazon.com/vpc/latest/userguide/vpc-sharing.html[shared subnets^]. The subnets require https://docs.aws.amazon.com/vpc/latest/userguide/vpc-nat-gateway.html[NAT gateways^] in their route tables to allow the instances to download packages and software without exposing the instances to the internet.
+WARNING: If you deploy {partner-product-name} into an existing VPC, ensure that your VPC has two private subnets in different Availability Zones for the workload instances and that the subnets are not shared. This Partner Solution does not support https://docs.aws.amazon.com/vpc/latest/userguide/vpc-sharing.html[shared subnets^]. The subnets require https://docs.aws.amazon.com/vpc/latest/userguide/vpc-nat-gateway.html[NAT gateways^] in their route tables to allow the instances to download packages and software without exposing the instances to the internet.
 
 Each deployment takes about {deployment_time} to complete.
 

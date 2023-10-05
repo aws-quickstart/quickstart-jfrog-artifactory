@@ -1,1 +1,1 @@
-This operational guide provides instructions for updating JFrog Artifactory and JFrog Xray after you deploy the Quick Start, and information on security and storage. For help deploying the Quick Start, see the https://fwd.aws/dBWPz?[deployment guide].
+This operational guide provides instructions for updating JFrog Artifactory and JFrog Xray after you deploy the Partner Solution, and information on security and storage. For help deploying the Partner Solution, see the https://fwd.aws/dBWPz?[deployment guide].

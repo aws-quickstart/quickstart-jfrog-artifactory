@@ -1,10 +1,10 @@
 // Replace the content in <>
-// Identify your target audience and explain how/why they would use this Quick Start.
+// Identify your target audience and explain how/why they would use this Partner Solution.
 //Avoid borrowing text from third-party websites (copying text from AWS service documentation is fine). Also, avoid marketing-speak, focusing instead on the technical aspect.
 
-This Quick Start deploys https://jfrog.com/artifactory/[JFrog Artifactory]—and, optionally, https://jfrog.com/xray/[JFrog Xray]—in the Amazon Web Services (AWS) Cloud. JFrog Artifactory is a universal artifact repository that can manage over 30 different package types throughout the application development lifecycle. As the single source of truth for your binaries, JFrog Artifactory speeds up the software release cycles for your deployments. JFrog Xray works with JFrog Artifactory to scan your packages for security vulnerabilities at each stage of your DevOps pipeline.
+This Partner Solution deploys https://jfrog.com/artifactory/[JFrog Artifactory]—and, optionally, https://jfrog.com/xray/[JFrog Xray]—in the Amazon Web Services (AWS) Cloud. JFrog Artifactory is a universal artifact repository that can manage over 30 different package types throughout the application development lifecycle. As the single source of truth for your binaries, JFrog Artifactory speeds up the software release cycles for your deployments. JFrog Xray works with JFrog Artifactory to scan your packages for security vulnerabilities at each stage of your DevOps pipeline.
 
-By deploying JFrog on AWS, you gain the security and scalability of AWS services like Amazon Elastic Compute Cloud (Amazon EC2). With Amazon EC2 Auto Scaling, you can redeploy, scale up, or scale down your JFrog Artifactory and JFrog Xray nodes as needed. This Quick Start reference architecture uses AWS Elastic Load Balancing to deliver JFrog Artifactory and JFrog Xray with high availability.
+By deploying JFrog on AWS, you gain the security and scalability of AWS services like Amazon Elastic Compute Cloud (Amazon EC2). With Amazon EC2 Auto Scaling, you can redeploy, scale up, or scale down your JFrog Artifactory and JFrog Xray nodes as needed. This Partner Solution reference architecture uses AWS Elastic Load Balancing to deliver JFrog Artifactory and JFrog Xray with high availability.
 
 The default installation creates two https://docs.aws.amazon.com/autoscaling/ec2/userguide/what-is-amazon-ec2-auto-scaling.html[Amazon EC2 Auto Scaling^] groups:
 

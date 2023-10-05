@@ -2,7 +2,7 @@
 == Update {partner-product-short-name}
 // If Post-deployment steps are required, add them here. If not, remove the heading
 
-To perform maintenance on the stack, update the CloudFormation stack rather than updating the infrastructure manually. This also applies to updating JFrog Artifactory. The JFrog Artifactory version for this Quick Start is 7.15.x, and the Xray version is 3.17.x. You can find current versions on the JFrog Artifactory *Service Status* page. For more information, see https://www.jfrog.com/confluence/display/JFROG/Monitoring+Service+Statuses[Monitoring Service Status].
+To perform maintenance on the stack, update the CloudFormation stack rather than updating the infrastructure manually. This also applies to updating JFrog Artifactory. The JFrog Artifactory version for this Partner Solution is 7.15.x, and the Xray version is 3.17.x. You can find current versions on the JFrog Artifactory *Service Status* page. For more information, see https://www.jfrog.com/confluence/display/JFROG/Monitoring+Service+Statuses[Monitoring Service Status].
 
 NOTE: If you plan to upgrade both JFrog Artifactory and JFrog Xray, update JFrog Xray first.
 
