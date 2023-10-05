@@ -35,7 +35,7 @@ tests:
       DatabasePassword: "$[taskcat_genpass_8A]"
       ProvisionBastionHost: "Disabled"
       NumberOfSecondary: "2"
-      ArtifactoryServerName: "artifactory"
+      ArtifactoryServerName: "localhost"
       InstallXray: "true"
       XrayDatabasePassword: "$[taskcat_genpass_8A]"
       XrayNumberOfSecondary: 1
@@ -44,10 +44,10 @@ tests:
       SmCertName: "override"
     template: templates/jfrog-artifactory-ec2-main.template.yaml
     regions:
-      - us-east-1
+#      - us-east-1
       - us-west-2
-      - us-east-2
-      - us-west-1
+#      - us-east-2
+#      - us-west-1
       # - eu-central-1
       # - eu-west-1
       # - eu-west-2
