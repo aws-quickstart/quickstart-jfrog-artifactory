@@ -66,6 +66,7 @@ Metadata:
           - DatabasePassword
           - DatabaseInstance
           - DatabaseAllocatedStorage
+          - DBEngineVersion
           - MultiAzDatabase
       - Label:
           default: JFrog Xray Configuration
@@ -153,6 +154,8 @@ Metadata:
         default: Database instance type
       DatabaseAllocatedStorage:
         default: Database allocated storage
+      DBEngineVersion:
+        default: PostgreSQL database engine version
       MultiAzDatabase:
         default: High-availability database
       QsS3BucketName:
@@ -452,6 +455,10 @@ Parameters:
     MaxValue: 1024
     Default: 10
     Type: Number
+  DBEngineVersion:
+    Description: PostgreSQL database engine version
+    Default: 11.18
+    Type: String
   MultiAzDatabase:
     Description: Choose false to create an Amazon RDS instance in a single Availability Zone.
     ConstraintDescription: True or False
@@ -666,6 +673,7 @@ Resources:
         ArtifactoryHostRole: !Ref ArtifactoryHostRole
         # VolumeSize: !Ref VolumeSize
         EfsSecurityGroup: !Ref ArtifactoryEc2Sg
+        DBEngineVersion: !Ref DBEngineVersion
   ArtifactoryElb:
     Type: AWS::ElasticLoadBalancingV2::LoadBalancer
     Properties:

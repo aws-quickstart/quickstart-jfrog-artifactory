@@ -17,6 +17,10 @@ Parameters:
     ConstraintDescription: CIDR block parameter must be in the form x.x.x.x/16-28
     Default: 10.0.0.0/16
     Type: String
+  DBEngineVersion:
+    Description: PostgreSQL database engine version
+    Default: 11.18
+    Type: String
   PrivateSubnet1Cidr:
     AllowedPattern: ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/(1[6-9]|2[0-8]))$
     ConstraintDescription: CIDR block parameter must be in the form x.x.x.x/16-28
@@ -202,7 +206,7 @@ Resources:
       DBSubnetGroupName: !Ref  ArtifactoryDatabaseSubnetGroup
       Engine: Postgres
       PubliclyAccessible: false
-      EngineVersion: 11.18
+      EngineVersion: !Ref DBEngineVersion
       MasterUsername: !Ref DatabaseUser
       MasterUserPassword: !Ref DatabasePassword
       MultiAZ: !Ref MultiAzDatabase
